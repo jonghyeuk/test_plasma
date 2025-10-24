@@ -713,111 +713,68 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
           </svg>
         </div>
 
-        {/* 오른쪽: 동일 면적 전극 비교 */}
+        {/* 오른쪽: RF 전압 0V 상태 (정적 스틸샷) */}
         <div>
-          <h5 className="text-sm font-semibold text-orange-700 mb-2">동일 면적 전극 - 3단계 Potential 분포</h5>
+          <h5 className="text-sm font-semibold text-indigo-700 mb-2">RF 전압 0V 상태 (중성 상태)</h5>
           <svg width="300" height="200" className="border rounded bg-gray-50">
-            {/* 0V 기준선 */}
+            {/* 0V 기준선 (Ground 전극 높이) */}
             <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
             <text x="280" y="125" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
 
-            {/* 동일한 크기의 전극들 */}
+            {/* 전극 - Powered는 검정 고정, Ground는 같은 길이 */}
             <rect x="20" y="20" width="15" height="160" fill="#374151" rx="2"/>
             <rect x="265" y="20" width="15" height="160" fill="#6B7280" rx="2"/>
 
             {/* 전극 라벨 */}
-            <text x="5" y="15" fontSize="9" fill="#374151" fontWeight="bold">Source</text>
-            <text x="5" y="10" fontSize="8" fill="#374151">target (As)</text>
-            <text x="238" y="15" fontSize="9" fill="#374151" fontWeight="bold">Substrate</text>
-            <text x="250" y="10" fontSize="8" fill="#374151">(GND) As</text>
+            <text x="5" y="15" fontSize="9" fill="#374151" fontWeight="bold">Powered</text>
+            <text x="245" y="15" fontSize="9" fill="#374151" fontWeight="bold">Ground</text>
+            <text x="275" y="185" fontSize="8" fill="#6B7280" fontWeight="bold">0V</text>
 
             {/* 플라즈마 영역 */}
             <rect x="50" y="60" width="200" height="80" fill="#DBEAFE" fillOpacity="0.6" rx="4"/>
             <text x="135" y="105" fontSize="12" fill="#1E40AF" fontWeight="bold">플라즈마</text>
 
-            {/* 3단계 Potential 분포 */}
+            {/* 플라즈마 포텐셜 수평선 - voltage=0일 때 고정 높이 */}
+            <line x1="50" y1="90" x2="250" y2="90" stroke="#1E40AF" strokeWidth="2" strokeDasharray="5,5"/>
+            <text x="140" y="85" fontSize="10" fill="#1E40AF" fontWeight="bold">플라즈마 포텐셜 (+)</text>
 
-            {/* 1. 최고 전위 (파란색 점선) */}
-            <line x1="50" y1="70" x2="250" y2="70" stroke="#3B82F6" strokeWidth="2" strokeDasharray="5,5"/>
-            <text x="60" y="65" fontSize="9" fill="#3B82F6" fontWeight="bold">최고 전위</text>
-
-            {/* 2. Average Potential (검정색 실선) - 중간 */}
-            <line x1="50" y1="100" x2="250" y2="100" stroke="#000000" strokeWidth="3"/>
-            <text x="110" y="95" fontSize="10" fill="#000000" fontWeight="bold">Average Potential</text>
-
-            {/* 3. Self-bias 전위 (빨간색 점선) */}
-            <line x1="50" y1="120" x2="250" y2="120" stroke="#DC2626" strokeWidth="2" strokeDasharray="5,5"/>
-            <text x="60" y="115" fontSize="9" fill="#DC2626" fontWeight="bold">Self-bias 전위</text>
-            <text x="180" y="115" fontSize="8" fill="#DC2626">기본 전극 As</text>
-
-            {/* 동일한 Sheath 두께 */}
+            {/* Sheath 영역 - voltage=0일 때 기본 두께 15px */}
             <rect x="35" y="70" width="15" height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
-            <rect x="250" y="70" width="15" height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
+            <rect x="235" y="70" width="15" height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
 
-            {/* 3단계 전위 분포 곡선들 */}
-            {/* 최고 전위 곡선 */}
+            {/* 전위 분포 곡선 - voltage=0일 때 중성색 (회색) */}
             <path
-              d="M 35 80 Q 50 75 50 70 L 250 70 Q 260 75 275 80"
+              d="M 35 130 Q 50 110 50 90 L 250 90 Q 260 110 275 130"
               fill="none"
-              stroke="#3B82F6"
-              strokeWidth="2"
-              strokeDasharray="5,5"
-            />
-
-            {/* Average potential 곡선 */}
-            <path
-              d="M 35 100 Q 50 100 50 100 L 250 100 Q 260 100 275 100"
-              fill="none"
-              stroke="#000000"
+              stroke="#6B7280"
               strokeWidth="3"
-            />
-
-            {/* Self-bias 곡선 */}
-            <path
-              d="M 35 120 Q 50 125 50 120 L 250 120 Q 260 125 275 130"
-              fill="none"
-              stroke="#DC2626"
-              strokeWidth="2"
               strokeDasharray="5,5"
             />
 
-            {/* 전위 차이 화살표 표시 */}
-            <line x1="280" y1="70" x2="280" y2="100" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrow)"/>
-            <line x1="280" y1="100" x2="280" y2="120" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrow)"/>
+            {/* 전위 라벨 */}
+            <text x="40" y="195" fontSize="8" fill="#1E40AF">Vs</text>
+            <text x="260" y="195" fontSize="8" fill="#7C3AED">Vg</text>
 
-            {/* 화살표 마커 정의 */}
-            <defs>
-              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L0,6 L9,3 z" fill="#F59E0B"/>
-              </marker>
-            </defs>
-
-            {/* 전위차 라벨 */}
-            <text x="285" y="85" fontSize="8" fill="#F59E0B" fontWeight="bold">ΔV1</text>
-            <text x="285" y="110" fontSize="8" fill="#F59E0B" fontWeight="bold">ΔV2</text>
-
-            {/* 제어 불가 표시 */}
-            <text x="80" y="50" fontSize="11" fill="#EF4444" fontWeight="bold">전위차 제어 불가</text>
-            <line x1="70" y1="55" x2="190" y2="55" stroke="#EF4444" strokeWidth="2"/>
+            {/* 이온 충돌 없음 (voltage=0이므로) */}
           </svg>
         </div>
       </div>
 
       {/* 해석 부분 */}
-      <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-        <h4 className="font-bold text-orange-800 mb-3">📊 전극 면적비의 중요성</h4>
-        <div className="text-sm text-orange-700 space-y-2">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+        <h4 className="font-bold text-indigo-800 mb-3">💡 RF 전압 0V 상태의 의미</h4>
+        <div className="text-sm text-indigo-700 space-y-2">
           <p>
-            <strong>동일 면적 전극의 문제:</strong> 두 전극의 크기가 같은 경우, 플라즈마 포텐셜의 평균이 Powered 전극의 0V에서 시작하게 됩니다.
-            이는 RF 사이클 동안 양쪽 전극이 동일한 조건을 가지기 때문입니다.
+            <strong>중성 상태:</strong> RF 전압이 0V일 때는 양쪽 전극이 전기적으로 중성 상태입니다.
+            이 순간에는 이온이 어느 쪽으로도 강하게 가속되지 않습니다.
           </p>
           <p>
-            <strong>Sheath Potential 제어 불가:</strong> 이런 상황에서는 DC Self-bias가 형성되지 않아 Sheath potential을 조절하는 의미가 없어집니다.
-            양쪽 전극에서 동일한 이온 에너지를 얻게 되어 선택적 처리가 불가능합니다.
+            <strong>Sheath 최소 두께:</strong> 전압이 0V일 때 Sheath 영역의 두께가 가장 얇습니다.
+            양쪽 전극 모두 동일한 최소 두께의 Sheath를 가지게 됩니다.
           </p>
           <p>
-            <strong>해결책:</strong> 실제 RF 플라즈마에서는 전극 면적비를 조절하여 의도적으로 비대칭을 만들어 Self-bias를 형성시킵니다.
-            작은 전극 쪽에 더 높은 전압이 걸리게 되어 효과적인 플라즈마 제어가 가능해집니다.
+            <strong>이온 충돌 없음:</strong> 이 순간에는 전기장이 약하여 이온이 전극에 충돌하지 않습니다.
+            RF 사이클 동안 ±V가 반복되면서 양쪽 전극에 교대로 이온이 충돌하게 됩니다.
           </p>
         </div>
       </div>
