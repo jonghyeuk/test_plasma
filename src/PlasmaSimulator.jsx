@@ -1,0 +1,1668 @@
+import React, { useState, useEffect } from 'react';
+
+// DC 플라즈마 1단계 애니메이션 컴포넌트
+const DCPlasmaStep1Animation = () => {
+  const [step1Active, setStep1Active] = useState(false);
+  const [step2Active, setStep2Active] = useState(false);
+  const [step3Active, setStep3Active] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-bold text-blue-800">
+          {step3Active ? "3단계: 이온화 반응 (양이온+전자 생성)" :
+           step2Active ? "2단계: 양이온 충돌 + 2차 전자 방출" :
+           step1Active ? "1단계: 양이온이 Cathode로 이동" : "DC 플라즈마 - 시작 전"}
+        </span>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {setStep1Active(!step1Active); setStep2Active(false); setStep3Active(false);}}
+            className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold"
+          >
+            {step1Active ? '1단계 정지' : '1단계 시작'}
+          </button>
+          <button
+            onClick={() => {setStep2Active(!step2Active); setStep1Active(false); setStep3Active(false);}}
+            className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs font-bold"
+          >
+            {step2Active ? '2단계 정지' : '2단계 시작'}
+          </button>
+          <button
+            onClick={() => {setStep3Active(!step3Active); setStep1Active(false); setStep2Active(false);}}
+            className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-bold"
+          >
+            {step3Active ? '3단계 정지' : '3단계 시작'}
+          </button>
+        </div>
+      </div>
+
+      <svg width="300" height="200" className="border rounded bg-gray-50">
+        <defs>
+          <linearGradient id="spaceChargeGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8"/>
+            <stop offset="70%" stopColor="#A78BFA" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.3"/>
+          </linearGradient>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#DC2626" />
+          </marker>
+        </defs>
+
+        {/* 전극 */}
+        <rect x="30" y="40" width="20" height="120" fill="#8B5CF6" rx="2"/>
+        <rect x="250" y="40" width="20" height="120" fill="#EF4444" rx="2"/>
+
+        {/* 전극 레이블 */}
+        <text x="5" y="30" fontSize="12" fill="#8B5CF6" fontWeight="bold">Cathode</text>
+        <text x="15" y="20" fontSize="14" fill="#8B5CF6">-</text>
+        <text x="235" y="30" fontSize="12" fill="#EF4444" fontWeight="bold">Anode</text>
+        <text x="275" y="20" fontSize="14" fill="#EF4444">+</text>
+
+        {/* 0V 기준선 */}
+        <line x1="40" y1="100" x2="260" y2="100" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
+        <text x="145" y="95" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
+
+        {/* Space Charge 영역 */}
+        <rect x="70" y="50" width="160" height="100" fill="url(#spaceChargeGradient2)" rx="4"/>
+        <text x="75" y="45" fontSize="10" fill="#8B5CF6" fontWeight="bold">Space charge</text>
+
+        {/* 양이온들 - Cathode sheath가 끝나는 지점(플라즈마 왼쪽 경계)에 집중 배치 */}
+        <circle cx="70" cy="70" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="70;40" dur="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="70" y="75" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="70;40" dur="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="72" cy="85" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="72;40" dur="1.7s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.2s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="72" y="90" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="72;40" dur="1.7s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.2s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="68" cy="100" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="68;40" dur="1.3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="1.8s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="68" y="105" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="68;40" dur="1.3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="1.8s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="74" cy="115" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="74;40" dur="2.0s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.5s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="74" y="120" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="74;40" dur="2.0s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.5s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="69" cy="130" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="69;40" dur="1.6s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.1s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="69" y="135" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="69;40" dur="1.6s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.1s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="71" cy="125" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="71;40" dur="1.4s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="1.9s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="71" y="130" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="71;40" dur="1.4s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="1.9s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="73" cy="95" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="73;40" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.3s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="73" y="100" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="73;40" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.3s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        <circle cx="67" cy="110" r="7" fill="#EF4444">
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="cx" values="67;40" dur="1.9s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.4s" repeatCount="indefinite"/>
+            </>
+          )}
+        </circle>
+        <text x="67" y="115" fontSize="12" fill="white" fontWeight="bold" textAnchor="middle">
+          +
+          {(step1Active || step2Active || step3Active) && (
+            <>
+              <animate attributeName="x" values="67;40" dur="1.9s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;0;1" dur="2.4s" repeatCount="indefinite"/>
+            </>
+          )}
+        </text>
+
+        {/* 2단계: Cathode에서 방출되는 2차 전자들 */}
+        {(step2Active || step3Active) && (
+          <>
+            {/* 전자 1 - 중간까지 */}
+            <circle cx="50" cy="75" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;120" dur="1.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="79" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;120" dur="1.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+            </text>
+
+            {/* 전자 2 - 초반까지만 */}
+            <circle cx="50" cy="90" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;85" dur="0.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.1s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="94" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;85" dur="0.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.1s" repeatCount="indefinite"/>
+            </text>
+
+            {/* 전자 3 - Anode 쪽 끝까지 */}
+            <circle cx="50" cy="105" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;220" dur="2.0s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="2.3s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="109" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;220" dur="2.0s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="2.3s" repeatCount="indefinite"/>
+            </text>
+
+            {/* 전자 4 - 중간 정도 */}
+            <circle cx="50" cy="120" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;140" dur="1.4s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.7s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="124" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;140" dur="1.4s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.7s" repeatCount="indefinite"/>
+            </text>
+
+            {/* 전자 5 - 짧은 거리 */}
+            <circle cx="50" cy="135" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;95" dur="0.9s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="139" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;95" dur="0.9s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite"/>
+            </text>
+
+            {/* 전자 6 - 멀리까지 */}
+            <circle cx="50" cy="150" r="5" fill="#7C3AED">
+              <animate attributeName="cx" values="50;200" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="2.1s" repeatCount="indefinite"/>
+            </circle>
+            <text x="50" y="154" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">
+              -
+              <animate attributeName="x" values="50;200" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="2.1s" repeatCount="indefinite"/>
+            </text>
+          </>
+        )}
+
+        {/* 3단계: 이온화 반응 - 충분한 에너지를 가진 전자만 이온화 일으킴 */}
+        {step3Active && (
+          <>
+            {/* 이온화 지점 1 - 중간 위치에서 발생 */}
+            <g>
+              {/* 이온화 섬광 효과 */}
+              <circle cx="120" cy="85" r="3" fill="#FFF200" opacity="0.8">
+                <animate attributeName="r" values="3;8;3" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+
+              {/* 새로 생성된 양이온 - 왼쪽으로 이동 */}
+              <circle cx="120" cy="85" r="4" fill="#EF4444">
+                <animate attributeName="cx" values="120;75" dur="1.2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite"/>
+              </circle>
+              <text x="120" y="89" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                +
+                <animate attributeName="x" values="120;75" dur="1.2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite"/>
+              </text>
+
+              {/* 새로 생성된 전자 - 오른쪽으로 이동 */}
+              <circle cx="120" cy="85" r="3" fill="#7C3AED">
+                <animate attributeName="cx" values="120;200" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.0s" repeatCount="indefinite"/>
+              </circle>
+              <text x="120" y="88" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                -
+                <animate attributeName="x" values="120;200" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.0s" repeatCount="indefinite"/>
+              </text>
+            </g>
+
+            {/* 이온화 지점 2 - 다른 위치에서 발생 */}
+            <g>
+              <circle cx="140" cy="110" r="3" fill="#FFF200" opacity="0.8">
+                <animate attributeName="r" values="3;8;3" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+              </circle>
+
+              <circle cx="140" cy="110" r="4" fill="#EF4444">
+                <animate attributeName="cx" values="140;75" dur="1.3s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="1.9s" repeatCount="indefinite" begin="0.5s"/>
+              </circle>
+              <text x="140" y="114" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                +
+                <animate attributeName="x" values="140;75" dur="1.3s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="1.9s" repeatCount="indefinite" begin="0.5s"/>
+              </text>
+
+              <circle cx="140" cy="110" r="3" fill="#7C3AED">
+                <animate attributeName="cx" values="140;210" dur="1.6s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.1s" repeatCount="indefinite" begin="0.5s"/>
+              </circle>
+              <text x="140" y="113" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                -
+                <animate attributeName="x" values="140;210" dur="1.6s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.1s" repeatCount="indefinite" begin="0.5s"/>
+              </text>
+            </g>
+
+            {/* 이온화 지점 3 - 더 멀리서 발생 */}
+            <g>
+              <circle cx="170" cy="95" r="3" fill="#FFF200" opacity="0.8">
+                <animate attributeName="r" values="3;8;3" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+              </circle>
+
+              <circle cx="170" cy="95" r="4" fill="#EF4444">
+                <animate attributeName="cx" values="170;75" dur="1.4s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+              </circle>
+              <text x="170" y="99" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                +
+                <animate attributeName="x" values="170;75" dur="1.4s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+              </text>
+
+              <circle cx="170" cy="95" r="3" fill="#7C3AED">
+                <animate attributeName="cx" values="170;220" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="1.0s"/>
+              </circle>
+              <text x="170" y="98" fontSize="8" fill="white" fontWeight="bold" textAnchor="middle">
+                -
+                <animate attributeName="x" values="170;220" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="1.0s"/>
+              </text>
+            </g>
+          </>
+        )}
+
+        {/* 더 멀리 있는 양이온들 */}
+        <circle cx="150" cy="80" r="2" fill="#EF4444"/>
+        <text x="153" y="84" fontSize="8" fill="#EF4444">+</text>
+        <circle cx="170" cy="100" r="2" fill="#EF4444"/>
+        <text x="173" y="104" fontSize="8" fill="#EF4444">+</text>
+        <circle cx="160" cy="120" r="2" fill="#EF4444"/>
+        <text x="163" y="124" fontSize="8" fill="#EF4444">+</text>
+        <circle cx="180" cy="70" r="2" fill="#EF4444"/>
+        <text x="183" y="74" fontSize="8" fill="#EF4444">+</text>
+
+        {/* Potential 곡선과 전위 표시 - 연속된 하나의 곡선 */}
+        <path d="M 50 160 L 90 70 L 230 70 Q 240 75 250 80" fill="none" stroke="#1E40AF" strokeWidth="3" strokeDasharray="8,4"/>
+
+        {/* Plasma Potential (Vp) 표시점과 라벨 */}
+        <circle cx="85" cy="70" r="2" fill="#1E40AF"/>
+        <text x="70" y="85" fontSize="8" fill="#1E40AF">Vp</text>
+        <text x="95" y="60" fontSize="10" fill="#1E40AF" fontWeight="bold">Plasma Potential (Vp)</text>
+
+        {/* Floating Potential (Vf) - Anode 근처에서 살짝 떨어진 전위 */}
+        <circle cx="235" cy="73" r="2" fill="#7C3AED"/>
+        <text x="220" y="90" fontSize="8" fill="#7C3AED">Vf</text>
+        <text x="180" y="85" fontSize="10" fill="#7C3AED" fontWeight="bold">Floating Potential (Vf)</text>
+
+        {/* Cathode Sheath 레이블 */}
+        <text x="60" y="175" fontSize="10" fill="#8B5CF6" fontWeight="bold">Cathode Sheath</text>
+
+        {/* 단계 설명 */}
+        <text x="10" y="190" fontSize="9" fill="#374151" fontWeight="bold">
+          {step3Active ? "전자-중성입자 충돌로 이온화 반응이 일어나 새로운 양이온과 전자가 생성됩니다" :
+           step2Active ? "양이온이 Cathode에 충돌하면서 동시에 2차 전자가 방출됩니다" :
+           step1Active ? "양이온들이 전기장에 의해 Cathode로 가속됩니다" :
+           "Space charge 왼쪽의 양이온들이 준비된 상태"}
+        </text>
+      </svg>
+    </div>
+  );
+};
+
+// RF 플라즈마 통합 애니메이션 컨테이너
+const RFPlasmaAnimationContainer = () => {
+  const [time, setTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    let animationId;
+    let lastTime = 0;
+
+    const animate = (currentTime) => {
+      if (currentTime - lastTime >= 16) { // 60fps
+        setTime(prev => (prev + 0.02) % (2 * Math.PI)); // 매우 작은 step
+        lastTime = currentTime;
+      }
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [isPlaying]);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-lg p-6 border">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-indigo-800">RF 파형과 Sheath Potential 동시 시각화</h3>
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg text-sm font-bold hover:bg-indigo-200 transition-colors"
+          >
+            {isPlaying ? '⏸️ 일시정지' : '▶️ 재생'}
+          </button>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="text-md font-semibold text-indigo-700 mb-3">RF 파형 (13.56 MHz)</h4>
+            <RFWaveformAnimation time={time} isPlaying={isPlaying} />
+          </div>
+
+          <div>
+            <h4 className="text-md font-semibold text-indigo-700 mb-3">Sheath Potential 변화</h4>
+            <SheathPotentialAnimation time={time} isPlaying={isPlaying} />
+          </div>
+        </div>
+
+        <div className="mt-6 bg-indigo-50 p-4 rounded-lg">
+          <h4 className="font-bold text-indigo-800 mb-3">💡 상관관계 분석</h4>
+          <div className="grid md:grid-cols-3 gap-4 text-sm">
+            <div className="bg-gray-50 p-2 rounded border-l-4 border-gray-400">
+              <strong>① V = 0 (중성):</strong><br/>
+              양쪽 전극 모두 중성 상태
+            </div>
+            <div className="bg-red-50 p-2 rounded border-l-4 border-red-400">
+              <strong>② +V (양전압):</strong><br/>
+              Ground 전극에 음전계<br/>
+              → 이온이 왼쪽으로 강하게 가속
+            </div>
+            <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+              <strong>③ -V (음전압):</strong><br/>
+              RF 전극에 음전계<br/>
+              → 이온이 오른쪽으로 강하게 가속
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// RF 파형 애니메이션 컴포넌트
+const RFWaveformAnimation = ({ time, isPlaying }) => {
+  const i = 10;
+  const t = (i / 150) * 4 * Math.PI - time;
+  const voltage = Math.sin(t);
+
+  let phaseText = '';
+  let phaseColor = '';
+  let phaseNumber = 1;
+
+  if (Math.abs(voltage) < 0.1) {
+    phaseText = 'V = 0 (중성)';
+    phaseColor = '#6B7280';
+    phaseNumber = 1;
+  } else if (voltage > 0) {
+    phaseText = '+V (양전압)';
+    phaseColor = '#DC2626';
+    phaseNumber = 2;
+  } else {
+    phaseText = '-V (음전압)';
+    phaseColor = '#2563EB';
+    phaseNumber = 3;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-bold" style={{color: phaseColor}}>
+          단계 {phaseNumber}: {phaseText}
+        </span>
+      </div>
+
+      <svg width="300" height="150" className="border rounded">
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E7EB" strokeWidth="1"/>
+          </pattern>
+        </defs>
+        <rect width="300" height="150" fill="url(#grid)" />
+
+        <line x1="0" y1="75" x2="300" y2="75" stroke="#9CA3AF" strokeWidth="1" strokeDasharray="5,5"/>
+
+        <path
+          d={`M 0 ${75 - 50 * Math.sin(-time)} ${Array.from({length: 150}, (_, i) => {
+            const t = (i / 150) * 4 * Math.PI - time;
+            const y = 75 - 50 * Math.sin(t);
+            return `L ${i * 2} ${y}`;
+          }).join(' ')}`}
+          fill="none"
+          stroke="#4F46E5"
+          strokeWidth="2"
+        />
+
+        <line x1="20" y1="20" x2="20" y2="130" stroke="#374151" strokeWidth="3"/>
+        <text x="25" y="35" fontSize="10" fill="#374151" fontWeight="bold">RF 전극</text>
+
+        <circle
+          cx={20}
+          cy={75 - 50 * voltage}
+          r="5"
+          fill={phaseColor}
+          stroke="white"
+          strokeWidth="2"
+        />
+
+        <line
+          x1="20"
+          y1="75"
+          x2="20"
+          y2={75 - 50 * voltage}
+          stroke={phaseColor}
+          strokeWidth="2"
+          strokeDasharray="3,3"
+        />
+
+        <text x="10" y="20" fontSize="12" fill="#374151" fontWeight="bold">
+          13.56 MHz RF 파형
+        </text>
+        <text x="10" y="140" fontSize="12" fill={phaseColor} fontWeight="bold">
+          전극 전압: {voltage.toFixed(2)}V
+        </text>
+
+        <text x="200" y="140" fontSize="10" fill="#6B7280">
+          → 시간 (13.56 MHz)
+        </text>
+      </svg>
+
+      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+        <strong>💡 해석:</strong> 왼쪽 세로선이 RF 전극이고, 원형 점이 현재 전극에 가해지는 전압을 실시간으로 보여줍니다.
+        파형이 오른쪽으로 흘러가면서 전극 전압이 +V ↔ 0 ↔ -V를 반복합니다.
+      </div>
+    </div>
+  );
+};
+
+// Sheath Potential 애니메이션 컴포넌트
+const SheathPotentialAnimation = ({ time, isPlaying }) => {
+  const voltage = Math.sin(time);
+
+  // 연속적인 색상 변화 계산
+  const getElectrodeColor = (voltage) => {
+    if (voltage > 0) {
+      const intensity = Math.abs(voltage);
+      const red = Math.floor(220 * intensity + 35);
+      const green = Math.floor(38 * (1 - intensity) + 38);
+      const blue = Math.floor(38 * (1 - intensity) + 38);
+      return `rgb(${red}, ${green}, ${blue})`;
+    } else {
+      const intensity = Math.abs(voltage);
+      const red = Math.floor(59 * (1 - intensity) + 59);
+      const green = Math.floor(130 * intensity + 130);
+      const blue = Math.floor(246 * intensity + 130);
+      return `rgb(${red}, ${green}, ${blue})`;
+    }
+  };
+
+  // 연속적인 Sheath 두께 계산
+  const sheathDepthLeft = 15 + 10 * Math.abs(voltage);
+  const sheathDepthRight = 15 + 10 * Math.abs(-voltage);
+
+  // 연속적인 이온 충돌 강도
+  const leftIonIntensity = Math.max(0, voltage);
+  const rightIonIntensity = Math.max(0, -voltage);
+
+  // Powered 전극의 전위 높이 (RF 파형과 동일한 방향으로 변화하지만 플라즈마보다 낮게)
+  const poweredPotentialY = 130 + voltage * 30; // 변화폭을 줄여서 플라즈마보다 낮게 유지
+
+  // 플라즈마 포텐셜 높이 - 항상 가장 높은 전위 유지
+  const plasmaPotentialY = 90 + voltage * 5; // 작은 변화폭으로 안정성 유지
+
+  // 현재 상태 텍스트
+  let statusText = '';
+  if (Math.abs(voltage) < 0.1) {
+    statusText = '플라즈마 포텐셜 기준점 - Ground는 항상 0V';
+  } else if (voltage > 0) {
+    statusText = `Powered +${voltage.toFixed(2)}V → 플라즈마 포텐셜 (더 높음) → Ground 0V`;
+  } else {
+    statusText = `Powered ${voltage.toFixed(2)}V → 플라즈마 포텐셜 (양수 유지) → Ground 0V`;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-bold text-indigo-700">
+          RF 전압: {voltage.toFixed(2)}V (연속 변화)
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* 왼쪽: 현재 애니메이션 */}
+        <div>
+          <h5 className="text-sm font-semibold text-indigo-700 mb-2">실시간 Sheath Potential 변화</h5>
+          <svg width="300" height="200" className="border rounded bg-gray-50">
+            {/* 0V 기준선 (Ground 전극 높이) */}
+            <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
+            <text x="280" y="125" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
+
+            {/* 전극 - Powered는 검정 고정, Ground는 같은 길이 */}
+            <rect x="20" y="20" width="15" height="160" fill="#374151" rx="2"/>
+            <rect x="265" y="20" width="15" height="160" fill="#6B7280" rx="2"/>
+
+            {/* 전극 라벨 */}
+            <text x="5" y="15" fontSize="9" fill="#374151" fontWeight="bold">Powered</text>
+            <text x="245" y="15" fontSize="9" fill="#374151" fontWeight="bold">Ground</text>
+            <text x="275" y="185" fontSize="8" fill="#6B7280" fontWeight="bold">0V</text>
+
+            {/* 플라즈마 영역 */}
+            <rect x="50" y="60" width="200" height="80" fill="#DBEAFE" fillOpacity="0.6" rx="4"/>
+            <text x="135" y="105" fontSize="12" fill="#1E40AF" fontWeight="bold">플라즈마</text>
+
+            {/* 플라즈마 포텐셜 수평선 - 전체가 동일한 전위, 약간의 변화 */}
+            <line x1="50" y1={plasmaPotentialY} x2="250" y2={plasmaPotentialY} stroke="#1E40AF" strokeWidth="2" strokeDasharray="5,5"/>
+            <text x="140" y={plasmaPotentialY - 5} fontSize="10" fill="#1E40AF" fontWeight="bold">플라즈마 포텐셜 (+)</text>
+
+            {/* Sheath 영역 - 연속적 두께 변화 */}
+            <rect x="35" y="70" width={sheathDepthLeft} height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
+            <rect x={250-sheathDepthRight} y="70" width={sheathDepthRight} height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
+
+            {/* 연속적으로 변화하는 전위 분포 곡선 - 플라즈마 내부는 등전위 */}
+            <path
+              d={`M 35 ${poweredPotentialY} Q 50 ${(poweredPotentialY + plasmaPotentialY) / 2} 50 ${plasmaPotentialY} L 250 ${plasmaPotentialY} Q 260 ${(plasmaPotentialY + 130) / 2} 275 130`}
+              fill="none"
+              stroke={getElectrodeColor(voltage)}
+              strokeWidth="3"
+              strokeDasharray="5,5"
+            />
+
+            {/* 전위 라벨 */}
+            <text x="40" y="195" fontSize="8" fill="#1E40AF">Vs</text>
+            <text x="260" y="195" fontSize="8" fill="#7C3AED">Vg</text>
+
+            {/* 연속적 이온 충돌 효과 */}
+            {leftIonIntensity > 0.1 && (
+              <>
+                <circle cx="45" cy="80" r="2" fill="#EF4444" opacity={leftIonIntensity}>
+                  <animate attributeName="cy" values="80;75;80" dur="0.3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="45" cy="100" r="2" fill="#EF4444" opacity={leftIonIntensity}>
+                  <animate attributeName="cy" values="100;95;100" dur="0.4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="45" cy="120" r="2" fill="#EF4444" opacity={leftIonIntensity}>
+                  <animate attributeName="cy" values="120;115;120" dur="0.5s" repeatCount="indefinite"/>
+                </circle>
+                <text x="10" y="50" fontSize="10" fill="#DC2626" fontWeight="bold">강한 충돌</text>
+              </>
+            )}
+
+            {rightIonIntensity > 0.1 && (
+              <>
+                <circle cx="255" cy="80" r="2" fill="#EF4444" opacity={rightIonIntensity}>
+                  <animate attributeName="cy" values="80;75;80" dur="0.3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="255" cy="100" r="2" fill="#EF4444" opacity={rightIonIntensity}>
+                  <animate attributeName="cy" values="100;95;100" dur="0.4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="255" cy="120" r="2" fill="#EF4444" opacity={rightIonIntensity}>
+                  <animate attributeName="cy" values="120;115;120" dur="0.5s" repeatCount="indefinite"/>
+                </circle>
+                <text x="220" y="50" fontSize="10" fill="#DC2626" fontWeight="bold">강한 충돌</text>
+              </>
+            )}
+          </svg>
+        </div>
+
+        {/* 오른쪽: 동일 면적 전극 비교 */}
+        <div>
+          <h5 className="text-sm font-semibold text-orange-700 mb-2">동일 면적 전극 - 3단계 Potential 분포</h5>
+          <svg width="300" height="200" className="border rounded bg-gray-50">
+            {/* 0V 기준선 */}
+            <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
+            <text x="280" y="125" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
+
+            {/* 동일한 크기의 전극들 */}
+            <rect x="20" y="20" width="15" height="160" fill="#374151" rx="2"/>
+            <rect x="265" y="20" width="15" height="160" fill="#6B7280" rx="2"/>
+
+            {/* 전극 라벨 */}
+            <text x="5" y="15" fontSize="9" fill="#374151" fontWeight="bold">Source</text>
+            <text x="5" y="10" fontSize="8" fill="#374151">target (As)</text>
+            <text x="238" y="15" fontSize="9" fill="#374151" fontWeight="bold">Substrate</text>
+            <text x="250" y="10" fontSize="8" fill="#374151">(GND) As</text>
+
+            {/* 플라즈마 영역 */}
+            <rect x="50" y="60" width="200" height="80" fill="#DBEAFE" fillOpacity="0.6" rx="4"/>
+            <text x="135" y="105" fontSize="12" fill="#1E40AF" fontWeight="bold">플라즈마</text>
+
+            {/* 3단계 Potential 분포 */}
+
+            {/* 1. 최고 전위 (파란색 점선) */}
+            <line x1="50" y1="70" x2="250" y2="70" stroke="#3B82F6" strokeWidth="2" strokeDasharray="5,5"/>
+            <text x="60" y="65" fontSize="9" fill="#3B82F6" fontWeight="bold">최고 전위</text>
+
+            {/* 2. Average Potential (검정색 실선) - 중간 */}
+            <line x1="50" y1="100" x2="250" y2="100" stroke="#000000" strokeWidth="3"/>
+            <text x="110" y="95" fontSize="10" fill="#000000" fontWeight="bold">Average Potential</text>
+
+            {/* 3. Self-bias 전위 (빨간색 점선) */}
+            <line x1="50" y1="120" x2="250" y2="120" stroke="#DC2626" strokeWidth="2" strokeDasharray="5,5"/>
+            <text x="60" y="115" fontSize="9" fill="#DC2626" fontWeight="bold">Self-bias 전위</text>
+            <text x="180" y="115" fontSize="8" fill="#DC2626">기본 전극 As</text>
+
+            {/* 동일한 Sheath 두께 */}
+            <rect x="35" y="70" width="15" height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
+            <rect x="250" y="70" width="15" height="60" fill="#FCA5A5" fillOpacity="0.8" rx="2"/>
+
+            {/* 3단계 전위 분포 곡선들 */}
+            {/* 최고 전위 곡선 */}
+            <path
+              d="M 35 80 Q 50 75 50 70 L 250 70 Q 260 75 275 80"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="2"
+              strokeDasharray="5,5"
+            />
+
+            {/* Average potential 곡선 */}
+            <path
+              d="M 35 100 Q 50 100 50 100 L 250 100 Q 260 100 275 100"
+              fill="none"
+              stroke="#000000"
+              strokeWidth="3"
+            />
+
+            {/* Self-bias 곡선 */}
+            <path
+              d="M 35 120 Q 50 125 50 120 L 250 120 Q 260 125 275 130"
+              fill="none"
+              stroke="#DC2626"
+              strokeWidth="2"
+              strokeDasharray="5,5"
+            />
+
+            {/* 전위 차이 화살표 표시 */}
+            <line x1="280" y1="70" x2="280" y2="100" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrow)"/>
+            <line x1="280" y1="100" x2="280" y2="120" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrow)"/>
+
+            {/* 화살표 마커 정의 */}
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#F59E0B"/>
+              </marker>
+            </defs>
+
+            {/* 전위차 라벨 */}
+            <text x="285" y="85" fontSize="8" fill="#F59E0B" fontWeight="bold">ΔV1</text>
+            <text x="285" y="110" fontSize="8" fill="#F59E0B" fontWeight="bold">ΔV2</text>
+
+            {/* 제어 불가 표시 */}
+            <text x="80" y="50" fontSize="11" fill="#EF4444" fontWeight="bold">전위차 제어 불가</text>
+            <line x1="70" y1="55" x2="190" y2="55" stroke="#EF4444" strokeWidth="2"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* 해석 부분 */}
+      <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+        <h4 className="font-bold text-orange-800 mb-3">📊 전극 면적비의 중요성</h4>
+        <div className="text-sm text-orange-700 space-y-2">
+          <p>
+            <strong>동일 면적 전극의 문제:</strong> 두 전극의 크기가 같은 경우, 플라즈마 포텐셜의 평균이 Powered 전극의 0V에서 시작하게 됩니다.
+            이는 RF 사이클 동안 양쪽 전극이 동일한 조건을 가지기 때문입니다.
+          </p>
+          <p>
+            <strong>Sheath Potential 제어 불가:</strong> 이런 상황에서는 DC Self-bias가 형성되지 않아 Sheath potential을 조절하는 의미가 없어집니다.
+            양쪽 전극에서 동일한 이온 에너지를 얻게 되어 선택적 처리가 불가능합니다.
+          </p>
+          <p>
+            <strong>해결책:</strong> 실제 RF 플라즈마에서는 전극 면적비를 조절하여 의도적으로 비대칭을 만들어 Self-bias를 형성시킵니다.
+            작은 전극 쪽에 더 높은 전압이 걸리게 되어 효과적인 플라즈마 제어가 가능해집니다.
+          </p>
+        </div>
+      </div>
+
+      {/* 실시간 설명 */}
+      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+        <strong>현재 상태:</strong> {statusText}
+      </div>
+    </div>
+  );
+};
+
+const PlasmaSimulator = () => {
+  const [activeTheme, setActiveTheme] = useState('tab1');
+
+  const [electronTemp, setElectronTemp] = useState(3);
+  const [gasPressure, setGasPressure] = useState(50);
+  const [rfPower, setRfPower] = useState(100);
+
+  const [frequency, setFrequency] = useState(13.56);
+  const [power, setPower] = useState(100);
+  const [electrodeRatio, setElectrodeRatio] = useState(3);
+
+  const [electronDensity, setElectronDensity] = useState(1e11);
+  const [electronTemperature, setElectronTemperature] = useState(3);
+  const [patternSize, setPatternSize] = useState(100);
+
+  const ionizationRate = Math.min(100, (electronTemp * gasPressure * rfPower) / 5000);
+  const plasmaFrequency = Math.sqrt(electronDensity / 1e10) * 9;
+  const debyeLength = Math.sqrt(electronTemperature) / Math.sqrt(electronDensity / 1e11) * 0.1;
+  const selfBiasCalc = -(200 * Math.pow(electrodeRatio, 0.8)) / 2;
+
+  const themes = [
+    { id: 'tab1', name: 'DC 플라즈마 원리', icon: '🔄', color: 'green' },
+    { id: 'tab2', name: 'RF 플라즈마 원리', icon: '⚗️', color: 'indigo' },
+    { id: 'tab3', name: '주파수 효과', icon: '📡', color: 'teal' },
+    { id: 'tab4', name: '드바이렝스', icon: '📏', color: 'red' },
+    { id: 'tab5', name: '전자 온도', icon: '🌡️', color: 'orange' }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <style>{`
+        .slider-thumb-green::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 20px;
+          background: linear-gradient(135deg, #059669, #10b981);
+          border-radius: 10px;
+          border: 2px solid #047857;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slider-thumb-green::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #059669, #10b981);
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+          position: relative;
+          top: -2px;
+        }
+        .slider-thumb-red::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 20px;
+          background: linear-gradient(135deg, #dc2626, #ef4444);
+          border-radius: 10px;
+          border: 2px solid #b91c1c;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slider-thumb-red::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #dc2626, #ef4444);
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+          position: relative;
+          top: -2px;
+        }
+        .slider-thumb-blue::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 20px;
+          background: linear-gradient(135deg, #2563eb, #3b82f6);
+          border-radius: 10px;
+          border: 2px solid #1d4ed8;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slider-thumb-blue::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #2563eb, #3b82f6);
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+          position: relative;
+          top: -2px;
+        }
+        .slider-thumb-orange::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 20px;
+          background: linear-gradient(135deg, #ea580c, #f97316);
+          border-radius: 10px;
+          border: 2px solid #c2410c;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slider-thumb-orange::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ea580c, #f97316);
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+          position: relative;
+          top: -2px;
+        }
+        .slider-thumb-teal::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 20px;
+          background: linear-gradient(135deg, #0d9488, #14b8a6);
+          border-radius: 10px;
+          border: 2px solid #0f766e;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .slider-thumb-teal::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #0d9488, #14b8a6);
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+          position: relative;
+          top: -2px;
+        }
+
+        .ion-move {
+          animation: moveTowardsCathode 2s infinite;
+        }
+        .ion-move-2 {
+          animation: moveTowardsCathode 2.2s infinite;
+        }
+        .ion-move-3 {
+          animation: moveTowardsCathode 1.8s infinite;
+        }
+        .ion-move-4 {
+          animation: moveTowardsCathode 2.5s infinite;
+        }
+        .ion-move-5 {
+          animation: moveTowardsCathode 2.1s infinite;
+        }
+
+        @keyframes moveTowardsCathode {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-20px); }
+        }
+      `}</style>
+
+      {/* 헤더 */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-full mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex justify-between items-center py-6">
+            <h1 className="text-2xl font-bold text-gray-900">반도체 공정 플라즈마 시뮬레이터</h1>
+            <div className="text-sm text-gray-500">Semiconductor Plasma Learning System</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 탭 네비게이션 */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-full mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex space-x-1 py-4 overflow-x-auto">
+            {themes.map((theme, index) => (
+              <button
+                key={theme.id}
+                onClick={() => setActiveTheme(theme.id)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTheme === theme.id
+                    ? 'bg-blue-100 text-blue-800 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <span className="text-lg">{theme.icon}</span>
+                <span>{index + 1}. {theme.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 메인 콘텐츠 영역 */}
+      <div className="max-w-full mx-auto px-3 sm:px-4 lg:px-6 py-6">
+
+        {/* 탭 1: DC 플라즈마 기본 원리 */}
+        {activeTheme === 'tab1' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border">
+              <h2 className="text-2xl font-bold text-green-900 mb-4">🔄 DC 플라즈마 기본 원리</h2>
+              <p className="text-green-700 mb-3">DC 바이어스가 인가될 때 전자와 양이온의 움직임 차이로 인한 Space Charge 형성과 Sheath 영역 생성을 학습합니다.</p>
+              <div className="text-sm text-green-600 bg-green-100 rounded-lg p-3">
+                <strong>학습 포인트:</strong> DC 바이어스에 의한 전자/양이온 분리, Sheath 형성 메커니즘, Potential Drop과 E-field 관계
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-semibold text-green-800 mb-4">DC 플라즈마 Potential 분포</h3>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Without Plasma */}
+                <div className="text-center">
+                  <h4 className="font-bold text-gray-800 mb-4">Without Plasma</h4>
+                  <svg width="300" height="200" className="border rounded bg-gray-50">
+                    <rect x="30" y="40" width="20" height="120" fill="#8B5CF6" rx="2"/>
+                    <rect x="250" y="40" width="20" height="120" fill="#EF4444" rx="2"/>
+
+                    <text x="15" y="30" fontSize="12" fill="#8B5CF6" fontWeight="bold">Cathode</text>
+                    <text x="15" y="20" fontSize="14" fill="#8B5CF6">-</text>
+                    <text x="235" y="30" fontSize="12" fill="#EF4444" fontWeight="bold">Anode</text>
+                    <text x="275" y="20" fontSize="14" fill="#EF4444">+</text>
+
+                    <line x1="40" y1="100" x2="260" y2="100" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
+                    <text x="145" y="95" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
+
+                    <line x1="50" y1="160" x2="250" y2="40" stroke="#374151" strokeWidth="2" strokeDasharray="5,5"/>
+                    <text x="130" y="110" fontSize="12" fill="#374151" fontWeight="bold">Potential</text>
+
+                    <text x="100" y="190" fontSize="11" fill="#6B7280">균등한 전기장 분포</text>
+                  </svg>
+                </div>
+
+                {/* With Plasma */}
+                <div className="text-center">
+                  <h4 className="font-bold text-blue-800 mb-4">With Plasma</h4>
+                  <DCPlasmaStep1Animation />
+                </div>
+              </div>
+
+              <div className="mt-6 bg-amber-50 p-4 rounded-lg">
+                <h4 className="font-bold text-amber-800 mb-3">💡 DC 플라즈마 Sheath 형성 메커니즘</h4>
+
+                <div className="space-y-4 text-sm text-amber-800">
+                  <div className="bg-amber-100 p-3 rounded border-l-4 border-amber-400">
+                    <h5 className="font-bold mb-2">1. 이동속도 차이와 전하 분리</h5>
+                    <p>전자와 이온은 전극으로 향하여 chamber 벽면에서 충돌하거나 재결합하여 소멸됩니다. 하지만 전자가 이온보다 훨씬 이동속도가 빠르기 때문에, 전자가 chamber 벽면으로 이동해서 충돌하고 소멸했을 때 이온은 아직도 플라즈마 bulk 안에 존재합니다.</p>
+                  </div>
+
+                  <div className="bg-orange-100 p-3 rounded border-l-4 border-orange-400">
+                    <h5 className="font-bold mb-2">2. Plasma Potential과 Floating Potential</h5>
+                    <p><strong>Plasma Potential</strong>은 생성된 플라즈마가 가지는 전위를 의미하며, <strong>Floating Potential</strong>은 접지나 기판이 가지는 전위를 의미합니다. 플라즈마 내에는 양이온, 전자와 같은 하전 입자들이 있지만, 준중성 상태이기에 일정한 전위를 가집니다. (Net Charge Q=0 → E Field = 0)</p>
+                  </div>
+
+                  <div className="bg-blue-100 p-3 rounded border-l-4 border-blue-400">
+                    <h5 className="font-bold mb-2">3. Sheath Voltage 정의</h5>
+                    <p>플라즈마 생성 이후, 무수히 많은 자유전자가 Anode 부근으로 빠르게 collecting 되면서 Anode의 표면 전위가 작아집니다. 이러한 이유로 Plasma Potential이 Floating Potential보다 항상 높은 전위값을 가집니다. 즉, <strong>Plasma Potential(Vp)과 Floating Potential(Vf)의 차이를 Sheath Voltage</strong>라고 정의합니다.</p>
+                  </div>
+
+                  <div className="bg-red-100 p-3 rounded border-l-4 border-red-400">
+                    <h5 className="font-bold mb-2">4. Cathode Sheath와 Anode Sheath</h5>
+                    <p>이처럼 전위차가 발생하면 상대적으로 음전위를 띤 chamber 벽면으로 전자는 이동하지 못하고, 양이온만 Sheath potential에 의해 강하게 chamber 벽면(전극)에 충돌하는 현상이 나타납니다. 이를 <strong>정상상태</strong>라고 하며, <strong>Cathode Sheath</strong>뿐만 아니라 <strong>Anode 역시 Sheath 영역이 생성</strong>됩니다.</p>
+                  </div>
+
+                  <div className="bg-green-100 p-3 rounded border-l-4 border-green-400">
+                    <h5 className="font-bold mb-2">5. 중성입자와 라디칼의 거동</h5>
+                    <p>이때 중성입자/라디칼들은 전기적으로 전하를 띠지 않기 때문에 확산에 의해 wafer 표면에서 자유롭게 흡착/화학반응을 일으킵니다.</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-amber-200 rounded-lg">
+                  <h5 className="font-bold text-amber-900 mb-2">🔬 Without vs With Plasma 핵심 차이</h5>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm text-amber-900">
+                    <div>
+                      <strong>Without Plasma:</strong><br/>
+                      • 균등한 전기장 분포<br/>
+                      • 선형적인 Potential 변화<br/>
+                      • Space Charge 없음
+                    </div>
+                    <div>
+                      <strong>With Plasma:</strong><br/>
+                      • Sheath Voltage = Vp - Vf<br/>
+                      • 양쪽 전극에 Sheath 영역 형성<br/>
+                      • 중성입자는 자유로운 표면 반응
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-semibold text-green-800 mb-4">Sheath 영역 특성</h3>
+
+              <div className="space-y-4">
+                <div className="bg-gray-100 p-4 rounded-lg">
+                  <h4 className="font-bold text-gray-800 mb-2">Sheath가 어두운 이유</h4>
+                  <p className="text-sm text-gray-700">
+                    전자 밀도가 매우 낮아 전자-중성입자 충돌에 의한 Excitation이 거의 일어나지 않음
+                  </p>
+                </div>
+
+                <div className="bg-yellow-100 p-4 rounded-lg">
+                  <h4 className="font-bold text-yellow-800 mb-2">Plasma가 밝은 이유</h4>
+                  <p className="text-sm text-yellow-700">
+                    충분한 전자 밀도로 인해 전자의 충돌로 Excitation이 활발히 일어나 빛을 방출
+                  </p>
+                </div>
+
+                <div className="bg-green-100 p-4 rounded-lg">
+                  <h4 className="font-bold text-green-800 mb-2">Mobility 차이</h4>
+                  <p className="text-sm text-green-700">
+                    자유전자 >> 양이온의 질량 차이로 인한 이동성 차이가 Sheath 형성의 근본 원인
+                  </p>
+                </div>
+
+                <div className="bg-red-100 p-4 rounded-lg">
+                  <h4 className="font-bold text-red-800 mb-2">2차 전자 방출</h4>
+                  <p className="text-sm text-red-700">
+                    양이온이 Cathode에 충돌 → 2차전자 방출 → 이온화 → 플라즈마 유지
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div className="text-sm text-yellow-800">
+                <strong>🔬 핵심 원리:</strong> DC 플라즈마에서는 전자와 양이온의 질량 차이로 인한 이동성(Mobility) 차이가 핵심입니다.
+                빠른 전자는 즉시 양극으로 이동하고, 느린 양이온은 음극 근처에 축적되어 Space Charge를 형성합니다.
+                이로 인해 Cathode 부근에서 급격한 Potential Drop이 발생하고, 이 영역을 Sheath라고 합니다.
+                Sheath Voltage로 가속된 양이온이 Cathode에 충돌하여 2차 전자를 방출하며 플라즈마가 유지됩니다.
+              </div>
+            </div>
+
+            <div className="bg-indigo-50 p-5 rounded-xl border-2 border-indigo-200 mt-6">
+              <h4 className="text-lg font-bold text-indigo-900 mb-4">🤔 생각해보기: 절연체 전극의 경우</h4>
+
+              <div className="bg-white p-4 rounded-lg border border-indigo-200 mb-4">
+                <h5 className="font-bold text-indigo-800 mb-3">문제 상황</h5>
+                <p className="text-sm text-indigo-700 mb-3">
+                  지금까지 우리는 전극이 <strong>도체(conductor)</strong>라고 가정하고 DC 플라즈마를 학습했습니다.
+                  그렇다면 만약 전극이 <strong>절연체(insulator)</strong>라면 어떤 일이 일어날까요?
+                </p>
+                <div className="text-sm text-indigo-600 bg-indigo-100 p-3 rounded">
+                  <strong>💭 질문:</strong> 절연체 표면에 DC 전압을 인가했을 때 플라즈마가 지속적으로 유지될 수 있을까요?
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <h5 className="font-bold text-red-800 mb-3">힌트 1: 전하 축적</h5>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    <li>• 절연체 표면에 전하가 계속 쌓인다면?</li>
+                    <li>• 양이온이 충돌해도 전하가 빠져나갈 수 없다면?</li>
+                    <li>• 표면 전위가 계속 변한다면?</li>
+                  </ul>
+                </div>
+
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <h5 className="font-bold text-orange-800 mb-3">힌트 2: 전류 연속성</h5>
+                  <ul className="text-sm text-orange-700 space-y-1">
+                    <li>• DC 회로에서 전류가 흘러야 한다면?</li>
+                    <li>• 절연체를 통과하는 전류는?</li>
+                    <li>• 플라즈마 유지를 위한 조건은?</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200 mt-4">
+                <h5 className="font-bold text-green-800 mb-3">힌트 3: 실제 반도체 공정</h5>
+                <p className="text-sm text-green-700">
+                  반도체 웨이퍼는 대부분 실리콘 기판 위에 <strong>절연막(SiO₂, Si₃N₄ 등)</strong>이 있습니다.
+                  그렇다면 이런 절연막 위에서는 어떤 방식의 플라즈마를 사용해야 할까요?
+                </p>
+                <div className="text-sm text-green-600 bg-green-100 p-3 rounded mt-2">
+                  <strong>💡 연결고리:</strong> 이 질문의 답은 다음 탭인 "RF 플라즈마 원리"와 밀접한 관련이 있습니다!
+                </div>
+              </div>
+
+              <div className="text-xs text-indigo-500 mt-4 p-3 bg-indigo-100 rounded">
+                <strong>학습 목표:</strong> 이 문제를 통해 DC와 RF 플라즈마의 근본적 차이점과 각각의 적용 분야를 이해할 수 있습니다.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 탭 2: RF 플라즈마 기본 원리 */}
+        {activeTheme === 'tab2' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border">
+              <h2 className="text-2xl font-bold text-indigo-900 mb-4">⚗️ RF 플라즈마 기본 원리</h2>
+              <p className="text-indigo-700 mb-3">RF 플라즈마는 13.56MHz 고주파를 이용하여 양극과 음극이 계속 바뀌면서 플라즈마를 생성합니다.</p>
+              <div className="text-sm text-indigo-600 bg-indigo-100 rounded-lg p-3">
+                <strong>학습 포인트:</strong> RF 주파수에 따른 sheath potential 변화와 이온 충돌 메커니즘
+              </div>
+            </div>
+
+            <RFPlasmaAnimationContainer />
+
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-semibold text-indigo-800 mb-4">RF 플라즈마 핵심 특징</h3>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+                  <div>
+                    <strong>주파수 특성:</strong><br/>
+                    • 13.56MHz = 1초에 1,356만번 극성 변화<br/>
+                    • 양극과 음극이 빠르게 교대<br/>
+                    • 높은 이온화 효율
+                  </div>
+                  <div>
+                    <strong>공정 장점:</strong><br/>
+                    • 전자-중성입자 충돌 기회 증가<br/>
+                    • DC 플라즈마보다 높은 효율<br/>
+                    • 절연막 공정 가능
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-semibold text-indigo-800 mb-4">DC vs RF 플라즈마 비교</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-gray-800 mb-3">DC 플라즈마</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• 고정된 양극/음극</li>
+                    <li>• 한쪽 전극에만 이온 충돌</li>
+                    <li>• 2차 전자 방출에 의존</li>
+                    <li>• 상대적으로 낮은 효율</li>
+                    <li>• 절연막 공정 불가</li>
+                  </ul>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-blue-800 mb-3">RF 플라즈마</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• 교대로 바뀌는 극성 (13.56MHz)</li>
+                    <li>• 양쪽 전극에 이온 충돌</li>
+                    <li>• 높은 이온화 효율</li>
+                    <li>• 전자-중성입자 충돌 기회 증가</li>
+                    <li>• 절연막 공정 가능</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div className="text-sm text-yellow-800">
+                <strong>🔬 핵심 원리:</strong> RF 플라즈마에서는 13.56MHz 주파수로 전극의 극성이 빠르게 바뀝니다.
+                이로 인해 sheath potential도 함께 변하며, 양쪽 전극에서 교대로 이온이 강하게 충돌하게 됩니다.
+                이는 DC 플라즈마와 달리 양쪽에서 균등한 처리가 가능하고, 절연막 위에서도 플라즈마를 유지할 수 있게 합니다.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 탭 3: 주파수 효과 */}
+        {activeTheme === 'tab3' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-6 border">
+              <h2 className="text-2xl font-bold text-teal-900 mb-4">📡 주파수 효과 (Frequency Effects)</h2>
+              <p className="text-teal-700 mb-3">RF 주파수와 파워, 전극 비율이 플라즈마 특성과 Self-bias에 미치는 영향을 시뮬레이션합니다.</p>
+              <div className="text-sm text-teal-600 bg-teal-100 rounded-lg p-3">
+                <strong>학습 포인트:</strong> 주파수 변화에 따른 플라즈마 균일도, Self-bias, 이온 에너지 제어
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-teal-800 mb-4">주파수 및 파워 제어</h3>
+
+                <div className="space-y-6">
+                  <div className="bg-teal-50 p-4 rounded-lg border-2 border-teal-200">
+                    <label className="block text-sm font-medium text-teal-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>RF 주파수 (MHz)</span>
+                        <span className="bg-teal-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {frequency} MHz
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="100"
+                      step="0.1"
+                      value={frequency}
+                      onChange={(e) => setFrequency(parseFloat(e.target.value))}
+                      className="w-full h-4 bg-teal-300 rounded-lg appearance-none cursor-pointer slider-thumb-teal"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                    <label className="block text-sm font-medium text-blue-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>RF 파워 (W)</span>
+                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {power} W
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="1000"
+                      step="10"
+                      value={power}
+                      onChange={(e) => setPower(parseInt(e.target.value))}
+                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
+                    />
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                    <label className="block text-sm font-medium text-orange-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>전극 면적비 (대:소)</span>
+                        <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {electrodeRatio}:1
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="0.1"
+                      value={electrodeRatio}
+                      onChange={(e) => setElectrodeRatio(parseFloat(e.target.value))}
+                      className="w-full h-4 bg-orange-300 rounded-lg appearance-none cursor-pointer slider-thumb-orange"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-teal-800 mb-4">주파수 응답 특성</h3>
+
+                <div className="space-y-4">
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <h4 className="font-bold mb-2">플라즈마 주파수</h4>
+                    <div className="flex justify-between items-center">
+                      <span>ωpe =</span>
+                      <span className="font-bold text-lg">{plasmaFrequency.toFixed(1)} MHz</span>
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {frequency > plasmaFrequency ? '고주파 영역 (투과 모드)' : '저주파 영역 (차단 모드)'}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <h4 className="font-bold mb-2">Self-bias 효과</h4>
+                    <div className="flex justify-between items-center">
+                      <span>DC Self-bias:</span>
+                      <span className="font-bold text-lg text-red-600">{selfBiasCalc.toFixed(0)} V</span>
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      전극 비율: {electrodeRatio}:1
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>이온 에너지:</span>
+                      <span className="font-bold">{(Math.abs(selfBiasCalc) + 20).toFixed(0)} eV</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>스킨 깊이:</span>
+                      <span className="font-bold">{(1000/Math.sqrt(frequency)).toFixed(1)} cm</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>플라즈마 밀도:</span>
+                      <span className="font-bold">{(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 탭 4: 드바이렝스 */}
+        {activeTheme === 'tab4' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
+              <h2 className="text-2xl font-bold text-red-900 mb-4">📏 드바이렝스 (Debye Length)</h2>
+              <p className="text-red-700 mb-3">플라즈마의 전기적 차폐 특성과 미세 패턴 공정에서의 중요성을 학습합니다.</p>
+              <div className="text-sm text-red-600 bg-red-100 rounded-lg p-3">
+                <strong>학습 포인트:</strong> 드바이렝스와 패턴 크기의 관계, 준중성 조건의 한계
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-red-800 mb-4">플라즈마 파라미터</h3>
+
+                <div className="space-y-6">
+                  <div className="bg-red-50 p-4 rounded-lg border-2 border-red-200">
+                    <label className="block text-sm font-medium text-red-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>전자 밀도 (cm⁻³)</span>
+                        <span className="bg-red-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {electronDensity.toExponential(1)}
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1e10"
+                      max="1e12"
+                      step="1e10"
+                      value={electronDensity}
+                      onChange={(e) => setElectronDensity(parseFloat(e.target.value))}
+                      className="w-full h-4 bg-red-300 rounded-lg appearance-none cursor-pointer slider-thumb-red"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                    <label className="block text-sm font-medium text-blue-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>전자 온도 (eV)</span>
+                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {electronTemperature} eV
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="0.5"
+                      value={electronTemperature}
+                      onChange={(e) => setElectronTemperature(parseFloat(e.target.value))}
+                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
+                    />
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <label className="block text-sm font-medium text-green-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>패턴 크기 (nm)</span>
+                        <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {patternSize} nm
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="1000"
+                      step="10"
+                      value={patternSize}
+                      onChange={(e) => setPatternSize(parseInt(e.target.value))}
+                      className="w-full h-4 bg-green-300 rounded-lg appearance-none cursor-pointer slider-thumb-green"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-red-800 mb-4">드바이렝스 계산</h3>
+
+                <div className="space-y-4">
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="text-center mb-3">
+                      <div className="text-2xl font-bold">λD = {debyeLength.toFixed(2)} mm</div>
+                      <div className="text-sm text-gray-600">드바이렝스</div>
+                    </div>
+                    <div className="text-xs text-center text-gray-500">
+                      λD = sqrt(ε₀kTₑ/nₑe²)
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <h4 className="font-bold mb-2">준중성 조건</h4>
+                    <div className="flex justify-between items-center">
+                      <span>L / λD =</span>
+                      <span className="font-bold text-lg">
+                        {(patternSize * 1e-6 / debyeLength).toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="text-xs mt-2">
+                      {patternSize * 1e-6 > debyeLength * 10 ?
+                        <span className="text-green-600">✓ 준중성 조건 만족 (L 훨씬 큰 λD)</span> :
+                        patternSize * 1e-6 > debyeLength ?
+                        <span className="text-yellow-600">⚠ 경계 영역 (L ≈ λD)</span> :
+                        <span className="text-red-600">✗ 준중성 조건 불만족 (L 작은 λD)</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>차폐 시간:</span>
+                      <span className="font-bold">{(1/Math.sqrt(electronDensity/1e11)).toFixed(2)} ns</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>플라즈마 빈도:</span>
+                      <span className="font-bold">{Math.sqrt(electronDensity/1e10).toFixed(1)} MHz</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 탭 5: 전자 온도 */}
+        {activeTheme === 'tab5' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 border">
+              <h2 className="text-2xl font-bold text-orange-900 mb-4">🌡️ 전자 온도 (Electron Temperature)</h2>
+              <p className="text-orange-700 mb-3">전자의 평균 운동 에너지와 이온화율, 플라즈마 반응성의 관계를 학습합니다.</p>
+              <div className="text-sm text-orange-600 bg-orange-100 rounded-lg p-3">
+                <strong>학습 포인트:</strong> 전자 온도가 이온화율과 활성종 생성에 미치는 영향
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">전자 온도 제어</h3>
+
+                <div className="space-y-6">
+                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                    <label className="block text-sm font-medium text-orange-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>전자 온도 (eV)</span>
+                        <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {electronTemp} eV
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="15"
+                      step="0.5"
+                      value={electronTemp}
+                      onChange={(e) => setElectronTemp(parseFloat(e.target.value))}
+                      className="w-full h-4 bg-orange-300 rounded-lg appearance-none cursor-pointer slider-thumb-orange"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                    <label className="block text-sm font-medium text-blue-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>가스 압력 (mTorr)</span>
+                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {gasPressure} mTorr
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="200"
+                      step="5"
+                      value={gasPressure}
+                      onChange={(e) => setGasPressure(parseInt(e.target.value))}
+                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
+                    />
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <label className="block text-sm font-medium text-green-900 mb-3">
+                      <span className="flex items-center justify-between">
+                        <span>RF 파워 (W)</span>
+                        <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {rfPower} W
+                        </span>
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="500"
+                      step="10"
+                      value={rfPower}
+                      onChange={(e) => setRfPower(parseInt(e.target.value))}
+                      className="w-full h-4 bg-green-300 rounded-lg appearance-none cursor-pointer slider-thumb-green"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">이온화율 및 반응성</h3>
+
+                <div className="space-y-4">
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium">이온화율</span>
+                      <span className="font-bold text-lg">{ionizationRate.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-300 rounded-full h-4">
+                      <div
+                        className="bg-gradient-to-r from-orange-400 to-red-500 h-4 rounded-full transition-all duration-300"
+                        style={{ width: `${ionizationRate}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="text-center">
+                      <div className="text-6xl mb-2">
+                        {electronTemp > 8 ? '🔥' : electronTemp > 5 ? '⚡' : electronTemp > 3 ? '💫' : '❄️'}
+                      </div>
+                      <div className="font-bold text-lg">
+                        {electronTemp > 8 ? '고온 플라즈마' :
+                         electronTemp > 5 ? '중온 플라즈마' :
+                         electronTemp > 3 ? '저온 플라즈마' : '초저온 플라즈마'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>활성종 밀도:</span>
+                      <span className="font-bold">{(electronTemp * rfPower / 100).toFixed(1)} × 10¹⁵ cm⁻³</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>식각율:</span>
+                      <span className="font-bold">{(ionizationRate * 2).toFixed(0)} nm/min</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>전자-충돌 빈도:</span>
+                      <span className="font-bold">{(electronTemp * gasPressure / 10).toFixed(1)} × 10⁶ s⁻¹</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default PlasmaSimulator;
