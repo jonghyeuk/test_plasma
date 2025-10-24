@@ -715,7 +715,7 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
 
         {/* 오른쪽: RF 전압 0V 상태 (정적 스틸샷) */}
         <div>
-          <h5 className="text-sm font-semibold text-indigo-700 mb-2">RF 전압 0V 상태 (중성 상태)</h5>
+          <h5 className="text-sm font-semibold text-indigo-700 mb-2">Average Plasma Potential</h5>
           <svg width="300" height="200" className="border rounded bg-gray-50">
             {/* 0V 기준선 (Ground 전극 높이) */}
             <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
@@ -773,8 +773,17 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
             양쪽 전극 모두 동일한 최소 두께의 Sheath를 가지게 됩니다.
           </p>
           <p>
-            <strong>이온 충돌 없음:</strong> 이 순간에는 전기장이 약하여 이온이 전극에 충돌하지 않습니다.
-            RF 사이클 동안 ±V가 반복되면서 양쪽 전극에 교대로 이온이 충돌하게 됩니다.
+            <strong>양쪽 전극 교대 충돌:</strong> RF 사이클 동안 ±V가 반복되면서 양이온이 양쪽 전극에 교대로 충돌하게 됩니다.
+            0V일 때는 전기장이 약하여 충돌이 없지만, +V와 -V 상태에서는 각각 다른 전극으로 이온이 가속됩니다.
+          </p>
+          <p>
+            <strong className="text-red-700">문제점:</strong> RF 플라즈마는 한 전극에만 양이온이 충돌하는 것이 아니라 두 전극에 왔다갔다 하면서 충돌하기 때문에,
+            특정 전극(예: 웨이퍼가 있는 전극)에만 선택적으로 높은 에너지 이온을 충돌시키는 효과를 얻을 수 없습니다.
+          </p>
+          <p>
+            <strong className="text-green-700">해결책 - RF Self-bias:</strong> 이러한 문제를 해결하기 위해 전극 면적비를 조절하여 DC Self-bias를 형성합니다.
+            면적이 작은 전극 쪽에 더 높은 전압이 걸리게 되어, 해당 전극에 더 강한 이온 충돌을 유도할 수 있습니다.
+            이를 통해 선택적 식각 및 증착 공정이 가능해집니다.
           </p>
         </div>
       </div>
