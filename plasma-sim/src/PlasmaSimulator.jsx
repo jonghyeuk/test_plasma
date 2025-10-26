@@ -843,9 +843,12 @@ const RFPlasmaSimulation = ({
     const rfCenter = height * 0.25;
     const rfScale = height * 0.15 / rfAmplitude;
 
+    // 주파수가 높아지면 파형이 더 빠르게 진동 (주기 단축)
+    const frequencyScale = rfFrequency / 0.3; // 0.3을 기준 주파수로 사용
+
     for (let i = 0; i < width; i++) {
       const x = i;
-      const t = (i / width) * 6 * Math.PI + time * 0.5;
+      const t = (i / width) * 6 * Math.PI * frequencyScale + time * 0.5 * frequencyScale;
       const y = rfCenter - rfAmplitude * Math.sin(t) * rfScale;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
