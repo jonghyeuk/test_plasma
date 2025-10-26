@@ -797,8 +797,16 @@ const RFPlasmaSimulation = () => {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+
+    // High DPI support for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const width = rect.width;
+    const height = rect.height;
 
     ctx.clearRect(0, 0, width, height);
 
@@ -880,8 +888,16 @@ const RFPlasmaSimulation = () => {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+
+    // High DPI support for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const width = rect.width;
+    const height = rect.height;
 
     ctx.clearRect(0, 0, width, height);
 
@@ -996,9 +1012,8 @@ const RFPlasmaSimulation = () => {
           <h3 className="text-sm font-semibold mb-2 text-center">전압 파형</h3>
           <canvas
             ref={waveformCanvasRef}
-            width="200"
-            height="150"
             className="border border-gray-300 w-full"
+            style={{ width: '100%', height: '150px' }}
           />
           <div className="mt-1 text-xs text-gray-600">
             <p>RF: {rfVoltage.toFixed(0)}V</p>
@@ -1009,8 +1024,8 @@ const RFPlasmaSimulation = () => {
         {/* Figure 2: Particle Motion */}
         <div className="bg-gray-50 p-3 rounded-lg shadow">
           <h3 className="text-sm font-semibold mb-2 text-center">입자 거동</h3>
-          <div className="relative">
-            <svg width="200" height="220" className="border border-gray-300 w-full">
+          <div className="relative flex justify-center">
+            <svg viewBox="0 0 220 220" className="border border-gray-300" style={{ width: '100%', maxWidth: '220px', height: 'auto' }}>
               <defs>
                 <marker id="arrowhead-selfbias" markerWidth="6" markerHeight="4"
                         refX="6" refY="2" orient="auto" fill="#666">
@@ -1140,9 +1155,8 @@ const RFPlasmaSimulation = () => {
           <h3 className="text-sm font-semibold mb-2 text-center">RF Bias 전위</h3>
           <canvas
             ref={biasCanvasRef}
-            width="200"
-            height="150"
             className="border border-gray-300 w-full"
+            style={{ width: '100%', height: '150px' }}
           />
           <div className="mt-1 text-xs text-gray-600">
             <p>면적비: {electrodeAreaRatio.toFixed(2)}</p>
@@ -1197,11 +1211,17 @@ const RFPlasmaSimulation = () => {
           </div>
         </div>
 
-        <div className="mt-3 p-3 bg-indigo-50 rounded text-xs text-indigo-700">
-          <strong>원리:</strong> 전자는 가벼워서 RF 변화에 즉시 반응하여 양쪽 전극을 빠르게 왔다갔다함.
-          이온은 무거워서 RF를 따라가지 못하고 상대적으로 안정적으로 움직임.
-          전극이 작아질수록 전자가 충돌할 확률이 줄어들어 전극 근처에 축적되고,
-          Blocking Capacitor에 의해 이 음전하가 DC로 유지되어 지속적인 Self-bias 형성.
+        <div className="mt-3 p-3 bg-indigo-50 rounded text-xs text-indigo-700 space-y-2">
+          <div>
+            <strong>기본 원리:</strong> 전자는 가벼워서 RF 변화에 즉시 반응하여 양쪽 전극을 빠르게 왔다갔다함.
+            이온은 무거워서 RF를 따라가지 못하고 상대적으로 안정적으로 움직임.
+          </div>
+          <div>
+            <strong>전극 면적과 Self-bias 관계:</strong> 전극 면적이 작아질수록 <span className="font-bold text-indigo-900">Self-bias가 커집니다.</span>
+            작은 전극은 전자가 충돌할 확률이 줄어들어 전극 근처에 전자가 축적되고,
+            Blocking Capacitor에 의해 이 음전하가 DC로 유지되어 더 큰 음(-)의 Self-bias가 형성됩니다.
+            면적비가 1:10일 때, 작은 전극에는 약 -60V 이상의 Self-bias가 발생하여 이온 충돌 에너지를 크게 증가시킵니다.
+          </div>
         </div>
       </div>
     </div>
