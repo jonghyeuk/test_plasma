@@ -2012,162 +2012,13 @@ const PlasmaSimulator = () => {
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-teal-900 mb-4">📡 주파수 효과 (Frequency Effects)</h2>
-              <p className="text-teal-700 mb-3">RF 주파수와 파워, 전극 비율이 플라즈마 특성과 Self-bias에 미치는 영향을 시뮬레이션합니다.</p>
+              <p className="text-teal-700 mb-3">RF 주파수와 파워, 전극 비율이 플라즈마 특성과 Self-bias에 미치는 영향을 실시간으로 확인하세요.</p>
               <div className="text-sm text-teal-600 bg-teal-100 rounded-lg p-3">
-                <strong>학습 포인트:</strong> 주파수 변화에 따른 플라즈마 균일도, Self-bias, 이온 에너지 제어
+                <strong>💡 아래 슬라이더로 제어하면서 시뮬레이션을 동시에 관찰하세요!</strong>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-teal-800 mb-4">주파수 및 파워 제어</h3>
-
-                <div className="space-y-6">
-                  <div className="bg-teal-50 p-4 rounded-lg border-2 border-teal-200">
-                    <label className="block text-sm font-medium text-teal-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>RF 주파수 (MHz)</span>
-                        <span className="bg-teal-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {frequency} MHz
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="100"
-                      step="0.1"
-                      value={frequency}
-                      onChange={(e) => setFrequency(parseFloat(e.target.value))}
-                      className="w-full h-4 bg-teal-300 rounded-lg appearance-none cursor-pointer slider-thumb-teal"
-                    />
-                  </div>
-
-                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                    <label className="block text-sm font-medium text-blue-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>RF 파워 (W)</span>
-                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {power} W
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="50"
-                      max="1000"
-                      step="10"
-                      value={power}
-                      onChange={(e) => setPower(parseInt(e.target.value))}
-                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
-                    />
-                  </div>
-
-                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                    <label className="block text-sm font-medium text-orange-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>전극 면적비 (대:소)</span>
-                        <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {electrodeRatio}:1
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.1"
-                      value={electrodeRatio}
-                      onChange={(e) => setElectrodeRatio(parseFloat(e.target.value))}
-                      className="w-full h-4 bg-orange-300 rounded-lg appearance-none cursor-pointer slider-thumb-orange"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-teal-800 mb-4">주파수 응답 특성</h3>
-
-                <div className="space-y-4">
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <h4 className="font-bold mb-2">플라즈마 주파수</h4>
-                    <div className="flex justify-between items-center">
-                      <span>ωpe =</span>
-                      <span className="font-bold text-lg">{plasmaFrequency.toFixed(1)} MHz</span>
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {frequency > plasmaFrequency ? '고주파 영역 (투과 모드)' : '저주파 영역 (차단 모드)'}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <h4 className="font-bold mb-2">Self-bias 효과</h4>
-                    <div className="flex justify-between items-center">
-                      <span>DC Self-bias:</span>
-                      <span className="font-bold text-lg text-red-600">{selfBiasCalc.toFixed(0)} V</span>
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      전극 비율: {electrodeRatio}:1
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>이온 에너지:</span>
-                      <span className="font-bold">{(Math.abs(selfBiasCalc) + 20).toFixed(0)} eV</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>스킨 깊이:</span>
-                      <span className="font-bold">{(1000/Math.sqrt(frequency)).toFixed(1)} cm</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>플라즈마 밀도:</span>
-                      <span className="font-bold">{(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 실시간 시뮬레이션 - 3개 파라미터 연동 */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border">
-              <h3 className="text-2xl font-bold text-purple-900 mb-3">🔬 실시간 플라즈마 시뮬레이션</h3>
-              <p className="text-purple-700 mb-4">
-                위의 3가지 파라미터(주파수, 파워, 전극 면적비)를 조절하면 아래 시뮬레이션이 실시간으로 반응합니다.
-              </p>
-
-              <div className="bg-white rounded-lg p-4 mb-4">
-                <h4 className="font-bold text-gray-800 mb-2">📊 파라미터 영향 설명</h4>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <div className="flex gap-2">
-                    <span className="font-bold text-teal-700 min-w-[120px]">RF 주파수:</span>
-                    <span>주파수가 높을수록 RF 파형이 빠르게 진동하며, 전자의 왕복 운동이 활발해집니다.
-                    플라즈마 밀도와 균일도에 직접적인 영향을 줍니다.</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="font-bold text-blue-700 min-w-[120px]">RF 파워:</span>
-                    <span>파워가 증가하면 RF 전압 진폭이 커져서 더 강한 전기장이 형성됩니다.
-                    이온 에너지와 플라즈마 밀도가 증가하며, 식각 속도가 향상됩니다.</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="font-bold text-orange-700 min-w-[120px]">전극 면적비:</span>
-                    <span>면적비가 클수록(작은 전극) Self-bias가 커집니다.
-                    작은 전극에 전자가 축적되어 큰 음의 DC 전압이 발생하고, 이온 충돌 에너지가 증가합니다.</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 rounded-lg p-3 mb-4 text-sm">
-                <strong className="text-yellow-900">💡 사용 방법:</strong>
-                <ul className="mt-2 space-y-1 text-yellow-800 ml-4">
-                  <li>• 위의 슬라이더를 조절하면 아래 시뮬레이션의 전압 파형, 입자 거동, RF Bias가 실시간으로 변합니다</li>
-                  <li>• <strong>주파수 ↑</strong> → 파형 진동 빠름, 전자 이동 활발</li>
-                  <li>• <strong>파워 ↑</strong> → RF 전압 진폭 증가, 이온 에너지 상승</li>
-                  <li>• <strong>면적비 ↑</strong> → Self-bias 증가, 전자 축적(빨간점) 증가</li>
-                </ul>
-              </div>
-            </div>
-
+            {/* 실시간 시뮬레이션 - 제목 바로 다음에 배치 */}
             <RFPlasmaSimulation
               externalFrequency={frequency}
               externalPower={power}
@@ -2175,6 +2026,112 @@ const PlasmaSimulator = () => {
               showControls={false}
               showTitle={false}
             />
+
+            {/* 간단한 3개 제어 슬라이더 */}
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border">
+              <h3 className="text-xl font-bold text-purple-900 mb-4">🎛️ 파라미터 제어</h3>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* 주파수 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-teal-200">
+                  <label className="block text-sm font-medium text-teal-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>RF 주파수 (MHz)</span>
+                      <span className="bg-teal-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {frequency} MHz
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value={frequency}
+                    onChange={(e) => setFrequency(parseFloat(e.target.value))}
+                    className="w-full h-3 bg-teal-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-teal-700 mt-2">파형 진동 속도 조절</p>
+                </div>
+
+                {/* 파워 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
+                  <label className="block text-sm font-medium text-blue-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>RF 파워 (W)</span>
+                      <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {power} W
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="1000"
+                    step="10"
+                    value={power}
+                    onChange={(e) => setPower(parseInt(e.target.value))}
+                    className="w-full h-3 bg-blue-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-blue-700 mt-2">RF 전압 진폭 조절</p>
+                </div>
+
+                {/* 면적비 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-orange-200">
+                  <label className="block text-sm font-medium text-orange-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>전극 면적비 (대:소)</span>
+                      <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {electrodeRatio}:1
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="0.1"
+                    value={electrodeRatio}
+                    onChange={(e) => setElectrodeRatio(parseFloat(e.target.value))}
+                    className="w-full h-3 bg-orange-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-orange-700 mt-2">Self-bias 크기 조절</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 파라미터 영향 설명 */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">📊 파라미터 영향 설명</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-teal-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-teal-900 mb-2">RF 주파수</h4>
+                  <p className="text-sm text-teal-800">주파수 ↑ → 파형 진동 빠름, 전자 왕복 운동 활발, 플라즈마 밀도 증가</p>
+                  <div className="mt-3 pt-3 border-t border-teal-200 text-xs text-teal-700">
+                    <div>• 플라즈마 밀도: {(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</div>
+                    <div>• 스킨 깊이: {(1000/Math.sqrt(frequency)).toFixed(1)} cm</div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-blue-900 mb-2">RF 파워</h4>
+                  <p className="text-sm text-blue-800">파워 ↑ → RF 전압 진폭 증가, 전기장 강화, 이온 에너지 상승, 식각 속도 향상</p>
+                  <div className="mt-3 pt-3 border-t border-blue-200 text-xs text-blue-700">
+                    <div>• 이온 에너지: {(Math.abs(selfBiasCalc) + 20).toFixed(0)} eV</div>
+                    <div>• RF 진폭: ±{(Math.sqrt(power / 10) * 5).toFixed(0)} V</div>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-orange-900 mb-2">전극 면적비</h4>
+                  <p className="text-sm text-orange-800">면적비 ↑ → 작은 전극에 전자 축적, Self-bias 증가, 이온 충돌 에너지 증가</p>
+                  <div className="mt-3 pt-3 border-t border-orange-200 text-xs text-orange-700">
+                    <div>• Self-bias: {selfBiasCalc.toFixed(0)} V</div>
+                    <div>• 전극 비율: {electrodeRatio}:1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
