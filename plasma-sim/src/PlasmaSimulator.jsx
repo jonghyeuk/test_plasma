@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // DC 플라즈마 1단계 애니메이션 컴포넌트
 const DCPlasmaStep1Animation = () => {
@@ -483,6 +483,725 @@ const RFPlasmaAnimationContainer = () => {
               → 이온이 오른쪽으로 강하게 가속
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// RF Self-bias 시뮬레이션 컴포넌트
+const RFPlasmaSimulation = () => {
+  const [isRunning, setIsRunning] = useState(false);
+  const [electrodeAreaRatio, setElectrodeAreaRatio] = useState(0.5);
+  const [time, setTime] = useState(0);
+  const [selfBiasVoltage, setSelfBiasVoltage] = useState(0);
+  const [rfVoltage, setRfVoltage] = useState(0);
+  const [electrons, setElectrons] = useState([]);
+  const [ions, setIons] = useState([]);
+  const intervalRef = useRef(null);
+  const waveformCanvasRef = useRef(null);
+  const biasCanvasRef = useRef(null);
+
+  // RF parameters
+  const rfFrequency = 0.3;
+  const rfAmplitude = 50;
+
+  // Calculate electrode sizes based on area ratio
+  const getElectrodeConfig = () => {
+    const baseHeight = 80;
+    const leftHeight = baseHeight * electrodeAreaRatio;
+    const rightHeight = baseHeight;
+
+    return {
+      left: {
+        width: 8,
+        height: leftHeight,
+        x: 80,
+        y: 110 - leftHeight/2,
+        area: leftHeight * 8
+      },
+      right: {
+        width: 8,
+        height: rightHeight,
+        x: 170,
+        y: 110 - rightHeight/2,
+        area: rightHeight * 8
+      }
+    };
+  };
+
+  // Generate particles
+  const generateParticles = () => {
+    const newElectrons = [];
+    const newIons = [];
+    const electrodes = getElectrodeConfig();
+
+    // 전극 사이즈에 따른 축적 전자 개수 결정 (전체 전자는 항상 많지만 축적 비율만 변경)
+    const accumulationFactor = electrodeAreaRatio < 1.0 ? (1.0 - electrodeAreaRatio) * 1.8 : 0;
+    const accumulatedCount = Math.floor(accumulationFactor * 15); // 최대 15개까지 축적 가능
+
+    for (let i = 0; i < 25; i++) {
+      if (i < accumulatedCount) {
+        // 축적된 전자 - 좌측 전극 앞에 집중적으로 모임
+        const yCenter = electrodes.left.y + electrodes.left.height / 2;
+        const ySpread = Math.min(electrodes.left.height * 0.8, 20); // 전극 높이의 80% 또는 최대 20
+        newElectrons.push({
+          id: i,
+          x: electrodes.left.x + electrodes.left.width + 1 + Math.random() * 2, // 전극 바로 앞
+          y: yCenter + (Math.random() - 0.5) * ySpread, // 전극 중심 주위에 집중
+          vx: 0,
+          vy: (Math.random() - 0.5) * 0.05,
+          accumulated: true
+        });
+      } else {
+        // 일반 전자 - 전극 사이 공간에 자연스러운 분포 (전극 크기와 무관하게 충분한 개수)
+        newElectrons.push({
+          id: i,
+          x: electrodes.left.x + electrodes.left.width + 5 + Math.random() * (electrodes.right.x - electrodes.left.x - electrodes.left.width - 10), // 전극 사이 영역
+          y: 50 + Math.random() * 120, // 전극 높이 범위
+          vx: (Math.random() - 0.5) * 0.5, // 초기 속도 범위 증가
+          vy: (Math.random() - 0.5) * 0.3, // 초기 속도 범위 증가
+          accumulated: false
+        });
+      }
+    }
+
+    for (let i = 0; i < 15; i++) {
+      newIons.push({
+        id: i,
+        x: electrodes.left.x + electrodes.left.width + 10 + Math.random() * (electrodes.right.x - electrodes.left.x - electrodes.left.width - 20), // 전극 사이 중앙 영역
+        y: 70 + Math.random() * 80,  // 자연스러운 높이 분포
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.1
+      });
+    }
+
+    setElectrons(newElectrons);
+    setIons(newIons);
+  };
+
+  // Calculate self-bias
+  const calculateSelfBias = (areaRatio) => {
+    const baseBias = -15;
+    const areaEffect = (1 - areaRatio) * 60;
+    return baseBias - areaEffect;
+  };
+
+  // Update simulation
+  const updateSimulation = () => {
+    const electrodes = getElectrodeConfig();
+    const currentRfVoltage = rfAmplitude * Math.sin(time * 0.5);
+    setRfVoltage(currentRfVoltage);
+
+    // Update electrons - RF 한 사이클에 양 전극 모두 터치
+    setElectrons(prevElectrons => {
+      return prevElectrons.map(electron => {
+        // 축적된 전자는 고정 위치에 머물음 (전극 범위 내)
+        if (electron.accumulated) {
+          const electrodes = getElectrodeConfig();
+          let newY = electron.y + electron.vy;
+
+          // 전극 높이 범위 내로 제한
+          if (newY < electrodes.left.y) {
+            newY = electrodes.left.y;
+            electron.vy = Math.abs(electron.vy) * 0.5;
+          }
+          if (newY > electrodes.left.y + electrodes.left.height) {
+            newY = electrodes.left.y + electrodes.left.height;
+            electron.vy = -Math.abs(electron.vy) * 0.5;
+          }
+
+          return {
+            ...electron,
+            y: newY,
+            vy: electron.vy * 0.95 // 약간의 수직 움직임만
+          };
+        }
+
+        let newX = electron.x + electron.vx;
+        let newY = electron.y + electron.vy;
+
+        // 매우 강한 RF 필드로 한 사이클에 양 전극 터치 (전극이 작아져도 활발한 움직임)
+        const fieldStrength = 4.0;
+
+        if (currentRfVoltage > 0) {
+          // RF positive: 좌측 전극이 플러스 → 전자는 좌측 전극으로 이동
+          electron.vx = -fieldStrength;
+
+          // 좌측 전극의 작은 면적으로 수렴하면서 이동
+          const leftElectrodeCenter = electrodes.left.y + electrodes.left.height / 2;
+          const leftElectrodeTop = electrodes.left.y;
+          const leftElectrodeBottom = electrodes.left.y + electrodes.left.height;
+
+          // 전극이 작을수록 전극 근처에서 더 오래 머무름 (체류 시간 증가)
+          const residenceEffect = (1.0 - electrodeAreaRatio) * 0.3; // 전극이 작을수록 큰 값
+
+          // 현재 위치에서 좌측 전극 범위로 점진적 수렴
+          if (electron.y < leftElectrodeTop) {
+            electron.vy += 0.2; // 아래로 수렴
+          } else if (electron.y > leftElectrodeBottom) {
+            electron.vy -= 0.2; // 위로 수렴
+          } else {
+            // 이미 전극 범위 내에 있으면 중심으로 약간 수렴
+            if (electron.y > leftElectrodeCenter) {
+              electron.vy -= 0.1;
+            } else {
+              electron.vy += 0.1;
+            }
+          }
+
+          // 전극 근처에서 속도 감소 (체류 효과)
+          if (electron.x < electrodes.left.x + electrodes.left.width + 10) {
+            electron.vx *= (1.0 - residenceEffect);
+          }
+        } else {
+          // RF negative: 좌측 전극이 마이너스 → 전자는 우측 전극으로 이동
+          electron.vx = fieldStrength;
+
+          // 우측 전극(전체 높이)으로 확산하면서 이동
+          const chamberCenter = 110; // 챔버 중심
+          const expansionForce = 0.15;
+
+          // 챔버 전체 높이로 확산
+          if (Math.abs(electron.y - chamberCenter) < 40) {
+            // 중심 근처에 있으면 위아래로 확산
+            if (Math.random() > 0.5) {
+              electron.vy += expansionForce;
+            } else {
+              electron.vy -= expansionForce;
+            }
+          }
+        }
+
+        // 랜덤 노이즈로 자연스러운 움직임 (전극이 작아져도 활발함)
+        electron.vy += (Math.random() - 0.5) * 0.008;
+        electron.vy *= 0.98;
+
+        // 추가 랜덤 움직임
+        electron.vy += (Math.random() - 0.5) * 0.008;
+        electron.vy *= 0.98;
+
+        // 전극 접촉 가능하도록 넓은 범위 (전극 내부 면과 접촉)
+        if (newX < electrodes.left.x + electrodes.left.width) {
+          electron.vx = Math.abs(fieldStrength);
+          newX = electrodes.left.x + electrodes.left.width;
+        }
+        if (newX > electrodes.right.x) {
+          electron.vx = -Math.abs(fieldStrength);
+          newX = electrodes.right.x;
+        }
+
+        // 전극 높이 범위에 따른 자연스러운 상하 경계
+        const chamberTop = 45;
+        const chamberBottom = 175;
+        if (newY < chamberTop || newY > chamberBottom) {
+          electron.vy *= -1.0; // 완전 탄성 반사
+        }
+
+        // 실제 전극 접촉 시 즉시 반대 방향 (전극 안쪽 면과 접촉)
+        if (newX <= electrodes.left.x + electrodes.left.width && electron.vx < 0) {
+          electron.vx = Math.abs(fieldStrength);
+        }
+        if (newX >= electrodes.right.x && electron.vx > 0) {
+          electron.vx = -Math.abs(fieldStrength);
+        }
+
+        return {
+          ...electron,
+          x: Math.max(electrodes.left.x + electrodes.left.width, Math.min(electrodes.right.x, newX)),
+          y: Math.max(chamberTop, Math.min(chamberBottom, newY))
+        };
+      });
+    });
+
+    // Update ions - 전자보다는 느리지만 충분히 큰 진동
+    setIons(prevIons => {
+      return prevIons.map(ion => {
+        const electrodes = getElectrodeConfig();
+        let newX = ion.x + ion.vx;
+        let newY = ion.y + ion.vy;
+
+        // 전자보다 훨씬 느린 RF 필드 (이온은 전극 크기에 덜 민감)
+        const ionFieldStrength = 0.8;
+
+        if (currentRfVoltage > 0) {
+          // RF positive: 좌측 전극이 플러스 → 이온은 우측으로 (천천히)
+          ion.vx += ionFieldStrength * 0.1;
+        } else {
+          // RF negative: 좌측 전극이 마이너스 → 이온은 좌측으로 (천천히)
+          ion.vx -= ionFieldStrength * 0.1;
+        }
+
+        // 이온의 속도 감쇠 (관성 효과)
+        ion.vx *= 0.95;
+        ion.vy *= 0.97;
+
+        // 자연스러운 수직 움직임 (랜덤 노이즈)
+        ion.vy += (Math.random() - 0.5) * 0.005;
+        ion.vy *= 0.98;
+
+        // 전극 사이 공간에서만 움직임 (전극과 접촉 방지)
+        const leftBoundary = electrodes.left.x + electrodes.left.width + 5;
+        const rightBoundary = electrodes.right.x - 5;
+
+        if (newX < leftBoundary) {
+          ion.vx = Math.abs(ionFieldStrength);
+          newX = leftBoundary;
+        }
+        if (newX > rightBoundary) {
+          ion.vx = -Math.abs(ionFieldStrength);
+          newX = rightBoundary;
+        }
+
+        // 전극 높이 범위에 따른 자연스러운 상하 경계
+        const ionChamberTop = 65;
+        const ionChamberBottom = 155;
+        if (newY < ionChamberTop || newY > ionChamberBottom) {
+          ion.vy *= -1.0; // 완전 탄성 반사
+        }
+
+        return {
+          ...ion,
+          x: Math.max(leftBoundary, Math.min(rightBoundary, newX)),
+          y: Math.max(ionChamberTop, Math.min(ionChamberBottom, newY))
+        };
+      });
+    });
+
+    // Self-bias 계산 (축적된 전자 개수 반영)
+    const accumulatedElectrons = electrons.filter(e => e.accumulated).length;
+    const newSelfBias = calculateSelfBias(electrodeAreaRatio) - (accumulatedElectrons * 2);
+    setSelfBiasVoltage(newSelfBias);
+  };
+
+  useEffect(() => {
+    generateParticles();
+  }, [electrodeAreaRatio]);
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTime(prevTime => prevTime + 0.2);
+        updateSimulation();
+      }, 20);
+    } else {
+      clearInterval(intervalRef.current);
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning, time, electrons, ions, electrodeAreaRatio]);
+
+  // Draw waveforms
+  useEffect(() => {
+    const canvas = waveformCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Grid lines
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+      const y = (i / 10) * height;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // RF voltage waveform
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const rfCenter = height * 0.25;
+    const rfScale = height * 0.15 / rfAmplitude;
+
+    for (let i = 0; i < width; i++) {
+      const x = i;
+      const t = (i / width) * 6 * Math.PI + time * 0.5;
+      const y = rfCenter - rfAmplitude * Math.sin(t) * rfScale;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Current time indicator
+    const currentTimePos = ((time * 0.5) % (6 * Math.PI)) / (6 * Math.PI) * width;
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(currentTimePos, rfCenter - 25);
+    ctx.lineTo(currentTimePos, rfCenter + 25);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Self-bias voltage
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const biasCenter = height * 0.75;
+    const biasScale = height * 0.1 / 50;
+    const biasY = biasCenter - selfBiasVoltage * biasScale;
+    ctx.moveTo(0, biasY);
+    ctx.lineTo(width, biasY);
+    ctx.stroke();
+
+    // Zero lines
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(0, rfCenter);
+    ctx.lineTo(width, rfCenter);
+    ctx.moveTo(0, biasCenter);
+    ctx.lineTo(width, biasCenter);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Labels
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('Vp (RF)', 5, 15);
+    ctx.fillText(`${rfVoltage.toFixed(0)}V`, 5, 25);
+
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('VDC', 5, height - 25);
+    ctx.fillText(`${selfBiasVoltage.toFixed(0)}V`, 5, height - 15);
+  }, [time, rfVoltage, selfBiasVoltage, rfAmplitude, rfFrequency]);
+
+  // Draw bias potential
+  useEffect(() => {
+    const canvas = biasCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Grid lines
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+      const y = (i / 10) * height;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    const centerY = height * 0.5;
+
+    // RF + DC potential
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    for (let x = 0; x < width; x++) {
+      const position = x / width;
+      let potential;
+
+      if (position < 0.3) {
+        potential = rfVoltage + selfBiasVoltage * (1 - electrodeAreaRatio);
+      } else if (position > 0.7) {
+        potential = 0;
+      } else {
+        const t = (position - 0.3) / 0.4;
+        const leftPotential = rfVoltage + selfBiasVoltage * (1 - electrodeAreaRatio);
+        potential = leftPotential * (1 - t);
+      }
+
+      const y = centerY - potential * 1.0;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // DC bias component
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+
+    for (let x = 0; x < width; x++) {
+      const position = x / width;
+      let dcPotential;
+
+      if (position < 0.3) {
+        dcPotential = selfBiasVoltage * (1 - electrodeAreaRatio);
+      } else if (position > 0.7) {
+        dcPotential = 0;
+      } else {
+        const t = (position - 0.3) / 0.4;
+        const leftDcPotential = selfBiasVoltage * (1 - electrodeAreaRatio);
+        dcPotential = leftDcPotential * (1 - t);
+      }
+
+      const y = centerY - dcPotential * 1.0;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Electrode indicators
+    ctx.fillStyle = '#6b7280';
+    ctx.fillRect(width * 0.25, 5, 2, 15);
+    ctx.fillRect(width * 0.75, 5, 2, 15);
+
+    // Labels
+    ctx.fillStyle = '#8b5cf6';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('RF+DC', 5, 15);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('DC bias', 5, 25);
+    ctx.fillStyle = '#6b7280';
+    ctx.fillText('V', 5, height - 5);
+
+    // Zero line
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(0, centerY);
+    ctx.lineTo(width, centerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Current values
+    ctx.fillStyle = '#8b5cf6';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(`RF: ${rfVoltage.toFixed(0)}V`, width - 60, 15);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText(`DC: ${selfBiasVoltage.toFixed(0)}V`, width - 60, 25);
+  }, [rfVoltage, selfBiasVoltage, electrodeAreaRatio, time]);
+
+  const electrodes = getElectrodeConfig();
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-6 border mt-8">
+      <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
+        RF 플라즈마 Self-bias 형성 및 입자 거동 시뮬레이션
+      </h1>
+
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* Figure 1: Voltage Waveforms */}
+        <div className="bg-gray-50 p-3 rounded-lg shadow">
+          <h3 className="text-sm font-semibold mb-2 text-center">전압 파형</h3>
+          <canvas
+            ref={waveformCanvasRef}
+            width="200"
+            height="150"
+            className="border border-gray-300 w-full"
+          />
+          <div className="mt-1 text-xs text-gray-600">
+            <p>RF: {rfVoltage.toFixed(0)}V</p>
+            <p>Bias: {selfBiasVoltage.toFixed(0)}V</p>
+          </div>
+        </div>
+
+        {/* Figure 2: Particle Motion */}
+        <div className="bg-gray-50 p-3 rounded-lg shadow">
+          <h3 className="text-sm font-semibold mb-2 text-center">입자 거동</h3>
+          <div className="relative">
+            <svg width="200" height="220" className="border border-gray-300 w-full">
+              <defs>
+                <marker id="arrowhead-selfbias" markerWidth="6" markerHeight="4"
+                        refX="6" refY="2" orient="auto" fill="#666">
+                  <polygon points="0 0, 6 2, 0 4" />
+                </marker>
+              </defs>
+
+              {/* Chamber */}
+              <rect x="70" y="40" width="110" height="140"
+                    fill="rgba(240,240,240,0.3)" stroke="#666" strokeWidth="1" />
+
+              {/* RF Source */}
+              <circle cx="30" cy="110" r="12" fill="none" stroke="#3b82f6" strokeWidth="1" />
+              <text x="26" y="114" className="text-xs fill-blue-600">RF</text>
+
+              {/* Blocking Capacitor */}
+              <line x1="52" y1="105" x2="52" y2="115" stroke="#000" strokeWidth="2" />
+              <line x1="56" y1="105" x2="56" y2="115" stroke="#000" strokeWidth="2" />
+
+              {/* Connections */}
+              <line x1="42" y1="110" x2="52" y2="110" stroke="#000" strokeWidth="1" />
+              <line x1="56" y1="110" x2="70" y2="110" stroke="#000" strokeWidth="1" />
+              <line x1="70" y1="110" x2={electrodes.left.x} y2="110" stroke="#000" strokeWidth="1" />
+
+              {/* Left Electrode (RF) */}
+              <rect
+                x={electrodes.left.x}
+                y={electrodes.left.y}
+                width={electrodes.left.width}
+                height={electrodes.left.height}
+                fill={rfVoltage > 0 ? "#ff6b6b" : "#4ecdc4"}
+                stroke="#333"
+                strokeWidth="1"
+              />
+              <text
+                x={electrodes.left.x - 10}
+                y={electrodes.left.y + electrodes.left.height/2 + 3}
+                textAnchor="middle"
+                className="text-xs font-bold"
+              >
+                {rfVoltage > 0 ? "+" : "-"}
+              </text>
+
+              {/* Right Electrode (Grounded) */}
+              <rect
+                x={electrodes.right.x}
+                y={electrodes.right.y}
+                width={electrodes.right.width}
+                height={electrodes.right.height}
+                fill="#9ca3af"
+                stroke="#333"
+                strokeWidth="1"
+              />
+              <text
+                x={electrodes.right.x + electrodes.right.width + 10}
+                y={electrodes.right.y + electrodes.right.height/2 + 3}
+                textAnchor="middle"
+                className="text-xs font-bold"
+              >
+                GND
+              </text>
+
+              {/* Ground connection */}
+              <line
+                x1={electrodes.right.x + electrodes.right.width}
+                y1={electrodes.right.y + electrodes.right.height/2}
+                x2="190"
+                y2={electrodes.right.y + electrodes.right.height/2}
+                stroke="#000"
+                strokeWidth="1"
+              />
+              <line
+                x1="190"
+                y1={electrodes.right.y + electrodes.right.height/2}
+                x2="190"
+                y2="200"
+                stroke="#000"
+                strokeWidth="1"
+              />
+              <line x1="185" y1="200" x2="195" y2="200" stroke="#000" strokeWidth="1" />
+              <line x1="187" y1="202" x2="193" y2="202" stroke="#000" strokeWidth="1" />
+              <line x1="189" y1="204" x2="191" y2="204" stroke="#000" strokeWidth="1" />
+
+              {/* Electrons - 축적된 전자는 빨간색 */}
+              {electrons.map(electron => (
+                <circle
+                  key={electron.id}
+                  cx={electron.x}
+                  cy={electron.y}
+                  r="1.5"
+                  fill={electron.accumulated ? "#dc2626" : "#22c55e"}
+                  stroke={electron.accumulated ? "#991b1b" : "#16a34a"}
+                  strokeWidth="0.5"
+                />
+              ))}
+
+              {/* Ions - 더 큰 크기 */}
+              {ions.map(ion => (
+                <circle
+                  key={ion.id}
+                  cx={ion.x}
+                  cy={ion.y}
+                  r="3.5"
+                  fill="#3b82f6"
+                  stroke="#1d4ed8"
+                  strokeWidth="0.8"
+                />
+              ))}
+
+              {/* Legend */}
+              <g transform="translate(15, 15)">
+                <circle cx="0" cy="0" r="1.5" fill="#22c55e" />
+                <text x="5" y="3" className="text-xs">e⁻ 자유</text>
+
+                <circle cx="0" cy="12" r="1.5" fill="#dc2626" />
+                <text x="5" y="15" className="text-xs">e⁻ 축적</text>
+
+                <circle cx="0" cy="24" r="3.5" fill="#3b82f6" />
+                <text x="8" y="27" className="text-xs">Ion⁺</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        {/* Figure 3: RF Bias Potential */}
+        <div className="bg-gray-50 p-3 rounded-lg shadow">
+          <h3 className="text-sm font-semibold mb-2 text-center">RF Bias 전위</h3>
+          <canvas
+            ref={biasCanvasRef}
+            width="200"
+            height="150"
+            className="border border-gray-300 w-full"
+          />
+          <div className="mt-1 text-xs text-gray-600">
+            <p>면적비: {electrodeAreaRatio.toFixed(2)}</p>
+            <p>축적 전자: {electrons.filter(e => e.accumulated).length}개</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+          <div>
+            <label className="block text-xs font-medium mb-1">
+              전극 면적비: {electrodeAreaRatio.toFixed(2)}
+            </label>
+            <input
+              type="range"
+              min="0.1"
+              max="1.0"
+              step="0.05"
+              value={electrodeAreaRatio}
+              onChange={(e) => setElectrodeAreaRatio(parseFloat(e.target.value))}
+              className="w-full"
+            />
+          </div>
+
+          <button
+            onClick={() => setIsRunning(!isRunning)}
+            className={`py-2 px-3 rounded text-sm font-medium ${
+              isRunning
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-green-500 hover:bg-green-600 text-white'
+            }`}
+          >
+            {isRunning ? '정지' : '시작'}
+          </button>
+
+          <button
+            onClick={() => {
+              setTime(0);
+              setSelfBiasVoltage(0);
+              generateParticles();
+            }}
+            className="py-2 px-3 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium"
+          >
+            리셋
+          </button>
+
+          <div className="text-xs space-y-1">
+            <div>RF: {rfVoltage.toFixed(0)}V</div>
+            <div>Self-bias: {selfBiasVoltage.toFixed(0)}V</div>
+          </div>
+        </div>
+
+        <div className="mt-3 p-3 bg-indigo-50 rounded text-xs text-indigo-700">
+          <strong>원리:</strong> 전자는 가벼워서 RF 변화에 즉시 반응하여 양쪽 전극을 빠르게 왔다갔다함.
+          이온은 무거워서 RF를 따라가지 못하고 상대적으로 안정적으로 움직임.
+          전극이 작아질수록 전자가 충돌할 확률이 줄어들어 전극 근처에 축적되고,
+          Blocking Capacitor에 의해 이 음전하가 DC로 유지되어 지속적인 Self-bias 형성.
         </div>
       </div>
     </div>
@@ -1191,6 +1910,8 @@ const PlasmaSimulator = () => {
             </div>
 
             <RFPlasmaAnimationContainer />
+
+            <RFPlasmaSimulation />
 
             <div className="bg-white rounded-xl shadow-lg p-6 border">
               <h3 className="text-lg font-semibold text-indigo-800 mb-4">RF 플라즈마 핵심 특징</h3>
