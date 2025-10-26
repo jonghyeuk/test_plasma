@@ -490,7 +490,13 @@ const RFPlasmaAnimationContainer = () => {
 };
 
 // RF Self-bias 시뮬레이션 컴포넌트
-const RFPlasmaSimulation = () => {
+const RFPlasmaSimulation = ({
+  externalFrequency = null,
+  externalPower = null,
+  externalElectrodeRatio = null,
+  showControls = true,
+  showTitle = true
+}) => {
   const [isRunning, setIsRunning] = useState(false);
   const [electrodeAreaRatio, setElectrodeAreaRatio] = useState(0.5);
   const [time, setTime] = useState(0);
@@ -502,14 +508,22 @@ const RFPlasmaSimulation = () => {
   const waveformCanvasRef = useRef(null);
   const biasCanvasRef = useRef(null);
 
-  // RF parameters
-  const rfFrequency = 0.3;
-  const rfAmplitude = 50;
+  // Use external values if provided, otherwise use internal state
+  const activeElectrodeRatio = externalElectrodeRatio !== null
+    ? (1.0 / externalElectrodeRatio) // Convert from ratio (10:1) to fraction (0.1)
+    : electrodeAreaRatio;
+
+  // RF parameters - influenced by frequency and power
+  const baseFrequency = externalFrequency !== null ? externalFrequency / 20 : 0.3; // Scale down for animation
+  const rfFrequency = Math.max(0.1, Math.min(5, baseFrequency)); // Limit for visual clarity
+
+  const basePower = externalPower !== null ? externalPower : 300;
+  const rfAmplitude = Math.sqrt(basePower / 10) * 5; // Power affects voltage amplitude
 
   // Calculate electrode sizes based on area ratio
   const getElectrodeConfig = () => {
     const baseHeight = 80;
-    const leftHeight = baseHeight * electrodeAreaRatio;
+    const leftHeight = baseHeight * activeElectrodeRatio;
     const rightHeight = baseHeight;
 
     return {
@@ -537,7 +551,7 @@ const RFPlasmaSimulation = () => {
     const electrodes = getElectrodeConfig();
 
     // 전극 사이즈에 따른 축적 전자 개수 결정 (전체 전자는 항상 많지만 축적 비율만 변경)
-    const accumulationFactor = electrodeAreaRatio < 1.0 ? (1.0 - electrodeAreaRatio) * 1.8 : 0;
+    const accumulationFactor = activeElectrodeRatio < 1.0 ? (1.0 - activeElectrodeRatio) * 1.8 : 0;
     const accumulatedCount = Math.floor(accumulationFactor * 15); // 최대 15개까지 축적 가능
 
     for (let i = 0; i < 25; i++) {
@@ -634,7 +648,7 @@ const RFPlasmaSimulation = () => {
           const leftElectrodeBottom = electrodes.left.y + electrodes.left.height;
 
           // 전극이 작을수록 전극 근처에서 더 오래 머무름 (체류 시간 증가)
-          const residenceEffect = (1.0 - electrodeAreaRatio) * 0.3; // 전극이 작을수록 큰 값
+          const residenceEffect = (1.0 - activeElectrodeRatio) * 0.3; // 전극이 작을수록 큰 값
 
           // 현재 위치에서 좌측 전극 범위로 점진적 수렴
           if (electron.y < leftElectrodeTop) {
@@ -770,13 +784,13 @@ const RFPlasmaSimulation = () => {
 
     // Self-bias 계산 (축적된 전자 개수 반영)
     const accumulatedElectrons = electrons.filter(e => e.accumulated).length;
-    const newSelfBias = calculateSelfBias(electrodeAreaRatio) - (accumulatedElectrons * 2);
+    const newSelfBias = calculateSelfBias(activeElectrodeRatio) - (accumulatedElectrons * 2);
     setSelfBiasVoltage(newSelfBias);
   };
 
   useEffect(() => {
     generateParticles();
-  }, [electrodeAreaRatio]);
+  }, [activeElectrodeRatio]);
 
   useEffect(() => {
     if (isRunning) {
@@ -789,7 +803,7 @@ const RFPlasmaSimulation = () => {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, time, electrons, ions, electrodeAreaRatio]);
+  }, [isRunning, time, electrons, ions, activeElectrodeRatio]);
 
   // Draw waveforms
   useEffect(() => {
@@ -924,12 +938,12 @@ const RFPlasmaSimulation = () => {
       let potential;
 
       if (position < 0.3) {
-        potential = rfVoltage + selfBiasVoltage * (1 - electrodeAreaRatio);
+        potential = rfVoltage + selfBiasVoltage * (1 - activeElectrodeRatio);
       } else if (position > 0.7) {
         potential = 0;
       } else {
         const t = (position - 0.3) / 0.4;
-        const leftPotential = rfVoltage + selfBiasVoltage * (1 - electrodeAreaRatio);
+        const leftPotential = rfVoltage + selfBiasVoltage * (1 - activeElectrodeRatio);
         potential = leftPotential * (1 - t);
       }
 
@@ -950,12 +964,12 @@ const RFPlasmaSimulation = () => {
       let dcPotential;
 
       if (position < 0.3) {
-        dcPotential = selfBiasVoltage * (1 - electrodeAreaRatio);
+        dcPotential = selfBiasVoltage * (1 - activeElectrodeRatio);
       } else if (position > 0.7) {
         dcPotential = 0;
       } else {
         const t = (position - 0.3) / 0.4;
-        const leftDcPotential = selfBiasVoltage * (1 - electrodeAreaRatio);
+        const leftDcPotential = selfBiasVoltage * (1 - activeElectrodeRatio);
         dcPotential = leftDcPotential * (1 - t);
       }
 
@@ -996,15 +1010,17 @@ const RFPlasmaSimulation = () => {
     ctx.fillText(`RF: ${rfVoltage.toFixed(0)}V`, width - 60, 15);
     ctx.fillStyle = '#ef4444';
     ctx.fillText(`DC: ${selfBiasVoltage.toFixed(0)}V`, width - 60, 25);
-  }, [rfVoltage, selfBiasVoltage, electrodeAreaRatio, time]);
+  }, [rfVoltage, selfBiasVoltage, activeElectrodeRatio, time]);
 
   const electrodes = getElectrodeConfig();
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 border mt-8">
-      <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
-        RF 플라즈마 Self-bias 형성 및 입자 거동 시뮬레이션
-      </h1>
+      {showTitle && (
+        <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
+          RF 플라즈마 Self-bias 형성 및 입자 거동 시뮬레이션
+        </h1>
+      )}
 
       <div className="grid grid-cols-3 gap-3 mb-4">
         {/* Figure 1: Voltage Waveforms */}
@@ -1159,71 +1175,73 @@ const RFPlasmaSimulation = () => {
             style={{ width: '100%', height: '150px' }}
           />
           <div className="mt-1 text-xs text-gray-600">
-            <p>면적비: {electrodeAreaRatio.toFixed(2)}</p>
+            <p>면적비: {activeElectrodeRatio.toFixed(2)}</p>
             <p>축적 전자: {electrons.filter(e => e.accumulated).length}개</p>
           </div>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              전극 면적비: {electrodeAreaRatio.toFixed(2)}
-            </label>
-            <input
-              type="range"
-              min="0.1"
-              max="1.0"
-              step="0.05"
-              value={electrodeAreaRatio}
-              onChange={(e) => setElectrodeAreaRatio(parseFloat(e.target.value))}
-              className="w-full"
-            />
+      {showControls && (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+            <div>
+              <label className="block text-xs font-medium mb-1">
+                전극 면적비: {electrodeAreaRatio.toFixed(2)}
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="1.0"
+                step="0.05"
+                value={electrodeAreaRatio}
+                onChange={(e) => setElectrodeAreaRatio(parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            <button
+              onClick={() => setIsRunning(!isRunning)}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                isRunning
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+              }`}
+            >
+              {isRunning ? '정지' : '시작'}
+            </button>
+
+            <button
+              onClick={() => {
+                setTime(0);
+                setSelfBiasVoltage(0);
+                generateParticles();
+              }}
+              className="py-2 px-3 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium"
+            >
+              리셋
+            </button>
+
+            <div className="text-xs space-y-1">
+              <div>RF: {rfVoltage.toFixed(0)}V</div>
+              <div>Self-bias: {selfBiasVoltage.toFixed(0)}V</div>
+            </div>
           </div>
 
-          <button
-            onClick={() => setIsRunning(!isRunning)}
-            className={`py-2 px-3 rounded text-sm font-medium ${
-              isRunning
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-green-500 hover:bg-green-600 text-white'
-            }`}
-          >
-            {isRunning ? '정지' : '시작'}
-          </button>
-
-          <button
-            onClick={() => {
-              setTime(0);
-              setSelfBiasVoltage(0);
-              generateParticles();
-            }}
-            className="py-2 px-3 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium"
-          >
-            리셋
-          </button>
-
-          <div className="text-xs space-y-1">
-            <div>RF: {rfVoltage.toFixed(0)}V</div>
-            <div>Self-bias: {selfBiasVoltage.toFixed(0)}V</div>
+          <div className="mt-3 p-3 bg-indigo-50 rounded text-xs text-indigo-700 space-y-2">
+            <div>
+              <strong>기본 원리:</strong> 전자는 가벼워서 RF 변화에 즉시 반응하여 양쪽 전극을 빠르게 왔다갔다함.
+              이온은 무거워서 RF를 따라가지 못하고 상대적으로 안정적으로 움직임.
+            </div>
+            <div>
+              <strong>전극 면적과 Self-bias 관계:</strong> 전극 면적이 작아질수록 <span className="font-bold text-indigo-900">Self-bias가 커집니다.</span>
+              작은 전극은 전자가 충돌할 확률이 줄어들어 전극 근처에 전자가 축적되고,
+              Blocking Capacitor에 의해 이 음전하가 DC로 유지되어 더 큰 음(-)의 Self-bias가 형성됩니다.
+              면적비가 1:10일 때, 작은 전극에는 약 -60V 이상의 Self-bias가 발생하여 이온 충돌 에너지를 크게 증가시킵니다.
+            </div>
           </div>
         </div>
-
-        <div className="mt-3 p-3 bg-indigo-50 rounded text-xs text-indigo-700 space-y-2">
-          <div>
-            <strong>기본 원리:</strong> 전자는 가벼워서 RF 변화에 즉시 반응하여 양쪽 전극을 빠르게 왔다갔다함.
-            이온은 무거워서 RF를 따라가지 못하고 상대적으로 안정적으로 움직임.
-          </div>
-          <div>
-            <strong>전극 면적과 Self-bias 관계:</strong> 전극 면적이 작아질수록 <span className="font-bold text-indigo-900">Self-bias가 커집니다.</span>
-            작은 전극은 전자가 충돌할 확률이 줄어들어 전극 근처에 전자가 축적되고,
-            Blocking Capacitor에 의해 이 음전하가 DC로 유지되어 더 큰 음(-)의 Self-bias가 형성됩니다.
-            면적비가 1:10일 때, 작은 전극에는 약 -60V 이상의 Self-bias가 발생하여 이온 충돌 에너지를 크게 증가시킵니다.
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -2110,6 +2128,53 @@ const PlasmaSimulator = () => {
                 </div>
               </div>
             </div>
+
+            {/* 실시간 시뮬레이션 - 3개 파라미터 연동 */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border">
+              <h3 className="text-2xl font-bold text-purple-900 mb-3">🔬 실시간 플라즈마 시뮬레이션</h3>
+              <p className="text-purple-700 mb-4">
+                위의 3가지 파라미터(주파수, 파워, 전극 면적비)를 조절하면 아래 시뮬레이션이 실시간으로 반응합니다.
+              </p>
+
+              <div className="bg-white rounded-lg p-4 mb-4">
+                <h4 className="font-bold text-gray-800 mb-2">📊 파라미터 영향 설명</h4>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div className="flex gap-2">
+                    <span className="font-bold text-teal-700 min-w-[120px]">RF 주파수:</span>
+                    <span>주파수가 높을수록 RF 파형이 빠르게 진동하며, 전자의 왕복 운동이 활발해집니다.
+                    플라즈마 밀도와 균일도에 직접적인 영향을 줍니다.</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-bold text-blue-700 min-w-[120px]">RF 파워:</span>
+                    <span>파워가 증가하면 RF 전압 진폭이 커져서 더 강한 전기장이 형성됩니다.
+                    이온 에너지와 플라즈마 밀도가 증가하며, 식각 속도가 향상됩니다.</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-bold text-orange-700 min-w-[120px]">전극 면적비:</span>
+                    <span>면적비가 클수록(작은 전극) Self-bias가 커집니다.
+                    작은 전극에 전자가 축적되어 큰 음의 DC 전압이 발생하고, 이온 충돌 에너지가 증가합니다.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 rounded-lg p-3 mb-4 text-sm">
+                <strong className="text-yellow-900">💡 사용 방법:</strong>
+                <ul className="mt-2 space-y-1 text-yellow-800 ml-4">
+                  <li>• 위의 슬라이더를 조절하면 아래 시뮬레이션의 전압 파형, 입자 거동, RF Bias가 실시간으로 변합니다</li>
+                  <li>• <strong>주파수 ↑</strong> → 파형 진동 빠름, 전자 이동 활발</li>
+                  <li>• <strong>파워 ↑</strong> → RF 전압 진폭 증가, 이온 에너지 상승</li>
+                  <li>• <strong>면적비 ↑</strong> → Self-bias 증가, 전자 축적(빨간점) 증가</li>
+                </ul>
+              </div>
+            </div>
+
+            <RFPlasmaSimulation
+              externalFrequency={frequency}
+              externalPower={power}
+              externalElectrodeRatio={electrodeRatio}
+              showControls={false}
+              showTitle={false}
+            />
           </div>
         )}
 
