@@ -495,7 +495,8 @@ const RFPlasmaSimulation = ({
   externalPower = null,
   externalElectrodeRatio = null,
   showControls = true,
-  showTitle = true
+  showTitle = true,
+  showStartButton = false
 }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [electrodeAreaRatio, setElectrodeAreaRatio] = useState(0.5);
@@ -1022,161 +1023,52 @@ const RFPlasmaSimulation = ({
         </h1>
       )}
 
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      {/* 시작/정지 버튼 (showStartButton일 때만) */}
+      {showStartButton && (
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => setIsRunning(!isRunning)}
+            className={`px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transition-all ${
+              isRunning
+                ? 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white'
+                : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+            }`}
+          >
+            {isRunning ? '⏸ 정지' : '▶ 시작'}
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
         {/* Figure 1: Voltage Waveforms */}
-        <div className="bg-gray-50 p-3 rounded-lg shadow">
-          <h3 className="text-sm font-semibold mb-2 text-center">전압 파형</h3>
+        <div className="bg-gray-50 p-4 rounded-lg shadow">
+          <h3 className="text-base font-semibold mb-3 text-center">전압 파형 (Voltage Waveforms)</h3>
           <canvas
             ref={waveformCanvasRef}
             className="border border-gray-300 w-full"
-            style={{ width: '100%', height: '150px' }}
+            style={{ width: '100%', height: '200px' }}
           />
-          <div className="mt-1 text-xs text-gray-600">
-            <p>RF: {rfVoltage.toFixed(0)}V</p>
-            <p>Bias: {selfBiasVoltage.toFixed(0)}V</p>
+          <div className="mt-2 text-sm text-gray-700 space-y-1">
+            <p><span className="font-semibold">RF 전압:</span> {rfVoltage.toFixed(0)}V</p>
+            <p><span className="font-semibold">DC Self-bias:</span> {selfBiasVoltage.toFixed(0)}V</p>
+            <p className="text-xs text-gray-600">• 파란선: RF 교류 전압 (주파수에 따라 주기 변화)</p>
+            <p className="text-xs text-gray-600">• 빨간선: DC Self-bias</p>
           </div>
         </div>
 
-        {/* Figure 2: Particle Motion */}
-        <div className="bg-gray-50 p-3 rounded-lg shadow">
-          <h3 className="text-sm font-semibold mb-2 text-center">입자 거동</h3>
-          <div className="relative flex justify-center">
-            <svg viewBox="0 0 220 220" className="border border-gray-300" style={{ width: '100%', maxWidth: '220px', height: 'auto' }}>
-              <defs>
-                <marker id="arrowhead-selfbias" markerWidth="6" markerHeight="4"
-                        refX="6" refY="2" orient="auto" fill="#666">
-                  <polygon points="0 0, 6 2, 0 4" />
-                </marker>
-              </defs>
-
-              {/* Chamber */}
-              <rect x="70" y="40" width="110" height="140"
-                    fill="rgba(240,240,240,0.3)" stroke="#666" strokeWidth="1" />
-
-              {/* RF Source */}
-              <circle cx="30" cy="110" r="12" fill="none" stroke="#3b82f6" strokeWidth="1" />
-              <text x="26" y="114" className="text-xs fill-blue-600">RF</text>
-
-              {/* Blocking Capacitor */}
-              <line x1="52" y1="105" x2="52" y2="115" stroke="#000" strokeWidth="2" />
-              <line x1="56" y1="105" x2="56" y2="115" stroke="#000" strokeWidth="2" />
-
-              {/* Connections */}
-              <line x1="42" y1="110" x2="52" y2="110" stroke="#000" strokeWidth="1" />
-              <line x1="56" y1="110" x2="70" y2="110" stroke="#000" strokeWidth="1" />
-              <line x1="70" y1="110" x2={electrodes.left.x} y2="110" stroke="#000" strokeWidth="1" />
-
-              {/* Left Electrode (RF) */}
-              <rect
-                x={electrodes.left.x}
-                y={electrodes.left.y}
-                width={electrodes.left.width}
-                height={electrodes.left.height}
-                fill={rfVoltage > 0 ? "#ff6b6b" : "#4ecdc4"}
-                stroke="#333"
-                strokeWidth="1"
-              />
-              <text
-                x={electrodes.left.x - 10}
-                y={electrodes.left.y + electrodes.left.height/2 + 3}
-                textAnchor="middle"
-                className="text-xs font-bold"
-              >
-                {rfVoltage > 0 ? "+" : "-"}
-              </text>
-
-              {/* Right Electrode (Grounded) */}
-              <rect
-                x={electrodes.right.x}
-                y={electrodes.right.y}
-                width={electrodes.right.width}
-                height={electrodes.right.height}
-                fill="#9ca3af"
-                stroke="#333"
-                strokeWidth="1"
-              />
-              <text
-                x={electrodes.right.x + electrodes.right.width + 10}
-                y={electrodes.right.y + electrodes.right.height/2 + 3}
-                textAnchor="middle"
-                className="text-xs font-bold"
-              >
-                GND
-              </text>
-
-              {/* Ground connection */}
-              <line
-                x1={electrodes.right.x + electrodes.right.width}
-                y1={electrodes.right.y + electrodes.right.height/2}
-                x2="190"
-                y2={electrodes.right.y + electrodes.right.height/2}
-                stroke="#000"
-                strokeWidth="1"
-              />
-              <line
-                x1="190"
-                y1={electrodes.right.y + electrodes.right.height/2}
-                x2="190"
-                y2="200"
-                stroke="#000"
-                strokeWidth="1"
-              />
-              <line x1="185" y1="200" x2="195" y2="200" stroke="#000" strokeWidth="1" />
-              <line x1="187" y1="202" x2="193" y2="202" stroke="#000" strokeWidth="1" />
-              <line x1="189" y1="204" x2="191" y2="204" stroke="#000" strokeWidth="1" />
-
-              {/* Electrons - 축적된 전자는 빨간색 */}
-              {electrons.map(electron => (
-                <circle
-                  key={electron.id}
-                  cx={electron.x}
-                  cy={electron.y}
-                  r="1.5"
-                  fill={electron.accumulated ? "#dc2626" : "#22c55e"}
-                  stroke={electron.accumulated ? "#991b1b" : "#16a34a"}
-                  strokeWidth="0.5"
-                />
-              ))}
-
-              {/* Ions - 더 큰 크기 */}
-              {ions.map(ion => (
-                <circle
-                  key={ion.id}
-                  cx={ion.x}
-                  cy={ion.y}
-                  r="3.5"
-                  fill="#3b82f6"
-                  stroke="#1d4ed8"
-                  strokeWidth="0.8"
-                />
-              ))}
-
-              {/* Legend */}
-              <g transform="translate(15, 15)">
-                <circle cx="0" cy="0" r="1.5" fill="#22c55e" />
-                <text x="5" y="3" className="text-xs">e⁻ 자유</text>
-
-                <circle cx="0" cy="12" r="1.5" fill="#dc2626" />
-                <text x="5" y="15" className="text-xs">e⁻ 축적</text>
-
-                <circle cx="0" cy="24" r="3.5" fill="#3b82f6" />
-                <text x="8" y="27" className="text-xs">Ion⁺</text>
-              </g>
-            </svg>
-          </div>
-        </div>
-
-        {/* Figure 3: RF Bias Potential */}
-        <div className="bg-gray-50 p-3 rounded-lg shadow">
-          <h3 className="text-sm font-semibold mb-2 text-center">RF Bias 전위</h3>
+        {/* Figure 2: RF Bias Potential */}
+        <div className="bg-gray-50 p-4 rounded-lg shadow">
+          <h3 className="text-base font-semibold mb-3 text-center">RF Bias 전위 (Potential Distribution)</h3>
           <canvas
             ref={biasCanvasRef}
             className="border border-gray-300 w-full"
-            style={{ width: '100%', height: '150px' }}
+            style={{ width: '100%', height: '200px' }}
           />
-          <div className="mt-1 text-xs text-gray-600">
-            <p>면적비: {activeElectrodeRatio.toFixed(2)}</p>
-            <p>축적 전자: {electrons.filter(e => e.accumulated).length}개</p>
+          <div className="mt-2 text-sm text-gray-700 space-y-1">
+            <p><span className="font-semibold">전극 면적비:</span> {activeElectrodeRatio.toFixed(2)}</p>
+            <p><span className="font-semibold">축적 전자:</span> {electrons.filter(e => e.accumulated).length}개</p>
+            <p className="text-xs text-gray-600">• 보라선: RF + DC 합성 전위</p>
+            <p className="text-xs text-gray-600">• 빨간 점선: DC 성분</p>
           </div>
         </div>
       </div>
@@ -2025,6 +1917,7 @@ const PlasmaSimulator = () => {
               externalElectrodeRatio={electrodeRatio}
               showControls={false}
               showTitle={false}
+              showStartButton={true}
             />
 
             {/* 간단한 3개 제어 슬라이더 */}
@@ -2100,34 +1993,136 @@ const PlasmaSimulator = () => {
               </div>
             </div>
 
-            {/* 파라미터 영향 설명 */}
+            {/* 파라미터 영향 상세 설명 */}
             <div className="bg-white rounded-xl shadow-lg p-6 border">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">📊 파라미터 영향 설명</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-teal-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-teal-900 mb-2">RF 주파수</h4>
-                  <p className="text-sm text-teal-800">주파수 ↑ → 파형 진동 빠름, 전자 왕복 운동 활발, 플라즈마 밀도 증가</p>
-                  <div className="mt-3 pt-3 border-t border-teal-200 text-xs text-teal-700">
-                    <div>• 플라즈마 밀도: {(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</div>
-                    <div>• 스킨 깊이: {(1000/Math.sqrt(frequency)).toFixed(1)} cm</div>
+              <h3 className="text-lg font-bold text-gray-800 mb-4">📊 파라미터 영향 상세 설명</h3>
+
+              <div className="space-y-4">
+                {/* RF 주파수 */}
+                <div className="bg-teal-50 p-4 rounded-lg border-l-4 border-teal-600">
+                  <h4 className="font-bold text-teal-900 mb-2 flex items-center gap-2">
+                    <span className="bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                    RF 주파수 (Frequency)
+                  </h4>
+                  <div className="text-sm text-teal-800 space-y-2">
+                    <p><strong>주파수가 높아지면:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>파형 주기 단축:</strong> 전압 파형 그래프에서 사인파의 주기가 짧아져 더 빠르게 진동합니다</li>
+                      <li>• <strong>전자 운동 활발:</strong> 전자가 양쪽 전극을 더 빠르게 왕복하며 이온화 충돌 증가</li>
+                      <li>• <strong>플라즈마 밀도 증가:</strong> 높은 충돌 빈도로 더 많은 이온-전자 쌍 생성</li>
+                      <li>• <strong>균일도 향상:</strong> 스킨 깊이가 감소하여 챔버 전체에 균일한 플라즈마 형성</li>
+                    </ul>
+                    <div className="mt-3 pt-3 border-t border-teal-200 text-xs bg-white p-2 rounded">
+                      <div>📈 현재 플라즈마 밀도: <strong>{(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</strong></div>
+                      <div>📏 현재 스킨 깊이: <strong>{(1000/Math.sqrt(frequency)).toFixed(1)} cm</strong></div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-blue-900 mb-2">RF 파워</h4>
-                  <p className="text-sm text-blue-800">파워 ↑ → RF 전압 진폭 증가, 전기장 강화, 이온 에너지 상승, 식각 속도 향상</p>
-                  <div className="mt-3 pt-3 border-t border-blue-200 text-xs text-blue-700">
-                    <div>• 이온 에너지: {(Math.abs(selfBiasCalc) + 20).toFixed(0)} eV</div>
-                    <div>• RF 진폭: ±{(Math.sqrt(power / 10) * 5).toFixed(0)} V</div>
+                {/* RF 파워 */}
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+                  <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                    <span className="bg-blue-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                    RF 파워 (Power)
+                  </h4>
+                  <div className="text-sm text-blue-800 space-y-2">
+                    <p><strong>파워가 증가하면:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>RF 전압 진폭 증가:</strong> 전압 파형 그래프에서 파란선의 진폭(높이)이 커집니다</li>
+                      <li>• <strong>전기장 강도 증가:</strong> 더 강한 전기장으로 입자들이 더 빠르게 가속됩니다</li>
+                      <li>• <strong>이온 에너지 상승:</strong> 웨이퍼에 충돌하는 이온의 에너지가 증가하여 식각 속도 향상</li>
+                      <li>• <strong>플라즈마 밀도 증가:</strong> 더 많은 에너지 공급으로 이온화율 증가</li>
+                      <li>• <strong>공정 속도 향상:</strong> 높은 이온 에너지로 식각/증착 속도 증가</li>
+                    </ul>
+                    <div className="mt-3 pt-3 border-t border-blue-200 text-xs bg-white p-2 rounded">
+                      <div>⚡ 현재 이온 에너지: <strong>{(Math.abs(selfBiasCalc) + 20).toFixed(0)} eV</strong></div>
+                      <div>📊 현재 RF 진폭: <strong>±{(Math.sqrt(power / 10) * 5).toFixed(0)} V</strong></div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-orange-900 mb-2">전극 면적비</h4>
-                  <p className="text-sm text-orange-800">면적비 ↑ → 작은 전극에 전자 축적, Self-bias 증가, 이온 충돌 에너지 증가</p>
-                  <div className="mt-3 pt-3 border-t border-orange-200 text-xs text-orange-700">
-                    <div>• Self-bias: {selfBiasCalc.toFixed(0)} V</div>
-                    <div>• 전극 비율: {electrodeRatio}:1</div>
+                {/* 전극 면적비 */}
+                <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-600">
+                  <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                    <span className="bg-orange-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                    전극 면적비 (Electrode Area Ratio)
+                  </h4>
+                  <div className="text-sm text-orange-800 space-y-2">
+                    <p><strong>면적비가 커지면 (작은 전극):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>전자 축적:</strong> 작은 전극 주변에 전자가 축적되어 RF Bias 전위 그래프에서 확인 가능</li>
+                      <li>• <strong>Self-bias 증가:</strong> Blocking Capacitor가 음전하를 유지하여 큰 음의 DC 전압 발생</li>
+                      <li>• <strong>비대칭 플라즈마:</strong> 작은 전극(웨이퍼)에 더 많은 이온 충돌</li>
+                      <li>• <strong>이온 에너지 제어:</strong> Self-bias를 조절하여 원하는 이온 충돌 에너지 달성</li>
+                      <li>• <strong>선택적 식각:</strong> 웨이퍼 쪽에만 강한 이온 충돌로 효율적인 공정</li>
+                    </ul>
+                    <div className="mt-3 pt-3 border-t border-orange-200 text-xs bg-white p-2 rounded">
+                      <div>⚡ 현재 Self-bias: <strong>{selfBiasCalc.toFixed(0)} V</strong></div>
+                      <div>📐 현재 전극 비율: <strong>{electrodeRatio}:1</strong> (큰 전극 : 작은 전극)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 더 생각해보기 */}
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 border-2 border-amber-300">
+              <h3 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+                💡 더 생각해보기
+              </h3>
+
+              <div className="space-y-4">
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <h4 className="font-bold text-gray-800 mb-2">🤔 질문 1: 주파수와 면적비의 상호작용</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    주파수를 높이면서 동시에 면적비를 변경하면 어떤 일이 일어날까요?
+                  </p>
+                  <div className="bg-amber-50 p-3 rounded text-xs text-amber-900">
+                    <strong>💡 힌트:</strong> 주파수가 높아지면 전자가 전극에 충돌할 기회가 많아집니다.
+                    면적비가 크면 작은 전극에 전자가 축적되기 쉽습니다.
+                    두 효과를 함께 조절하면 Self-bias를 더 효과적으로 제어할 수 있습니다!
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <h4 className="font-bold text-gray-800 mb-2">🤔 질문 2: 파워가 너무 높으면?</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    RF 파워를 계속 높이면 플라즈마 밀도와 이온 에너지가 계속 증가할까요?
+                    실제 반도체 공정에서는 어떤 문제가 발생할 수 있을까요?
+                  </p>
+                  <div className="bg-amber-50 p-3 rounded text-xs text-amber-900">
+                    <strong>💡 힌트:</strong> 파워가 너무 높으면 플라즈마가 불안정해지고, 웨이퍼에 손상(damage)이 발생할 수 있습니다.
+                    과도한 이온 에너지는 원하는 패턴만 식각하는 것이 아니라 mask나 하부층까지 손상시킬 수 있습니다.
+                    또한 열 발생이 증가하여 온도 제어가 어려워집니다.
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <h4 className="font-bold text-gray-800 mb-2">🤔 질문 3: 주파수 범위의 의미</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    왜 반도체 공정에서는 주로 13.56MHz를 사용할까요?
+                    이보다 훨씬 낮거나 높은 주파수를 사용하면 어떤 일이 발생할까요?
+                  </p>
+                  <div className="bg-amber-50 p-3 rounded text-xs text-amber-900">
+                    <strong>💡 힌트:</strong> 13.56MHz는 ISM(Industrial, Scientific, Medical) 대역으로 국제적으로 허용된 주파수입니다.
+                    주파수가 너무 낮으면 이온도 RF 전압을 따라가서 Self-bias 형성이 어렵고,
+                    주파수가 너무 높으면 플라즈마 균일도는 좋아지지만 투과 깊이(스킨 깊이)가 너무 짧아져 큰 챔버에서는 문제가 될 수 있습니다.
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <h4 className="font-bold text-gray-800 mb-2">🎯 실습 과제</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    위의 시뮬레이션에서 다음 조건을 만족하는 파라미터 조합을 찾아보세요:
+                  </p>
+                  <ul className="text-xs text-gray-700 ml-4 space-y-1">
+                    <li>• 목표 1: Self-bias가 -50V 이상이 되도록 설정</li>
+                    <li>• 목표 2: 플라즈마 밀도가 5 × 10¹¹ cm⁻³ 이상 유지</li>
+                    <li>• 목표 3: 이온 에너지가 70 eV 이상</li>
+                  </ul>
+                  <div className="bg-green-50 p-3 rounded text-xs text-green-900 mt-2">
+                    <strong>✅ 해답 예시:</strong> 주파수를 높이고(예: 50MHz), 파워를 증가시키고(예: 600W),
+                    면적비를 크게 하면(예: 7:1) 모든 조건을 동시에 만족시킬 수 있습니다!
                   </div>
                 </div>
               </div>
