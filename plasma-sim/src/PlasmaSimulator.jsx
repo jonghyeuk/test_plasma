@@ -494,6 +494,7 @@ const RFPlasmaSimulation = ({
   externalFrequency = null,
   externalPower = null,
   externalElectrodeRatio = null,
+  externalPressure = null,
   showControls = true,
   showTitle = true,
   showStartButton = false
@@ -595,11 +596,28 @@ const RFPlasmaSimulation = ({
     setIons(newIons);
   };
 
-  // Calculate self-bias
-  const calculateSelfBias = (areaRatio) => {
+  // Calculate self-bias (물리적 원리 반영)
+  // Self-bias 극대화 조건: 주파수↓, 파워↑, 압력↓, 면적비↑
+  // 원리: 전극 유입 전자 수 감소 → Floating Potential 낮춤 → Sheath Voltage 증가
+  const calculateSelfBias = (areaRatio, freq, pwr, press) => {
     const baseBias = -15;
+
+    // 면적비 효과: 작은 전극일수록 전자 축적 증가
     const areaEffect = (1 - areaRatio) * 60;
-    return baseBias - areaEffect;
+
+    // 주파수 효과: 낮을수록 전자가 전극에 더 오래 머물러 충돌 증가
+    // 기준 주파수 13.56MHz 대비 역비례
+    const freqEffect = freq !== null ? (13.56 / (freq / 20)) * 15 : 0;
+
+    // 파워 효과: 높을수록 RF 전압 진폭 증가 → Self-bias 증가
+    // 기준 파워 300W 대비 비례
+    const powerEffect = pwr !== null ? ((pwr - 300) / 700) * 20 : 0;
+
+    // 압력 효과: 낮을수록 평균자유행로 증가, 전극 충돌 감소 → Self-bias 증가
+    // 기준 압력 50mTorr 대비 역비례
+    const pressureEffect = press !== null ? ((50 - press) / 50) * 25 : 0;
+
+    return baseBias - areaEffect - freqEffect + powerEffect - pressureEffect;
   };
 
   // Update simulation
@@ -783,9 +801,14 @@ const RFPlasmaSimulation = ({
       });
     });
 
-    // Self-bias 계산 (축적된 전자 개수 반영)
+    // Self-bias 계산 (축적된 전자 개수 및 모든 파라미터 반영)
     const accumulatedElectrons = electrons.filter(e => e.accumulated).length;
-    const newSelfBias = calculateSelfBias(activeElectrodeRatio) - (accumulatedElectrons * 2);
+    const newSelfBias = calculateSelfBias(
+      activeElectrodeRatio,
+      externalFrequency,
+      externalPower,
+      externalPressure
+    ) - (accumulatedElectrons * 2);
     setSelfBiasVoltage(newSelfBias);
   };
 
@@ -1458,6 +1481,7 @@ const PlasmaSimulator = () => {
   const [frequency, setFrequency] = useState(13.56);
   const [power, setPower] = useState(100);
   const [electrodeRatio, setElectrodeRatio] = useState(3);
+  const [pressure, setPressure] = useState(50); // 공정 압력 (mTorr)
 
   const [electronDensity, setElectronDensity] = useState(1e11);
   const [electronTemperature, setElectronTemperature] = useState(3);
@@ -1466,7 +1490,15 @@ const PlasmaSimulator = () => {
   const ionizationRate = Math.min(100, (electronTemp * gasPressure * rfPower) / 5000);
   const plasmaFrequency = Math.sqrt(electronDensity / 1e10) * 9;
   const debyeLength = Math.sqrt(electronTemperature) / Math.sqrt(electronDensity / 1e11) * 0.1;
-  const selfBiasCalc = -(200 * Math.pow(electrodeRatio, 0.8)) / 2;
+
+  // Self-bias 계산 (물리적 원리 반영)
+  // Self-bias 극대화: 주파수↓, 파워↑, 압력↓, 면적비↑
+  const selfBiasCalc = -(
+    (200 * Math.pow(electrodeRatio, 0.8)) / 2 + // 면적비 효과
+    (100 / frequency) * 13.56 + // 주파수 낮을수록 증가
+    (power / 1000) * 30 + // 파워 높을수록 증가
+    ((100 - pressure) / 100) * 40 // 압력 낮을수록 증가
+  );
 
   const themes = [
     { id: 'tab1', name: 'DC 플라즈마 원리', icon: '🔄', color: 'green' },
@@ -1918,16 +1950,17 @@ const PlasmaSimulator = () => {
               externalFrequency={frequency}
               externalPower={power}
               externalElectrodeRatio={electrodeRatio}
+              externalPressure={pressure}
               showControls={false}
               showTitle={false}
               showStartButton={true}
             />
 
-            {/* 간단한 3개 제어 슬라이더 */}
+            {/* 4개 제어 슬라이더 */}
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border">
               <h3 className="text-xl font-bold text-purple-900 mb-4">🎛️ 파라미터 제어</h3>
 
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-4 gap-4">
                 {/* 주파수 제어 */}
                 <div className="bg-white p-4 rounded-lg border-2 border-teal-200">
                   <label className="block text-sm font-medium text-teal-900 mb-2">
@@ -1993,6 +2026,28 @@ const PlasmaSimulator = () => {
                   />
                   <p className="text-xs text-orange-700 mt-2">Self-bias 크기 조절</p>
                 </div>
+
+                {/* 압력 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-purple-200">
+                  <label className="block text-sm font-medium text-purple-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>공정 압력 (mTorr)</span>
+                      <span className="bg-purple-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {pressure} mTorr
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value={pressure}
+                    onChange={(e) => setPressure(parseInt(e.target.value))}
+                    className="w-full h-3 bg-purple-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-purple-700 mt-2">평균자유행로 조절</p>
+                </div>
               </div>
             </div>
 
@@ -2015,6 +2070,10 @@ const PlasmaSimulator = () => {
                       <li>• <strong>플라즈마 밀도 증가:</strong> 높은 충돌 빈도로 더 많은 이온-전자 쌍 생성</li>
                       <li>• <strong>균일도 향상:</strong> 스킨 깊이가 감소하여 챔버 전체에 균일한 플라즈마 형성</li>
                     </ul>
+                    <p className="mt-2"><strong className="text-red-700">⚠️ 주파수가 낮아지면:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong className="text-red-700">Self-bias 증가!</strong> 전자가 전극에 더 오래 머물러 충돌 증가 → Floating Potential 낮춤 → Sheath Voltage 증가</li>
+                    </ul>
                     <div className="mt-3 pt-3 border-t border-teal-200 text-xs bg-white p-2 rounded">
                       <div>📈 현재 플라즈마 밀도: <strong>{(power * frequency / 1000).toFixed(1)} × 10¹¹ cm⁻³</strong></div>
                       <div>📏 현재 스킨 깊이: <strong>{(1000/Math.sqrt(frequency)).toFixed(1)} cm</strong></div>
@@ -2032,6 +2091,7 @@ const PlasmaSimulator = () => {
                     <p><strong>파워가 증가하면:</strong></p>
                     <ul className="ml-4 space-y-1">
                       <li>• <strong>RF 전압 진폭 증가:</strong> 전압 파형 그래프에서 파란선의 진폭(높이)이 커집니다</li>
+                      <li>• <strong className="text-red-700">Self-bias 증가!</strong> RF 전압 진폭 증가 → 더 큰 음의 DC Self-bias 발생</li>
                       <li>• <strong>전기장 강도 증가:</strong> 더 강한 전기장으로 입자들이 더 빠르게 가속됩니다</li>
                       <li>• <strong>이온 에너지 상승:</strong> 웨이퍼에 충돌하는 이온의 에너지가 증가하여 식각 속도 향상</li>
                       <li>• <strong>플라즈마 밀도 증가:</strong> 더 많은 에너지 공급으로 이온화율 증가</li>
@@ -2062,6 +2122,33 @@ const PlasmaSimulator = () => {
                     <div className="mt-3 pt-3 border-t border-orange-200 text-xs bg-white p-2 rounded">
                       <div>⚡ 현재 Self-bias: <strong>{selfBiasCalc.toFixed(0)} V</strong></div>
                       <div>📐 현재 전극 비율: <strong>{electrodeRatio}:1</strong> (큰 전극 : 작은 전극)</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 공정 압력 */}
+                <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-600">
+                  <h4 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                    <span className="bg-purple-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span>
+                    공정 압력 (Process Pressure)
+                  </h4>
+                  <div className="text-sm text-purple-800 space-y-2">
+                    <p><strong className="text-red-700">⚠️ 압력이 낮아지면 (진공도 높아지면):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong className="text-red-700">Self-bias 극대화!</strong> 평균자유행로(Mean Free Path) 증가 → 전극 유입 전자 수 감소 → Floating Potential 낮춤 → Sheath Voltage 증가</li>
+                      <li>• <strong>전자 이동성 증가:</strong> 충돌 빈도 감소로 전자가 더 자유롭게 이동</li>
+                      <li>• <strong>이온 에너지 증가:</strong> 충돌 없이 직진하는 이온 증가 → 방향성 좋은 이온 충돌</li>
+                      <li>• <strong>이방성 식각 향상:</strong> 직진성 좋은 이온으로 수직 식각 향상</li>
+                    </ul>
+                    <p className="mt-2"><strong>압력이 높아지면:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>플라즈마 밀도 증가:</strong> 더 많은 충돌로 이온화율 증가</li>
+                      <li>• <strong>균일도 향상:</strong> 충돌로 입자 확산 증가</li>
+                      <li>• <strong>Self-bias 감소:</strong> 전극 유입 전자 증가 → Sheath Voltage 감소</li>
+                    </ul>
+                    <div className="mt-3 pt-3 border-t border-purple-200 text-xs bg-white p-2 rounded">
+                      <div>🌐 현재 압력: <strong>{pressure} mTorr</strong></div>
+                      <div>📏 평균자유행로: <strong>{(100 / pressure * 0.5).toFixed(2)} cm</strong> (압력↓ → 증가)</div>
                     </div>
                   </div>
                 </div>
