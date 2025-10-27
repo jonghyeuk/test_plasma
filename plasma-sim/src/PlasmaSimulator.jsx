@@ -607,7 +607,9 @@ const RFPlasmaSimulation = ({
 
     // 주파수 효과: 낮을수록 전자가 전극에 더 오래 머물러 충돌 증가
     // 기준 주파수 13.56MHz 대비 역비례
-    const freqEffect = freq !== null ? (13.56 / (freq / 20)) * 15 : 0;
+    // 스케일링: 5MHz에서 30MHz처럼 동작하도록 6배 적용
+    const scaledFreq = freq !== null ? freq * 6 : null;
+    const freqEffect = scaledFreq !== null ? (13.56 / (scaledFreq / 20)) * 15 : 0;
 
     // 파워 효과: 높을수록 RF 전압 진폭 증가 → Self-bias 증가
     // 기준 파워 300W 대비 비례
@@ -1493,9 +1495,11 @@ const PlasmaSimulator = () => {
 
   // Self-bias 계산 (물리적 원리 반영)
   // Self-bias 극대화: 주파수↓, 파워↑, 압력↓, 면적비↑
+  // 스케일링: 5MHz에서 30MHz처럼 동작하도록 6배 적용
+  const scaledFrequency = frequency * 6;
   const selfBiasCalc = -(
     (200 * Math.pow(electrodeRatio, 0.8)) / 2 + // 면적비 효과
-    (100 / frequency) * 13.56 + // 주파수 낮을수록 증가
+    (100 / scaledFrequency) * 13.56 + // 주파수 낮을수록 증가
     (power / 1000) * 30 + // 파워 높을수록 증가
     ((100 - pressure) / 100) * 40 // 압력 낮을수록 증가
   );
