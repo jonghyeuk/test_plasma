@@ -425,7 +425,7 @@ const RFPlasmaAnimationContainer = () => {
 
     const animate = (currentTime) => {
       if (currentTime - lastTime >= 16) { // 60fps
-        setTime(prev => (prev + 0.02) % (2 * Math.PI)); // 매우 작은 step
+        setTime(prev => (prev + 0.04) % (2 * Math.PI)); // 2x 속도 증가
         lastTime = currentTime;
       }
       animationId = requestAnimationFrame(animate);
