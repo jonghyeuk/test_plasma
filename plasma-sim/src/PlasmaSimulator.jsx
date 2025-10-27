@@ -1067,7 +1067,7 @@ const RFPlasmaSimulation = ({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-4 mb-4">
         {/* Figure 1: Voltage Waveforms */}
         <div className="bg-gray-50 p-4 rounded-lg shadow">
           <h3 className="text-base font-semibold mb-3 text-center">전압 파형 (Voltage Waveforms)</h3>
@@ -1084,7 +1084,140 @@ const RFPlasmaSimulation = ({
           </div>
         </div>
 
-        {/* Figure 2: RF Bias Potential */}
+        {/* Figure 2: Particle Motion */}
+        <div className="bg-gray-50 p-4 rounded-lg shadow">
+          <h3 className="text-base font-semibold mb-3 text-center">입자 거동 (Particle Motion)</h3>
+          <div className="relative border border-gray-300" style={{ width: '100%', height: '200px' }}>
+            <svg width="100%" height="200" viewBox="0 0 250 220" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker id="arrowhead" markerWidth="6" markerHeight="4"
+                        refX="6" refY="2" orient="auto" fill="#666">
+                  <polygon points="0 0, 6 2, 0 4" />
+                </marker>
+              </defs>
+
+              {/* Chamber */}
+              <rect x="70" y="40" width="110" height="140"
+                    fill="rgba(240,240,240,0.3)" stroke="#666" strokeWidth="1" />
+
+              {/* RF Source */}
+              <circle cx="30" cy="110" r="12" fill="none" stroke="#3b82f6" strokeWidth="1" />
+              <text x="26" y="114" className="text-xs fill-blue-600">RF</text>
+
+              {/* Blocking Capacitor */}
+              <line x1="52" y1="105" x2="52" y2="115" stroke="#000" strokeWidth="2" />
+              <line x1="56" y1="105" x2="56" y2="115" stroke="#000" strokeWidth="2" />
+
+              {/* Connections */}
+              <line x1="42" y1="110" x2="52" y2="110" stroke="#000" strokeWidth="1" />
+              <line x1="56" y1="110" x2="70" y2="110" stroke="#000" strokeWidth="1" />
+              <line x1="70" y1="110" x2={electrodes.left.x} y2="110" stroke="#000" strokeWidth="1" />
+
+              {/* Left Electrode (RF) */}
+              <rect
+                x={electrodes.left.x}
+                y={electrodes.left.y}
+                width={electrodes.left.width}
+                height={electrodes.left.height}
+                fill={rfVoltage > 0 ? "#ff6b6b" : "#4ecdc4"}
+                stroke="#333"
+                strokeWidth="1"
+              />
+              <text
+                x={electrodes.left.x - 10}
+                y={electrodes.left.y + electrodes.left.height/2 + 3}
+                textAnchor="middle"
+                className="text-xs font-bold"
+              >
+                {rfVoltage > 0 ? "+" : "-"}
+              </text>
+
+              {/* Right Electrode (Grounded) */}
+              <rect
+                x={electrodes.right.x}
+                y={electrodes.right.y}
+                width={electrodes.right.width}
+                height={electrodes.right.height}
+                fill="#9ca3af"
+                stroke="#333"
+                strokeWidth="1"
+              />
+              <text
+                x={electrodes.right.x + electrodes.right.width + 10}
+                y={electrodes.right.y + electrodes.right.height/2 + 3}
+                textAnchor="middle"
+                className="text-xs font-bold"
+              >
+                GND
+              </text>
+
+              {/* Ground connection */}
+              <line
+                x1={electrodes.right.x + electrodes.right.width}
+                y1={electrodes.right.y + electrodes.right.height/2}
+                x2="190"
+                y2={electrodes.right.y + electrodes.right.height/2}
+                stroke="#000"
+                strokeWidth="1"
+              />
+              <line
+                x1="190"
+                y1={electrodes.right.y + electrodes.right.height/2}
+                x2="190"
+                y2="200"
+                stroke="#000"
+                strokeWidth="1"
+              />
+              <line x1="185" y1="200" x2="195" y2="200" stroke="#000" strokeWidth="1" />
+              <line x1="187" y1="202" x2="193" y2="202" stroke="#000" strokeWidth="1" />
+              <line x1="189" y1="204" x2="191" y2="204" stroke="#000" strokeWidth="1" />
+
+              {/* Electrons - 축적된 전자는 빨간색 */}
+              {electrons.map(electron => (
+                <circle
+                  key={electron.id}
+                  cx={electron.x}
+                  cy={electron.y}
+                  r="1.5"
+                  fill={electron.accumulated ? "#dc2626" : "#22c55e"}
+                  stroke={electron.accumulated ? "#991b1b" : "#16a34a"}
+                  strokeWidth="0.5"
+                />
+              ))}
+
+              {/* Ions - 더 큰 크기 */}
+              {ions.map(ion => (
+                <circle
+                  key={ion.id}
+                  cx={ion.x}
+                  cy={ion.y}
+                  r="3.5"
+                  fill="#3b82f6"
+                  stroke="#1d4ed8"
+                  strokeWidth="0.8"
+                />
+              ))}
+
+              {/* Legend */}
+              <g transform="translate(15, 15)">
+                <circle cx="0" cy="0" r="1.5" fill="#22c55e" />
+                <text x="5" y="3" className="text-xs">e⁻ 자유</text>
+
+                <circle cx="0" cy="12" r="1.5" fill="#dc2626" />
+                <text x="5" y="15" className="text-xs">e⁻ 축적</text>
+
+                <circle cx="0" cy="24" r="3.5" fill="#3b82f6" />
+                <text x="8" y="27" className="text-xs">Ion⁺</text>
+              </g>
+            </svg>
+          </div>
+          <div className="mt-2 text-sm text-gray-700 space-y-1">
+            <p className="text-xs text-gray-600">• 전자는 RF에 빠르게 반응</p>
+            <p className="text-xs text-gray-600">• 이온은 느리게 움직임</p>
+          </div>
+        </div>
+
+        {/* Figure 3: RF Bias Potential */}
         <div className="bg-gray-50 p-4 rounded-lg shadow">
           <h3 className="text-base font-semibold mb-3 text-center">RF Bias 전위 (Potential Distribution)</h3>
           <canvas
