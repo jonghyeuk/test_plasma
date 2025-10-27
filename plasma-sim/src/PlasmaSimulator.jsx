@@ -953,7 +953,7 @@ const RFPlasmaSimulation = ({
       ctx.stroke();
     }
 
-    const centerY = height * 0.5;
+    const centerY = height * 0.7; // 중심을 아래로 이동하여 음의 전위가 중앙에 위치
 
     // RF + DC potential
     ctx.strokeStyle = '#8b5cf6';
@@ -1478,7 +1478,7 @@ const PlasmaSimulator = () => {
   const [gasPressure, setGasPressure] = useState(50);
   const [rfPower, setRfPower] = useState(100);
 
-  const [frequency, setFrequency] = useState(13.56);
+  const [frequency, setFrequency] = useState(5);
   const [power, setPower] = useState(100);
   const [electrodeRatio, setElectrodeRatio] = useState(3);
   const [pressure, setPressure] = useState(50); // 공정 압력 (mTorr)
