@@ -1977,7 +1977,7 @@ const PlasmaSimulator = () => {
                   </label>
                   <input
                     type="range"
-                    min="0.1"
+                    min="5"
                     max="100"
                     step="0.1"
                     value={frequency}
