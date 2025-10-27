@@ -974,7 +974,7 @@ const RFPlasmaSimulation = ({
         potential = leftPotential * (1 - t);
       }
 
-      const y = centerY - potential * 1.0;
+      const y = centerY - potential * 0.7;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -1000,7 +1000,7 @@ const RFPlasmaSimulation = ({
         dcPotential = leftDcPotential * (1 - t);
       }
 
-      const y = centerY - dcPotential * 1.0;
+      const y = centerY - dcPotential * 0.7;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -1088,7 +1088,7 @@ const RFPlasmaSimulation = ({
           <canvas
             ref={biasCanvasRef}
             className="border border-gray-300 w-full"
-            style={{ width: '100%', height: '200px' }}
+            style={{ width: '100%', height: '350px' }}
           />
           <div className="mt-2 text-sm text-gray-700 space-y-1">
             <p><span className="font-semibold">전극 면적비:</span> {activeElectrodeRatio.toFixed(2)}</p>
