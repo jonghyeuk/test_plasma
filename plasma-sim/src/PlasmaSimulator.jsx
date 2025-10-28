@@ -515,6 +515,10 @@ const RFPlasmaSimulation = ({
     ? (1.0 / externalElectrodeRatio) // Convert from ratio (10:1) to fraction (0.1)
     : electrodeAreaRatio;
 
+  // 주파수에 따른 시간 증가 속도 조정 (기준: 13.56MHz)
+  const activeFrequency = externalFrequency !== null ? externalFrequency : 13.56;
+  const frequencyScale = activeFrequency / 13.56; // 주파수 비율
+
   // RF parameters - influenced by frequency and power
   const baseFrequency = externalFrequency !== null ? externalFrequency / 20 : 0.3; // Scale down for animation
   const rfFrequency = Math.max(0.1, Math.min(5, baseFrequency)); // Limit for visual clarity
@@ -821,7 +825,8 @@ const RFPlasmaSimulation = ({
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setTime(prevTime => prevTime + 0.2);
+        // 주파수에 비례하여 시간 증가 속도 조정
+        setTime(prevTime => prevTime + (0.2 * frequencyScale));
         updateSimulation();
       }, 20);
     } else {
@@ -829,7 +834,7 @@ const RFPlasmaSimulation = ({
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, time, electrons, ions, activeElectrodeRatio]);
+  }, [isRunning, time, electrons, ions, activeElectrodeRatio, frequencyScale]);
 
   // Draw waveforms
   useEffect(() => {
@@ -868,20 +873,21 @@ const RFPlasmaSimulation = ({
     const rfCenter = height * 0.25;
     const rfScale = height * 0.15 / rfAmplitude;
 
-    // 주파수가 높아지면 파형이 더 빠르게 진동 (주기 단축)
-    const frequencyScale = rfFrequency / 0.3; // 0.3을 기준 주파수로 사용
+    // 주파수에 따라 파형 밀도와 속도 동기화
+    // 공간적 주파수: frequencyScale에 비례
+    // 시간적 주파수: time이 이미 frequencyScale로 증가 중이므로 추가 곱 불필요
 
     for (let i = 0; i < width; i++) {
       const x = i;
-      const t = (i / width) * 6 * Math.PI * frequencyScale + time * 0.5 * frequencyScale;
+      const t = (i / width) * 6 * Math.PI * frequencyScale + time * 0.5;
       const y = rfCenter - rfAmplitude * Math.sin(t) * rfScale;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
 
-    // Current time indicator
-    const currentTimePos = ((time * 0.5) % (6 * Math.PI)) / (6 * Math.PI) * width;
+    // Current time indicator - 주파수에 맞춰 동기화
+    const currentTimePos = ((time * 0.5) % (6 * Math.PI / frequencyScale)) / (6 * Math.PI / frequencyScale) * width;
     ctx.strokeStyle = '#1d4ed8';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 2]);
@@ -923,7 +929,7 @@ const RFPlasmaSimulation = ({
     ctx.fillStyle = '#ef4444';
     ctx.fillText('VDC', 5, height - 25);
     ctx.fillText(`${selfBiasVoltage.toFixed(0)}V`, 5, height - 15);
-  }, [time, rfVoltage, selfBiasVoltage, rfAmplitude, rfFrequency]);
+  }, [time, rfVoltage, selfBiasVoltage, rfAmplitude, rfFrequency, frequencyScale]);
 
   // Draw bias potential
   useEffect(() => {
