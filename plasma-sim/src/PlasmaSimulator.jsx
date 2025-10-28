@@ -1619,7 +1619,7 @@ const PlasmaSimulator = () => {
   const [gasPressure, setGasPressure] = useState(50);
   const [rfPower, setRfPower] = useState(100);
 
-  const [frequency, setFrequency] = useState(5);
+  const [frequency, setFrequency] = useState(13.56);
   const [power, setPower] = useState(100);
   const [electrodeRatio, setElectrodeRatio] = useState(3);
   const [pressure, setPressure] = useState(50); // 공정 압력 (mTorr)
