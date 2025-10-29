@@ -1623,6 +1623,7 @@ const PlasmaSimulator = () => {
   const [power, setPower] = useState(100);
   const [electrodeRatio, setElectrodeRatio] = useState(3);
   const [pressure, setPressure] = useState(50); // 공정 압력 (mTorr)
+  const [ionMass, setIonMass] = useState(40); // 이온 질량 (amu): Ar=40, N2=28, He=4, O2=32
 
   const [electronDensity, setElectronDensity] = useState(1e11);
   const [electronTemperature, setElectronTemperature] = useState(3);
@@ -1647,7 +1648,7 @@ const PlasmaSimulator = () => {
     { id: 'tab1', name: 'DC 플라즈마 원리', icon: '🔄', color: 'green' },
     { id: 'tab2', name: 'RF 플라즈마 원리', icon: '⚗️', color: 'indigo' },
     { id: 'tab3', name: '주파수 효과', icon: '📡', color: 'teal' },
-    { id: 'tab4', name: '드바이렝스', icon: '📏', color: 'red' },
+    { id: 'tab4', name: '이온 에너지', icon: '⚡', color: 'red' },
     { id: 'tab5', name: '전자 온도', icon: '🌡️', color: 'orange' }
   ];
 
@@ -2363,125 +2364,201 @@ const PlasmaSimulator = () => {
           </div>
         )}
 
-        {/* 탭 4: 드바이렝스 */}
+        {/* 탭 4: 이온 에너지 */}
         {activeTheme === 'tab4' && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
-              <h2 className="text-2xl font-bold text-red-900 mb-4">📏 드바이렝스 (Debye Length)</h2>
-              <p className="text-red-700 mb-3">플라즈마의 전기적 차폐 특성과 미세 패턴 공정에서의 중요성을 학습합니다.</p>
+              <h2 className="text-2xl font-bold text-red-900 mb-4">⚡ 이온 에너지 (Ion Energy Distribution)</h2>
+              <p className="text-red-700 mb-3">RF 주파수, 파워, 이온 질량이 이온 충돌 에너지 분포에 미치는 영향을 실시간으로 확인하세요.</p>
               <div className="text-sm text-red-600 bg-red-100 rounded-lg p-3">
-                <strong>학습 포인트:</strong> 드바이렝스와 패턴 크기의 관계, 준중성 조건의 한계
+                <strong>💡 아래 슬라이더로 제어하면서 이온 에너지 분포 변화를 관찰하세요!</strong>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-red-800 mb-4">플라즈마 파라미터</h3>
+            {/* 실시간 시뮬레이션 - RFPlasmaSimulation with ion energy */}
+            <RFPlasmaSimulation
+              externalFrequency={frequency}
+              externalPower={power}
+              externalElectrodeRatio={electrodeRatio}
+              externalPressure={pressure}
+              showControls={false}
+              showTitle={false}
+              showStartButton={true}
+            />
 
-                <div className="space-y-6">
-                  <div className="bg-red-50 p-4 rounded-lg border-2 border-red-200">
-                    <label className="block text-sm font-medium text-red-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>전자 밀도 (cm⁻³)</span>
-                        <span className="bg-red-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {electronDensity.toExponential(1)}
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1e10"
-                      max="1e12"
-                      step="1e10"
-                      value={electronDensity}
-                      onChange={(e) => setElectronDensity(parseFloat(e.target.value))}
-                      className="w-full h-4 bg-red-300 rounded-lg appearance-none cursor-pointer slider-thumb-red"
-                    />
-                  </div>
+            {/* 파라미터 제어 */}
+            <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
+              <h3 className="text-xl font-bold text-red-900 mb-4">🎛️ 파라미터 제어</h3>
 
-                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                    <label className="block text-sm font-medium text-blue-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>전자 온도 (eV)</span>
-                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {electronTemperature} eV
-                        </span>
+              <div className="grid md:grid-cols-4 gap-4">
+                {/* 주파수 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-teal-200">
+                  <label className="block text-sm font-medium text-teal-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>RF 주파수 (MHz)</span>
+                      <span className="bg-teal-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {frequency} MHz
                       </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={electronTemperature}
-                      onChange={(e) => setElectronTemperature(parseFloat(e.target.value))}
-                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
-                    />
-                  </div>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="100"
+                    step="0.1"
+                    value={frequency}
+                    onChange={(e) => setFrequency(parseFloat(e.target.value))}
+                    className="w-full h-3 bg-teal-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-teal-700 mt-2">이온 가속 시간 조절</p>
+                </div>
 
-                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                    <label className="block text-sm font-medium text-green-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>패턴 크기 (nm)</span>
-                        <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {patternSize} nm
-                        </span>
+                {/* 파워 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
+                  <label className="block text-sm font-medium text-blue-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>RF 파워 (W)</span>
+                      <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {power} W
                       </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="10"
-                      max="1000"
-                      step="10"
-                      value={patternSize}
-                      onChange={(e) => setPatternSize(parseInt(e.target.value))}
-                      className="w-full h-4 bg-green-300 rounded-lg appearance-none cursor-pointer slider-thumb-green"
-                    />
-                  </div>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="1000"
+                    step="10"
+                    value={power}
+                    onChange={(e) => setPower(parseInt(e.target.value))}
+                    className="w-full h-3 bg-blue-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-blue-700 mt-2">이온 에너지 크기 조절</p>
+                </div>
+
+                {/* 면적비 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-orange-200">
+                  <label className="block text-sm font-medium text-orange-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>전극 면적비 (대:소)</span>
+                      <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {electrodeRatio}:1
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="0.1"
+                    value={electrodeRatio}
+                    onChange={(e) => setElectrodeRatio(parseFloat(e.target.value))}
+                    className="w-full h-3 bg-orange-300 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <p className="text-xs text-orange-700 mt-2">Self-bias 크기 조절</p>
+                </div>
+
+                {/* 이온 질량 제어 */}
+                <div className="bg-white p-4 rounded-lg border-2 border-red-200">
+                  <label className="block text-sm font-medium text-red-900 mb-2">
+                    <span className="flex items-center justify-between">
+                      <span>이온 질량 (amu)</span>
+                      <span className="bg-red-700 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {ionMass === 4 ? 'He' : ionMass === 28 ? 'N₂' : ionMass === 32 ? 'O₂' : 'Ar'}
+                      </span>
+                    </span>
+                  </label>
+                  <select
+                    value={ionMass}
+                    onChange={(e) => setIonMass(parseInt(e.target.value))}
+                    className="w-full h-10 bg-red-100 border-2 border-red-300 rounded-lg px-2 text-sm font-medium text-red-900 cursor-pointer"
+                  >
+                    <option value="4">He (4 amu)</option>
+                    <option value="28">N₂ (28 amu)</option>
+                    <option value="32">O₂ (32 amu)</option>
+                    <option value="40">Ar (40 amu)</option>
+                  </select>
+                  <p className="text-xs text-red-700 mt-2">이온 속도 조절</p>
                 </div>
               </div>
+            </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-red-800 mb-4">드바이렝스 계산</h3>
+            {/* 이온 에너지 분포 설명 */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">⚡ 이온 에너지 분포 원리</h3>
 
-                <div className="space-y-4">
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <div className="text-center mb-3">
-                      <div className="text-2xl font-bold">λD = {debyeLength.toFixed(2)} mm</div>
-                      <div className="text-sm text-gray-600">드바이렝스</div>
-                    </div>
-                    <div className="text-xs text-center text-gray-500">
-                      λD = sqrt(ε₀kTₑ/nₑe²)
-                    </div>
+              <div className="space-y-4">
+                {/* 주파수 효과 */}
+                <div className="bg-teal-50 p-4 rounded-lg border-l-4 border-teal-600">
+                  <h4 className="font-bold text-teal-900 mb-2 flex items-center gap-2">
+                    <span className="bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                    RF 주파수의 영향
+                  </h4>
+                  <div className="text-sm text-teal-800 space-y-2">
+                    <p><strong>낮은 주파수 (5-13 MHz):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>피크 분리:</strong> 이온이 충분한 시간 동안 가속되어 최대/최소 에너지 피크가 넓게 분리됩니다</li>
+                      <li>• <strong>최대 에너지 획득:</strong> 전극이 (-)일 때 쉬스로부터 에너지를 모두 받아 최대 에너지 도달</li>
+                      <li>• <strong>최소 에너지 존재:</strong> 전극이 (+)일 때 최소 에너지를 가지며 분포가 넓어집니다</li>
+                    </ul>
+                    <p className="mt-2"><strong>높은 주파수 (50-100 MHz):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>단일 피크:</strong> RF가 빠르게 교차하여 이온이 충돌 전에 방향이 바뀌어 단일 평균 에너지 형태</li>
+                      <li>• <strong>에너지 감소:</strong> 충분히 가속되기 전에 감속되어 최대 에너지 피크가 낮아짐</li>
+                      <li>• <strong>좁은 분포:</strong> 최대/최소 에너지 차이가 작아져 피크가 모입니다</li>
+                    </ul>
                   </div>
+                </div>
 
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <h4 className="font-bold mb-2">준중성 조건</h4>
-                    <div className="flex justify-between items-center">
-                      <span>L / λD =</span>
-                      <span className="font-bold text-lg">
-                        {(patternSize * 1e-6 / debyeLength).toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="text-xs mt-2">
-                      {patternSize * 1e-6 > debyeLength * 10 ?
-                        <span className="text-green-600">✓ 준중성 조건 만족 (L 훨씬 큰 λD)</span> :
-                        patternSize * 1e-6 > debyeLength ?
-                        <span className="text-yellow-600">⚠ 경계 영역 (L ≈ λD)</span> :
-                        <span className="text-red-600">✗ 준중성 조건 불만족 (L 작은 λD)</span>
-                      }
-                    </div>
+                {/* 파워 효과 */}
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+                  <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                    <span className="bg-blue-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                    RF 파워의 영향
+                  </h4>
+                  <div className="text-sm text-blue-800 space-y-2">
+                    <p><strong>파워 증가 시:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>전극 전압 증가:</strong> 더 높은 전압으로 쉬스 크기 증가</li>
+                      <li>• <strong>이온 에너지 증가:</strong> 이온 속도 증가로 단일 피크 → 분리된 피크로 변화</li>
+                      <li>• <strong>충돌 에너지 상승:</strong> 더 높은 에너지로 음극 충돌</li>
+                    </ul>
+                    <p className="mt-2"><strong>파워 감소 시:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>에너지 감소:</strong> 분리된 피크 → 단일 피크로 변화</li>
+                      <li>• <strong>플라즈마 약화:</strong> 이온화 에너지 감소</li>
+                    </ul>
                   </div>
+                </div>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>차폐 시간:</span>
-                      <span className="font-bold">{(1/Math.sqrt(electronDensity/1e11)).toFixed(2)} ns</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>플라즈마 빈도:</span>
-                      <span className="font-bold">{Math.sqrt(electronDensity/1e10).toFixed(1)} MHz</span>
-                    </div>
+                {/* 이온 질량 효과 */}
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-600">
+                  <h4 className="font-bold text-red-900 mb-2 flex items-center gap-2">
+                    <span className="bg-red-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                    이온 질량의 영향
+                  </h4>
+                  <div className="text-sm text-red-800 space-y-2">
+                    <p><strong>가벼운 이온 (He - 4 amu):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>빠른 속도:</strong> 같은 에너지에서 속도가 빠름</li>
+                      <li>• <strong>피크 분리:</strong> RF 교차 전에 음극 충돌하여 최대/최소 에너지 모두 획득 가능</li>
+                      <li>• <strong>넓은 분포:</strong> 좌우로 피크가 명확히 분리됩니다</li>
+                    </ul>
+                    <p className="mt-2"><strong>무거운 이온 (Ar - 40 amu):</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• <strong>느린 속도:</strong> 같은 에너지에서 속도가 느림</li>
+                      <li>• <strong>좁은 분포:</strong> 에너지 변동폭이 줄어들어 단일 평균 형태</li>
+                      <li>• <strong>주파수 조절 필요:</strong> 무거운 이온의 최대 에너지를 얻으려면 주파수를 낮춰야 함</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* 요약 */}
+                <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-gray-600">
+                  <h4 className="font-bold text-gray-900 mb-2">📘 핵심 요약</h4>
+                  <div className="text-sm text-gray-800 space-y-1">
+                    <p>• <strong>낮은 주파수 + 높은 파워 + 가벼운 이온</strong> → 넓게 분리된 이중 피크</p>
+                    <p>• <strong>높은 주파수 + 낮은 파워 + 무거운 이온</strong> → 좁은 단일 피크</p>
+                    <p>• <strong>실제 공정:</strong> 이온 에너지 제어는 식각 깊이, 선택비, 손상도에 직접적인 영향</p>
                   </div>
                 </div>
               </div>
