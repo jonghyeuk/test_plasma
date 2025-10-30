@@ -1913,7 +1913,7 @@ const PlasmaSimulator = () => {
   const selfBiasCalc = -(
     (200 * Math.pow(electrodeRatio, 0.8)) / 2 + // 면적비 효과
     (100 / scaledFrequency) * 13.56 + // 주파수 낮을수록 증가
-    (power / 1000) * 80 + // 파워 높을수록 증가 (증가폭 확대)
+    (power / 1000) * 150 + // 파워 높을수록 Self-bias 더 음수로 (계수 대폭 증가)
     ((100 - pressure) / 100) * 40 // 압력 낮을수록 증가
   );
 
