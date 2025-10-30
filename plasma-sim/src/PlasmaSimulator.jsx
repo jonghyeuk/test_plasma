@@ -2717,7 +2717,7 @@ const PlasmaSimulator = () => {
 
               <div className="space-y-4">
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-600">
-                  <h4 className="font-bold text-red-900 mb-2">저주파 (< 1 MHz): 바이모달 분포</h4>
+                  <h4 className="font-bold text-red-900 mb-2">저주파 (&lt; 1 MHz): 바이모달 분포</h4>
                   <div className="text-sm text-red-800 space-y-1">
                     <p>• 이온이 RF 한 주기 동안 sheath를 통과할 수 있음</p>
                     <p>• 최대 전위에서 가속된 이온 → 고에너지 피크</p>
@@ -2736,7 +2736,7 @@ const PlasmaSimulator = () => {
                 </div>
 
                 <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
-                  <h4 className="font-bold text-green-900 mb-2">고주파 (> 10 MHz): 단일 피크</h4>
+                  <h4 className="font-bold text-green-900 mb-2">고주파 (&gt; 10 MHz): 단일 피크</h4>
                   <div className="text-sm text-green-800 space-y-1">
                     <p>• 이온이 RF 주기보다 훨씬 느리게 움직임</p>
                     <p>• 시간 평균된 전위로 가속</p>
