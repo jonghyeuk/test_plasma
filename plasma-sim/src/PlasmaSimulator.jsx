@@ -1634,17 +1634,18 @@ const IonEnergyDistribution = ({ frequency, selfBias, power }) => {
     };
   }, []);
 
-  // 이온 에너지 범위 (eV)
-  const maxEnergy = Math.abs(selfBias) + 50;
-  const minEnergy = 0;
+  // 평균 이온 에너지
+  const avgEnergy = Math.abs(selfBias) + 20;
+
+  // 이온 에너지 범위 (eV) - avgEnergy를 중심으로 대칭 배치
+  const energyRange = avgEnergy * 1.8; // avgEnergy의 1.8배 범위
+  const minEnergy = Math.max(0, avgEnergy - energyRange / 2);
+  const maxEnergy = avgEnergy + energyRange / 2;
 
   // 주파수에 따른 분리 정도 계산
   const ionPlasmaFreq = 0.1; // MHz (이온의 플라즈마 주파수)
   const freqRatio = frequency / ionPlasmaFreq;
   const separation = Math.max(0, 1 - freqRatio / 10);
-
-  // 평균 이온 에너지
-  const avgEnergy = Math.abs(selfBias) + 20;
 
   // Canvas 그리기
   useEffect(() => {
@@ -1676,22 +1677,33 @@ const IonEnergyDistribution = ({ frequency, selfBias, power }) => {
       const energy = minEnergy + (maxEnergy - minEnergy) * (i / (numPoints - 1));
       let intensity = 0;
 
-      if (separation > 0.5) {
-        // 저주파: 바이모달 분포
-        const lowEnergyPeak = avgEnergy * 0.4;
-        const highEnergyPeak = avgEnergy * 1.5;
-        const peakWidth = 8 * (1 - separation * 0.5);
+      // 두 개의 피크 위치: avgEnergy를 중심으로 대칭 배치
+      const peakSeparation = avgEnergy * 0.35; // 피크 간 거리
+      const lowEnergyPeak = avgEnergy - peakSeparation;
+      const highEnergyPeak = avgEnergy + peakSeparation;
 
-        const lowPeakIntensity = Math.exp(-Math.pow(energy - lowEnergyPeak, 2) / (2 * peakWidth * peakWidth));
-        const highPeakIntensity = Math.exp(-Math.pow(energy - highEnergyPeak, 2) / (2 * peakWidth * peakWidth));
+      // 저주파일수록 피크가 명확히 분리, 고주파에서도 약간의 분리
+      // separation: 0 (고주파) ~ 1 (저주파)
+      const peakSharpness = 6 + separation * 8; // 저주파: 좁은 피크, 고주파: 넓은 피크
 
-        intensity = (lowPeakIntensity + highPeakIntensity) * separation * 0.5;
+      // 저에너지 피크
+      const lowPeakIntensity = Math.exp(-Math.pow(energy - lowEnergyPeak, 2) / (2 * peakSharpness * peakSharpness));
+
+      // 고에너지 피크
+      const highPeakIntensity = Math.exp(-Math.pow(energy - highEnergyPeak, 2) / (2 * peakSharpness * peakSharpness));
+
+      // 저주파: 두 피크 모두 강하게, 고주파: 두 피크가 겹쳐서 하나처럼 보임
+      const bimodalWeight = 0.4 + separation * 0.6; // 0.4 (고주파) ~ 1.0 (저주파)
+
+      // 두 피크의 가중 평균
+      intensity = (lowPeakIntensity + highPeakIntensity) * bimodalWeight;
+
+      // 고주파에서 중심부를 채우는 베이스 분포 추가
+      if (separation < 0.5) {
+        const baseWidth = 20;
+        const baseIntensity = Math.exp(-Math.pow(energy - avgEnergy, 2) / (2 * baseWidth * baseWidth));
+        intensity += baseIntensity * (1 - separation) * 0.3;
       }
-
-      // 모든 주파수에서 기본 분포
-      const mainPeakWidth = 15 + separation * 10;
-      const mainPeakIntensity = Math.exp(-Math.pow(energy - avgEnergy, 2) / (2 * mainPeakWidth * mainPeakWidth));
-      intensity += mainPeakIntensity * (1 - separation * 0.3);
 
       // 파워에 따른 스케일링
       intensity *= (power / 200);
@@ -1707,7 +1719,7 @@ const IonEnergyDistribution = ({ frequency, selfBias, power }) => {
     }
 
     // 스케일 함수
-    const xScale = (energy) => padding.left + (energy / maxEnergy) * innerWidth;
+    const xScale = (energy) => padding.left + ((energy - minEnergy) / (maxEnergy - minEnergy)) * innerWidth;
     const yScale = (intensity) => padding.top + innerHeight - (intensity / maxIntensity) * innerHeight;
 
     // 그리드 라인
@@ -1723,8 +1735,13 @@ const IonEnergyDistribution = ({ frequency, selfBias, power }) => {
       ctx.stroke();
     }
 
-    // X축 그리드
-    const xTicks = [0, 25, 50, 75, 100, Math.round(maxEnergy)];
+    // X축 그리드 - minEnergy와 maxEnergy를 기준으로 동적 생성
+    const numXTicks = 6;
+    const xTicks = [];
+    for (let i = 0; i < numXTicks; i++) {
+      const tick = minEnergy + (maxEnergy - minEnergy) * (i / (numXTicks - 1));
+      xTicks.push(Math.round(tick));
+    }
     xTicks.forEach(tick => {
       const x = xScale(tick);
       ctx.beginPath();
