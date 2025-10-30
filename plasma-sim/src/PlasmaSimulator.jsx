@@ -661,7 +661,8 @@ const RFPlasmaSimulation = ({
         let newY = electron.y + electron.vy;
 
         // 매우 강한 RF 필드로 한 사이클에 양 전극 터치 (전극이 작아져도 활발한 움직임)
-        const fieldStrength = 4.0;
+        // 주파수에 비례하여 전자 속도 조정 - 고주파일수록 빠르게 왕복
+        const fieldStrength = 4.0 * frequencyScale;
 
         if (currentRfVoltage > 0) {
           // RF positive: 좌측 전극이 플러스 → 전자는 좌측 전극으로 이동
