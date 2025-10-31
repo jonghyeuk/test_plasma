@@ -1613,274 +1613,452 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
   );
 };
 
-// 이온 에너지 분포 애니메이션 컴포넌트
-const IonEnergyDistribution = ({ frequency, selfBias, power }) => {
-  const [animationTime, setAnimationTime] = useState(0);
-  const animationRef = useRef(null);
-  const canvasRef = useRef(null);
+// 이온 에너지 분포 시뮬레이터 컴포넌트 (IEDF)
+const IonEnergyDistribution = () => {
+  const [frequency, setFrequency] = useState(13.56); // MHz
+  const [icpPower, setIcpPower] = useState(150); // W
+  const [biasPower, setBiasPower] = useState(10); // W
+  const [pressure, setPressure] = useState(10); // mTorr
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [data, setData] = useState([]);
+  const [mode, setMode] = useState('frequency'); // 'frequency', 'power', 'bias'
 
-  // 애니메이션 루프
-  useEffect(() => {
-    const animate = () => {
-      setAnimationTime(prev => prev + 0.03);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    animationRef.current = requestAnimationFrame(animate);
+  // 가우시안 분포 생성 함수
+  const gaussian = (x, mean, sigma, amplitude) => {
+    return amplitude * Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(sigma, 2)));
+  };
 
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+  // Lorentzian 분포 (더 날카로운 피크)
+  const lorentzian = (x, center, width, amplitude) => {
+    return amplitude * (width * width) / ((x - center) * (x - center) + width * width);
+  };
+
+  // RF 주파수에 따른 IEDF 계산
+  const calculateIEDF = (freq, icp, bias, press) => {
+    const points = [];
+    const maxEnergy = 400; // eV
+    const step = 2;
+
+    // 플라즈마 전위 (ICP power에 비례)
+    const plasmaPotential = 10 + (icp / 150) * 15; // 10-25 eV 범위
+
+    // Bias 전압
+    const biasVoltage = bias * 10; // 0-400 eV 범위
+
+    for (let energy = -50; energy <= maxEnergy; energy += step) {
+      let ionCount = 0;
+
+      if (mode === 'power') {
+        // ICP Power 모드: 단일 날카로운 피크
+        const peakEnergy = plasmaPotential;
+        const peakWidth = 2 + press / 10; // 압력에 따라 폭 증가
+        const peakAmplitude = 80 + (icp / 250) * 40; // 파워에 비례한 플럭스
+
+        ionCount += lorentzian(energy, peakEnergy, peakWidth, peakAmplitude);
+
+        // 배경 노이즈 (낮은 에너지)
+        if (energy < peakEnergy - 5) {
+          ionCount += Math.random() * 0.5;
+        }
       }
-    };
-  }, []);
+      else if (mode === 'bias') {
+        // Bias Power 모드: 피크가 높은 에너지로 이동
+        if (bias === 0) {
+          // Bias 없을 때: 단일 피크 (플라즈마 전위)
+          ionCount += lorentzian(energy, plasmaPotential, 2, 100);
+        } else {
+          // Bias 있을 때: 두 개의 피크 (RF의 최대/최소)
+          const mainPeakEnergy = plasmaPotential + biasVoltage;
+          const peakWidth = 5 + bias * 0.5 + press / 5; // bias와 압력에 따라 폭 증가
 
-  // 평균 이온 에너지
-  const avgEnergy = Math.abs(selfBias) + 20;
+          // 주 피크
+          ionCount += lorentzian(energy, mainPeakEnergy, peakWidth, 80);
 
-  // 이온 에너지 범위 (eV) - avgEnergy를 중심으로 대칭 배치
-  const energyRange = avgEnergy * 1.8; // avgEnergy의 1.8배 범위
-  const minEnergy = Math.max(0, avgEnergy - energyRange / 2);
-  const maxEnergy = avgEnergy + energyRange / 2;
+          // 부 피크 (낮은 에너지)
+          if (bias > 5) {
+            const secondPeakEnergy = plasmaPotential + biasVoltage * 0.3;
+            ionCount += lorentzian(energy, secondPeakEnergy, peakWidth * 0.8, 30);
+          }
 
-  // 주파수에 따른 분리 정도 계산
-  const ionPlasmaFreq = 0.1; // MHz (이온의 플라즈마 주파수)
-  const freqRatio = frequency / ionPlasmaFreq;
-  const separation = Math.max(0, 1 - freqRatio / 10);
+          // 배경 분포
+          if (energy > 0 && energy < mainPeakEnergy) {
+            ionCount += 0.5;
+          }
+        }
+      }
+      else {
+        // Frequency 모드: RF 주파수에 따른 변화
+        if (freq < 5) {
+          // 낮은 주파수: 여러 피크
+          ionCount += lorentzian(energy, 15, 8, 60);
+          ionCount += lorentzian(energy, 45, 5, 35);
+          ionCount += lorentzian(energy, 85, 4, 20);
 
-  // Canvas 그리기
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+          // 넓은 배경
+          ionCount += gaussian(energy, 40, 30, 10);
+        }
+        else if (freq < 20) {
+          // 중간 주파수: bimodal
+          const separation = Math.max(15, 35 - freq * 1.2);
+          const peakSharpness = 3 + freq * 0.3;
 
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
+          ionCount += lorentzian(energy, plasmaPotential + separation, peakSharpness, 70);
+          ionCount += lorentzian(energy, plasmaPotential + separation * 2, peakSharpness, 70);
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const width = rect.width;
-    const height = rect.height;
-    const padding = { top: 30, right: 30, bottom: 60, left: 70 };
-    const innerWidth = width - padding.left - padding.right;
-    const innerHeight = height - padding.top - padding.bottom;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // 에너지 분포 데이터 생성 (애니메이션 효과 포함)
-    const numPoints = 100;
-    const energyData = [];
-    let maxIntensity = 0;
-
-    for (let i = 0; i < numPoints; i++) {
-      const energy = minEnergy + (maxEnergy - minEnergy) * (i / (numPoints - 1));
-      let intensity = 0;
-
-      // 두 개의 피크 위치: avgEnergy를 중심으로 대칭 배치
-      const peakSeparation = avgEnergy * 0.35; // 피크 간 거리
-      const lowEnergyPeak = avgEnergy - peakSeparation;
-      const highEnergyPeak = avgEnergy + peakSeparation;
-
-      // 저주파일수록 피크가 명확히 분리, 고주파에서도 약간의 분리
-      // separation: 0 (고주파) ~ 1 (저주파)
-      const peakSharpness = 6 + separation * 8; // 저주파: 좁은 피크, 고주파: 넓은 피크
-
-      // 저에너지 피크
-      const lowPeakIntensity = Math.exp(-Math.pow(energy - lowEnergyPeak, 2) / (2 * peakSharpness * peakSharpness));
-
-      // 고에너지 피크
-      const highPeakIntensity = Math.exp(-Math.pow(energy - highEnergyPeak, 2) / (2 * peakSharpness * peakSharpness));
-
-      // 저주파: 두 피크 모두 강하게, 고주파: 두 피크가 겹쳐서 하나처럼 보임
-      const bimodalWeight = 0.4 + separation * 0.6; // 0.4 (고주파) ~ 1.0 (저주파)
-
-      // 두 피크의 가중 평균
-      intensity = (lowPeakIntensity + highPeakIntensity) * bimodalWeight;
-
-      // 고주파에서 중심부를 채우는 베이스 분포 추가
-      if (separation < 0.5) {
-        const baseWidth = 20;
-        const baseIntensity = Math.exp(-Math.pow(energy - avgEnergy, 2) / (2 * baseWidth * baseWidth));
-        intensity += baseIntensity * (1 - separation) * 0.3;
+          // 중간 배경
+          ionCount += 1;
+        }
+        else {
+          // 높은 주파수: 날카로운 단일 피크
+          const sharpness = Math.max(1.5, 4 - freq * 0.05);
+          ionCount += lorentzian(energy, plasmaPotential + 15, sharpness, 100);
+        }
       }
 
-      // 파워에 따른 스케일링
-      intensity *= (power / 200);
+      // 압력에 따른 충돌 효과 (에너지 분산)
+      if (press > 10) {
+        const collisionBroadening = (press - 10) / 20;
+        ionCount = ionCount * (1 - collisionBroadening * 0.3);
+      }
 
-      // 애니메이션 효과: 사인파 기반 작은 변동 (실시간 느낌)
-      const noiseFreq = 0.5 + i * 0.05;
-      const noiseAmplitude = 0.03; // 3% 변동
-      const noise = Math.sin(animationTime * noiseFreq) * noiseAmplitude;
-      intensity *= (1 + noise);
+      // 노이즈 추가 (실시간 측정 느낌)
+      const baseNoise = ionCount > 5 ? ionCount * 0.03 : 0.3;
+      const noise = (Math.random() - 0.5) * baseNoise;
 
-      energyData.push({ energy, intensity });
-      maxIntensity = Math.max(maxIntensity, intensity);
+      points.push({
+        energy: energy,
+        ions: Math.max(0, ionCount + noise)
+      });
     }
 
-    // 스케일 함수
-    const xScale = (energy) => padding.left + ((energy - minEnergy) / (maxEnergy - minEnergy)) * innerWidth;
-    const yScale = (intensity) => padding.top + innerHeight - (intensity / maxIntensity) * innerHeight;
+    return points;
+  };
 
-    // 그리드 라인
-    ctx.strokeStyle = '#e5e7eb';
-    ctx.lineWidth = 1;
+  // 파라미터 변경 시 초기 데이터 로딩
+  useEffect(() => {
+    setIsUpdating(true);
 
-    // Y축 그리드
-    for (let i = 0; i <= 5; i++) {
-      const y = padding.top + (innerHeight * i / 5);
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
+    // 데이터 읽어들이는 지연 시간 (측정 장비 느낌)
+    const delay = setTimeout(() => {
+      const newData = calculateIEDF(frequency, icpPower, biasPower, pressure);
+      setData(newData);
+      setIsUpdating(false);
+    }, 300 + Math.random() * 200); // 300-500ms 랜덤 지연
+
+    return () => clearTimeout(delay);
+  }, [frequency, icpPower, biasPower, pressure, mode]);
+
+  // 실시간 데이터 업데이트 (계속 흔들림)
+  useEffect(() => {
+    if (isUpdating) return; // 초기 로딩 중에는 실시간 업데이트 안함
+
+    const interval = setInterval(() => {
+      const newData = calculateIEDF(frequency, icpPower, biasPower, pressure);
+      setData(newData);
+    }, 150 + Math.random() * 100); // 150-250ms마다 업데이트
+
+    return () => clearInterval(interval);
+  }, [frequency, icpPower, biasPower, pressure, mode, isUpdating]);
+
+  // 모드별 색상 및 정보
+  const getModeInfo = () => {
+    if (mode === 'power') {
+      return {
+        label: 'ICP Power Effect',
+        color: '#8B5CF6',
+        description: 'Source power에 따른 이온 플럭스 변화'
+      };
+    } else if (mode === 'bias') {
+      const biasColor = biasPower === 0 ? '#000000' : biasPower < 10 ? '#EF4444' : biasPower < 20 ? '#3B82F6' : '#10B981';
+      return {
+        label: 'Bias Power Effect',
+        color: biasColor,
+        description: 'RF bias에 따른 이온 에너지 증가'
+      };
+    } else {
+      return {
+        label: 'RF Frequency Effect',
+        color: frequency < 5 ? '#3B82F6' : frequency < 20 ? '#10B981' : '#EF4444',
+        description: '주파수에 따른 IEDF 형태 변화'
+      };
     }
+  };
 
-    // X축 그리드 - minEnergy와 maxEnergy를 기준으로 동적 생성
-    const numXTicks = 6;
-    const xTicks = [];
-    for (let i = 0; i < numXTicks; i++) {
-      const tick = minEnergy + (maxEnergy - minEnergy) * (i / (numXTicks - 1));
-      xTicks.push(Math.round(tick));
-    }
-    xTicks.forEach(tick => {
-      const x = xScale(tick);
-      ctx.beginPath();
-      ctx.moveTo(x, padding.top);
-      ctx.lineTo(x, height - padding.bottom);
-      ctx.stroke();
-    });
-
-    // 면적 채우기 (그라데이션)
-    const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
-    gradient.addColorStop(0, 'rgba(220, 38, 38, 0.6)');
-    gradient.addColorStop(1, 'rgba(220, 38, 38, 0.1)');
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.moveTo(xScale(energyData[0].energy), yScale(0));
-
-    energyData.forEach(d => {
-      ctx.lineTo(xScale(d.energy), yScale(d.intensity));
-    });
-
-    ctx.lineTo(xScale(energyData[energyData.length - 1].energy), yScale(0));
-    ctx.closePath();
-    ctx.fill();
-
-    // 선 그래프
-    ctx.strokeStyle = '#dc2626';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-
-    energyData.forEach((d, i) => {
-      const x = xScale(d.energy);
-      const y = yScale(d.intensity);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-
-    ctx.stroke();
-
-    // X축
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, height - padding.bottom);
-    ctx.lineTo(width - padding.right, height - padding.bottom);
-    ctx.stroke();
-
-    // Y축
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, height - padding.bottom);
-    ctx.stroke();
-
-    // X축 눈금 및 라벨
-    ctx.fillStyle = '#374151';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-
-    xTicks.forEach(tick => {
-      const x = xScale(tick);
-      // 눈금
-      ctx.beginPath();
-      ctx.moveTo(x, height - padding.bottom);
-      ctx.lineTo(x, height - padding.bottom + 5);
-      ctx.stroke();
-      // 라벨
-      ctx.fillText(tick.toString(), x, height - padding.bottom + 20);
-    });
-
-    // Y축 눈금 및 라벨
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-
-    for (let i = 0; i <= 5; i++) {
-      const intensity = (maxIntensity * i / 5);
-      const y = padding.top + (innerHeight * (5 - i) / 5);
-
-      // 눈금
-      ctx.beginPath();
-      ctx.moveTo(padding.left - 5, y);
-      ctx.lineTo(padding.left, y);
-      ctx.stroke();
-
-      // 라벨
-      ctx.fillText(intensity.toFixed(1), padding.left - 10, y);
-    }
-
-    // 축 레이블
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold 14px sans-serif';
-
-    // X축 레이블
-    ctx.fillText('이온 에너지 (eV)', width / 2, height - 15);
-
-    // Y축 레이블 (회전)
-    ctx.save();
-    ctx.translate(20, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Number of Ions', 0, 0);
-    ctx.restore();
-
-  }, [animationTime, frequency, selfBias, power, maxEnergy, avgEnergy, separation]);
+  const modeInfo = getModeInfo();
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border">
-      <h3 className="text-lg font-semibold text-red-800 mb-4">이온 에너지 분포 (Ion Energy Distribution)</h3>
+    <div className="w-full bg-gray-50 p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        {/* 헤더 */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Ion Energy Distribution Function (IEDF)
+          </h1>
+          <p className="text-gray-600">
+            RF 주파수에 따른 이온 충돌 에너지 분포 변화
+          </p>
+        </div>
 
-      <div className="bg-gray-50 rounded-lg p-4 mb-4">
-        <canvas
-          ref={canvasRef}
-          className="w-full border rounded bg-white"
-          style={{ width: '100%', height: '400px' }}
-        />
-      </div>
+        {/* 컨트롤 패널 */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          {/* 모드 선택 */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Measurement Mode (측정 모드)
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMode('frequency')}
+                className={`px-4 py-2 rounded font-medium transition ${
+                  mode === 'frequency'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                RF Frequency
+              </button>
+              <button
+                onClick={() => setMode('power')}
+                className={`px-4 py-2 rounded font-medium transition ${
+                  mode === 'power'
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                ICP Power
+              </button>
+              <button
+                onClick={() => setMode('bias')}
+                className={`px-4 py-2 rounded font-medium transition ${
+                  mode === 'bias'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Bias Power
+              </button>
+            </div>
+          </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-        <div className="bg-red-50 p-3 rounded-lg">
-          <div className="font-medium text-red-800">분포 타입</div>
-          <div className="text-red-600 mt-1 font-semibold">
-            {separation > 0.5 ? '바이모달 (Bimodal)' :
-             separation > 0.2 ? '전이 영역 (Transition)' :
-             '단일 피크 (Single Peak)'}
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex-1">
+              {/* RF Frequency 컨트롤 */}
+              {mode === 'frequency' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      RF Frequency (주파수)
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="40"
+                        step="0.5"
+                        value={frequency}
+                        onChange={(e) => setFrequency(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <span className="text-xl font-bold min-w-[100px]" style={{ color: modeInfo.color }}>
+                        {frequency.toFixed(1)} MHz
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setFrequency(1)} className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                      1 MHz
+                    </button>
+                    <button onClick={() => setFrequency(13.56)} className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+                      13.56 MHz
+                    </button>
+                    <button onClick={() => setFrequency(30)} className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                      30 MHz
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ICP Power 컨트롤 */}
+              {mode === 'power' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ICP Power (소스 파워)
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="range"
+                        min="50"
+                        max="250"
+                        step="10"
+                        value={icpPower}
+                        onChange={(e) => setIcpPower(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <span className="text-xl font-bold min-w-[100px]" style={{ color: modeInfo.color }}>
+                        {icpPower} W
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setIcpPower(50)} className="px-3 py-1 bg-purple-400 text-white text-sm rounded hover:bg-purple-500">
+                      50 W
+                    </button>
+                    <button onClick={() => setIcpPower(100)} className="px-3 py-1 bg-purple-500 text-white text-sm rounded hover:bg-purple-600">
+                      100 W
+                    </button>
+                    <button onClick={() => setIcpPower(150)} className="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                      150 W
+                    </button>
+                    <button onClick={() => setIcpPower(200)} className="px-3 py-1 bg-purple-700 text-white text-sm rounded hover:bg-purple-800">
+                      200 W
+                    </button>
+                    <button onClick={() => setIcpPower(250)} className="px-3 py-1 bg-purple-800 text-white text-sm rounded hover:bg-purple-900">
+                      250 W
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Bias Power 컨트롤 */}
+              {mode === 'bias' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bias Power (바이어스 파워)
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="1"
+                        value={biasPower}
+                        onChange={(e) => setBiasPower(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <span className="text-xl font-bold min-w-[100px]" style={{ color: modeInfo.color }}>
+                        {biasPower} W
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setBiasPower(0)} className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                      0 W
+                    </button>
+                    <button onClick={() => setBiasPower(4)} className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                      4 W
+                    </button>
+                    <button onClick={() => setBiasPower(10)} className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                      10 W
+                    </button>
+                    <button onClick={() => setBiasPower(20)} className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+                      20 W
+                    </button>
+                    <button onClick={() => setBiasPower(30)} className="px-3 py-1 bg-purple-500 text-white text-sm rounded hover:bg-purple-600">
+                      30 W
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 공통 파라미터 */}
+              <div className="mt-4 pt-4 border-t border-gray-300">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pressure (압력): {pressure} mTorr
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value={pressure}
+                  onChange={(e) => setPressure(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* 상태 표시 */}
+            <div className="text-right">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                isUpdating ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+              }`}>
+                <div className={`w-2 h-2 rounded-full animate-pulse ${
+                  isUpdating ? 'bg-yellow-500' : 'bg-green-500'
+                }`} />
+                {isUpdating ? 'Acquiring Data...' : 'Live Monitoring'}
+              </div>
+              <div className="mt-2 text-sm font-medium" style={{ color: modeInfo.color }}>
+                {modeInfo.label}
+              </div>
+              <div className="text-xs text-gray-500">
+                {modeInfo.description}
+              </div>
+            </div>
           </div>
         </div>
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="font-medium text-blue-800">평균 이온 에너지</div>
-          <div className="text-blue-600 mt-1 font-semibold">{avgEnergy.toFixed(0)} eV</div>
-        </div>
-      </div>
 
-      <div className="text-xs text-gray-600 bg-gray-100 p-3 rounded">
-        <strong>💡 해설:</strong> {
-          separation > 0.5
-            ? `저주파 (${frequency.toFixed(1)} MHz): 이온이 RF 주기 동안 움직일 수 있어 최대/최소 전위에서 각각 가속됩니다. 따라서 고에너지와 저에너지 두 개의 피크가 나타납니다.`
-            : separation > 0.2
-            ? `중간 주파수 (${frequency.toFixed(1)} MHz): 이온이 부분적으로 RF 전위 변화를 따라가며, 넓은 단일 분포를 형성합니다.`
-            : `고주파 (${frequency.toFixed(1)} MHz): 이온이 RF 주기보다 느리게 움직여 시간 평균된 전위로 가속되므로 단일 피크가 나타납니다.`
-        }
+        {/* 그래프 */}
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="energy"
+                label={{ value: 'Ion Energy (eV)', position: 'insideBottom', offset: -5 }}
+              />
+              <YAxis
+                label={{ value: 'Number of Ions', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip
+                formatter={(value) => value.toFixed(2)}
+                labelFormatter={(label) => `Energy: ${label} eV`}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="ions"
+                stroke={modeInfo.color}
+                strokeWidth={2}
+                dot={false}
+                name="Ion Count"
+                animationDuration={100}
+                isAnimationActive={true}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 설명 */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <h3 className="font-bold text-gray-800 mb-2">IEDF 측정 원리 (교육용 시뮬레이터)</h3>
+          <div className="text-sm text-gray-700 space-y-2">
+            <div>
+              <strong className="text-blue-600">• RF Frequency 모드:</strong>
+              <p className="ml-4">낮은 주파수(&lt;5 MHz): 이온들이 RF 사이클 동안 다양한 쉬스 전압을 경험 → 넓은 분포</p>
+              <p className="ml-4">높은 주파수(&gt;20 MHz): 시간 평균된 쉬스 전압 경험 → 날카로운 단일 피크</p>
+            </div>
+            <div>
+              <strong className="text-purple-600">• ICP Power 모드:</strong>
+              <p className="ml-4">소스 파워 증가 → 플라즈마 밀도 및 이온 플럭스 증가 (피크 높이 증가)</p>
+              <p className="ml-4">피크 에너지는 플라즈마 전위에 의해 결정 (약 10-25 eV)</p>
+            </div>
+            <div>
+              <strong className="text-green-600">• Bias Power 모드:</strong>
+              <p className="ml-4">Bias 없음 (0W): 접지 표면 - 플라즈마 전위에서 단일 피크</p>
+              <p className="ml-4">Bias 있음: RF bias로 인한 이온 에너지 증가 - 높은 에너지로 피크 이동</p>
+              <p className="ml-4">두 개의 피크: RF의 최대/최소 전압에서 쉬스 진입한 이온들의 transit time 차이</p>
+            </div>
+            <div>
+              <strong className="text-gray-600">• Pressure 효과:</strong>
+              <p className="ml-4">압력 증가 → 충돌 증가 → 에너지 분산 증가 (피크 폭 증가 및 높이 감소)</p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-gray-500 italic">
+            * 이 시뮬레이터는 교육 목적으로 제작되었으며, 실제 물리 현상의 경향성을 보여줍니다.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -2639,130 +2817,7 @@ const PlasmaSimulator = () => {
 
         {/* 탭 4: 이온 에너지 */}
         {activeTheme === 'tab4' && (
-          <div className="space-y-8">
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
-              <h2 className="text-2xl font-bold text-red-900 mb-4">⚡ 이온 에너지 분포 (Ion Energy Distribution)</h2>
-              <p className="text-red-700 mb-3">RF 주파수에 따른 이온 에너지 분포의 변화를 실시간으로 관찰하세요.</p>
-              <div className="text-sm text-red-600 bg-red-100 rounded-lg p-3">
-                <strong>학습 포인트:</strong> 주파수에 따른 바이모달(Bimodal) 분포 형성, 이온 에너지 제어
-              </div>
-            </div>
-
-            {/* 제어 슬라이더 */}
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border">
-              <h3 className="text-xl font-bold text-purple-900 mb-4">🎛️ 파라미터 제어</h3>
-
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* 주파수 제어 */}
-                <div className="bg-white p-4 rounded-lg border-2 border-teal-200">
-                  <label className="block text-sm font-medium text-teal-900 mb-2">
-                    <span className="flex items-center justify-between">
-                      <span>RF 주파수 (MHz)</span>
-                      <span className="bg-teal-700 text-white px-3 py-1 rounded-full text-xs font-bold">
-                        {frequency} MHz
-                      </span>
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="100"
-                    step="0.1"
-                    value={frequency}
-                    onChange={(e) => setFrequency(parseFloat(e.target.value))}
-                    className="w-full h-3 bg-teal-300 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <p className="text-xs text-teal-700 mt-2">분포 타입 조절</p>
-                </div>
-
-                {/* 파워 제어 */}
-                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
-                  <label className="block text-sm font-medium text-blue-900 mb-2">
-                    <span className="flex items-center justify-between">
-                      <span>RF 파워 (W)</span>
-                      <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-bold">
-                        {power} W
-                      </span>
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="1000"
-                    step="10"
-                    value={power}
-                    onChange={(e) => setPower(parseInt(e.target.value))}
-                    className="w-full h-3 bg-blue-300 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <p className="text-xs text-blue-700 mt-2">이온 수 조절</p>
-                </div>
-
-                {/* 면적비 제어 */}
-                <div className="bg-white p-4 rounded-lg border-2 border-orange-200">
-                  <label className="block text-sm font-medium text-orange-900 mb-2">
-                    <span className="flex items-center justify-between">
-                      <span>전극 면적비</span>
-                      <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-xs font-bold">
-                        {electrodeRatio}:1
-                      </span>
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    step="0.1"
-                    value={electrodeRatio}
-                    onChange={(e) => setElectrodeRatio(parseFloat(e.target.value))}
-                    className="w-full h-3 bg-orange-300 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <p className="text-xs text-orange-700 mt-2">Self-bias 조절</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 이온 에너지 분포 차트 */}
-            <IonEnergyDistribution
-              frequency={frequency}
-              selfBias={selfBiasCalc}
-              power={power}
-            />
-
-            {/* 물리적 설명 */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">📚 물리적 원리</h3>
-
-              <div className="space-y-4">
-                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-600">
-                  <h4 className="font-bold text-red-900 mb-2">저주파 (&lt; 1 MHz): 바이모달 분포</h4>
-                  <div className="text-sm text-red-800 space-y-1">
-                    <p>• 이온이 RF 한 주기 동안 sheath를 통과할 수 있음</p>
-                    <p>• 최대 전위에서 가속된 이온 → 고에너지 피크</p>
-                    <p>• 최소 전위에서 가속된 이온 → 저에너지 피크</p>
-                    <p>• <strong>결과:</strong> 두 개의 뚜렷한 에너지 피크 형성</p>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
-                  <h4 className="font-bold text-blue-900 mb-2">중간 주파수 (1-10 MHz): 전이 영역</h4>
-                  <div className="text-sm text-blue-800 space-y-1">
-                    <p>• 이온이 RF 변화를 부분적으로 따라감</p>
-                    <p>• 고에너지/저에너지 피크가 겹쳐짐</p>
-                    <p>• <strong>결과:</strong> 넓은 단일 분포 형성</p>
-                  </div>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
-                  <h4 className="font-bold text-green-900 mb-2">고주파 (&gt; 10 MHz): 단일 피크</h4>
-                  <div className="text-sm text-green-800 space-y-1">
-                    <p>• 이온이 RF 주기보다 훨씬 느리게 움직임</p>
-                    <p>• 시간 평균된 전위로 가속</p>
-                    <p>• <strong>결과:</strong> 하나의 날카로운 에너지 피크</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <IonEnergyDistribution />
         )}
 
         {/* 탭 5: 전자 온도 */}
