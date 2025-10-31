@@ -1970,17 +1970,17 @@ const IonEnergyDistribution = () => {
   const modeInfo = getModeInfo();
 
   return (
-    <div className="w-full bg-gray-50 p-8">
-      <div className="max-w-full bg-white rounded-lg shadow-lg p-6">
-        {/* 헤더 */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Ion Energy Distribution Function (IEDF)
-          </h1>
-          <p className="text-gray-600">
-            RF 주파수에 따른 이온 충돌 에너지 분포 변화
-          </p>
+    <div className="space-y-8">
+      {/* 소개 섹션 */}
+      <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
+        <h2 className="text-2xl font-bold text-red-900 mb-4">⚡ 이온 에너지 분포 (Ion Energy Distribution Function)</h2>
+        <p className="text-red-700 mb-3">플라즈마 공정에서 기판에 충돌하는 이온의 에너지 분포를 측정하고 분석합니다. IEDF는 식각 방향성, 선택비, 손상도 등 공정 결과를 결정하는 핵심 특성평가 기법입니다.</p>
+        <div className="text-sm text-red-600 bg-red-100 rounded-lg p-3">
+          <strong>학습 포인트:</strong> RF 주파수, ICP Power, Bias Power에 따른 IEDF 변화, 이온 에너지와 플럭스 제어, 공정 최적화 전략
         </div>
+      </div>
+
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
 
         {/* 컨트롤 패널 */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
