@@ -1789,7 +1789,7 @@ const IonEnergyDistribution = () => {
 
   return (
     <div className="w-full bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
+      <div className="max-w-full bg-white rounded-lg shadow-lg p-6">
         {/* 헤더 */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -2031,34 +2031,289 @@ const IonEnergyDistribution = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* 설명 */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-bold text-gray-800 mb-2">IEDF 측정 원리 (교육용 시뮬레이터)</h3>
-          <div className="text-sm text-gray-700 space-y-2">
-            <div>
-              <strong className="text-blue-600">• RF Frequency 모드:</strong>
-              <p className="ml-4">낮은 주파수(&lt;5 MHz): 이온들이 RF 사이클 동안 다양한 쉬스 전압을 경험 → 넓은 분포</p>
-              <p className="ml-4">높은 주파수(&gt;20 MHz): 시간 평균된 쉬스 전압 경험 → 날카로운 단일 피크</p>
-            </div>
-            <div>
-              <strong className="text-purple-600">• ICP Power 모드:</strong>
-              <p className="ml-4">소스 파워 증가 → 플라즈마 밀도 및 이온 플럭스 증가 (피크 높이 증가)</p>
-              <p className="ml-4">피크 에너지는 플라즈마 전위에 의해 결정 (약 10-25 eV)</p>
-            </div>
-            <div>
-              <strong className="text-green-600">• Bias Power 모드:</strong>
-              <p className="ml-4">Bias 없음 (0W): 접지 표면 - 플라즈마 전위에서 단일 피크</p>
-              <p className="ml-4">Bias 있음: RF bias로 인한 이온 에너지 증가 - 높은 에너지로 피크 이동</p>
-              <p className="ml-4">두 개의 피크: RF의 최대/최소 전압에서 쉬스 진입한 이온들의 transit time 차이</p>
-            </div>
-            <div>
-              <strong className="text-gray-600">• Pressure 효과:</strong>
-              <p className="ml-4">압력 증가 → 충돌 증가 → 에너지 분산 증가 (피크 폭 증가 및 높이 감소)</p>
+        {/* 이론적 배경 섹션 */}
+        <div className="mt-6 space-y-6">
+          {/* IEDF란 무엇인가? */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-l-4 border-blue-500">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">📚 IEDF란 무엇인가?</h3>
+            <div className="text-sm text-gray-700 space-y-2">
+              <p>
+                <strong>Ion Energy Distribution Function (IEDF)</strong>는 플라즈마 내 이온들의 에너지 분포를 나타내는 확률 분포 함수입니다.
+                특정 에너지를 가진 이온이 전체 이온 집단에서 차지하는 비율을 보여주며, 이온의 운동 에너지, 속도, 그리고 플럭스에 대한
+                귀중한 정보를 제공합니다.
+              </p>
+              <div className="bg-white rounded p-3 mt-2">
+                <p className="font-semibold text-indigo-700">💡 왜 IEDF가 중요한가?</p>
+                <ul className="list-disc ml-6 mt-2 space-y-1">
+                  <li><strong>식각 공정:</strong> 이온 에너지가 식각 속도, 선택비, 표면 손상을 결정</li>
+                  <li><strong>박막 증착:</strong> 이온 플럭스와 에너지가 박막의 미세구조와 특성에 영향</li>
+                  <li><strong>이온 주입:</strong> 이온의 깊이 프로파일과 농도 제어에 필수</li>
+                  <li><strong>공정 최적화:</strong> 플라즈마 파라미터 튜닝과 재현성 향상</li>
+                </ul>
+              </div>
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-500 italic">
-            * 이 시뮬레이터는 교육 목적으로 제작되었으며, 실제 물리 현상의 경향성을 보여줍니다.
-          </p>
+
+          {/* Plasma Sheath와 Ion Acceleration */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border-l-4 border-purple-500">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">⚡ Plasma Sheath와 Ion Acceleration</h3>
+            <div className="text-sm text-gray-700 space-y-3">
+              <p>
+                플라즈마 공정에서 이온들은 <strong>플라즈마 쉬스(Plasma Sheath)</strong>를 통과하며 기판 표면으로 가속됩니다.
+                쉬스는 기판 표면과 벌크 플라즈마 사이의 전하 불균형 영역으로, 전자와 이온의 속도 차이로 인해 형성됩니다.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-white rounded p-3">
+                  <p className="font-semibold text-gray-800 mb-2">🔵 접지 표면 (Grounded Surface)</p>
+                  <ul className="list-disc ml-6 space-y-1 text-xs">
+                    <li>이온은 <strong>플라즈마 전위</strong>만큼 가속</li>
+                    <li>IEDF는 단일 피크를 형성</li>
+                    <li>피크 에너지 ≈ 플라즈마 전위 (10-25 eV)</li>
+                    <li><strong>관찰 포인트:</strong> ICP Power 모드에서 확인 가능</li>
+                  </ul>
+                </div>
+
+                <div className="bg-white rounded p-3">
+                  <p className="font-semibold text-gray-800 mb-2">🔴 RF Bias 표면</p>
+                  <ul className="list-disc ml-6 space-y-1 text-xs">
+                    <li>RF 전압으로 쉬스가 주기적으로 변화</li>
+                    <li>이온은 더 높은 에너지로 가속</li>
+                    <li>IEDF는 <strong>두 개의 피크</strong> 형성 가능</li>
+                    <li>두 피크는 RF의 최대/최소 전압에서 진입한 이온들의 transit time 차이</li>
+                    <li><strong>관찰 포인트:</strong> Bias Power 모드에서 확인 가능</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-3">
+                <p className="font-semibold text-yellow-800">📊 IEDF 곡선의 의미</p>
+                <p className="text-xs mt-1"><strong>• 피크 위치:</strong> 대표적인 이온 에너지 (최대 이온 수가 가지는 에너지)</p>
+                <p className="text-xs"><strong>• 피크 높이:</strong> 해당 에너지를 가진 이온의 수 (플럭스와 관련)</p>
+                <p className="text-xs"><strong>• 곡선 아래 면적:</strong> 기판에 도달하는 총 이온 플럭스</p>
+                <p className="text-xs"><strong>• 분포 폭:</strong> 이온 에너지의 분산 정도</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 파라미터별 관찰 가이드 */}
+          <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-6 border-l-4 border-green-500">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">🔬 파라미터별 관찰 가이드</h3>
+
+            {/* RF Frequency 모드 */}
+            <div className="mb-4">
+              <h4 className="font-bold text-blue-700 mb-2 flex items-center">
+                <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-2">RF Frequency</span>
+                주파수가 IEDF에 미치는 영향
+              </h4>
+              <div className="bg-white rounded p-4 text-sm space-y-2">
+                <div className="border-l-4 border-blue-300 pl-3">
+                  <p className="font-semibold text-blue-800">📌 무엇을 관찰할까?</p>
+                  <p className="text-xs mt-1">주파수를 0.5 MHz → 40 MHz로 변경하면서 IEDF 형태가 어떻게 변하는지 관찰하세요.</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-3 mt-3">
+                  <div className="bg-blue-50 p-3 rounded">
+                    <p className="font-semibold text-blue-900 text-xs">저주파 (&lt;5 MHz)</p>
+                    <p className="text-xs mt-1">• <strong>여러 개의 피크</strong> 관찰</p>
+                    <p className="text-xs">• 이온이 RF 한 주기 동안 쉬스를 통과</p>
+                    <p className="text-xs">• 다양한 쉬스 전압 경험 → 넓은 에너지 분포</p>
+                    <p className="text-xs text-blue-700 font-semibold mt-2">👉 1 MHz에서 테스트해보세요!</p>
+                  </div>
+
+                  <div className="bg-green-50 p-3 rounded">
+                    <p className="font-semibold text-green-900 text-xs">중간 주파수 (5-20 MHz)</p>
+                    <p className="text-xs mt-1">• <strong>바이모달(Bimodal) 분포</strong></p>
+                    <p className="text-xs">• 두 개의 뚜렷한 피크</p>
+                    <p className="text-xs">• 이온이 RF 변화를 부분적으로 따라감</p>
+                    <p className="text-xs text-green-700 font-semibold mt-2">👉 13.56 MHz에서 테스트해보세요!</p>
+                  </div>
+
+                  <div className="bg-red-50 p-3 rounded">
+                    <p className="font-semibold text-red-900 text-xs">고주파 (&gt;20 MHz)</p>
+                    <p className="text-xs mt-1">• <strong>날카로운 단일 피크</strong></p>
+                    <p className="text-xs">• 이온이 RF 주기보다 느리게 이동</p>
+                    <p className="text-xs">• 시간 평균된 쉬스 전위 경험</p>
+                    <p className="text-xs text-red-700 font-semibold mt-2">👉 30 MHz에서 테스트해보세요!</p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-100 rounded p-2 mt-3">
+                  <p className="text-xs font-semibold">💡 <strong>핵심 포인트:</strong> 주파수가 높을수록 이온이 "평균화된" 전위를 느껴 단일 피크로 수렴합니다.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ICP Power 모드 */}
+            <div className="mb-4">
+              <h4 className="font-bold text-purple-700 mb-2 flex items-center">
+                <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs mr-2">ICP Power</span>
+                소스 파워가 IEDF에 미치는 영향
+              </h4>
+              <div className="bg-white rounded p-4 text-sm space-y-2">
+                <div className="border-l-4 border-purple-300 pl-3">
+                  <p className="font-semibold text-purple-800">📌 무엇을 관찰할까?</p>
+                  <p className="text-xs mt-1">ICP 파워를 50W → 250W로 변경하면서 <strong>피크 높이</strong>의 변화를 관찰하세요.</p>
+                </div>
+
+                <div className="bg-purple-50 p-3 rounded mt-2">
+                  <p className="font-semibold text-purple-900 mb-2 text-xs">파워 증가의 효과:</p>
+                  <ul className="list-disc ml-6 space-y-1 text-xs">
+                    <li><strong>플라즈마 밀도 증가</strong> → 더 많은 이온 생성</li>
+                    <li><strong>이온 플럭스 증가</strong> → IEDF 피크 높이 증가 (그래프가 위로 올라감)</li>
+                    <li><strong>피크 에너지는 거의 변하지 않음</strong> → 플라즈마 전위에 의해 결정 (10-25 eV)</li>
+                    <li>기판에 도달하는 총 이온 수 증가 → 곡선 아래 면적 증가</li>
+                  </ul>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="bg-purple-100 p-2 rounded">
+                    <p className="text-xs font-semibold">📊 50W vs 250W 비교</p>
+                    <p className="text-xs mt-1">• 피크 위치: 거의 동일</p>
+                    <p className="text-xs">• 피크 높이: 약 2-3배 차이</p>
+                  </div>
+                  <div className="bg-purple-100 p-2 rounded">
+                    <p className="text-xs font-semibold">🎯 실제 응용</p>
+                    <p className="text-xs mt-1">• 높은 파워: 빠른 식각/증착</p>
+                    <p className="text-xs">• 낮은 파워: 정밀 제어</p>
+                  </div>
+                </div>
+
+                <div className="bg-purple-100 rounded p-2 mt-3">
+                  <p className="text-xs font-semibold">💡 <strong>핵심 포인트:</strong> ICP 파워는 이온의 "양"을 조절하며, 에너지는 크게 변하지 않습니다.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bias Power 모드 */}
+            <div className="mb-4">
+              <h4 className="font-bold text-green-700 mb-2 flex items-center">
+                <span className="bg-green-500 text-white px-2 py-1 rounded text-xs mr-2">Bias Power</span>
+                바이어스 파워가 IEDF에 미치는 영향
+              </h4>
+              <div className="bg-white rounded p-4 text-sm space-y-2">
+                <div className="border-l-4 border-green-300 pl-3">
+                  <p className="font-semibold text-green-800">📌 무엇을 관찰할까?</p>
+                  <p className="text-xs mt-1">Bias 파워를 0W → 30W로 변경하면서 <strong>피크 위치</strong>가 어떻게 이동하는지 관찰하세요.</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-3 mt-2">
+                  <div className="bg-gray-100 p-3 rounded border-2 border-gray-400">
+                    <p className="font-semibold text-gray-900 text-xs">0W (Bias 없음)</p>
+                    <p className="text-xs mt-1">• 접지 표면과 동일</p>
+                    <p className="text-xs">• <strong>단일 피크</strong> @ 플라즈마 전위</p>
+                    <p className="text-xs">• 피크 에너지: ~10-25 eV</p>
+                    <p className="text-xs text-gray-700 font-semibold mt-2">👉 0W에서 시작하세요!</p>
+                  </div>
+
+                  <div className="bg-green-100 p-3 rounded border-2 border-green-400">
+                    <p className="font-semibold text-green-900 text-xs">10-30W (Bias 있음)</p>
+                    <p className="text-xs mt-1">• RF bias로 이온 가속</p>
+                    <p className="text-xs">• <strong>피크가 높은 에너지로 이동</strong></p>
+                    <p className="text-xs">• 고에너지 주 피크 + 저에너지 부 피크</p>
+                    <p className="text-xs text-green-700 font-semibold mt-2">👉 20W에서 두 피크를 확인하세요!</p>
+                  </div>
+                </div>
+
+                <div className="bg-green-50 p-3 rounded mt-2">
+                  <p className="font-semibold text-green-900 mb-2 text-xs">Bias 파워 증가의 효과:</p>
+                  <ul className="list-disc ml-6 space-y-1 text-xs">
+                    <li><strong>이온 에너지 증가:</strong> 피크가 오른쪽(고에너지)으로 이동</li>
+                    <li><strong>두 피크 형성:</strong> RF 최대/최소 전압에서 진입한 이온들의 차이</li>
+                    <li><strong>분포 폭 증가:</strong> 에너지 분산 커짐</li>
+                    <li><strong>실제 응용:</strong> 고에너지 이온으로 표면 손상 제어, 식각 방향성 향상</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-100 rounded p-2 mt-3">
+                  <p className="text-xs font-semibold">💡 <strong>핵심 포인트:</strong> Bias 파워는 이온의 "에너지"를 조절하며, 식각 깊이와 방향성에 직접 영향을 미칩니다.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pressure 효과 */}
+            <div>
+              <h4 className="font-bold text-orange-700 mb-2 flex items-center">
+                <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs mr-2">Pressure</span>
+                압력이 IEDF에 미치는 영향 (모든 모드 공통)
+              </h4>
+              <div className="bg-white rounded p-4 text-sm space-y-2">
+                <div className="border-l-4 border-orange-300 pl-3">
+                  <p className="font-semibold text-orange-800">📌 무엇을 관찰할까?</p>
+                  <p className="text-xs mt-1">압력을 1 mTorr → 50 mTorr로 변경하면서 <strong>피크 폭</strong>과 <strong>높이</strong>의 변화를 관찰하세요.</p>
+                </div>
+
+                <div className="bg-orange-50 p-3 rounded mt-2">
+                  <p className="font-semibold text-orange-900 mb-2 text-xs">압력 증가의 효과:</p>
+                  <ul className="list-disc ml-6 space-y-1 text-xs">
+                    <li><strong>평균 자유 경로(Mean Free Path) 감소</strong> → 이온 충돌 증가</li>
+                    <li><strong>에너지 분산 증가:</strong> 피크가 넓어짐 (broadening)</li>
+                    <li><strong>피크 높이 감소:</strong> 충돌로 인해 일부 이온이 에너지 손실</li>
+                    <li><strong>이온 플럭스 감소:</strong> 충돌로 기판 도달 이온 수 감소</li>
+                  </ul>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="bg-orange-100 p-2 rounded">
+                    <p className="text-xs font-semibold">🔽 저압 (1-10 mTorr)</p>
+                    <p className="text-xs mt-1">• 날카로운 피크</p>
+                    <p className="text-xs">• 높은 이온 플럭스</p>
+                    <p className="text-xs">• 충돌 거의 없음</p>
+                  </div>
+                  <div className="bg-orange-100 p-2 rounded">
+                    <p className="text-xs font-semibold">🔼 고압 (30-50 mTorr)</p>
+                    <p className="text-xs mt-1">• 넓은 피크</p>
+                    <p className="text-xs">• 낮은 이온 플럭스</p>
+                    <p className="text-xs">• 충돌 효과 dominant</p>
+                  </div>
+                </div>
+
+                <div className="bg-orange-100 rounded p-2 mt-3">
+                  <p className="text-xs font-semibold">💡 <strong>핵심 포인트:</strong> 압력은 이온의 "충돌 빈도"를 조절하며, 에너지 분포의 "선명도"에 영향을 미칩니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 실습 가이드 */}
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border-l-4 border-yellow-500">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">🎯 추천 실습 순서</h3>
+            <div className="space-y-3 text-sm">
+              <div className="bg-white rounded p-3 border-l-4 border-blue-400">
+                <p className="font-semibold text-blue-800">1단계: RF Frequency 모드에서 기본 이해</p>
+                <p className="text-xs mt-1">• 1 MHz, 13.56 MHz, 30 MHz를 차례로 테스트</p>
+                <p className="text-xs">• 주파수에 따른 피크 개수와 형태 변화를 관찰</p>
+              </div>
+
+              <div className="bg-white rounded p-3 border-l-4 border-purple-400">
+                <p className="font-semibold text-purple-800">2단계: ICP Power 모드에서 플럭스 이해</p>
+                <p className="text-xs mt-1">• 50W → 150W → 250W 순서로 변경</p>
+                <p className="text-xs">• 피크 높이 변화를 관찰 (에너지는 거의 변하지 않음을 확인)</p>
+              </div>
+
+              <div className="bg-white rounded p-3 border-l-4 border-green-400">
+                <p className="font-semibold text-green-800">3단계: Bias Power 모드에서 에너지 제어 이해</p>
+                <p className="text-xs mt-1">• 0W에서 시작하여 10W, 20W, 30W로 증가</p>
+                <p className="text-xs">• 피크가 고에너지로 이동하고 두 개의 피크가 나타나는 것을 확인</p>
+              </div>
+
+              <div className="bg-white rounded p-3 border-l-4 border-orange-400">
+                <p className="font-semibold text-orange-800">4단계: 각 모드에서 Pressure 효과 확인</p>
+                <p className="text-xs mt-1">• 저압(1-5 mTorr)과 고압(30-50 mTorr) 비교</p>
+                <p className="text-xs">• 피크 폭 증가와 높이 감소를 관찰</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 면책 사항 */}
+          <div className="bg-gray-100 rounded p-4 text-xs text-gray-600 italic border border-gray-300">
+            <p className="font-semibold text-gray-700">📝 교육용 시뮬레이터 안내</p>
+            <p className="mt-1">
+              이 시뮬레이터는 교육 목적으로 제작되었으며, 실제 플라즈마 물리 현상의 경향성과 원리를 보여줍니다.
+              실제 측정 값과 다를 수 있으며, 정밀한 연구나 상업적 용도로는 실제 RFEA (Retarding Field Energy Analyzer) 같은
+              전문 진단 장비를 사용해야 합니다. 본 시뮬레이터는 IEDF의 개념과 파라미터 간 관계를 학습하는 데 최적화되어 있습니다.
+            </p>
+          </div>
         </div>
       </div>
     </div>
