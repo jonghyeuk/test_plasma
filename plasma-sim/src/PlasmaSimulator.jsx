@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // DC 플라즈마 1단계 애니메이션 컴포넌트
 const DCPlasmaStep1Animation = () => {
