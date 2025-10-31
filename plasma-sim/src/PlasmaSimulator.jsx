@@ -615,15 +615,15 @@ const RFPlasmaSimulation = ({
     const scaledFreq = freq !== null ? freq * 6 : null;
     const freqEffect = scaledFreq !== null ? (13.56 / (scaledFreq / 20)) * 15 : 0;
 
-    // 파워 효과: 높을수록 RF 전압 진폭 증가 → Self-bias 증가
-    // 기준 파워 300W 대비 비례
-    const powerEffect = pwr !== null ? ((pwr - 300) / 700) * 20 : 0;
+    // 파워 효과: 높을수록 RF 전압 진폭 증가 → Self-bias 증가 (더 음수)
+    // 기준 파워 300W 대비 비례, 계수 강화
+    const powerEffect = pwr !== null ? ((pwr - 300) / 700) * 80 : 0;
 
     // 압력 효과: 낮을수록 평균자유행로 증가, 전극 충돌 감소 → Self-bias 증가
     // 기준 압력 50mTorr 대비 역비례
     const pressureEffect = press !== null ? ((50 - press) / 50) * 25 : 0;
 
-    return baseBias - areaEffect - freqEffect + powerEffect - pressureEffect;
+    return baseBias - areaEffect - freqEffect - powerEffect - pressureEffect;
   };
 
   // Update simulation
