@@ -1624,7 +1624,7 @@ const QuizTab = () => {
 
   const quizData = {
     beginner: [
-      { id: 1, question: "DC 플라즈마에서 전자가 음극에서 양극으로 이동할 때 발생하는 현상은?", options: ["전자가 중성 기체와 충돌하여 이온화", "전자가 음극으로 돌아감", "전자가 사라짐", "전자가 느려짐"], correct: 0, explanation: "DC 플라즈마에서 전자는 양극으로 가속되며, 그 과정에서 중성 기체 원자와 충돌하여 이온화를 일으킵니다. 이것이 플라즈마 생성의 핵심 메커니즘입니다." },
+      { id: 1, question: "플라즈마 특성평가에서 IEDF(Ion Energy Distribution Function)는 무엇을 측정하나요?", options: ["기판에 충돌하는 이온의 에너지별 분포", "전자의 속도 분포", "플라즈마 온도 분포", "가스 압력 분포"], correct: 0, explanation: "IEDF는 기판에 도달하는 이온들의 에너지별 분포를 나타냅니다. 이를 통해 이온이 어떤 에너지로 기판에 충돌하는지 알 수 있으며, 식각 및 증착 공정의 품질을 예측하고 최적화할 수 있습니다." },
       { id: 2, question: "플라즈마가 '준중성(Quasi-neutral)' 상태라는 것은 무엇을 의미하나요?", options: ["양이온과 음이온의 수가 같다", "양이온과 전자의 밀도가 거의 같다", "플라즈마에 전하가 없다", "플라즈마가 중성 기체다"], correct: 1, explanation: "준중성 상태는 플라즈마 전체에서 양이온의 밀도(n+)와 전자의 밀도(n-)가 거의 같아 전체적으로 전기적 중성을 유지하는 것을 의미합니다." },
       { id: 3, question: "RF 플라즈마에서 교류 전압을 사용하는 이유는?", options: ["비용이 저렴해서", "전극 손상을 줄이기 위해", "플라즈마를 더 밝게 만들기 위해", "실험이 쉬워서"], correct: 1, explanation: "RF(교류) 전압을 사용하면 이온이 양극과 음극을 번갈아 충격하므로 한쪽 전극에만 집중적인 손상이 발생하는 것을 방지할 수 있습니다." },
       { id: 4, question: "플라즈마 쉬스(Plasma Sheath)는 어디에 형성되나요?", options: ["플라즈마 중심부", "전극 표면 근처", "진공 챔버 벽", "가스 주입구"], correct: 1, explanation: "플라즈마 쉬스는 전극이나 기판 표면 근처에 형성되는 양전하 영역입니다. 전자가 이온보다 훨씬 빠르게 이동하기 때문에 표면 근처에서 전자가 고갈되어 형성됩니다." },
@@ -1707,7 +1707,7 @@ const QuizTab = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-6">
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border-l-4 border-purple-500">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">📝 플라즈마 물리 연습문제</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">📝 플라즈마 특성평가</h2>
         <p className="text-gray-600">1-4탭에서 학습한 내용을 테스트해보세요!</p>
       </div>
 
@@ -2538,7 +2538,7 @@ const PlasmaSimulator = () => {
     { id: 'tab2', name: 'RF 플라즈마 원리', icon: '⚗️', color: 'indigo' },
     { id: 'tab3', name: '주파수 효과', icon: '📡', color: 'teal' },
     { id: 'tab4', name: '이온 에너지', icon: '⚡', color: 'red' },
-    { id: 'tab5', name: '연습문제', icon: '📝', color: 'purple' }
+    { id: 'tab5', name: '공정플라즈마 퀴즈', icon: '📝', color: 'purple' }
   ];
 
   return (
