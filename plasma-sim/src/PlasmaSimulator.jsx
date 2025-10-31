@@ -1614,6 +1614,188 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
   );
 };
 
+// 연습문제 탭 컴포넌트
+const QuizTab = () => {
+  const [difficulty, setDifficulty] = useState('beginner');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const [showSolutions, setShowSolutions] = useState(false);
+
+  const quizData = {
+    beginner: [
+      { id: 1, question: "플라즈마 특성평가에서 IEDF(Ion Energy Distribution Function)는 무엇을 측정하나요?", options: ["기판에 충돌하는 이온의 에너지별 분포", "전자의 속도 분포", "플라즈마 온도 분포", "가스 압력 분포"], correct: 0, explanation: "IEDF는 기판에 도달하는 이온들의 에너지별 분포를 나타냅니다. 이를 통해 이온이 어떤 에너지로 기판에 충돌하는지 알 수 있으며, 식각 및 증착 공정의 품질을 예측하고 최적화할 수 있습니다." },
+      { id: 2, question: "플라즈마가 '준중성(Quasi-neutral)' 상태라는 것은 무엇을 의미하나요?", options: ["양이온과 음이온의 수가 같다", "양이온과 전자의 밀도가 거의 같다", "플라즈마에 전하가 없다", "플라즈마가 중성 기체다"], correct: 1, explanation: "준중성 상태는 플라즈마 전체에서 양이온의 밀도(n+)와 전자의 밀도(n-)가 거의 같아 전체적으로 전기적 중성을 유지하는 것을 의미합니다." },
+      { id: 3, question: "RF 플라즈마에서 교류 전압을 사용하는 이유는?", options: ["비용이 저렴해서", "전극 손상을 줄이기 위해", "플라즈마를 더 밝게 만들기 위해", "실험이 쉬워서"], correct: 1, explanation: "RF(교류) 전압을 사용하면 이온이 양극과 음극을 번갈아 충격하므로 한쪽 전극에만 집중적인 손상이 발생하는 것을 방지할 수 있습니다." },
+      { id: 4, question: "플라즈마 쉬스(Plasma Sheath)는 어디에 형성되나요?", options: ["플라즈마 중심부", "전극 표면 근처", "진공 챔버 벽", "가스 주입구"], correct: 1, explanation: "플라즈마 쉬스는 전극이나 기판 표면 근처에 형성되는 양전하 영역입니다. 전자가 이온보다 훨씬 빠르게 이동하기 때문에 표면 근처에서 전자가 고갈되어 형성됩니다." },
+      { id: 5, question: "Self-bias 전압은 언제 발생하나요?", options: ["DC 플라즈마에서 항상", "RF 플라즈마에서 전극 면적이 다를 때", "플라즈마가 꺼질 때", "진공도가 높을 때"], correct: 1, explanation: "Self-bias는 RF 플라즈마에서 두 전극의 면적이 다를 때 자동으로 발생하는 DC 전압입니다. 작은 전극은 큰 전극보다 더 높은 전압 진폭을 가지게 되어 음의 DC 전압이 생성됩니다." },
+      { id: 6, question: "RF 주파수가 낮을수록 IEDF(이온 에너지 분포)는 어떻게 변하나요?", options: ["피크가 날카로워진다", "여러 개의 피크가 나타난다", "피크가 사라진다", "변화가 없다"], correct: 1, explanation: "저주파에서는 이온이 RF 한 주기 동안 쉬스를 통과할 수 있어 다양한 쉬스 전압을 경험합니다. 따라서 여러 개의 에너지 피크가 나타나는 넓은 분포를 보입니다." },
+      { id: 7, question: "플라즈마 전위(Plasma Potential)는 무엇인가요?", options: ["전극에 인가한 전압", "플라즈마가 접지에 대해 가지는 양의 전위", "Self-bias 전압", "RF 전압의 최대값"], correct: 1, explanation: "플라즈마 전위는 벌크 플라즈마가 접지나 챔버 벽에 대해 가지는 양의 전위입니다. 전자가 이온보다 빠르게 벽으로 이동하므로 플라즈마는 전자 손실을 막기 위해 양전위를 띠게 됩니다." },
+      { id: 8, question: "ICP(Inductively Coupled Plasma) 파워를 높이면 주로 무엇이 증가하나요?", options: ["이온 에너지", "이온 플럭스(수)", "Self-bias 전압", "RF 주파수"], correct: 1, explanation: "ICP 파워를 높이면 플라즈마 밀도가 증가하여 이온 플럭스(기판에 도달하는 이온의 수)가 증가합니다. 이온의 에너지는 주로 바이어스 전압에 의해 결정됩니다." },
+      { id: 9, question: "압력이 증가하면 IEDF는 어떻게 변하나요?", options: ["피크가 날카로워진다", "피크가 높아진다", "피크가 넓어진다", "피크가 이동한다"], correct: 2, explanation: "압력이 증가하면 이온의 충돌이 증가하여 에너지 분산이 커집니다. 따라서 IEDF 피크가 넓어지고(broadening) 높이는 감소합니다." },
+      { id: 10, question: "RF 플라즈마에서 전자와 이온의 운동 차이로 인해 발생하는 현상은?", options: ["플라즈마 소멸", "쉬스 형성", "온도 상승", "압력 증가"], correct: 1, explanation: "전자는 이온보다 훨씬 가볍고 빠르게 움직입니다. 이로 인해 전극 근처에서 전자가 먼저 빠져나가고 양이온이 남아 쉬스(전하 불균형 영역)가 형성됩니다." }
+    ],
+    intermediate: [
+      { id: 1, question: "Self-bias 전압의 크기에 영향을 주는 요인이 아닌 것은?", options: ["전극 면적비", "RF 주파수", "챔버 재질", "RF 파워"], correct: 2, explanation: "Self-bias는 전극 면적비, RF 주파수, RF 파워에 의해 결정됩니다. 챔버 재질은 Self-bias 전압에 직접적인 영향을 주지 않습니다." },
+      { id: 2, question: "전극 면적비가 7:1일 때, 작은 전극에 더 큰 전압이 걸리는 이유는?", options: ["작은 전극의 저항이 크기 때문", "전하 보존을 위해 전류 밀도가 높아지기 때문", "RF 발생기가 그렇게 설계되어서", "플라즈마 밀도가 낮아서"], correct: 1, explanation: "RF 플라즈마에서 양 전극으로 흐르는 변위 전류는 같아야 합니다(전하 보존). 작은 전극은 면적이 작아 같은 전류를 흐르게 하려면 더 높은 전압 진폭이 필요합니다. V × A = 일정" },
+      { id: 3, question: "RF 주파수가 13.56 MHz에서 1 MHz로 낮아지면 IEDF는?", options: ["단일 피크에서 바이모달 분포로 변한다", "피크가 사라진다", "피크 에너지만 증가한다", "변화가 없다"], correct: 0, explanation: "주파수가 낮아지면(13.56→1 MHz) 이온의 transit time이 RF 주기에 비해 짧아져 이온이 RF 변화를 따라갈 수 있게 됩니다. 따라서 단일 피크에서 바이모달(두 개의 피크) 분포로 변합니다." },
+      { id: 4, question: "Bias Power를 0W에서 20W로 증가시키면?", options: ["피크가 사라진다", "피크가 고에너지로 이동하고 두 개의 피크가 나타날 수 있다", "피크 높이만 증가한다", "피크 위치는 변하지 않는다"], correct: 1, explanation: "Bias Power가 증가하면 이온이 더 높은 에너지로 가속됩니다. RF bias의 최대/최소 전압에서 쉬스에 진입한 이온들의 transit time 차이로 인해 두 개의 피크가 형성될 수 있습니다." },
+      { id: 5, question: "플라즈마 쉬스를 통과하는 이온의 에너지는 주로 무엇에 의해 결정되나요?", options: ["가스 종류만", "플라즈마 전위 + Bias 전압", "챔버 압력만", "RF 주파수만"], correct: 1, explanation: "이온의 에너지는 플라즈마 전위와 Bias 전압의 합에 의해 결정됩니다. 접지 표면에서는 플라즈마 전위만, Bias가 있으면 두 전압의 합만큼 가속됩니다." },
+      { id: 6, question: "압력을 5 mTorr에서 30 mTorr로 증가시키면 IEDF 피크는?", options: ["높아지고 좁아진다", "낮아지고 넓어진다", "위치만 이동한다", "변화가 없다"], correct: 1, explanation: "압력 증가 → 충돌 증가 → 에너지 분산 증가로 피크가 넓어집니다(broadening). 동시에 충돌로 인한 이온 손실로 피크 높이가 감소하고 기판 도달 플럭스도 감소합니다." },
+      { id: 7, question: "ICP Power 150W와 250W를 비교할 때 주요 차이는?", options: ["이온 에너지가 크게 증가", "이온 플럭스(피크 높이)가 증가", "RF 주파수가 변화", "Self-bias가 크게 변화"], correct: 1, explanation: "ICP Power는 플라즈마 밀도를 조절하므로 이온의 '양'(플럭스)이 증가합니다. 피크 에너지는 플라즈마 전위에 의해 결정되므로 거의 변하지 않습니다." },
+      { id: 8, question: "고주파(>20 MHz)에서 IEDF가 날카로운 단일 피크를 보이는 이유는?", options: ["이온이 RF 주기보다 느리게 움직여 시간 평균된 전위를 경험", "플라즈마 밀도가 낮아서", "전극이 과열되어서", "Self-bias가 사라져서"], correct: 0, explanation: "고주파에서는 이온의 transit time이 RF 주기보다 훨씬 길어 이온이 RF 변화를 느끼지 못하고 시간 평균된 쉬스 전위만 경험합니다. 따라서 단일 에너지로 가속되어 날카로운 피크를 형성합니다." },
+      { id: 9, question: "전극 면적비를 1:1에서 7:1로 증가시키면 작은 전극의 Self-bias는?", options: ["변화 없음", "더 음수(-)로 증가", "0으로 감소", "양수(+)로 변화"], correct: 1, explanation: "면적비가 증가하면 작은 전극의 쉬스 전압이 증가하여 Self-bias가 더 음수(-)로 커집니다. Self-bias ∝ (면적비)^n (n≈0.8-1)" },
+      { id: 10, question: "IEDF에서 '곡선 아래 면적'이 의미하는 것은?", options: ["플라즈마 온도", "기판에 도달하는 총 이온 플럭스", "RF 파워", "Self-bias 전압"], correct: 1, explanation: "IEDF 곡선 아래의 전체 면적은 기판에 도달하는 총 이온 플럭스(이온의 수)를 나타냅니다. 피크 위치는 에너지, 피크 높이는 특정 에너지의 이온 수를 의미합니다." }
+    ],
+    advanced: [
+      { id: 1, question: "RF 플라즈마에서 전극 면적비 5:1, 주파수 13.56 MHz일 때 Self-bias를 극대화하려면?", options: ["주파수를 올리고 파워를 낮춘다", "주파수를 낮추고 파워를 올린다", "압력을 올린다", "면적비를 줄인다"], correct: 1, explanation: "Self-bias는 저주파, 고파워, 고면적비에서 증가합니다. 주파수가 낮을수록 쉬스 전압 진폭이 커지고, 파워가 높을수록 플라즈마 임피던스가 낮아져 전압이 증가합니다." },
+      { id: 2, question: "IEDF에서 바이모달 분포의 두 피크 사이 간격이 의미하는 것은?", options: ["플라즈마 밀도", "RF 전압의 peak-to-peak 전압", "가스 온도", "챔버 크기"], correct: 1, explanation: "바이모달 분포의 두 피크는 RF 전압의 최대값과 최소값에서 쉬스에 진입한 이온들을 나타냅니다. 피크 간 간격은 RF 전압의 변화폭(peak-to-peak)을 반영합니다." },
+      { id: 3, question: "압력 5 mTorr, Bias 20W에서 식각을 할 때 이온 에너지는 높지만 식각률이 낮다면?", options: ["ICP Power를 올려 이온 플럭스 증가", "압력을 더 낮춘다", "주파수를 올린다", "온도를 낮춘다"], correct: 0, explanation: "이온 에너지는 Bias로 충분하지만 식각률이 낮다면 이온 플럭스(수)가 부족한 것입니다. ICP Power를 올려 플라즈마 밀도와 이온 플럭스를 증가시켜야 합니다." },
+      { id: 4, question: "두 공정 조건에서 IEDF 피크 에너지는 같지만 식각 결과가 다르다면 원인은?", options: ["RF 주파수 차이", "이온 플럭스(피크 높이/면적) 차이", "챔버 재질 차이", "온도 차이만"], correct: 1, explanation: "피크 에너지가 같아도 이온 플럭스(피크 높이나 곡선 아래 면적)가 다르면 단위시간당 표면에 충돌하는 이온 수가 달라 식각률이 다릅니다." },
+      { id: 5, question: "13.56 MHz에서 1 MHz로 주파수를 낮출 때 예상되는 변화가 아닌 것은?", options: ["IEDF가 바이모달로 변화", "이온 에너지 분산 증가", "Self-bias 전압 증가", "플라즈마 밀도 급증"], correct: 3, explanation: "주파수를 낮추면 IEDF 형태 변화, 에너지 분산 증가, Self-bias 증가가 일어나지만, 플라즈마 밀도는 주로 파워와 압력에 의해 결정되므로 주파수만으로 급증하지 않습니다." },
+      { id: 6, question: "고에너지 이온 충격을 줄이면서 높은 식각률을 유지하려면?", options: ["Bias Power↓, ICP Power↑, 압력↑", "Bias Power↑, ICP Power↓, 압력↓", "모든 파워 감소", "주파수만 조절"], correct: 0, explanation: "Bias Power를 낮춰 이온 에너지를 줄이고, ICP Power를 올려 이온 플럭스를 증가시키며, 압력을 약간 올려 화학 반응을 촉진하면 손상을 줄이면서 식각률을 유지할 수 있습니다." },
+      { id: 7, question: "IEDF 측정 시 압력 증가에 따라 피크가 낮아지고 넓어지는 물리적 원인은?", options: ["플라즈마 소멸", "평균 자유 경로 감소로 충돌 증가", "온도 상승", "RF 파워 감소"], correct: 1, explanation: "압력 증가 → 평균 자유 경로(Mean Free Path) 감소 → 쉬스 통과 중 이온-중성입자 충돌 증가 → 에너지 분산(broadening) 및 일부 이온 손실로 피크 높이 감소" },
+      { id: 8, question: "Bias Power 모드에서 0W와 30W를 비교할 때, 30W에서 나타나는 현상은?", options: ["피크가 저에너지로 이동", "피크가 고에너지로 이동하고 부 피크 생성 가능", "피크가 사라짐", "피크 수만 증가"], correct: 1, explanation: "Bias 0W: 플라즈마 전위에서 단일 피크. Bias 30W: RF bias로 이온이 고에너지로 가속, 주 피크 이동. RF 최대/최소에서 진입한 이온들의 transit time 차이로 부 피크도 나타날 수 있습니다." },
+      { id: 9, question: "식각 방향성(anisotropy)을 최대화하려면 어떤 IEDF 조건이 필요한가?", options: ["낮은 에너지, 높은 플럭스", "높은 에너지, 날카로운 피크, 수직 입사", "넓은 에너지 분포", "바이모달 분포"], correct: 1, explanation: "방향성 식각을 위해서는 이온이 높은 에너지로 수직 방향으로 입사해야 합니다. 날카로운 IEDF 피크(에너지 분산 최소)와 충분한 이온 에너지가 필요합니다. 저압, 고 Bias가 유리합니다." },
+      { id: 10, question: "ICP 150W, Bias 10W, 압력 10 mTorr에서 식각률은 좋지만 균일도가 나쁘다면?", options: ["압력을 올려 확산 개선", "ICP Power만 증가", "Bias Power만 증가", "주파수를 급격히 변경"], correct: 0, explanation: "균일도 문제는 플라즈마 분포나 반응물 확산 문제입니다. 압력을 약간 올리면 활성종의 확산이 개선되어 균일도가 향상될 수 있습니다. 단, 너무 높으면 이온 에너지 손실이 발생합니다." }
+    ]
+  };
+
+  const currentQuestions = quizData[difficulty];
+  const currentQuiz = currentQuestions[currentQuestion];
+
+  const handleAnswer = (optionIndex) => {
+    setUserAnswers({ ...userAnswers, [currentQuestion]: optionIndex });
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < currentQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    setShowResults(true);
+  };
+
+  const handleReset = () => {
+    setUserAnswers({});
+    setCurrentQuestion(0);
+    setShowResults(false);
+    setShowSolutions(false);
+  };
+
+  const calculateScore = () => {
+    let correct = 0;
+    currentQuestions.forEach((q, index) => {
+      if (userAnswers[index] === q.correct) {
+        correct++;
+      }
+    });
+    return correct;
+  };
+
+  const score = calculateScore();
+  const percentage = (score / currentQuestions.length) * 100;
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 p-6">
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border-l-4 border-purple-500">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">📝 플라즈마 특성평가</h2>
+        <p className="text-gray-600">1-4탭에서 학습한 내용을 테스트해보세요!</p>
+      </div>
+
+      {!showResults ? (
+        <>
+          <div className="bg-white rounded-xl shadow-lg p-6 border">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">난이도 선택</h3>
+            <div className="flex gap-3">
+              <button onClick={() => { setDifficulty('beginner'); handleReset(); }} className={`flex-1 py-3 rounded-lg font-semibold transition ${difficulty === 'beginner' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>🌱 초급</button>
+              <button onClick={() => { setDifficulty('intermediate'); handleReset(); }} className={`flex-1 py-3 rounded-lg font-semibold transition ${difficulty === 'intermediate' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>🔥 중급</button>
+              <button onClick={() => { setDifficulty('advanced'); handleReset(); }} className={`flex-1 py-3 rounded-lg font-semibold transition ${difficulty === 'advanced' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>⚡ 고급</button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-6 border">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-sm font-semibold text-purple-600">문제 {currentQuestion + 1} / {currentQuestions.length}</span>
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${difficulty === 'beginner' ? 'bg-green-100 text-green-800' : difficulty === 'intermediate' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>{difficulty === 'beginner' ? '초급' : difficulty === 'intermediate' ? '중급' : '고급'}</span>
+            </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">{currentQuiz.question}</h3>
+            <div className="space-y-3">
+              {currentQuiz.options.map((option, index) => (
+                <button key={index} onClick={() => handleAnswer(index)} className={`w-full text-left p-4 rounded-lg border-2 transition ${userAnswers[currentQuestion] === index ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'}`}>
+                  <span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>{option}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-between mt-6">
+              <button onClick={handlePrevious} disabled={currentQuestion === 0} className="px-6 py-2 rounded-lg font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">← 이전</button>
+              {currentQuestion === currentQuestions.length - 1 ? (
+                <button onClick={handleSubmit} className="px-6 py-2 rounded-lg font-semibold bg-purple-500 text-white hover:bg-purple-600">제출하기</button>
+              ) : (
+                <button onClick={handleNext} className="px-6 py-2 rounded-lg font-semibold bg-purple-500 text-white hover:bg-purple-600">다음 →</button>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="bg-white rounded-xl shadow-lg p-6 border">
+            <h3 className="text-2xl font-bold text-center text-gray-800 mb-4">📊 결과</h3>
+            <div className="text-center mb-6">
+              <div className="text-6xl font-bold mb-2" style={{ color: percentage >= 80 ? '#10b981' : percentage >= 60 ? '#3b82f6' : '#ef4444' }}>{score} / {currentQuestions.length}</div>
+              <div className="text-2xl font-semibold text-gray-600">{percentage.toFixed(0)}점</div>
+              <div className="mt-4 text-lg">{percentage >= 90 ? '🎉 완벽합니다!' : percentage >= 80 ? '👍 훌륭해요!' : percentage >= 70 ? '😊 잘했어요!' : percentage >= 60 ? '🙂 괜찮아요!' : '💪 다시 도전해보세요!'}</div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
+              <div className="h-4 rounded-full transition-all" style={{ width: `${percentage}%`, background: percentage >= 80 ? '#10b981' : percentage >= 60 ? '#3b82f6' : '#ef4444' }}></div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowSolutions(!showSolutions)} className="flex-1 py-3 rounded-lg font-semibold bg-blue-500 text-white hover:bg-blue-600">{showSolutions ? '풀이 숨기기' : '풀이 보기'}</button>
+              <button onClick={handleReset} className="flex-1 py-3 rounded-lg font-semibold bg-purple-500 text-white hover:bg-purple-600">다시 풀기</button>
+            </div>
+          </div>
+
+          {showSolutions && (
+            <div className="space-y-4">
+              {currentQuestions.map((q, index) => {
+                const isCorrect = userAnswers[index] === q.correct;
+                return (
+                  <div key={q.id} className={`bg-white rounded-xl shadow-lg p-6 border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-bold text-gray-800">문제 {index + 1}</h4>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{isCorrect ? '✓ 정답' : '✗ 오답'}</span>
+                    </div>
+                    <p className="text-gray-700 mb-3">{q.question}</p>
+                    <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                      <p className="text-sm font-semibold text-gray-600">정답:</p>
+                      <p className="text-green-700 font-bold">{String.fromCharCode(65 + q.correct)}. {q.options[q.correct]}</p>
+                      {!isCorrect && userAnswers[index] !== undefined && (
+                        <p className="text-red-700 font-bold mt-2">내 답: {String.fromCharCode(65 + userAnswers[index])}. {q.options[userAnswers[index]]}</p>
+                      )}
+                    </div>
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-blue-800 mb-1">💡 설명:</p>
+                      <p className="text-sm text-blue-900">{q.explanation}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
 // 이온 에너지 분포 시뮬레이터 컴포넌트 (IEDF)
 const IonEnergyDistribution = () => {
   const [frequency, setFrequency] = useState(13.56); // MHz
@@ -1788,17 +1970,17 @@ const IonEnergyDistribution = () => {
   const modeInfo = getModeInfo();
 
   return (
-    <div className="w-full bg-gray-50 p-8">
-      <div className="max-w-full bg-white rounded-lg shadow-lg p-6">
-        {/* 헤더 */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Ion Energy Distribution Function (IEDF)
-          </h1>
-          <p className="text-gray-600">
-            RF 주파수에 따른 이온 충돌 에너지 분포 변화
-          </p>
+    <div className="space-y-8">
+      {/* 소개 섹션 */}
+      <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-6 border">
+        <h2 className="text-2xl font-bold text-red-900 mb-4">⚡ 이온 에너지 분포 (Ion Energy Distribution Function)</h2>
+        <p className="text-red-700 mb-3">플라즈마 공정에서 기판에 충돌하는 이온의 에너지 분포를 측정하고 분석합니다. IEDF는 식각 방향성, 선택비, 손상도 등 공정 결과를 결정하는 핵심 특성평가 기법입니다.</p>
+        <div className="text-sm text-red-600 bg-red-100 rounded-lg p-3">
+          <strong>학습 포인트:</strong> RF 주파수, ICP Power, Bias Power에 따른 IEDF 변화, 이온 에너지와 플럭스 제어, 공정 최적화 전략
         </div>
+      </div>
+
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
 
         {/* 컨트롤 패널 */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -2356,7 +2538,7 @@ const PlasmaSimulator = () => {
     { id: 'tab2', name: 'RF 플라즈마 원리', icon: '⚗️', color: 'indigo' },
     { id: 'tab3', name: '주파수 효과', icon: '📡', color: 'teal' },
     { id: 'tab4', name: '이온 에너지', icon: '⚡', color: 'red' },
-    { id: 'tab5', name: '전자 온도', icon: '🌡️', color: 'orange' }
+    { id: 'tab5', name: '공정플라즈마 퀴즈', icon: '📝', color: 'purple' }
   ];
 
   return (
@@ -3076,132 +3258,9 @@ const PlasmaSimulator = () => {
           <IonEnergyDistribution />
         )}
 
-        {/* 탭 5: 전자 온도 */}
+        {/* 탭 5: 연습문제 */}
         {activeTheme === 'tab5' && (
-          <div className="space-y-8">
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 border">
-              <h2 className="text-2xl font-bold text-orange-900 mb-4">🌡️ 전자 온도 (Electron Temperature)</h2>
-              <p className="text-orange-700 mb-3">전자의 평균 운동 에너지와 이온화율, 플라즈마 반응성의 관계를 학습합니다.</p>
-              <div className="text-sm text-orange-600 bg-orange-100 rounded-lg p-3">
-                <strong>학습 포인트:</strong> 전자 온도가 이온화율과 활성종 생성에 미치는 영향
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-orange-800 mb-4">전자 온도 제어</h3>
-
-                <div className="space-y-6">
-                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                    <label className="block text-sm font-medium text-orange-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>전자 온도 (eV)</span>
-                        <span className="bg-orange-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {electronTemp} eV
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="15"
-                      step="0.5"
-                      value={electronTemp}
-                      onChange={(e) => setElectronTemp(parseFloat(e.target.value))}
-                      className="w-full h-4 bg-orange-300 rounded-lg appearance-none cursor-pointer slider-thumb-orange"
-                    />
-                  </div>
-
-                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                    <label className="block text-sm font-medium text-blue-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>가스 압력 (mTorr)</span>
-                        <span className="bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {gasPressure} mTorr
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="5"
-                      value={gasPressure}
-                      onChange={(e) => setGasPressure(parseInt(e.target.value))}
-                      className="w-full h-4 bg-blue-300 rounded-lg appearance-none cursor-pointer slider-thumb-blue"
-                    />
-                  </div>
-
-                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                    <label className="block text-sm font-medium text-green-900 mb-3">
-                      <span className="flex items-center justify-between">
-                        <span>RF 파워 (W)</span>
-                        <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {rfPower} W
-                        </span>
-                      </span>
-                    </label>
-                    <input
-                      type="range"
-                      min="50"
-                      max="500"
-                      step="10"
-                      value={rfPower}
-                      onChange={(e) => setRfPower(parseInt(e.target.value))}
-                      className="w-full h-4 bg-green-300 rounded-lg appearance-none cursor-pointer slider-thumb-green"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6 border">
-                <h3 className="text-lg font-semibold text-orange-800 mb-4">이온화율 및 반응성</h3>
-
-                <div className="space-y-4">
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">이온화율</span>
-                      <span className="font-bold text-lg">{ionizationRate.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-300 rounded-full h-4">
-                      <div
-                        className="bg-gradient-to-r from-orange-400 to-red-500 h-4 rounded-full transition-all duration-300"
-                        style={{ width: `${ionizationRate}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <div className="text-center">
-                      <div className="text-6xl mb-2">
-                        {electronTemp > 8 ? '🔥' : electronTemp > 5 ? '⚡' : electronTemp > 3 ? '💫' : '❄️'}
-                      </div>
-                      <div className="font-bold text-lg">
-                        {electronTemp > 8 ? '고온 플라즈마' :
-                         electronTemp > 5 ? '중온 플라즈마' :
-                         electronTemp > 3 ? '저온 플라즈마' : '초저온 플라즈마'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>활성종 밀도:</span>
-                      <span className="font-bold">{(electronTemp * rfPower / 100).toFixed(1)} × 10¹⁵ cm⁻³</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>식각율:</span>
-                      <span className="font-bold">{(ionizationRate * 2).toFixed(0)} nm/min</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>전자-충돌 빈도:</span>
-                      <span className="font-bold">{(electronTemp * gasPressure / 10).toFixed(1)} × 10⁶ s⁻¹</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <QuizTab />
         )}
 
       </div>
