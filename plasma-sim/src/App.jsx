@@ -13,7 +13,7 @@ function App() {
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
       icon: '🔬',
-      color: 'blue',
+      color: 'from-blue-500 to-blue-600',
       component: PlasmaSimulatorI
     },
     {
@@ -21,7 +21,7 @@ function App() {
       name: '플라즈마 시뮬레이터 II',
       description: '공정 응용 및 실무',
       icon: '🏭',
-      color: 'purple',
+      color: 'from-purple-500 to-purple-600',
       component: PlasmaSimulatorII
     },
     {
@@ -29,7 +29,7 @@ function App() {
       name: '플라즈마 시뮬레이터 III',
       description: 'DC/RF 플라즈마 심화',
       icon: '⚡',
-      color: 'green',
+      color: 'from-green-500 to-green-600',
       component: PlasmaSimulatorIII
     }
   ];
@@ -37,62 +37,73 @@ function App() {
   const SelectedComponent = simulators.find(s => s.id === selectedSimulator)?.component;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <nav className="bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 text-white shadow-xl">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold">플라즈마 전문 교육 시뮬레이터</h1>
-              <p className="text-indigo-200 text-sm mt-1">Plasma Professional Education Simulator</p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-indigo-200">확장 가능한 구조</div>
-              <div className="text-xs text-indigo-300">Modular Architecture</div>
-            </div>
-          </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Left Sidebar */}
+      <aside className="w-80 bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900 text-white shadow-2xl flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-white/20">
+          <h1 className="text-2xl font-bold mb-2">플라즈마 교육</h1>
+          <h2 className="text-xl font-semibold mb-3">시뮬레이터</h2>
+          <p className="text-sm text-indigo-200">Plasma Professional Education Simulator</p>
+        </div>
 
-          {/* Simulator Selection Tabs */}
-          <div className="flex gap-3 mt-4">
-            {simulators.map((sim) => (
-              <button
-                key={sim.id}
-                onClick={() => setSelectedSimulator(sim.id)}
-                className={`
-                  flex-1 px-6 py-4 rounded-lg font-semibold transition-all duration-300 transform
-                  ${selectedSimulator === sim.id
-                    ? 'bg-white text-indigo-900 shadow-lg scale-105 border-2 border-white'
-                    : 'bg-white/10 text-white hover:bg-white/20 border-2 border-transparent'
-                  }
-                `}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-3xl">{sim.icon}</span>
-                  <span className="text-sm font-bold">{sim.name}</span>
-                  <span className="text-xs opacity-80">{sim.description}</span>
+        {/* Simulator Navigation */}
+        <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
+          <div className="text-xs font-bold text-indigo-300 mb-3 px-2">
+            시뮬레이터 선택
+          </div>
+          {simulators.map((sim) => (
+            <button
+              key={sim.id}
+              onClick={() => setSelectedSimulator(sim.id)}
+              className={`
+                w-full text-left p-4 rounded-xl transition-all duration-300 transform
+                ${selectedSimulator === sim.id
+                  ? 'bg-white text-indigo-900 shadow-lg scale-105'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-102'
+                }
+              `}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-3xl">{sim.icon}</span>
+                <div className="flex-1">
+                  <div className="font-bold text-sm mb-1">{sim.name}</div>
+                  <div className={`text-xs ${selectedSimulator === sim.id ? 'text-indigo-600' : 'text-white/80'}`}>
+                    {sim.description}
+                  </div>
                 </div>
-              </button>
-            ))}
+              </div>
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-white/20">
+          <div className="text-xs text-indigo-300">
+            <div className="font-semibold mb-1">확장 가능한 구조</div>
+            <div className="text-indigo-400">각 시뮬레이터는 독립적으로 관리됩니다</div>
           </div>
         </div>
-      </nav>
+      </aside>
 
-      {/* Simulator Content */}
-      <div className="w-full">
-        {SelectedComponent && <SelectedComponent />}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Header */}
+        <header className="bg-white shadow-md border-b border-gray-200 px-8 py-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {simulators.find(s => s.id === selectedSimulator)?.icon}{' '}
+            {simulators.find(s => s.id === selectedSimulator)?.name}
+          </h1>
+          <p className="text-gray-600">
+            {simulators.find(s => s.id === selectedSimulator)?.description}
+          </p>
+        </header>
+
+        {/* Simulator Content */}
+        <main className="flex-1 overflow-auto bg-gray-50">
+          {SelectedComponent && <SelectedComponent />}
+        </main>
       </div>
-
-      {/* Footer Info */}
-      <footer className="bg-gray-800 text-white py-4 mt-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm text-gray-400">
-            📁 구조: src/PlasmaSimulatorI.jsx | src/PlasmaSimulatorII.jsx | src/PlasmaSimulatorIII.jsx
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            각 시뮬레이터는 독립적인 파일로 관리되며 확장 가능합니다
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
