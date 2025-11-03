@@ -36,11 +36,11 @@ const UnifiedPlasmaSimulator = () => {
         <nav className="flex-1 space-y-3">
           <button
             onClick={() => setSelectedSimulator('basic')}
-            className={\`w-full text-left p-4 rounded-lg transition-all duration-200 \${
+            className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
               selectedSimulator === 'basic'
                 ? 'bg-white text-indigo-900 shadow-lg transform scale-105'
                 : 'bg-indigo-800 hover:bg-indigo-700 text-white'
-            }\`}
+            }`}
           >
             <div className="flex items-center space-x-3">
               <span className="text-2xl">⚡</span>
@@ -53,11 +53,11 @@ const UnifiedPlasmaSimulator = () => {
 
           <button
             onClick={() => setSelectedSimulator('simulator1')}
-            className={\`w-full text-left p-4 rounded-lg transition-all duration-200 \${
+            className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
               selectedSimulator === 'simulator1'
                 ? 'bg-white text-indigo-900 shadow-lg transform scale-105'
                 : 'bg-indigo-800 hover:bg-indigo-700 text-white'
-            }\`}
+            }`}
           >
             <div className="flex items-center space-x-3">
               <span className="text-2xl">🔬</span>
@@ -70,11 +70,11 @@ const UnifiedPlasmaSimulator = () => {
 
           <button
             onClick={() => setSelectedSimulator('simulator2')}
-            className={\`w-full text-left p-4 rounded-lg transition-all duration-200 \${
+            className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
               selectedSimulator === 'simulator2'
                 ? 'bg-white text-indigo-900 shadow-lg transform scale-105'
                 : 'bg-indigo-800 hover:bg-indigo-700 text-white'
-            }\`}
+            }`}
           >
             <div className="flex items-center space-x-3">
               <span className="text-2xl">🏭</span>
