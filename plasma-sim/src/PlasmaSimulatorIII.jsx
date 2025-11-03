@@ -2502,7 +2502,7 @@ const IonEnergyDistribution = () => {
   );
 };
 
-const PlasmaSimulator = () => {
+const PlasmaSimulatorIII = () => {
   const [activeTheme, setActiveTheme] = useState('tab1');
 
   const [electronTemp, setElectronTemp] = useState(3);
@@ -3268,4 +3268,4 @@ const PlasmaSimulator = () => {
   );
 };
 
-export default PlasmaSimulator;
+export default PlasmaSimulatorIII;
