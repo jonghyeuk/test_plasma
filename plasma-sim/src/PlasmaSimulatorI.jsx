@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 const PlasmaSimulatorI = () => {
-  const [activeTab, setActiveTab] = useState('plasma-basics');
+  const [activeTheme, setActiveTheme] = useState('plasma-basics');
   const [basicGasPressure, setBasicGasPressure] = useState(3.0);
   const [basicPlasmaEnergy, setBasicPlasmaEnergy] = useState(100);
   const [pressure, setPressure] = useState(1.0);
@@ -23,12 +23,12 @@ const PlasmaSimulatorI = () => {
   const [typedText, setTypedText] = useState('');
   const [showDetailedTheory, setShowDetailedTheory] = useState(false);
 
-  const tabs = [
-    { id: 'plasma-basics', name: '플라즈마 기초', icon: '⚡' },
-    { id: 'plasma-principle1', name: '플라즈마 원리 1', icon: '🔬' },
-    { id: 'plasma-principle2', name: '플라즈마 원리 2', icon: '📊' },
-    { id: 'rf-matching', name: 'RF 매칭', icon: '📡' },
-    { id: 'system-structure', name: '시스템 구조', icon: '🏗️' }
+  const themes = [
+    { id: 'plasma-basics', name: '플라즈마 기본 특성', icon: '⚡', color: 'blue' },
+    { id: 'plasma-principle1', name: '플라즈마 발생원리1', icon: '🔬', color: 'indigo' },
+    { id: 'plasma-principle2', name: '플라즈마 발생원리2', icon: '📈', color: 'violet' },
+    { id: 'rf-matching', name: 'RF 및 매칭', icon: '📡', color: 'green' },
+    { id: 'system-structure', name: '시스템 구조(CCP)', icon: '🏗️', color: 'purple' }
   ];
 
   // Theory steps for plasma basics
@@ -231,27 +231,27 @@ const PlasmaSimulatorI = () => {
 
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 py-4">
-            {tabs.map(tab => (
+          <div className="flex space-x-1 py-4 overflow-x-auto">
+            {themes.map((theme, index) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                key={theme.id}
+                onClick={() => setActiveTheme(theme.id)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  activeTab === tab.id
+                  activeTheme === theme.id
                     ? 'bg-blue-100 text-blue-800 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                <span className="text-lg">{tab.icon}</span>
-                <span>{tab.name}</span>
+                <span className="text-lg">{theme.icon}</span>
+                <span>{index + 1}. {theme.name}</span>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'plasma-basics' && (
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {activeTheme === 'plasma-basics' && (
           <div className="space-y-8">
             {/* Theory Opening Section */}
             {!showDetailedTheory ? (
@@ -466,7 +466,7 @@ const PlasmaSimulatorI = () => {
           </div>
         )}
 
-        {activeTab === 'plasma-principle1' && (
+        {activeTheme === 'plasma-principle1' && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-purple-900 mb-4">🔬 플라즈마 원리 1: 압력과 에너지의 영향</h2>
@@ -596,7 +596,7 @@ const PlasmaSimulatorI = () => {
           </div>
         )}
 
-        {activeTab === 'plasma-principle2' && (
+        {activeTheme === 'plasma-principle2' && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-green-900 mb-4">📊 플라즈마 원리 2: Paschen 법칙</h2>
@@ -740,7 +740,7 @@ const PlasmaSimulatorI = () => {
           </div>
         )}
 
-        {activeTab === 'rf-matching' && (
+        {activeTheme === 'rf-matching' && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-red-900 mb-4">📡 RF 임피던스 매칭</h2>
@@ -954,7 +954,7 @@ const PlasmaSimulatorI = () => {
           </div>
         )}
 
-        {activeTab === 'system-structure' && (
+        {activeTheme === 'system-structure' && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-cyan-900 mb-4">🏗️ CCP 플라즈마 시스템 구조</h2>
