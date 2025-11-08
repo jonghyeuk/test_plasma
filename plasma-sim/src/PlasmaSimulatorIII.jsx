@@ -2552,34 +2552,94 @@ const PlasmaSimulatorIII = () => {
     {
       step: 1,
       title: "DC 플라즈마란?",
-      content: "DC 플라즈마는 Direct Current, 즉 '직류 전압'을 이용해 만드는 가장 오래되고 기본적인 플라즈마 방식입니다. 역사적으로 1879년 크룩스(William Crookes)가 처음 연구했고, 플라즈마 물리학의 기초를 다진 중요한 방식이에요. 작동 원리는 간단합니다. 진공 챔버 안에 두 개의 금속 전극(Cathode 음극, Anode 양극)을 설치하고, 수백 볼트의 DC 전압을 걸어주면 됩니다. 강한 전기장이 형성되고, 이 전기장이 전자를 가속시킵니다. 가속된 전자가 가스 원자와 충돌하면서 이온화가 일어나고, 연쇄적으로 더 많은 이온과 전자가 생기면서 플라즈마가 형성됩니다. DC 플라즈마는 스퍼터링(Sputtering) 같은 금속 증착 공정에 오늘날까지도 널리 사용됩니다. 하지만 큰 단점이 있어요. 전도성 물질에만 사용할 수 있다는 점입니다. 만약 전극이 절연체라면 전하가 쌓여서 방전이 멈춰버리거든요. 그래서 실리콘 웨이퍼나 유리 같은 절연체를 처리하려면 다른 방법이 필요합니다. 그것이 바로 RF 플라즈마죠!",
+      content: "DC 플라즈마는 **Direct Current**, 즉 '__직류 전압__'을 이용해 만드는 가장 오래되고 기본적인 플라즈마 방식입니다. 역사적으로 **1879년 크룩스(William Crookes)**가 처음 연구했고, 플라즈마 물리학의 기초를 다진 중요한 방식이에요.\n\n작동 원리는 간단합니다. 진공 챔버 안에 두 개의 금속 전극(__Cathode 음극__, __Anode 양극__)을 설치하고, *수백 볼트*의 DC 전압을 걸어주면 됩니다. 강한 전기장이 형성되고, 이 전기장이 전자를 가속시킵니다. 가속된 전자가 가스 원자와 충돌하면서 이온화가 일어나고, 연쇄적으로 더 많은 이온과 전자가 생기면서 플라즈마가 형성됩니다.\n\nDC 플라즈마는 **스퍼터링(Sputtering)** 같은 금속 증착 공정에 오늘날까지도 널리 사용됩니다. 하지만 큰 단점이 있어요. __전도성 물질에만 사용할 수 있다__는 점입니다. 만약 전극이 절연체라면 전하가 쌓여서 방전이 멈춰버리거든요.\n\n그래서 실리콘 웨이퍼나 유리 같은 절연체를 처리하려면 다른 방법이 필요합니다. 그것이 바로 **RF 플라즈마**죠!",
       color: "from-green-500 to-teal-500"
     },
     {
       step: 2,
       title: "Cathode Sheath와 공간전하",
-      content: "DC 플라즈마의 가장 신비롭고 중요한 현상이 'Cathode Sheath(음극 시스)'입니다. 왜 이게 형성될까요? 전자와 이온의 속도 차이 때문입니다! 전자는 질량이 아주 작아서(양성자의 1/1836) 빠르게 날아다니지만, 이온은 무거워서 천천히 움직입니다. 플라즈마가 켜지면 전자들이 빠르게 벽면으로 날아가 중성화되고, 느린 양이온들은 아직 플라즈마 안에 남아있습니다. 이렇게 되면 음극 근처에 양이온만 많이 모여있는 '공간전하층(Space Charge Layer)'이 만들어져요. 이 영역을 Cathode Sheath라고 부릅니다. Sheath 안에서는 준중성이 깨지고, 강력한 전기장이 형성됩니다. 이 전기장의 역할은 두 가지입니다. 첫째, 양이온을 음극 쪽으로 가속시킵니다. 고에너지 양이온이 음극을 때리면 '2차 전자(Secondary Electron)'가 튀어나와요. 둘째, 전자가 너무 빨리 손실되는 것을 막습니다. 전기장이 전자를 밀어내서 플라즈마를 유지하는 거죠. 이 2차 전자 방출이 DC 플라즈마를 지속시키는 핵심 메커니즘입니다. Sheath의 두께는 보통 수 mm 정도이고, 전압 강하는 수백 볼트에 달합니다!",
+      content: "DC 플라즈마의 가장 신비롭고 중요한 현상이 **Cathode Sheath(음극 시스)**입니다. 왜 이게 형성될까요? __전자와 이온의 속도 차이__ 때문입니다!\n\n전자는 질량이 아주 작아서(*양성자의 1/1836*) 빠르게 날아다니지만, 이온은 무거워서 천천히 움직입니다. 플라즈마가 켜지면 전자들이 빠르게 벽면으로 날아가 중성화되고, 느린 양이온들은 아직 플라즈마 안에 남아있습니다.\n\n이렇게 되면 음극 근처에 양이온만 많이 모여있는 '__공간전하층(Space Charge Layer)__'이 만들어져요. 이 영역을 **Cathode Sheath**라고 부릅니다.\n\nSheath 안에서는 준중성이 깨지고, 강력한 전기장이 형성됩니다. 이 전기장의 역할은 두 가지입니다:\n**첫째**, 양이온을 음극 쪽으로 가속시킵니다. 고에너지 양이온이 음극을 때리면 '__2차 전자(Secondary Electron)__'가 튀어나와요.\n**둘째**, 전자가 너무 빨리 손실되는 것을 막습니다.\n\n이 2차 전자 방출이 DC 플라즈마를 지속시키는 핵심 메커니즘입니다. Sheath의 두께는 보통 *수 mm* 정도이고, 전압 강하는 **수백 볼트**에 달합니다!",
       color: "from-teal-500 to-cyan-500"
     },
     {
       step: 3,
       title: "RF 플라즈마의 등장",
-      content: "1940년대에 과학자들은 심각한 문제에 직면했습니다. DC 플라즈마로는 유리나 실리콘 웨이퍼 같은 절연체를 처리할 수 없었거든요. 왜 그럴까요? 절연체에 DC 전압을 걸면 전하가 표면에 쌓이기만 하고(Charge Buildup), 전류가 흐르지 않아서 플라즈마가 꺼져버립니다. 이 문제를 해결한 혁신적인 아이디어가 바로 'RF 플라즈마'입니다! RF는 Radio Frequency, 즉 고주파를 의미합니다. 반도체 공정에서는 주로 13.56MHz를 사용하는데, 이는 ISM(Industrial, Scientific, Medical) 밴드로 국제적으로 허용된 주파수예요. RF 플라즈마의 원리는 이렇습니다. 전압의 극성이 1초에 1350만 번(!) 바뀌면서 교류로 흐릅니다. 플러스와 마이너스가 계속 바뀌니까, 절연체 표면에 전하가 쌓이지 않고 마치 전류가 흐르는 것처럼 작동합니다. 마치 콘덴서처럼 말이죠! 더 놀라운 점은 RF 플라즈마가 이온 에너지와 플라즈마 밀도를 훨씬 정밀하게 제어할 수 있다는 겁니다. 주파수, 파워, 전극 간격 등을 조절하면 나노미터 수준의 초정밀 식각이 가능해집니다. 이 발견 덕분에 현대 반도체 산업이 탄생할 수 있었답니다!",
+      content: "**1940년대**에 과학자들은 심각한 문제에 직면했습니다. DC 플라즈마로는 __유리나 실리콘 웨이퍼 같은 절연체__를 처리할 수 없었거든요.\n\n왜 그럴까요? 절연체에 DC 전압을 걸면 전하가 표면에 쌓이기만 하고(__Charge Buildup__), 전류가 흐르지 않아서 플라즈마가 꺼져버립니다.\n\n이 문제를 해결한 혁신적인 아이디어가 바로 **RF 플라즈마**입니다! RF는 **Radio Frequency**, 즉 고주파를 의미합니다. 반도체 공정에서는 주로 *13.56MHz*를 사용하는데, 이는 __ISM(Industrial, Scientific, Medical) 밴드__로 국제적으로 허용된 주파수예요.\n\nRF 플라즈마의 원리는 이렇습니다. 전압의 극성이 *1초에 1350만 번(!)*  바뀌면서 교류로 흐릅니다. 플러스와 마이너스가 계속 바뀌니까, 절연체 표면에 전하가 쌓이지 않고 마치 전류가 흐르는 것처럼 작동합니다. 마치 콘덴서처럼 말이죠!\n\n더 놀라운 점은 RF 플라즈마가 __이온 에너지와 플라즈마 밀도를 훨씬 정밀하게 제어__할 수 있다는 겁니다. 주파수, 파워, 전극 간격 등을 조절하면 **나노미터 수준의 초정밀 식각**이 가능해집니다. 이 발견 덕분에 현대 반도체 산업이 탄생할 수 있었답니다!",
       color: "from-cyan-500 to-blue-500"
     },
     {
       step: 4,
       title: "Self-Bias 현상",
-      content: "RF 플라즈마에서 일어나는 가장 흥미로운 현상이 'Self-Bias(자기 바이어스)'입니다. 외부에서 DC 전압을 걸지 않았는데도, 전극에 자동으로 음(-)의 DC 전압이 생깁니다. 마치 마술 같죠? 왜 이런 일이 일어날까요? 핵심은 전자와 이온의 '질량 차이'입니다. RF 전압이 플러스(+)가 되면 전자들이 전극 쪽으로 끌려갑니다. 전자는 엄청 가벼워서(질량비 1:1836) 순식간에 전극에 도달해서 중성화됩니다. RF 전압이 마이너스(-)가 되면 이온이 전극 쪽으로 끌리는데, 이온은 너무 무거워서 한 주기(1/13.56MHz = 74나노초) 동안 거의 움직이지 못합니다. 결과적으로 한 주기 평균을 보면, 전자만 계속 전극으로 들어오고 이온은 거의 못 들어오니까, 전극 표면에 음전하가 쌓입니다. 이것이 Self-Bias 전압이에요! 보통 -50V에서 -500V 정도 형성됩니다. 이 Self-Bias가 중요한 이유는 이온 에너지를 결정하기 때문입니다. 양이온은 이 음전압에 의해 가속되어 웨이퍼를 타격하는데, Self-Bias가 크면 이온 에너지가 높아져서 식각이 잘 되고, 작으면 식각이 부드러워집니다. 주파수, 파워, 압력을 조절하면 Self-Bias를 제어할 수 있어서, 공정을 원하는 대로 최적화할 수 있답니다!",
+      content: "RF 플라즈마에서 일어나는 가장 흥미로운 현상이 **Self-Bias(자기 바이어스)**입니다. 외부에서 DC 전압을 걸지 않았는데도, 전극에 자동으로 음(-)의 DC 전압이 생깁니다. 마치 마술 같죠?\n\n왜 이런 일이 일어날까요? 핵심은 __전자와 이온의 질량 차이__입니다.\n\n**RF 전압이 플러스(+)가 되면**: 전자들이 전극 쪽으로 끌려갑니다. 전자는 엄청 가벼워서(*질량비 1:1836*) 순식간에 전극에 도달해서 중성화됩니다.\n\n**RF 전압이 마이너스(-)가 되면**: 이온이 전극 쪽으로 끌리는데, 이온은 너무 무거워서 한 주기(*1/13.56MHz = 74나노초*) 동안 거의 움직이지 못합니다.\n\n결과적으로 한 주기 평균을 보면, 전자만 계속 전극으로 들어오고 이온은 거의 못 들어오니까, 전극 표면에 음전하가 쌓입니다. 이것이 **Self-Bias 전압**이에요! 보통 *-50V에서 -500V* 정도 형성됩니다.\n\n이 Self-Bias가 중요한 이유는 __이온 에너지를 결정__하기 때문입니다. 양이온은 이 음전압에 의해 가속되어 웨이퍼를 타격하는데, Self-Bias가 크면 이온 에너지가 높아져서 식각이 잘 되고, 작으면 식각이 부드러워집니다!",
       color: "from-blue-500 to-indigo-500"
     },
     {
       step: 5,
       title: "주파수와 이온 에너지 제어",
-      content: "RF 플라즈마의 진정한 파워는 '주파수를 통한 정밀 제어'에 있습니다. 주파수를 바꾸면 무슨 일이 일어날까요? 주파수가 낮을수록(예: 2MHz) Self-Bias가 커져서 이온 에너지가 높아집니다. 이온들이 한 주기 동안 조금 더 움직일 시간이 있어서 전압 차이가 커지기 때문이에요. 반대로 주파수가 높을수록(예: 60MHz) Self-Bias가 작아지고 이온 에너지가 낮아집니다. 이 원리를 활용한 것이 바로 '듀얼 주파수 시스템'입니다! 예를 들어 13.56MHz와 2MHz를 동시에 사용하는 거죠. 13.56MHz는 플라즈마 밀도를 제어하고, 2MHz는 이온 에너지를 제어합니다. 이렇게 하면 마치 자동차의 액셀과 핸들을 독립적으로 조작하듯이, 플라즈마 밀도와 이온 에너지를 각각 최적화할 수 있습니다! 실제 반도체 팹(Fab)에서는 이보다 더 복잡합니다. 트리플 주파수(27MHz + 13.56MHz + 2MHz)를 쓰기도 하고, VHF(Very High Frequency, 60~200MHz)를 사용하기도 해요. 5nm, 3nm 같은 극초미세 공정에서는 원자 레벨의 정밀도가 필요한데, 주파수 제어 없이는 불가능합니다. 삼성, TSMC 같은 파운드리들이 최첨단 노드를 구현할 수 있는 비결이 바로 이 RF 플라즈마 기술에 있답니다!",
+      content: "RF 플라즈마의 진정한 파워는 '__주파수를 통한 정밀 제어__'에 있습니다. 주파수를 바꾸면 무슨 일이 일어날까요?\n\n**주파수가 낮을수록** (*예: 2MHz*): Self-Bias가 커져서 이온 에너지가 높아집니다. 이온들이 한 주기 동안 조금 더 움직일 시간이 있어서 전압 차이가 커지기 때문이에요.\n\n**주파수가 높을수록** (*예: 60MHz*): Self-Bias가 작아지고 이온 에너지가 낮아집니다.\n\n이 원리를 활용한 것이 바로 **듀얼 주파수 시스템**입니다! 예를 들어 *13.56MHz와 2MHz*를 동시에 사용하는 거죠. 13.56MHz는 __플라즈마 밀도__를 제어하고, 2MHz는 __이온 에너지__를 제어합니다. 이렇게 하면 마치 자동차의 액셀과 핸들을 독립적으로 조작하듯이, 플라즈마 밀도와 이온 에너지를 각각 최적화할 수 있습니다!\n\n실제 반도체 팹(Fab)에서는 이보다 더 복잡합니다. **트리플 주파수** (*27MHz + 13.56MHz + 2MHz*)를 쓰기도 하고, **VHF** (*Very High Frequency, 60~200MHz*)를 사용하기도 해요.\n\n*5nm, 3nm* 같은 극초미세 공정에서는 __원자 레벨의 정밀도__가 필요한데, 주파수 제어 없이는 불가능합니다. **삼성, TSMC** 같은 파운드리들이 최첨단 노드를 구현할 수 있는 비결이 바로 이 RF 플라즈마 기술에 있답니다!",
       color: "from-indigo-500 to-purple-500"
     }
   ];
+
+  // Format theory content with styling
+  const formatTheoryContent = (text) => {
+    const paragraphs = text.split('\n\n');
+
+    return paragraphs.map((paragraph, pIndex) => {
+      const elements = [];
+      let remaining = paragraph;
+      let key = 0;
+
+      const patterns = [
+        { regex: /\*\*([^*]+)\*\*/g, className: 'font-bold text-yellow-300' },
+        { regex: /\*([^*]+)\*/g, className: 'text-blue-200 font-semibold' },
+        { regex: /__([^_]+)__/g, className: 'underline decoration-2' },
+      ];
+
+      while (remaining.length > 0) {
+        let earliestMatch = null;
+        let earliestPattern = null;
+        let earliestIndex = remaining.length;
+
+        patterns.forEach(pattern => {
+          const match = pattern.regex.exec(remaining);
+          if (match && match.index < earliestIndex) {
+            earliestMatch = match;
+            earliestPattern = pattern;
+            earliestIndex = match.index;
+          }
+        });
+
+        if (earliestMatch) {
+          if (earliestIndex > 0) {
+            elements.push(
+              <span key={`${pIndex}-${key++}`}>{remaining.substring(0, earliestIndex)}</span>
+            );
+          }
+
+          elements.push(
+            <span key={`${pIndex}-${key++}`} className={earliestPattern.className}>
+              {earliestMatch[1]}
+            </span>
+          );
+
+          remaining = remaining.substring(earliestIndex + earliestMatch[0].length);
+          patterns.forEach(p => p.regex.lastIndex = 0);
+        } else {
+          if (remaining.length > 0) {
+            elements.push(<span key={`${pIndex}-${key++}`}>{remaining}</span>);
+          }
+          break;
+        }
+      }
+
+      return (
+        <p key={pIndex} className={pIndex > 0 ? 'mt-4' : ''}>
+          {elements}
+        </p>
+      );
+    });
+  };
 
   // Typing animation effect for theory
   useEffect(() => {
@@ -2843,12 +2903,12 @@ const PlasmaSimulatorIII = () => {
                         </div>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
-                        <p className="text-lg leading-relaxed">
-                          {typedTheoryText}
+                        <div className="text-lg leading-relaxed">
+                          {formatTheoryContent(typedTheoryText)}
                           {isTheoryPlaying && typedTheoryText.length < theorySteps[theoryStep].content.length && (
                             <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
                           )}
-                        </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex justify-between items-center mt-6">
