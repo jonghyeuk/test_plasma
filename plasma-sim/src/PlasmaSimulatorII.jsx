@@ -45,34 +45,94 @@ const PlasmaSimulatorII = () => {
     {
       step: 1,
       title: "ICP란 무엇인가?",
-      content: "ICP는 Inductively Coupled Plasma, 즉 '유도결합 플라즈마'의 약자입니다. 기존의 CCP(Capacitively Coupled Plasma, 용량결합 플라즈마)와는 완전히 다른 방식으로 플라즈마를 만들어냅니다. CCP는 평행한 두 전극 사이에 전압을 걸어 플라즈마를 만드는 반면, ICP는 챔버 위에 설치된 코일(안테나)에 13.56MHz의 RF 전류를 흘려서 전자기 유도로 플라즈마를 생성합니다. ICP의 가장 큰 장점은 무엇일까요? 바로 '높은 플라즈마 밀도'와 '독립적 제어'입니다! CCP가 10^9~10^10 cm^-3 정도의 밀도를 만드는 반면, ICP는 10^11~10^12 cm^-3의 초고밀도 플라즈마를 만들 수 있습니다. 또한 플라즈마 밀도(Source RF로 제어)와 이온 에너지(Bias RF로 제어)를 각각 독립적으로 조절할 수 있어서, 마치 자동차의 속도와 방향을 따로 제어하듯이 공정을 정밀하게 최적화할 수 있답니다!",
+      content: "ICP는 **Inductively Coupled Plasma**, 즉 '__유도결합 플라즈마__'의 약자입니다. 기존의 CCP(Capacitively Coupled Plasma, 용량결합 플라즈마)와는 완전히 다른 방식으로 플라즈마를 만들어냅니다.\n\nCCP는 평행한 두 전극 사이에 전압을 걸어 플라즈마를 만드는 반면, ICP는 챔버 위에 설치된 코일(안테나)에 *13.56MHz*의 RF 전류를 흘려서 **전자기 유도**로 플라즈마를 생성합니다.\n\nICP의 가장 큰 장점은 무엇일까요? 바로 '__높은 플라즈마 밀도__'와 '__독립적 제어__'입니다! CCP가 *10^9~10^10 cm^-3* 정도의 밀도를 만드는 반면, ICP는 **10^11~10^12 cm^-3**의 초고밀도 플라즈마를 만들 수 있습니다.\n\n또한 플라즈마 밀도(Source RF로 제어)와 이온 에너지(Bias RF로 제어)를 각각 독립적으로 조절할 수 있어서, 마치 자동차의 속도와 방향을 따로 제어하듯이 공정을 정밀하게 최적화할 수 있답니다!",
       color: "from-indigo-500 to-purple-500"
     },
     {
       step: 2,
       title: "ICP의 핵심 원리: 전자기 유도",
-      content: "ICP의 작동 원리는 1831년 마이클 패러데이가 발견한 '전자기 유도 법칙'에 기반합니다. 어떻게 작동하는지 단계별로 살펴볼까요? 1단계: RF 파워가 코일에 13.56MHz의 고주파 교류 전류를 공급합니다. 2단계: 이 교류 전류는 시간에 따라 변하는 자기장(시변 자기장)을 만들어냅니다. 3단계: 패러데이 법칙에 따라, 시변 자기장은 챔버 내부에 원형(도넛 모양)의 전기장을 유도합니다. 4단계: 이 유도된 전기장이 전자들을 원형 궤도를 따라 가속시키고, 가속된 전자가 중성 원자와 충돌하면서 이온화가 일어나 플라즈마가 생성됩니다! 이 방식의 멋진 점은 전극이 플라즈마와 직접 접촉하지 않는 '비접촉식 에너지 전달'이라는 것입니다. 전극에서 금속 불순물이 떨어져 나와 웨이퍼를 오염시킬 염려가 없어서 깨끗한 공정이 가능하답니다!",
+      content: "ICP의 작동 원리는 **1831년 마이클 패러데이**가 발견한 '__전자기 유도 법칙__'에 기반합니다. 어떻게 작동하는지 단계별로 살펴볼까요?\n\n**1단계**: RF 파워가 코일에 *13.56MHz*의 고주파 교류 전류를 공급합니다.\n**2단계**: 이 교류 전류는 시간에 따라 변하는 자기장(__시변 자기장__)을 만들어냅니다.\n**3단계**: 패러데이 법칙에 따라, 시변 자기장은 챔버 내부에 원형(도넛 모양)의 전기장을 유도합니다.\n**4단계**: 이 유도된 전기장이 전자들을 원형 궤도를 따라 가속시키고, 가속된 전자가 중성 원자와 충돌하면서 이온화가 일어나 플라즈마가 생성됩니다!\n\n이 방식의 멋진 점은 전극이 플라즈마와 직접 접촉하지 않는 '__비접촉식 에너지 전달__'이라는 것입니다. 전극에서 금속 불순물이 떨어져 나와 웨이퍼를 오염시킬 염려가 없어서 깨끗한 공정이 가능하답니다!",
       color: "from-purple-500 to-pink-500"
     },
     {
       step: 3,
       title: "독립적 제어: Source RF와 Bias RF",
-      content: "ICP 시스템을 정말 특별하게 만드는 것은 'Dual RF' 구조입니다. 두 개의 독립적인 RF 파워를 사용하는데, 각각 다른 역할을 합니다. 'Source RF'는 위쪽 코일에 연결되어 플라즈마 밀도를 제어합니다. Source RF 파워를 올리면 더 많은 이온화가 일어나 플라즈마 밀도가 높아지죠. 'Bias RF'는 아래쪽 전극(척)에 연결되어 이온 에너지를 제어합니다. Bias RF를 조절하면 웨이퍼로 떨어지는 이온의 에너지를 바꿀 수 있어요. 왜 이게 중요할까요? 예를 들어 식각 공정에서 깊이는 깊게 파고 싶지만(높은 밀도 필요), 옆면 손상은 최소화하고 싶다면(낮은 이온 에너지), Source RF는 높이고 Bias RF는 낮추면 됩니다! CCP에서는 이 두 가지가 연결되어 있어서 하나를 바꾸면 다른 것도 같이 바뀌지만, ICP는 완전히 독립적으로 제어할 수 있어서 공정 윈도우가 훨씬 넓답니다. 마치 악기에서 음량과 음색을 따로 조절할 수 있는 것처럼요!",
+      content: "ICP 시스템을 정말 특별하게 만드는 것은 **Dual RF 구조**입니다. 두 개의 독립적인 RF 파워를 사용하는데, 각각 다른 역할을 합니다.\n\n**Source RF**는 위쪽 코일에 연결되어 __플라즈마 밀도__를 제어합니다. Source RF 파워를 올리면 더 많은 이온화가 일어나 플라즈마 밀도가 높아지죠.\n\n**Bias RF**는 아래쪽 전극(척)에 연결되어 __이온 에너지__를 제어합니다. Bias RF를 조절하면 웨이퍼로 떨어지는 이온의 에너지를 바꿀 수 있어요.\n\n왜 이게 중요할까요? 예를 들어 식각 공정에서 깊이는 깊게 파고 싶지만(높은 밀도 필요), 옆면 손상은 최소화하고 싶다면(낮은 이온 에너지), *Source RF는 높이고 Bias RF는 낮추면* 됩니다!\n\nCCP에서는 이 두 가지가 연결되어 있어서 하나를 바꾸면 다른 것도 같이 바뀌지만, ICP는 완전히 독립적으로 제어할 수 있어서 **공정 윈도우가 훨씬 넓답니다**. 마치 악기에서 음량과 음색을 따로 조절할 수 있는 것처럼요!",
       color: "from-pink-500 to-red-500"
     },
     {
       step: 4,
       title: "CCP 대비 ICP의 우수성",
-      content: "그렇다면 ICP가 CCP보다 구체적으로 어떤 점이 우수할까요? 세 가지 핵심 장점을 살펴봅시다. 첫째, '초고밀도 플라즈마'입니다. CCP는 10^9~10^10 cm^-3 수준이지만, ICP는 10^11~10^12 cm^-3로 10~100배 더 높습니다. 이렇게 높은 밀도 덕분에 식각 속도가 빠르고, 균일도도 우수합니다. 둘째, '저압 운전'이 가능합니다. CCP는 보통 100~1000mTorr의 높은 압력이 필요하지만, ICP는 1~10mTorr의 낮은 압력에서도 안정적으로 작동합니다. 낮은 압력에서는 이온의 평균자유행로가 길어져서 방향성(Directionality)이 좋아지고, 이방성 식각(Anisotropic Etching)에 유리합니다. 셋째, '넓은 공정 윈도우'입니다. 독립적 제어 덕분에 다양한 조합을 시도할 수 있어서, 최적 조건을 찾기 쉽습니다. 이런 이유로 ICP는 3nm, 2nm 같은 극초미세 공정에서 필수 장비가 되었고, 전 세계 반도체 팹(Fab)에서 가장 많이 사용되는 플라즈마 소스랍니다!",
+      content: "그렇다면 ICP가 CCP보다 구체적으로 어떤 점이 우수할까요? **세 가지 핵심 장점**을 살펴봅시다.\n\n**첫째, 초고밀도 플라즈마**입니다. CCP는 *10^9~10^10 cm^-3* 수준이지만, ICP는 **10^11~10^12 cm^-3**로 __10~100배 더 높습니다__. 이렇게 높은 밀도 덕분에 식각 속도가 빠르고, 균일도도 우수합니다.\n\n**둘째, 저압 운전**이 가능합니다. CCP는 보통 *100~1000mTorr*의 높은 압력이 필요하지만, ICP는 **1~10mTorr**의 낮은 압력에서도 안정적으로 작동합니다. 낮은 압력에서는 이온의 평균자유행로가 길어져서 __방향성(Directionality)__이 좋아지고, __이방성 식각(Anisotropic Etching)__에 유리합니다.\n\n**셋째, 넓은 공정 윈도우**입니다. 독립적 제어 덕분에 다양한 조합을 시도할 수 있어서, 최적 조건을 찾기 쉽습니다.\n\n이런 이유로 ICP는 *3nm, 2nm* 같은 극초미세 공정에서 필수 장비가 되었고, 전 세계 반도체 팹(Fab)에서 가장 많이 사용되는 플라즈마 소스랍니다!",
       color: "from-red-500 to-orange-500"
     },
     {
       step: 5,
       title: "ICP의 실제 응용",
-      content: "ICP 플라즈마는 현대 첨단 산업의 핵심 기술로 다양하게 활용됩니다. 반도체 분야에서는 '고속 식각'에 사용됩니다. 고밀도 플라즈마 덕분에 실리콘 산화막, 질화막, 금속막을 빠르게 식각할 수 있어요. 특히 '저손상 식각'이 중요한데, 낮은 이온 에너지로 운전하면 웨이퍼 표면 손상을 최소화하면서도 높은 선택비를 얻을 수 있습니다. '고종횡비(HAR, High Aspect Ratio) 식각'도 ICP의 특기입니다. DRAM의 커패시터 홀이나 3D NAND의 채널 홀처럼 깊이가 깊고 좁은 구조를 뚫을 때, ICP의 낮은 압력과 높은 밀도가 완벽한 조합이 됩니다. 반도체 외에도 MEMS(Micro-Electro-Mechanical Systems) 제작에서 실리콘 Deep RIE에 사용되고, LED 제조에서 사파이어 식각에 쓰이며, OLED 디스플레이의 유리 기판 식각, 태양전지의 텍스처링 등 정말 많은 곳에 활용됩니다. 10nm 이하 노드에서는 ICP 없이는 칩을 만들 수 없다고 해도 과언이 아닙니다. 이것이 바로 ICP가 현대 나노기술의 필수 도구인 이유랍니다!",
+      content: "ICP 플라즈마는 현대 첨단 산업의 핵심 기술로 다양하게 활용됩니다.\n\n**반도체 분야**에서는 '__고속 식각__'에 사용됩니다. 고밀도 플라즈마 덕분에 실리콘 산화막, 질화막, 금속막을 빠르게 식각할 수 있어요. 특히 '__저손상 식각__'이 중요한데, 낮은 이온 에너지로 운전하면 웨이퍼 표면 손상을 최소화하면서도 높은 선택비를 얻을 수 있습니다.\n\n**고종횡비(HAR, High Aspect Ratio) 식각**도 ICP의 특기입니다. *DRAM의 커패시터 홀*이나 *3D NAND의 채널 홀*처럼 깊이가 깊고 좁은 구조를 뚫을 때, ICP의 낮은 압력과 높은 밀도가 완벽한 조합이 됩니다.\n\n반도체 외에도 __MEMS 제작__, __LED 제조__, __OLED 디스플레이__, __태양전지__ 등 정말 많은 곳에 활용됩니다.\n\n*10nm 이하 노드*에서는 ICP 없이는 칩을 만들 수 없다고 해도 과언이 아닙니다. 이것이 바로 ICP가 **현대 나노기술의 필수 도구**인 이유랍니다!",
       color: "from-orange-500 to-yellow-500"
     }
   ];
+
+  // Format theory content with styling
+  const formatTheoryContent = (text) => {
+    const paragraphs = text.split('\n\n');
+
+    return paragraphs.map((paragraph, pIndex) => {
+      const elements = [];
+      let remaining = paragraph;
+      let key = 0;
+
+      const patterns = [
+        { regex: /\*\*([^*]+)\*\*/g, className: 'font-bold text-yellow-300' },
+        { regex: /\*([^*]+)\*/g, className: 'text-blue-200 font-semibold' },
+        { regex: /__([^_]+)__/g, className: 'underline decoration-2' },
+      ];
+
+      while (remaining.length > 0) {
+        let earliestMatch = null;
+        let earliestPattern = null;
+        let earliestIndex = remaining.length;
+
+        patterns.forEach(pattern => {
+          const match = pattern.regex.exec(remaining);
+          if (match && match.index < earliestIndex) {
+            earliestMatch = match;
+            earliestPattern = pattern;
+            earliestIndex = match.index;
+          }
+        });
+
+        if (earliestMatch) {
+          if (earliestIndex > 0) {
+            elements.push(
+              <span key={`${pIndex}-${key++}`}>{remaining.substring(0, earliestIndex)}</span>
+            );
+          }
+
+          elements.push(
+            <span key={`${pIndex}-${key++}`} className={earliestPattern.className}>
+              {earliestMatch[1]}
+            </span>
+          );
+
+          remaining = remaining.substring(earliestIndex + earliestMatch[0].length);
+          patterns.forEach(p => p.regex.lastIndex = 0);
+        } else {
+          if (remaining.length > 0) {
+            elements.push(<span key={`${pIndex}-${key++}`}>{remaining}</span>);
+          }
+          break;
+        }
+      }
+
+      return (
+        <p key={pIndex} className={pIndex > 0 ? 'mt-4' : ''}>
+          {elements}
+        </p>
+      );
+    });
+  };
 
   // Typing animation effect for theory
   useEffect(() => {
@@ -997,12 +1057,12 @@ const PlasmaSimulatorII = () => {
                         </div>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
-                        <p className="text-lg leading-relaxed">
-                          {typedTheoryText}
+                        <div className="text-lg leading-relaxed">
+                          {formatTheoryContent(typedTheoryText)}
                           {isTheoryPlaying && typedTheoryText.length < theorySteps[theoryStep].content.length && (
                             <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
                           )}
-                        </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex justify-between items-center mt-6">
