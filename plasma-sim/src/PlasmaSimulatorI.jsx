@@ -916,9 +916,6 @@ const PlasmaSimulator = () => {
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
                         <div className="text-lg leading-relaxed">
                           {formatTheoryContent(typedText)}
-                          {isTheoryPlaying && typedText.length < theorySteps[theoryStep].content.length && (
-                            <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
-                          )}
                         </div>
                       </div>
                     </div>
