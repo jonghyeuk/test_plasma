@@ -26,6 +26,12 @@ const PlasmaSimulatorII = () => {
   const [quizStarted, setQuizStarted] = useState(false);
   const [difficulty, setDifficulty] = useState('상');
 
+  // Theory opening animation states
+  const [theoryStep, setTheoryStep] = useState(0);
+  const [isTheoryPlaying, setIsTheoryPlaying] = useState(false);
+  const [typedTheoryText, setTypedTheoryText] = useState('');
+  const [showDetailedTheory, setShowDetailedTheory] = useState(false);
+
   const themes = [
     { id: 'system-structure-icp', name: '시스템 구조(ICP)', icon: '🔬', color: 'indigo' },
     { id: 'etching-process', name: '식각 공정(기본)', icon: '⚙️', color: 'orange' },
@@ -33,6 +39,96 @@ const PlasmaSimulatorII = () => {
     { id: 'equipment-application', name: '장비 응용', icon: '🏭', color: 'red' },
     { id: 'quiz', name: '개념 확인 퀴즈', icon: '📝', color: 'green' }
   ];
+
+  // Theory steps for ICP system
+  const theorySteps = [
+    {
+      step: 1,
+      title: "ICP란 무엇인가?",
+      content: "ICP(Inductively Coupled Plasma)는 유도결합 플라즈마로, RF 코일을 통해 발생하는 전자기 유도를 이용하여 플라즈마를 생성하는 방식입니다. CCP(Capacitively Coupled Plasma)와 달리 높은 플라즈마 밀도를 얻을 수 있으며, 플라즈마 밀도와 이온 에너지를 독립적으로 제어할 수 있는 장점이 있습니다.",
+      color: "from-indigo-500 to-purple-500"
+    },
+    {
+      step: 2,
+      title: "ICP의 핵심 원리: 전자기 유도",
+      content: "ICP는 패러데이의 전자기 유도 법칙을 기반으로 합니다. RF 코일에 교류 전류가 흐르면 시변 자기장이 생성되고, 이 자기장이 챔버 내부에 원형 전기장을 유도합니다. 유도된 전기장이 전자를 가속시켜 플라즈마를 생성하는 것입니다. 이러한 비접촉식 에너지 전달 방식은 오염을 최소화하는 장점이 있습니다.",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      step: 3,
+      title: "독립적 제어: Source RF와 Bias RF",
+      content: "ICP 시스템의 가장 큰 장점은 Source RF와 Bias RF의 독립적 제어입니다. Source RF는 코일에 인가되어 플라즈마 밀도를 제어하고, Bias RF는 하부 전극에 인가되어 이온 에너지를 제어합니다. 이러한 분리된 제어를 통해 공정 조건을 더욱 정밀하게 최적화할 수 있습니다.",
+      color: "from-pink-500 to-red-500"
+    },
+    {
+      step: 4,
+      title: "CCP 대비 ICP의 우수성",
+      content: "ICP는 CCP 대비 여러 장점을 가집니다. 첫째, 10^11~10^12 cm^-3의 높은 플라즈마 밀도를 구현할 수 있습니다. 둘째, 낮은 압력(1~10mTorr)에서도 안정적인 플라즈마 생성이 가능합니다. 셋째, 독립적 제어로 인해 공정 윈도우가 넓어집니다. 이러한 특성으로 ICP는 현대 반도체 식각 공정의 핵심 기술이 되었습니다.",
+      color: "from-red-500 to-orange-500"
+    },
+    {
+      step: 5,
+      title: "ICP의 실제 응용",
+      content: "ICP 플라즈마는 반도체 제조의 다양한 공정에 활용됩니다. 고밀도 플라즈마를 활용한 고속 식각, 저손상 식각, 고종횡비(High Aspect Ratio) 패턴 형성 등이 대표적입니다. 특히 10nm 이하의 초미세 공정에서는 ICP의 정밀한 제어 능력이 필수적입니다. 또한 MEMS, LED, 디스플레이 제조에도 널리 사용됩니다.",
+      color: "from-orange-500 to-yellow-500"
+    }
+  ];
+
+  // Typing animation effect for theory
+  useEffect(() => {
+    if (isTheoryPlaying && theoryStep < theorySteps.length) {
+      const fullText = theorySteps[theoryStep].content;
+      let currentIndex = 0;
+
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedTheoryText(fullText.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, 30); // Typing speed
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [isTheoryPlaying, theoryStep]);
+
+  // Theory control functions
+  const startTheory = () => {
+    setIsTheoryPlaying(true);
+    setTheoryStep(0);
+    setTypedTheoryText('');
+  };
+
+  const pauseTheory = () => {
+    setIsTheoryPlaying(false);
+  };
+
+  const resumeTheory = () => {
+    setIsTheoryPlaying(true);
+  };
+
+  const nextTheoryStep = () => {
+    if (theoryStep < theorySteps.length - 1) {
+      setTheoryStep(theoryStep + 1);
+      setTypedTheoryText('');
+    } else {
+      setShowDetailedTheory(true);
+      setIsTheoryPlaying(false);
+    }
+  };
+
+  const prevTheoryStep = () => {
+    if (theoryStep > 0) {
+      setTheoryStep(theoryStep - 1);
+      setTypedTheoryText('');
+    }
+  };
+
+  const skipTheory = () => {
+    setShowDetailedTheory(true);
+    setIsTheoryPlaying(false);
+  };
 
   // 각 단계별 설명 텍스트
   const stepDescriptions = {
@@ -864,6 +960,83 @@ const PlasmaSimulatorII = () => {
       <div className="max-w-full mx-auto px-3 sm:px-4 lg:px-6 py-6">
         {activeTheme === 'system-structure-icp' && (
           <div className="space-y-8">
+            {/* Theory Opening Section */}
+            {!showDetailedTheory ? (
+              <div className={`bg-gradient-to-r ${!isTheoryPlaying && theoryStep === 0 ? 'from-indigo-600 to-purple-600' : theorySteps[theoryStep]?.color ? theorySteps[theoryStep].color : 'from-indigo-500 to-purple-500'} rounded-2xl p-8 shadow-2xl text-white min-h-[500px] flex flex-col justify-between`}>
+                {!isTheoryPlaying && theoryStep === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <h2 className="text-4xl font-bold mb-6">ICP 시스템 이론</h2>
+                    <p className="text-xl mb-8 opacity-90">ICP 플라즈마의 핵심 원리를 단계별로 학습합니다</p>
+                    <button
+                      onClick={startTheory}
+                      className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg"
+                    >
+                      이론 학습 시작하기 →
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1">
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-3xl font-bold">
+                            Step {theorySteps[theoryStep].step}: {theorySteps[theoryStep].title}
+                          </h3>
+                          <button
+                            onClick={skipTheory}
+                            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition-all"
+                          >
+                            건너뛰기
+                          </button>
+                        </div>
+                        <div className="w-full bg-white/30 rounded-full h-2 mb-6">
+                          <div
+                            className="bg-white h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${((theoryStep + 1) / theorySteps.length) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
+                        <p className="text-lg leading-relaxed">
+                          {typedTheoryText}
+                          {isTheoryPlaying && typedTheoryText.length < theorySteps[theoryStep].content.length && (
+                            <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center mt-6">
+                      <button
+                        onClick={prevTheoryStep}
+                        disabled={theoryStep === 0}
+                        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                          theoryStep === 0
+                            ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        ← 이전
+                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={isTheoryPlaying ? pauseTheory : resumeTheory}
+                          className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-semibold transition-all"
+                        >
+                          {isTheoryPlaying ? '일시정지' : '계속'}
+                        </button>
+                        <button
+                          onClick={nextTheoryStep}
+                          className="px-6 py-3 bg-white hover:bg-blue-50 text-indigo-600 rounded-lg font-semibold transition-all transform hover:scale-105"
+                        >
+                          {theoryStep === theorySteps.length - 1 ? '학습 완료 →' : '다음 →'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : null}
+
             <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-indigo-900 mb-4">🔬 ICP 플라즈마 시스템 구조</h2>
               <p className="text-indigo-700">유도결합 플라즈마(ICP) 시스템의 구조와 동작 원리를 학습합니다.</p>
