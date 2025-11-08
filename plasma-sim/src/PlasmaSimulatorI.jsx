@@ -22,6 +22,12 @@ const PlasmaSimulator = () => {
   const [electrodeArea, setElectrodeArea] = useState(314);
   const [electrodeGap, setElectrodeGap] = useState(5);
 
+  // Theory opening animation states
+  const [theoryStep, setTheoryStep] = useState(0);
+  const [isTheoryPlaying, setIsTheoryPlaying] = useState(false);
+  const [typedText, setTypedText] = useState('');
+  const [showDetailedTheory, setShowDetailedTheory] = useState(false);
+
   const themes = [
     { id: 'plasma-basics', name: '플라즈마 기본 특성', icon: '⚡', color: 'blue' },
     { id: 'plasma-principle1', name: '플라즈마 발생원리1', icon: '🔬', color: 'indigo' },
@@ -29,6 +35,96 @@ const PlasmaSimulator = () => {
     { id: 'rf-matching', name: 'RF 및 매칭', icon: '📡', color: 'green' },
     { id: 'system-structure', name: '시스템 구조(CCP)', icon: '🏗️', color: 'purple' }
   ];
+
+  // Theory steps for plasma basics
+  const theorySteps = [
+    {
+      step: 1,
+      title: "플라즈마란 무엇인가?",
+      content: "플라즈마는 고체, 액체, 기체에 이어 물질의 '제4상태'로 불립니다. 우주의 99% 이상이 플라즈마 상태이며, 지구에서는 번개, 오로라, 형광등 등에서 볼 수 있습니다. 반도체 공정에서 사용되는 플라즈마는 '저온 플라즈마'로, 전자의 온도는 매우 높지만 이온과 중성입자의 온도는 상대적으로 낮은 특성을 가집니다.",
+      color: "from-blue-500 to-purple-500"
+    },
+    {
+      step: 2,
+      title: "플라즈마의 핵심 특성",
+      content: "플라즈마는 세 가지 핵심 특성을 가집니다. 첫째, '준중성(Quasi-neutrality)'으로 전체적으로 전기적 중성을 유지합니다. 둘째, '집단 거동(Collective Behavior)'으로 입자들이 서로 영향을 주고받으며 움직입니다. 셋째, '전기전도성'을 가져 전자기파와 상호작용이 가능합니다.",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      step: 3,
+      title: "반도체 공정에서의 플라즈마",
+      content: "반도체 제조 공정에서 플라즈마는 필수적인 역할을 합니다. 주요 응용으로는 '식각(Etching)' - 미세 패턴 형성, '증착(Deposition)' - PECVD를 통한 박막 형성, '세정(Cleaning)' - 포토레지스트 제거 및 표면 청정화가 있습니다. 플라즈마를 사용하면 저온에서도 고품질의 공정이 가능합니다.",
+      color: "from-pink-500 to-red-500"
+    },
+    {
+      step: 4,
+      title: "플라즈마 생성과 제어",
+      content: "플라즈마는 기체에 충분한 에너지를 가하면 생성됩니다. 전자가 원자로부터 분리되어 양이온과 자유전자가 공존하는 상태가 되는 것입니다. 압력, 전력, 주파수 등의 파라미터를 조절하여 플라즈마의 밀도, 온도, 화학적 특성을 제어할 수 있습니다.",
+      color: "from-red-500 to-orange-500"
+    },
+    {
+      step: 5,
+      title: "저온 플라즈마의 특별함",
+      content: "반도체 공정에서 사용하는 저온 플라즈마는 '비평형 플라즈마'입니다. 전자 온도는 10,000~100,000K에 달하지만, 이온과 중성입자의 온도는 상온에 가깝습니다. 이러한 특성 덕분에 열에 민감한 반도체 웨이퍼를 손상시키지 않으면서도 높은 반응성을 얻을 수 있습니다. 이것이 바로 플라즈마 공정의 핵심 장점입니다.",
+      color: "from-orange-500 to-yellow-500"
+    }
+  ];
+
+  // Typing animation effect
+  useEffect(() => {
+    if (isTheoryPlaying && theoryStep < theorySteps.length) {
+      const fullText = theorySteps[theoryStep].content;
+      let currentIndex = 0;
+
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedText(fullText.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, 30); // Typing speed
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [isTheoryPlaying, theoryStep]);
+
+  // Theory control functions
+  const startTheory = () => {
+    setIsTheoryPlaying(true);
+    setTheoryStep(0);
+    setTypedText('');
+  };
+
+  const pauseTheory = () => {
+    setIsTheoryPlaying(false);
+  };
+
+  const resumeTheory = () => {
+    setIsTheoryPlaying(true);
+  };
+
+  const nextTheoryStep = () => {
+    if (theoryStep < theorySteps.length - 1) {
+      setTheoryStep(theoryStep + 1);
+      setTypedText('');
+    } else {
+      setShowDetailedTheory(true);
+      setIsTheoryPlaying(false);
+    }
+  };
+
+  const prevTheoryStep = () => {
+    if (theoryStep > 0) {
+      setTheoryStep(theoryStep - 1);
+      setTypedText('');
+    }
+  };
+
+  const skipTheory = () => {
+    setShowDetailedTheory(true);
+    setIsTheoryPlaying(false);
+  };
 
   // 이온화율 계산 함수
   // 참고: 태양의 핵 이온화율 = 100%
@@ -710,6 +806,83 @@ const PlasmaSimulator = () => {
       <div className="px-4 sm:px-6 lg:px-8 py-6">
         {activeTheme === 'plasma-basics' && (
           <div className="space-y-4">
+            {/* Theory Opening Section */}
+            {!showDetailedTheory ? (
+              <div className={`bg-gradient-to-r ${!isTheoryPlaying && theoryStep === 0 ? 'from-blue-600 to-purple-600' : theorySteps[theoryStep]?.color ? theorySteps[theoryStep].color : 'from-blue-500 to-purple-500'} rounded-2xl p-8 shadow-2xl text-white min-h-[500px] flex flex-col justify-between`}>
+                {!isTheoryPlaying && theoryStep === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <h2 className="text-4xl font-bold mb-6">플라즈마 기초 이론</h2>
+                    <p className="text-xl mb-8 opacity-90">플라즈마의 기본 원리를 단계별로 학습합니다</p>
+                    <button
+                      onClick={startTheory}
+                      className="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg"
+                    >
+                      이론 학습 시작하기 →
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1">
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-3xl font-bold">
+                            Step {theorySteps[theoryStep].step}: {theorySteps[theoryStep].title}
+                          </h3>
+                          <button
+                            onClick={skipTheory}
+                            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition-all"
+                          >
+                            건너뛰기
+                          </button>
+                        </div>
+                        <div className="w-full bg-white/30 rounded-full h-2 mb-6">
+                          <div
+                            className="bg-white h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${((theoryStep + 1) / theorySteps.length) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
+                        <p className="text-lg leading-relaxed">
+                          {typedText}
+                          {isTheoryPlaying && typedText.length < theorySteps[theoryStep].content.length && (
+                            <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center mt-6">
+                      <button
+                        onClick={prevTheoryStep}
+                        disabled={theoryStep === 0}
+                        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                          theoryStep === 0
+                            ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        ← 이전
+                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={isTheoryPlaying ? pauseTheory : resumeTheory}
+                          className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-semibold transition-all"
+                        >
+                          {isTheoryPlaying ? '일시정지' : '계속'}
+                        </button>
+                        <button
+                          onClick={nextTheoryStep}
+                          className="px-6 py-3 bg-white hover:bg-blue-50 text-blue-600 rounded-lg font-semibold transition-all transform hover:scale-105"
+                        >
+                          {theoryStep === theorySteps.length - 1 ? '학습 완료 →' : '다음 →'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : null}
+
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-blue-900 mb-4">⚡ 플라즈마 기본 특성 이해</h2>
               <div className="grid md:grid-cols-2 gap-4 text-sm">

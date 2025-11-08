@@ -2518,6 +2518,12 @@ const PlasmaSimulatorIII = () => {
   const [electronTemperature, setElectronTemperature] = useState(3);
   const [patternSize, setPatternSize] = useState(100);
 
+  // Theory opening animation states
+  const [theoryStep, setTheoryStep] = useState(0);
+  const [isTheoryPlaying, setIsTheoryPlaying] = useState(false);
+  const [typedTheoryText, setTypedTheoryText] = useState('');
+  const [showDetailedTheory, setShowDetailedTheory] = useState(false);
+
   const ionizationRate = Math.min(100, (electronTemp * gasPressure * rfPower) / 5000);
   const plasmaFrequency = Math.sqrt(electronDensity / 1e10) * 9;
   const debyeLength = Math.sqrt(electronTemperature) / Math.sqrt(electronDensity / 1e11) * 0.1;
@@ -2540,6 +2546,96 @@ const PlasmaSimulatorIII = () => {
     { id: 'tab4', name: '이온 에너지', icon: '⚡', color: 'red' },
     { id: 'tab5', name: '공정플라즈마 퀴즈', icon: '📝', color: 'purple' }
   ];
+
+  // Theory steps for DC plasma
+  const theorySteps = [
+    {
+      step: 1,
+      title: "DC 플라즈마란?",
+      content: "DC(Direct Current) 플라즈마는 직류 전압을 이용하여 생성하는 플라즈마입니다. 두 전극 사이에 수백 볼트의 DC 전압을 인가하면 전기장이 형성되고, 이 전기장이 전자를 가속시켜 플라즈마를 생성합니다. DC 플라즈마는 가장 기본적인 플라즈마 생성 방식으로, 플라즈마 물리의 핵심 원리를 이해하는 데 중요합니다.",
+      color: "from-green-500 to-teal-500"
+    },
+    {
+      step: 2,
+      title: "Cathode Sheath와 공간전하",
+      content: "DC 플라즈마에서 가장 중요한 개념은 Cathode Sheath(음극 시스)입니다. 음극 근처에는 양이온이 집중된 '공간전하층(Space Charge Layer)'이 형성됩니다. 이 영역에서는 전기적 중성이 깨지며, 강한 전기장이 형성됩니다. 이 전기장이 양이온을 음극으로 가속시켜 2차 전자를 방출하게 하며, 이것이 DC 플라즈마 유지의 핵심 메커니즘입니다.",
+      color: "from-teal-500 to-cyan-500"
+    },
+    {
+      step: 3,
+      title: "RF 플라즈마의 등장",
+      content: "DC 플라즈마는 전도성 물질에만 사용할 수 있다는 한계가 있습니다. 반도체 웨이퍼와 같은 절연체에 플라즈마를 적용하려면 RF(Radio Frequency) 플라즈마가 필요합니다. 13.56MHz의 고주파 교류를 사용하면 절연체 표면에서도 플라즈마를 생성할 수 있으며, 이온 에너지와 플라즈마 밀도를 더욱 정밀하게 제어할 수 있습니다.",
+      color: "from-cyan-500 to-blue-500"
+    },
+    {
+      step: 4,
+      title: "Self-Bias 현상",
+      content: "RF 플라즈마에서 나타나는 독특한 현상이 Self-Bias(자기 바이어스)입니다. 전자는 이온보다 훨씬 가볍기 때문에 RF 전압에 빠르게 반응합니다. 이로 인해 시간 평균적으로 전극에 음의 DC 전압이 자동으로 형성되는데, 이것이 Self-Bias입니다. Self-Bias 전압은 이온이 웨이퍼를 타격하는 에너지를 결정하는 중요한 파라미터입니다.",
+      color: "from-blue-500 to-indigo-500"
+    },
+    {
+      step: 5,
+      title: "주파수와 이온 에너지 제어",
+      content: "RF 플라즈마의 가장 큰 장점은 주파수를 통한 정밀한 제어입니다. 주파수가 낮을수록 Self-Bias가 증가하여 이온 에너지가 높아지고, 주파수가 높을수록 이온 에너지가 감소합니다. 또한 듀얼 주파수 시스템(예: 13.56MHz + 2MHz)을 사용하면 플라즈마 밀도와 이온 에너지를 독립적으로 제어할 수 있어, 초미세 반도체 공정에서 필수적인 기술이 되었습니다.",
+      color: "from-indigo-500 to-purple-500"
+    }
+  ];
+
+  // Typing animation effect for theory
+  useEffect(() => {
+    if (isTheoryPlaying && theoryStep < theorySteps.length) {
+      const fullText = theorySteps[theoryStep].content;
+      let currentIndex = 0;
+
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedTheoryText(fullText.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, 30); // Typing speed
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [isTheoryPlaying, theoryStep]);
+
+  // Theory control functions
+  const startTheory = () => {
+    setIsTheoryPlaying(true);
+    setTheoryStep(0);
+    setTypedTheoryText('');
+  };
+
+  const pauseTheory = () => {
+    setIsTheoryPlaying(false);
+  };
+
+  const resumeTheory = () => {
+    setIsTheoryPlaying(true);
+  };
+
+  const nextTheoryStep = () => {
+    if (theoryStep < theorySteps.length - 1) {
+      setTheoryStep(theoryStep + 1);
+      setTypedTheoryText('');
+    } else {
+      setShowDetailedTheory(true);
+      setIsTheoryPlaying(false);
+    }
+  };
+
+  const prevTheoryStep = () => {
+    if (theoryStep > 0) {
+      setTheoryStep(theoryStep - 1);
+      setTypedTheoryText('');
+    }
+  };
+
+  const skipTheory = () => {
+    setShowDetailedTheory(true);
+    setIsTheoryPlaying(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -2710,6 +2806,83 @@ const PlasmaSimulatorIII = () => {
         {/* 탭 1: DC 플라즈마 기본 원리 */}
         {activeTheme === 'tab1' && (
           <div className="space-y-8">
+            {/* Theory Opening Section */}
+            {!showDetailedTheory ? (
+              <div className={`bg-gradient-to-r ${!isTheoryPlaying && theoryStep === 0 ? 'from-green-600 to-teal-600' : theorySteps[theoryStep]?.color ? theorySteps[theoryStep].color : 'from-green-500 to-teal-500'} rounded-2xl p-8 shadow-2xl text-white min-h-[500px] flex flex-col justify-between`}>
+                {!isTheoryPlaying && theoryStep === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <h2 className="text-4xl font-bold mb-6">DC/RF 플라즈마 이론</h2>
+                    <p className="text-xl mb-8 opacity-90">DC에서 RF까지, 플라즈마의 진화를 단계별로 학습합니다</p>
+                    <button
+                      onClick={startTheory}
+                      className="px-8 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition-all transform hover:scale-105 shadow-lg"
+                    >
+                      이론 학습 시작하기 →
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1">
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-3xl font-bold">
+                            Step {theorySteps[theoryStep].step}: {theorySteps[theoryStep].title}
+                          </h3>
+                          <button
+                            onClick={skipTheory}
+                            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition-all"
+                          >
+                            건너뛰기
+                          </button>
+                        </div>
+                        <div className="w-full bg-white/30 rounded-full h-2 mb-6">
+                          <div
+                            className="bg-white h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${((theoryStep + 1) / theorySteps.length) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-h-[200px]">
+                        <p className="text-lg leading-relaxed">
+                          {typedTheoryText}
+                          {isTheoryPlaying && typedTheoryText.length < theorySteps[theoryStep].content.length && (
+                            <span className="inline-block w-2 h-5 bg-white ml-1 animate-pulse"></span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center mt-6">
+                      <button
+                        onClick={prevTheoryStep}
+                        disabled={theoryStep === 0}
+                        className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                          theoryStep === 0
+                            ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        ← 이전
+                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={isTheoryPlaying ? pauseTheory : resumeTheory}
+                          className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-semibold transition-all"
+                        >
+                          {isTheoryPlaying ? '일시정지' : '계속'}
+                        </button>
+                        <button
+                          onClick={nextTheoryStep}
+                          className="px-6 py-3 bg-white hover:bg-green-50 text-green-600 rounded-lg font-semibold transition-all transform hover:scale-105"
+                        >
+                          {theoryStep === theorySteps.length - 1 ? '학습 완료 →' : '다음 →'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : null}
+
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border">
               <h2 className="text-2xl font-bold text-green-900 mb-4">🔄 DC 플라즈마 기본 원리</h2>
               <p className="text-green-700 mb-3">DC 바이어스가 인가될 때 전자와 양이온의 움직임 차이로 인한 Space Charge 형성과 Sheath 영역 생성을 학습합니다.</p>
