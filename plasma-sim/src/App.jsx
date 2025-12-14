@@ -6,6 +6,7 @@ import './App.css'
 
 function App() {
   const [selectedSimulator, setSelectedSimulator] = useState('sim3');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const simulators = [
     {
@@ -37,9 +38,41 @@ function App() {
   const SelectedComponent = simulators.find(s => s.id === selectedSimulator)?.component;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 relative">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-indigo-900 text-white rounded-lg shadow-lg
+          active:scale-95 touch-manipulation transition-transform duration-150"
+        aria-label="메뉴 열기/닫기"
+      >
+        {sidebarOpen ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30 touch-manipulation"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Left Sidebar */}
-      <aside className="w-80 bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900 text-white shadow-2xl flex flex-col">
+      <aside className={`
+        fixed lg:relative z-40 h-full w-80
+        bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900
+        text-white shadow-2xl flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Sidebar Header */}
         <div className="p-6 border-b border-white/20">
           <h1 className="text-2xl font-bold mb-2">플라즈마 교육</h1>
@@ -55,9 +88,14 @@ function App() {
           {simulators.map((sim) => (
             <button
               key={sim.id}
-              onClick={() => setSelectedSimulator(sim.id)}
+              onClick={() => {
+                setSelectedSimulator(sim.id);
+                setSidebarOpen(false);
+              }}
               className={`
                 w-full text-left p-4 rounded-xl transition-all duration-300 transform
+                min-h-[56px] touch-manipulation
+                active:scale-95
                 ${selectedSimulator === sim.id
                   ? 'bg-white text-indigo-900 shadow-lg scale-105'
                   : 'bg-white/10 text-white hover:bg-white/20 hover:scale-102'
@@ -87,14 +125,14 @@ function App() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Header */}
-        <header className="bg-white shadow-md border-b border-gray-200 px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <header className="bg-white shadow-md border-b border-gray-200 px-4 sm:px-8 py-4 sm:py-6">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2 pl-12 lg:pl-0">
             {simulators.find(s => s.id === selectedSimulator)?.icon}{' '}
             {simulators.find(s => s.id === selectedSimulator)?.name}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600 pl-12 lg:pl-0">
             {simulators.find(s => s.id === selectedSimulator)?.description}
           </p>
         </header>

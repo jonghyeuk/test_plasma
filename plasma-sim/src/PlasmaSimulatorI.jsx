@@ -493,8 +493,8 @@ const PlasmaSimulator = () => {
     };
 
     return (
-      <div className={`border-2 border-gray-300 rounded-lg ${getBackgroundClass()} relative`} style={{width: '350px', height: '250px'}}>
-        <svg width="350" height="250">
+      <div className={`border-2 border-gray-300 rounded-lg ${getBackgroundClass()} relative w-full max-w-[350px] aspect-[7/5]`}>
+        <svg width="100%" height="100%" viewBox="0 0 350 250" preserveAspectRatio="xMidYMid meet">
           {particles.map(particle => (
             <circle 
               key={particle.id} 
