@@ -37,7 +37,7 @@ const DCPlasmaStep1Animation = () => {
         </div>
       </div>
 
-      <svg width="300" height="200" className="border rounded bg-gray-50">
+      <svg width="100%" height="auto" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" className="border rounded bg-gray-50 max-w-[300px]">
         <defs>
           <linearGradient id="spaceChargeGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8"/>
@@ -1339,7 +1339,7 @@ const RFWaveformAnimation = ({ time, isPlaying }) => {
         </span>
       </div>
 
-      <svg width="300" height="150" className="border rounded">
+      <svg width="100%" height="auto" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid meet" className="border rounded max-w-[300px]">
         <defs>
           <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
             <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E7EB" strokeWidth="1"/>
@@ -1459,7 +1459,7 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
         {/* 왼쪽: 현재 애니메이션 */}
         <div>
           <h5 className="text-sm font-semibold text-indigo-700 mb-2">실시간 Sheath Potential 변화</h5>
-          <svg width="300" height="200" className="border rounded bg-gray-50">
+          <svg width="100%" height="auto" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" className="border rounded bg-gray-50 max-w-[300px]">
             {/* 0V 기준선 (Ground 전극 높이) */}
             <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
             <text x="280" y="125" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
@@ -1534,7 +1534,7 @@ const SheathPotentialAnimation = ({ time, isPlaying }) => {
         {/* 오른쪽: RF 전압 0V 상태 (정적 스틸샷) */}
         <div>
           <h5 className="text-sm font-semibold text-indigo-700 mb-2">Average Plasma Potential</h5>
-          <svg width="300" height="200" className="border rounded bg-gray-50">
+          <svg width="100%" height="auto" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" className="border rounded bg-gray-50 max-w-[300px]">
             {/* 0V 기준선 (Ground 전극 높이) */}
             <line x1="0" y1="130" x2="300" y2="130" stroke="#10B981" strokeWidth="2" strokeDasharray="3,3"/>
             <text x="280" y="125" fontSize="10" fill="#10B981" fontWeight="bold">0V</text>
@@ -2955,7 +2955,7 @@ const PlasmaSimulatorIII = () => {
                 {/* Without Plasma */}
                 <div className="text-center">
                   <h4 className="font-bold text-gray-800 mb-4">Without Plasma</h4>
-                  <svg width="300" height="200" className="border rounded bg-gray-50">
+                  <svg width="100%" height="auto" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" className="border rounded bg-gray-50 max-w-[300px] mx-auto">
                     <rect x="30" y="40" width="20" height="120" fill="#8B5CF6" rx="2"/>
                     <rect x="250" y="40" width="20" height="120" fill="#EF4444" rx="2"/>
 
