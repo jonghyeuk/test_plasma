@@ -2,13 +2,22 @@ import { useState } from 'react'
 import PlasmaSimulatorI from './PlasmaSimulatorI'
 import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
+import OESSimulator from './OESSimulator'
 import './App.css'
 
 function App() {
-  const [selectedSimulator, setSelectedSimulator] = useState('sim3');
+  const [selectedSimulator, setSelectedSimulator] = useState('oes');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const simulators = [
+    {
+      id: 'oes',
+      name: 'OES',
+      description: 'Optical Emission Spectroscopy',
+      icon: '🌈',
+      color: 'from-violet-500 to-purple-600',
+      component: OESSimulator
+    },
     {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
@@ -75,15 +84,15 @@ function App() {
       `}>
         {/* Sidebar Header */}
         <div className="p-6 border-b border-white/20">
-          <h1 className="text-2xl font-bold mb-2">플라즈마 교육</h1>
-          <h2 className="text-xl font-semibold mb-3">시뮬레이터</h2>
-          <p className="text-sm text-indigo-200">Plasma Professional Education Simulator</p>
+          <h1 className="text-2xl font-bold mb-2">진단기술</h1>
+          <h2 className="text-xl font-semibold mb-3">실습센터</h2>
+          <p className="text-sm text-indigo-200">Plasma Diagnostic Training Center</p>
         </div>
 
         {/* Simulator Navigation */}
         <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
           <div className="text-xs font-bold text-indigo-300 mb-3 px-2">
-            시뮬레이터 선택
+            진단 모듈 선택
           </div>
           {simulators.map((sim) => (
             <button
