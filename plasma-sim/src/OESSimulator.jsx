@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ReferenceLine, ScatterChart, Scatter } from 'recharts';
+import OESPracticalSimulator from './OESPracticalSimulator';
 
 // ============================================================
 // OES Emission Line Database
@@ -409,34 +410,50 @@ const ElectronTransitionAnimation = () => {
     Ar: {
       name: 'Argon (Ar)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
-        { n: 2, label: '2s2p', electrons: 8, radius: 70, sublabel: 'L' },
-        { n: 3, label: '3s3p', electrons: 8, radius: 100, sublabel: 'M' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -3206 },
+        { n: 2, label: '2s²2p⁶', electrons: 8, radius: 65, sublabel: 'L (n=2)', eV: -326 },
+        { n: 3, label: '3s²3p⁶', electrons: 8, radius: 90, sublabel: 'M (n=3)', eV: -29.2 },
       ],
-      excitedShell: { n: 4, label: '4s/4p', radius: 135, sublabel: 'N' },
-      emissionWl: '811.5 nm',
+      // Ar: 전자가 3p → 4p로 여기, 그 다음 4p → 4s로 전이하며 발광
+      excitedShell: { n: 4, label: '4p', radius: 135, sublabel: '4p (excited)', eV: -1.59 },
+      landingShell: { n: 4, label: '4s', radius: 120, sublabel: '4s', eV: -3.12 },
+      emissionWl: '811.5',
       emissionColor: '#EF4444',
-      transition: '4p → 4s (실제로는 4p[5/2]→4s[3/2])',
+      emissionRGB: 'rgb(255,30,30)',
+      transitionFrom: '4p[5/2]',
+      transitionTo: '4s[3/2]',
+      deltaE: '1.53 eV',
+      transition: '4p[5/2] → 4s[3/2]',
     },
     He: {
       name: 'Helium (He)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -24.6 },
       ],
-      excitedShell: { n: 3, label: '3d', radius: 100, sublabel: 'M (excited)' },
-      emissionWl: '587.6 nm',
+      excitedShell: { n: 3, label: '3d', radius: 110, sublabel: '3d (excited)', eV: -1.51 },
+      landingShell: { n: 2, label: '2p', radius: 75, sublabel: '2p', eV: -3.62 },
+      emissionWl: '587.6',
       emissionColor: '#F59E0B',
+      emissionRGB: 'rgb(230,200,0)',
+      transitionFrom: '3d³D',
+      transitionTo: '2p³P',
+      deltaE: '2.11 eV',
       transition: '3d³D → 2p³P',
     },
     O: {
       name: 'Oxygen (O)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
-        { n: 2, label: '2s2p', electrons: 6, radius: 70, sublabel: 'L' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -538 },
+        { n: 2, label: '2s²2p⁴', electrons: 6, radius: 70, sublabel: 'L (n=2)', eV: -13.6 },
       ],
-      excitedShell: { n: 3, label: '3p', radius: 100, sublabel: 'M (excited)' },
-      emissionWl: '777.4 nm',
+      excitedShell: { n: 3, label: '3p', radius: 110, sublabel: '3p (excited)', eV: -4.19 },
+      landingShell: { n: 3, label: '3s', radius: 90, sublabel: '3s', eV: -5.78 },
+      emissionWl: '777.4',
       emissionColor: '#EF4444',
+      emissionRGB: 'rgb(255,30,30)',
+      transitionFrom: '3p⁵P',
+      transitionTo: '3s⁵S',
+      deltaE: '1.59 eV',
       transition: '3p⁵P → 3s⁵S',
     },
   };
@@ -446,7 +463,7 @@ const ElectronTransitionAnimation = () => {
   useEffect(() => {
     if (!isAutoPlay) return;
     const sequence = ['ground', 'exciting', 'excited', 'emitting', 'ground2'];
-    const durations = [800, 1200, 1000, 1500, 1000];
+    const durations = [800, 1200, 1000, 1800, 1200];
     let step = 0;
     setAnimPhase('ground');
 
@@ -469,18 +486,30 @@ const ElectronTransitionAnimation = () => {
   }, [isAutoPlay, selectedElement]);
 
   const showExcitedShell = animPhase === 'exciting' || animPhase === 'excited' || animPhase === 'emitting';
+  const showLandingShell = animPhase === 'emitting' || animPhase === 'ground2';
   const electronMovingUp = animPhase === 'exciting';
   const electronMovingDown = animPhase === 'emitting';
   const showPhoton = animPhase === 'emitting' || animPhase === 'ground2';
+
+  // Energy diagram positions
+  const edX = 530; // center x of energy diagram
+  const edTop = 80;
+  const edBottom = 360;
+  const edRange = edBottom - edTop;
+
+  // Map shells to Y positions on energy diagram (higher energy = higher position)
+  const shellEnergyY = (shellIndex) => edBottom - shellIndex * 55;
+  const excitedEnergyY = edBottom - elem.shells.length * 55 - 25;
+  const landingEnergyY = edBottom - elem.shells.length * 55 + 20;
 
   return (
     <div className="space-y-4">
       {/* Element selector */}
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm font-bold text-gray-700">원소 선택:</span>
+        <span className="text-sm font-bold text-gray-300">원소 선택:</span>
         {Object.entries(elements).map(([key, el]) => (
           <button key={key} onClick={() => { setSelectedElement(key); setAnimPhase('ground'); setIsAutoPlay(false); }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${selectedElement === key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${selectedElement === key ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
             {el.name}
           </button>
         ))}
@@ -488,7 +517,7 @@ const ElectronTransitionAnimation = () => {
 
       {/* Animation */}
       <div className="bg-gray-900 rounded-xl p-4 relative overflow-hidden">
-        <svg width="100%" viewBox="0 0 600 400" className="max-w-2xl mx-auto">
+        <svg width="100%" viewBox="0 0 700 420" className="max-w-3xl mx-auto">
           <defs>
             <filter id="photonGlow">
               <feGaussianBlur stdDeviation="6" result="blur"/>
@@ -498,24 +527,33 @@ const ElectronTransitionAnimation = () => {
               <feGaussianBlur stdDeviation="2" result="blur"/>
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
+            <marker id="arrowDown" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#F59E0B"/>
+            </marker>
+            <marker id="arrowUp" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#EF4444"/>
+            </marker>
           </defs>
 
+          {/* ===== LEFT SIDE: Orbital View ===== */}
+          <text x="180" y="25" textAnchor="middle" fill="#D1D5DB" fontSize="13" fontWeight="bold">궤도 모형 (Orbital View)</text>
+
           {/* Nucleus */}
-          <circle cx="200" cy="200" r="18" fill="#F59E0B" stroke="#FBBF24" strokeWidth="2" filter="url(#shellGlow)"/>
-          <text x="200" y="205" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">{selectedElement}</text>
+          <circle cx="180" cy="210" r="18" fill="#F59E0B" stroke="#FBBF24" strokeWidth="2" filter="url(#shellGlow)"/>
+          <text x="180" y="215" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">{selectedElement}</text>
 
           {/* Ground state shells */}
           {elem.shells.map((shell, i) => (
             <g key={i}>
-              <circle cx="200" cy="200" r={shell.radius} fill="none" stroke="#4B5563" strokeWidth="1" strokeDasharray="4,4" opacity="0.6"/>
-              <text x={200 + shell.radius + 5} y="195" fill="#9CA3AF" fontSize="9">{shell.sublabel}</text>
+              <circle cx="180" cy="210" r={shell.radius} fill="none" stroke="#4B5563" strokeWidth="1" strokeDasharray="4,4" opacity="0.6"/>
+              <text x={180 - shell.radius - 3} y="205" textAnchor="end" fill="#9CA3AF" fontSize="8">{shell.sublabel}</text>
               {/* Electrons on shell */}
               {Array.from({length: Math.min(shell.electrons, 8)}, (_, j) => {
                 const angle = (j / Math.min(shell.electrons, 8)) * 2 * Math.PI - Math.PI / 2;
                 const isLastShellLastElectron = i === elem.shells.length - 1 && j === Math.min(shell.electrons, 8) - 1;
                 const shouldHide = isLastShellLastElectron && (animPhase === 'excited' || animPhase === 'emitting');
                 return (
-                  <circle key={j} cx={200 + shell.radius * Math.cos(angle)} cy={200 + shell.radius * Math.sin(angle)}
+                  <circle key={j} cx={180 + shell.radius * Math.cos(angle)} cy={210 + shell.radius * Math.sin(angle)}
                     r="5" fill={shouldHide ? 'transparent' : '#3B82F6'} stroke={shouldHide ? 'transparent' : '#60A5FA'} strokeWidth="1"
                     opacity={shouldHide ? 0 : 0.9}>
                     {!shouldHide && <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>}
@@ -525,15 +563,28 @@ const ElectronTransitionAnimation = () => {
             </g>
           ))}
 
+          {/* Landing shell (where electron falls TO) */}
+          {showLandingShell && (
+            <g>
+              <circle cx="180" cy="210" r={elem.landingShell.radius} fill="none"
+                stroke="#10B981" strokeWidth="2" strokeDasharray="6,3" opacity="0.8">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+              </circle>
+              <text x={180 + elem.landingShell.radius + 3} y="225" fill="#10B981" fontSize="9" fontWeight="bold">
+                ← {elem.landingShell.sublabel} (도착)
+              </text>
+            </g>
+          )}
+
           {/* Excited shell (appears during excitation) */}
           {showExcitedShell && (
             <g>
-              <circle cx="200" cy="200" r={elem.excitedShell.radius} fill="none"
+              <circle cx="180" cy="210" r={elem.excitedShell.radius} fill="none"
                 stroke={elem.emissionColor} strokeWidth="1.5" strokeDasharray="6,3" opacity="0.7">
                 <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
               </circle>
-              <text x={200 + elem.excitedShell.radius + 5} y="195" fill={elem.emissionColor} fontSize="9" fontWeight="bold">
-                {elem.excitedShell.sublabel}
+              <text x={180 + elem.excitedShell.radius + 3} y="205" fill={elem.emissionColor} fontSize="9" fontWeight="bold">
+                {elem.excitedShell.sublabel} {electronMovingUp ? '(여기 중↑)' : animPhase === 'emitting' ? '(출발)' : ''}
               </text>
             </g>
           )}
@@ -541,40 +592,76 @@ const ElectronTransitionAnimation = () => {
           {/* Electron moving UP (excitation) */}
           {electronMovingUp && (
             <circle r="6" fill="#FBBF24" filter="url(#photonGlow)">
-              <animate attributeName="cx" values={`${200 + elem.shells[elem.shells.length-1].radius};${200 + elem.excitedShell.radius}`} dur="1s" fill="freeze"/>
-              <animate attributeName="cy" values="200;200" dur="1s"/>
+              <animate attributeName="cx" values={`${180 + elem.shells[elem.shells.length-1].radius};${180 + elem.excitedShell.radius}`} dur="1s" fill="freeze"/>
+              <animate attributeName="cy" values="210;210" dur="1s"/>
             </circle>
           )}
 
-          {/* Electron on excited shell */}
-          {(animPhase === 'excited' || animPhase === 'emitting') && !electronMovingDown && (
-            <circle cx={200 + elem.excitedShell.radius} cy="200" r="6" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5">
-              <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
-            </circle>
-          )}
-
-          {/* Electron moving DOWN (de-excitation / emission) */}
-          {electronMovingDown && (
+          {/* Electron sitting on excited shell */}
+          {animPhase === 'excited' && (
             <g>
-              <circle r="6" fill="#3B82F6" stroke="#60A5FA" strokeWidth="1.5">
-                <animate attributeName="cx" values={`${200 + elem.excitedShell.radius};${200 + elem.shells[elem.shells.length-1].radius}`} dur="1s" fill="freeze"/>
-                <animate attributeName="cy" values="200;200" dur="1s"/>
+              <circle cx={180 + elem.excitedShell.radius} cy="210" r="6" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5">
+                <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
               </circle>
+              <text x={180 + elem.excitedShell.radius} y="195" textAnchor="middle" fill="#FBBF24" fontSize="8" fontWeight="bold">불안정!</text>
             </g>
           )}
 
-          {/* Photon emission (wavy line going right) */}
+          {/* Electron moving DOWN with transition label */}
+          {electronMovingDown && (
+            <g>
+              <circle r="7" fill="#3B82F6" stroke="#93C5FD" strokeWidth="2" filter="url(#shellGlow)">
+                <animate attributeName="cx" values={`${180 + elem.excitedShell.radius};${180 + elem.landingShell.radius}`} dur="1.2s" fill="freeze"/>
+                <animate attributeName="cy" values="210;210" dur="1.2s"/>
+              </circle>
+              {/* Curved arrow showing transition direction on orbital */}
+              <path d={`M ${180 + elem.excitedShell.radius - 10} 195 Q ${180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} 180, ${180 + elem.landingShell.radius + 10} 195`}
+                fill="none" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrowDown)" opacity="0">
+                <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze"/>
+              </path>
+              {/* Transition label on orbital */}
+              <text x={180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} y="175"
+                textAnchor="middle" fill="#FBBF24" fontSize="11" fontWeight="bold" opacity="0">
+                {elem.transitionFrom} → {elem.transitionTo}
+                <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze"/>
+              </text>
+            </g>
+          )}
+
+          {/* Show transition label after emission too */}
+          {animPhase === 'ground2' && (
+            <g>
+              <text x={180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} y="175"
+                textAnchor="middle" fill="#FBBF24" fontSize="11" fontWeight="bold">
+                {elem.transitionFrom} → {elem.transitionTo}
+              </text>
+            </g>
+          )}
+
+          {/* Photon emission (wavy line going outward) */}
           {showPhoton && (
             <g filter="url(#photonGlow)">
-              <path d="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200"
-                fill="none" stroke={elem.emissionColor} strokeWidth="3" opacity="0">
-                <animate attributeName="opacity" values="0;1;1;0.5" dur="1.5s" fill="freeze"/>
-                <animate attributeName="d" values="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200;M 380 200 Q 395 180, 410 200 Q 425 220, 440 200 Q 455 180, 470 200 Q 485 220, 500 200 Q 515 180, 530 200" dur="1.5s" fill="freeze"/>
+              {/* Wavy photon */}
+              <path fill="none" stroke={elem.emissionColor} strokeWidth="3" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0.8" dur="1.5s" fill="freeze"/>
+                <animate attributeName="d"
+                  values="M 180 260 Q 190 248, 200 260 Q 210 272, 220 260 Q 230 248, 240 260 Q 250 272, 260 260;M 200 280 Q 215 262, 230 280 Q 245 298, 260 280 Q 275 262, 290 280 Q 305 298, 320 280 Q 335 262, 350 280"
+                  dur="1.5s" fill="freeze"/>
               </path>
-              <text x="460" y="175" fill={elem.emissionColor} fontSize="14" fontWeight="bold" opacity="0">
-                {elem.emissionWl}
+              {/* Wavelength + energy label */}
+              <g opacity="0">
                 <animate attributeName="opacity" values="0;0;1" dur="1s" fill="freeze"/>
-              </text>
+                <rect x="260" y="255" width="105" height="50" rx="6" fill="#1F2937" stroke={elem.emissionColor} strokeWidth="1.5"/>
+                <text x="312" y="273" textAnchor="middle" fill={elem.emissionColor} fontSize="13" fontWeight="bold">
+                  λ = {elem.emissionWl} nm
+                </text>
+                <text x="312" y="290" textAnchor="middle" fill="#D1D5DB" fontSize="10">
+                  ΔE = {elem.deltaE}
+                </text>
+                <text x="312" y="302" textAnchor="middle" fill="#9CA3AF" fontSize="8">
+                  (= hc/λ)
+                </text>
+              </g>
             </g>
           )}
 
@@ -582,51 +669,151 @@ const ElectronTransitionAnimation = () => {
           {electronMovingUp && (
             <g>
               <circle r="4" fill="#EF4444">
-                <animate attributeName="cx" values="50;180" dur="0.8s" fill="freeze"/>
-                <animate attributeName="cy" values="120;190" dur="0.8s" fill="freeze"/>
+                <animate attributeName="cx" values="30;160" dur="0.8s" fill="freeze"/>
+                <animate attributeName="cy" values="130;200" dur="0.8s" fill="freeze"/>
               </circle>
-              <text x="60" y="110" fill="#FCA5A5" fontSize="10" fontWeight="bold">고에너지 전자 충돌!</text>
+              <text x="35" y="120" fill="#FCA5A5" fontSize="10" fontWeight="bold">고에너지 전자 e⁻ 충돌!</text>
             </g>
           )}
 
-          {/* Phase labels */}
-          <rect x="350" y="290" width="220" height="80" rx="8" fill="#1F2937" stroke="#374151" strokeWidth="1"/>
-          <text x="460" y="315" textAnchor="middle" fill="#E5E7EB" fontSize="13" fontWeight="bold">
-            {animPhase === 'ground' || animPhase === 'ground2' ? '바닥 상태 (Ground State)' :
-             animPhase === 'exciting' ? '여기 중... (Excitation)' :
-             animPhase === 'excited' ? '들뜬 상태 (Excited State)' :
-             '발광! (Emission)'}
-          </text>
-          <text x="460" y="340" textAnchor="middle" fill="#9CA3AF" fontSize="10">
-            {animPhase === 'ground' || animPhase === 'ground2' ? '전자가 안정적인 껍데기에 위치' :
-             animPhase === 'exciting' ? '전자 충돌로 높은 에너지 준위로 이동' :
-             animPhase === 'excited' ? '불안정! 곧 낮은 준위로 돌아감' :
-             `전이: ${elem.transition}`}
-          </text>
-          {showPhoton && (
-            <text x="460" y="358" textAnchor="middle" fill={elem.emissionColor} fontSize="11" fontWeight="bold">
-              방출 파장: {elem.emissionWl}
-            </text>
+          {/* ===== DIVIDER ===== */}
+          <line x1="390" y1="40" x2="390" y2="380" stroke="#374151" strokeWidth="1" strokeDasharray="4,4"/>
+
+          {/* ===== RIGHT SIDE: Energy Level Diagram ===== */}
+          <text x={edX + 40} y="25" textAnchor="middle" fill="#D1D5DB" fontSize="13" fontWeight="bold">에너지 준위도</text>
+
+          {/* Energy axis */}
+          <line x1={edX - 50} y1={edTop} x2={edX - 50} y2={edBottom} stroke="#4B5563" strokeWidth="1.5"/>
+          <polygon points={`${edX-55},${edTop+10} ${edX-45},${edTop+10} ${edX-50},${edTop}`} fill="#9CA3AF"/>
+          <text x={edX - 55} y={edTop - 5} textAnchor="middle" fill="#9CA3AF" fontSize="9">E (eV)</text>
+
+          {/* Ground state energy levels */}
+          {elem.shells.map((shell, i) => {
+            const y = shellEnergyY(i);
+            return (
+              <g key={i}>
+                <line x1={edX - 30} y1={y} x2={edX + 80} y2={y} stroke="#6B7280" strokeWidth="2"/>
+                <text x={edX + 85} y={y + 4} fill="#9CA3AF" fontSize="9">{shell.label}</text>
+                <text x={edX - 35} y={y + 4} textAnchor="end" fill="#6B7280" fontSize="8">{shell.eV}</text>
+              </g>
+            );
+          })}
+
+          {/* Landing shell energy level (where electron falls to) */}
+          {(showExcitedShell || showLandingShell) && (
+            <g>
+              <line x1={edX - 30} y1={landingEnergyY} x2={edX + 80} y2={landingEnergyY}
+                stroke="#10B981" strokeWidth="2.5"/>
+              <text x={edX + 85} y={landingEnergyY + 4} fill="#10B981" fontSize="9" fontWeight="bold">
+                {elem.landingShell.label}
+              </text>
+              <text x={edX - 35} y={landingEnergyY + 4} textAnchor="end" fill="#10B981" fontSize="8">
+                {elem.landingShell.eV}
+              </text>
+              {showLandingShell && (
+                <text x={edX + 25} y={landingEnergyY - 6} textAnchor="middle" fill="#10B981" fontSize="8" fontWeight="bold">
+                  도착 ↓
+                </text>
+              )}
+            </g>
           )}
 
-          {/* Energy level diagram on right side */}
-          <line x1="560" y1="100" x2="560" y2="350" stroke="#374151" strokeWidth="1"/>
-          <text x="575" y="95" fill="#9CA3AF" fontSize="9">에너지</text>
-          <polygon points="555,105 565,105 560,95" fill="#9CA3AF"/>
-          {elem.shells.map((shell, i) => (
-            <g key={i}>
-              <line x1="540" y1={340 - i * 50} x2="580" y2={340 - i * 50} stroke="#6B7280" strokeWidth="2"/>
-              <text x="590" y={344 - i * 50} fill="#9CA3AF" fontSize="8">{shell.label}</text>
-            </g>
-          ))}
+          {/* Excited shell energy level */}
           {showExcitedShell && (
             <g>
-              <line x1="540" y1={340 - elem.shells.length * 50 - 30} x2="580" y2={340 - elem.shells.length * 50 - 30}
-                stroke={elem.emissionColor} strokeWidth="2" strokeDasharray="4,2"/>
-              <text x="590" y={344 - elem.shells.length * 50 - 26} fill={elem.emissionColor} fontSize="8" fontWeight="bold">
+              <line x1={edX - 30} y1={excitedEnergyY} x2={edX + 80} y2={excitedEnergyY}
+                stroke={elem.emissionColor} strokeWidth="2.5" strokeDasharray="6,3"/>
+              <text x={edX + 85} y={excitedEnergyY + 4} fill={elem.emissionColor} fontSize="9" fontWeight="bold">
                 {elem.excitedShell.label}
               </text>
+              <text x={edX - 35} y={excitedEnergyY + 4} textAnchor="end" fill={elem.emissionColor} fontSize="8">
+                {elem.excitedShell.eV}
+              </text>
             </g>
+          )}
+
+          {/* Excitation arrow (UP) on energy diagram */}
+          {electronMovingUp && (
+            <g>
+              <line x1={edX} y1={shellEnergyY(elem.shells.length - 1) - 5}
+                x2={edX} y2={excitedEnergyY + 8}
+                stroke="#EF4444" strokeWidth="2.5" markerEnd="url(#arrowUp)">
+                <animate attributeName="y2" values={`${shellEnergyY(elem.shells.length - 1) - 5};${excitedEnergyY + 8}`} dur="1s" fill="freeze"/>
+              </line>
+              <text x={edX + 10} y={(shellEnergyY(elem.shells.length - 1) + excitedEnergyY) / 2} fill="#FCA5A5" fontSize="9" fontWeight="bold">
+                여기 ↑
+              </text>
+            </g>
+          )}
+
+          {/* Electron dot on energy diagram */}
+          {animPhase === 'excited' && (
+            <circle cx={edX + 25} cy={excitedEnergyY} r="5" fill="#FBBF24">
+              <animate attributeName="opacity" values="0.7;1;0.7" dur="0.8s" repeatCount="indefinite"/>
+            </circle>
+          )}
+
+          {/* Transition arrow (DOWN) on energy diagram with photon wave */}
+          {(electronMovingDown || animPhase === 'ground2') && (
+            <g>
+              {/* Down arrow */}
+              <line x1={edX + 25} y1={excitedEnergyY + 5} x2={edX + 25} y2={landingEnergyY - 5}
+                stroke="#F59E0B" strokeWidth="3" markerEnd="url(#arrowDown)"/>
+
+              {/* Transition labels */}
+              <text x={edX + 38} y={excitedEnergyY + 15} fill={elem.emissionColor} fontSize="9" fontWeight="bold">
+                {elem.transitionFrom}
+              </text>
+              <text x={edX + 38} y={landingEnergyY - 8} fill="#10B981" fontSize="9" fontWeight="bold">
+                {elem.transitionTo}
+              </text>
+
+              {/* ΔE bracket */}
+              <line x1={edX - 15} y1={excitedEnergyY} x2={edX - 15} y2={landingEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <line x1={edX - 20} y1={excitedEnergyY} x2={edX - 10} y2={excitedEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <line x1={edX - 20} y1={landingEnergyY} x2={edX - 10} y2={landingEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <text x={edX - 25} y={(excitedEnergyY + landingEnergyY) / 2 - 3} textAnchor="end" fill="#FBBF24" fontSize="9" fontWeight="bold">
+                ΔE
+              </text>
+              <text x={edX - 25} y={(excitedEnergyY + landingEnergyY) / 2 + 9} textAnchor="end" fill="#FBBF24" fontSize="8">
+                = {elem.deltaE}
+              </text>
+
+              {/* Photon wavy going right from the transition */}
+              <path fill="none" stroke={elem.emissionColor} strokeWidth="2.5" filter="url(#photonGlow)"
+                d={`M ${edX + 50} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 60} ${(excitedEnergyY + landingEnergyY) / 2 - 10}, ${edX + 70} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 80} ${(excitedEnergyY + landingEnergyY) / 2 + 10}, ${edX + 90} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 100} ${(excitedEnergyY + landingEnergyY) / 2 - 10}, ${edX + 110} ${(excitedEnergyY + landingEnergyY) / 2}`}>
+                <animate attributeName="opacity" values="0;1;1" dur="0.8s" fill="freeze"/>
+              </path>
+              <text x={edX + 70} y={(excitedEnergyY + landingEnergyY) / 2 - 18} textAnchor="middle" fill={elem.emissionColor} fontSize="11" fontWeight="bold">
+                λ = {elem.emissionWl} nm
+              </text>
+
+              {/* Formula */}
+              <text x={edX + 70} y={(excitedEnergyY + landingEnergyY) / 2 + 28} textAnchor="middle" fill="#9CA3AF" fontSize="8">
+                ΔE = hc/λ = {elem.deltaE}
+              </text>
+            </g>
+          )}
+
+          {/* ===== BOTTOM: Phase info box ===== */}
+          <rect x="20" y="365" width="660" height="45" rx="8" fill="#1F2937" stroke="#374151" strokeWidth="1"/>
+          <text x="350" y="385" textAnchor="middle" fill="#E5E7EB" fontSize="13" fontWeight="bold">
+            {animPhase === 'ground' || animPhase === 'ground2' ? '바닥 상태 (Ground State) — 전자가 안정적인 궤도에 위치' :
+             animPhase === 'exciting' ? '여기 중 (Excitation) — 전자 충돌로 높은 에너지 궤도로 이동!' :
+             animPhase === 'excited' ? '들뜬 상태 (Excited) — 불안정! 곧 낮은 궤도로 떨어짐' :
+             `발광! (Emission) — ${elem.transitionFrom} → ${elem.transitionTo} 전이, λ = ${elem.emissionWl} nm 방출`}
+          </text>
+          {(electronMovingDown || animPhase === 'ground2') && (
+            <text x="350" y="403" textAnchor="middle" fill="#FBBF24" fontSize="10">
+              에너지 차이 ΔE = {elem.deltaE} → 이 에너지에 해당하는 파장 {elem.emissionWl} nm의 빛(광자)이 방출됩니다
+            </text>
+          )}
+          {(animPhase === 'ground' || animPhase === 'exciting' || animPhase === 'excited') && (
+            <text x="350" y="403" textAnchor="middle" fill="#9CA3AF" fontSize="10">
+              {animPhase === 'ground' ? `${elem.name} — 전이: ${elem.transition} (${elem.emissionWl} nm)` :
+               animPhase === 'exciting' ? `전자가 ${elem.shells[elem.shells.length-1].label} 궤도에서 ${elem.excitedShell.label} 궤도로 올라갑니다` :
+               `${elem.excitedShell.label} 궤도의 전자는 불안정하여 곧 ${elem.landingShell.label} 궤도로 떨어집니다`}
+            </text>
           )}
         </svg>
 
@@ -640,9 +827,9 @@ const ElectronTransitionAnimation = () => {
           </button>
           {!isAutoPlay && (
             <div className="flex gap-2">
-              <button onClick={() => setAnimPhase('exciting')} className="px-3 py-2 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700">여기</button>
-              <button onClick={() => setAnimPhase('excited')} className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700">들뜬 상태</button>
-              <button onClick={() => setAnimPhase('emitting')} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">발광</button>
+              <button onClick={() => setAnimPhase('exciting')} className="px-3 py-2 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700">1. 여기</button>
+              <button onClick={() => setAnimPhase('excited')} className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700">2. 들뜬</button>
+              <button onClick={() => setAnimPhase('emitting')} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">3. 발광</button>
             </div>
           )}
         </div>
@@ -650,26 +837,26 @@ const ElectronTransitionAnimation = () => {
 
       {/* Explanation */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="bg-blue-50 rounded-lg p-4">
-          <h5 className="font-bold text-blue-800 mb-2">전자 껍데기(Electron Shell)란?</h5>
-          <p className="text-sm text-blue-700 leading-relaxed">
+        <div className="bg-blue-900/30 rounded-lg p-4">
+          <h5 className="font-bold text-blue-300 mb-2">전자 껍데기(Electron Shell)란?</h5>
+          <p className="text-sm text-blue-200 leading-relaxed">
             원자의 전자는 <strong>특정 에너지 준위(껍데기)</strong>에만 존재할 수 있습니다.
             안쪽부터 K(n=1), L(n=2), M(n=3), N(n=4)... 순으로 번호를 매기며,
             각 껍데기는 다시 <strong>s, p, d, f 부껍데기(subshell)</strong>로 나뉩니다.
           </p>
-          <div className="mt-2 text-xs text-blue-600 space-y-1">
+          <div className="mt-2 text-xs text-blue-300 space-y-1">
             <p><strong>s</strong>: 구형, 최대 2개 전자</p>
             <p><strong>p</strong>: 아령형, 최대 6개 전자</p>
             <p><strong>d</strong>: 클로버형, 최대 10개 전자</p>
             <p><strong>f</strong>: 복잡한 형태, 최대 14개 전자</p>
           </div>
         </div>
-        <div className="bg-amber-50 rounded-lg p-4">
-          <h5 className="font-bold text-amber-800 mb-2">OES 전이 표기법 읽는 법</h5>
-          <p className="text-sm text-amber-700 leading-relaxed">
+        <div className="bg-amber-900/30 rounded-lg p-4">
+          <h5 className="font-bold text-amber-300 mb-2">OES 전이 표기법 읽는 법</h5>
+          <p className="text-sm text-amber-200 leading-relaxed">
             OES 데이터에서 보이는 <strong>4p→4s</strong> 같은 표기는 전자가 4p 부껍데기에서 4s 부껍데기로 전이하면서 빛을 방출했다는 뜻입니다.
           </p>
-          <div className="mt-2 text-xs text-amber-600 space-y-1">
+          <div className="mt-2 text-xs text-amber-300 space-y-1">
             <p><strong>Ar I 811.5nm</strong>: 4p[5/2] → 4s[3/2]</p>
             <p><strong>O I 777.4nm</strong>: 3p⁵P → 3s⁵S</p>
             <p><strong>He I 587.6nm</strong>: 3d³D → 2p³P</p>
@@ -729,6 +916,7 @@ const OESSimulator = () => {
     { id: 'theory', name: '이론', icon: '📚' },
     { id: 'overview', name: '개요', icon: '🔍' },
     { id: 'simulator', name: '시뮬레이터 측정', icon: '🔬' },
+    { id: 'practical', name: '실전 시뮬레이터', icon: '🏭' },
     { id: 'quiz', name: '문제풀이', icon: '✏️' },
   ];
 
@@ -983,9 +1171,9 @@ const OESSimulator = () => {
   // RENDER
   // ============================================================
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-950">
       {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
         <div className="flex overflow-x-auto">
           {tabs.map(tab => (
             <button
@@ -993,8 +1181,8 @@ const OESSimulator = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold whitespace-nowrap border-b-3 transition-all
                 ${activeTab === tab.id
-                  ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'border-indigo-600 text-indigo-400 bg-indigo-900/30'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-gray-700'
                 }`}
             >
               <span className="text-lg">{tab.icon}</span>
@@ -1014,8 +1202,8 @@ const OESSimulator = () => {
             {!isTheoryPlaying && !showDetailedContent ? (
               <div className="text-center py-16">
                 <div className="text-8xl mb-6">🌈</div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-4">OES: 빛으로 플라즈마를 읽다</h2>
-                <p className="text-gray-600 mb-8 text-lg">Optical Emission Spectroscopy의 세계로 떠나봅시다</p>
+                <h2 className="text-3xl font-bold text-gray-100 mb-4">OES: 빛으로 플라즈마를 읽다</h2>
+                <p className="text-gray-400 mb-8 text-lg">Optical Emission Spectroscopy의 세계로 떠나봅시다</p>
                 <button onClick={startTheory}
                   className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                   스토리 시작하기 ▶
@@ -1025,13 +1213,13 @@ const OESSimulator = () => {
               <div className="max-w-3xl mx-auto">
                 {/* Progress */}
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-sm text-gray-500">Step {theoryStep + 1} / {storySteps.length}</span>
+                  <span className="text-sm text-gray-400">Step {theoryStep + 1} / {storySteps.length}</span>
                   <div className="flex gap-2">
                     {storySteps.map((_, i) => (
                       <div key={i} className={`w-3 h-3 rounded-full transition-all ${i <= theoryStep ? 'bg-indigo-600 scale-110' : 'bg-gray-300'}`}/>
                     ))}
                   </div>
-                  <button onClick={skipTheory} className="text-sm text-gray-500 hover:text-gray-700">건너뛰기 →</button>
+                  <button onClick={skipTheory} className="text-sm text-gray-400 hover:text-gray-300">건너뛰기 →</button>
                 </div>
 
                 {/* Story Card */}
@@ -1046,11 +1234,11 @@ const OESSimulator = () => {
                 {/* Navigation */}
                 <div className="flex justify-between mt-6">
                   <button onClick={prevTheoryStep} disabled={theoryStep === 0}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold disabled:opacity-30 hover:bg-gray-300 transition-all">
+                    className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg font-semibold disabled:opacity-30 hover:bg-gray-600 transition-all">
                     ← 이전
                   </button>
                   <button onClick={nextTheoryStep}
-                    className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all">
+                    className="px-6 py-3 bg-gray-800 text-indigo-400 rounded-lg font-semibold hover:bg-indigo-900/30 transition-all">
                     {theoryStep === storySteps.length - 1 ? '완료 ✓' : '다음 →'}
                   </button>
                 </div>
@@ -1058,11 +1246,11 @@ const OESSimulator = () => {
             ) : (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">✅</div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">스토리텔링 완료!</h3>
-                <p className="text-gray-600 mb-6">이론, 개요, 시뮬레이터 탭에서 더 깊이 학습해보세요.</p>
+                <h3 className="text-2xl font-bold text-gray-100 mb-4">스토리텔링 완료!</h3>
+                <p className="text-gray-400 mb-6">이론, 개요, 시뮬레이터 탭에서 더 깊이 학습해보세요.</p>
                 <div className="flex gap-4 justify-center">
                   <button onClick={() => {setShowDetailedContent(false); setIsTheoryPlaying(false);}}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+                    className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg font-semibold hover:bg-gray-600">
                     다시 보기
                   </button>
                   <button onClick={() => setActiveTab('theory')}
@@ -1081,24 +1269,24 @@ const OESSimulator = () => {
         {/* ================================================================ */}
         {activeTab === 'theory' && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-800">OES 이론</h2>
+            <h2 className="text-2xl font-bold text-gray-100">OES 이론</h2>
 
             {/* 1. Emission Principle */}
-            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-              <h3 className="text-xl font-bold text-indigo-700">1. 발광 원리 (Emission Principle)</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
+              <h3 className="text-xl font-bold text-indigo-400">1. 발광 원리 (Emission Principle)</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     플라즈마에서 <strong>고에너지 전자</strong>가 중성 원자/분자와 충돌하면, 원자의 전자가 높은 에너지 준위로 여기(excitation)됩니다.
                   </p>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     여기된 전자는 불안정하여 <strong>낮은 에너지 준위로 전이</strong>하면서 에너지 차이에 해당하는 파장의 광자를 방출합니다.
                   </p>
-                  <div className="bg-indigo-50 rounded-lg p-4 font-mono text-center">
+                  <div className="bg-indigo-900/30 rounded-lg p-4 font-mono text-center">
                     <p className="text-indigo-800 font-bold">ΔE = E₂ - E₁ = hν = hc/λ</p>
-                    <p className="text-sm text-indigo-600 mt-2">h: 플랑크 상수, c: 광속, λ: 파장</p>
+                    <p className="text-sm text-indigo-400 mt-2">h: 플랑크 상수, c: 광속, λ: 파장</p>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     각 원소/분자마다 에너지 준위 구조가 다르므로, <strong>고유한 파장의 빛</strong>을 방출합니다. 이것이 OES의 핵심 원리입니다.
                   </p>
                 </div>
@@ -1139,59 +1327,59 @@ const OESSimulator = () => {
             </div>
 
             {/* 2. Spectrum Analysis */}
-            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-              <h3 className="text-xl font-bold text-indigo-700">2. 스펙트럼 분석</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
+              <h3 className="text-xl font-bold text-indigo-400">2. 스펙트럼 분석</h3>
               <div className="space-y-3">
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed">
                   OES 스펙트럼은 <strong>가로축: 파장(nm), 세로축: 발광 세기(intensity)</strong>로 표현됩니다.
                 </p>
                 <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <h4 className="font-bold text-blue-800 mb-2">피크 위치 (Peak Position)</h4>
-                    <p className="text-sm text-blue-700">특정 파장의 피크 → 해당 원소/분자의 <strong>존재 확인</strong> (정성 분석)</p>
+                  <div className="bg-blue-900/30 rounded-lg p-4">
+                    <h4 className="font-bold text-blue-300 mb-2">피크 위치 (Peak Position)</h4>
+                    <p className="text-sm text-blue-300">특정 파장의 피크 → 해당 원소/분자의 <strong>존재 확인</strong> (정성 분석)</p>
                   </div>
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <h4 className="font-bold text-green-800 mb-2">피크 세기 (Peak Intensity)</h4>
-                    <p className="text-sm text-green-700">피크의 높이 → 해당 종의 <strong>상대적 밀도</strong> (정량 분석)</p>
+                  <div className="bg-green-900/30 rounded-lg p-4">
+                    <h4 className="font-bold text-green-300 mb-2">피크 세기 (Peak Intensity)</h4>
+                    <p className="text-sm text-green-300">피크의 높이 → 해당 종의 <strong>상대적 밀도</strong> (정량 분석)</p>
                   </div>
-                  <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="bg-purple-900/30 rounded-lg p-4">
                     <h4 className="font-bold text-peak-width800 mb-2">피크 폭 (Peak Width)</h4>
-                    <p className="text-sm text-purple-700">피크의 넓이 → <strong>온도, 압력</strong> 정보 (도플러, 압력 확장)</p>
+                    <p className="text-sm text-purple-300">피크의 넓이 → <strong>온도, 압력</strong> 정보 (도플러, 압력 확장)</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 3. Normalization */}
-            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-              <h3 className="text-xl font-bold text-indigo-700">3. 데이터 처리: 정규화 (Normalization)</h3>
-              <p className="text-gray-700 leading-relaxed">
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
+              <h3 className="text-xl font-bold text-indigo-400">3. 데이터 처리: 정규화 (Normalization)</h3>
+              <p className="text-gray-300 leading-relaxed">
                 서로 다른 조건에서 측정한 스펙트럼을 비교하려면, <strong>정규화(Normalization)</strong>가 필수입니다.
                 가장 간단한 방법은 최대 피크 세기로 나누는 것입니다.
               </p>
-              <div className="bg-gray-50 rounded-lg p-4 font-mono text-center">
-                <p className="text-lg font-bold text-gray-800">I_normalized(λ) = I(λ) / I_max</p>
-                <p className="text-sm text-gray-600 mt-1">모든 세기가 0~1 범위로 스케일링됨</p>
+              <div className="bg-gray-950 rounded-lg p-4 font-mono text-center">
+                <p className="text-lg font-bold text-gray-100">I_normalized(λ) = I(λ) / I_max</p>
+                <p className="text-sm text-gray-400 mt-1">모든 세기가 0~1 범위로 스케일링됨</p>
               </div>
               <NormalizationDiagram />
             </div>
 
             {/* 4. Actinometry */}
-            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-              <h3 className="text-xl font-bold text-indigo-700">4. Actinometry (활성종 정량 분석)</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
+              <h3 className="text-xl font-bold text-indigo-400">4. Actinometry (활성종 정량 분석)</h3>
               <div className="space-y-3">
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed">
                   OES 발광 세기는 해당 종의 밀도뿐만 아니라, 전자 온도와 밀도에도 의존합니다. 따라서 발광 세기만으로는 절대 밀도를 알 수 없습니다.
                 </p>
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed">
                   <strong>Actinometry</strong>는 알려진 농도의 비활성 가스(주로 Ar)를 소량 추가하여, 활성종과 비활성 가스의 발광선 비율로부터 활성종 밀도를 추정하는 기법입니다.
                 </p>
-                <div className="bg-amber-50 rounded-lg p-4 font-mono text-center">
-                  <p className="text-lg font-bold text-amber-800">[X] / [Ar] ∝ I_X / I_Ar</p>
-                  <p className="text-sm text-amber-700 mt-2">조건: 두 발광선의 들뜬 에너지 준위가 비슷해야 함</p>
+                <div className="bg-amber-900/30 rounded-lg p-4 font-mono text-center">
+                  <p className="text-lg font-bold text-amber-300">[X] / [Ar] ∝ I_X / I_Ar</p>
+                  <p className="text-sm text-amber-300 mt-2">조건: 두 발광선의 들뜬 에너지 준위가 비슷해야 함</p>
                 </div>
-                <div className="bg-red-50 rounded-lg p-3">
-                  <p className="text-sm text-red-700">
+                <div className="bg-red-900/30 rounded-lg p-3">
+                  <p className="text-sm text-red-300">
                     <strong>주의:</strong> Actinometry의 정확도는 두 전이의 여기 임계 에너지(threshold energy)가 유사할 때만 보장됩니다. 예: F(685.6nm, 14.5eV) vs Ar(750.4nm, 13.5eV)
                   </p>
                 </div>
@@ -1199,17 +1387,17 @@ const OESSimulator = () => {
             </div>
 
             {/* 5. Endpoint Detection */}
-            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-              <h3 className="text-xl font-bold text-indigo-700">5. 종말점 검출 (Endpoint Detection)</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
+              <h3 className="text-xl font-bold text-indigo-400">5. 종말점 검출 (Endpoint Detection)</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     에칭 공정에서 OES의 가장 중요한 응용 중 하나는 <strong>종말점 검출</strong>입니다.
                   </p>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     에칭 대상 물질이 모두 제거되면, 관련 라디칼/반응 생성물의 발광선 세기가 급격히 변합니다.
                   </p>
-                  <ul className="space-y-2 text-gray-700">
+                  <ul className="space-y-2 text-gray-300">
                     <li className="flex items-start gap-2">
                       <span className="text-green-500 mt-1">●</span>
                       <span><strong>반응물(etchant)의 세기 증가</strong>: 에칭할 물질이 없으면 반응물이 소모되지 않아 농도 증가</span>
@@ -1249,45 +1437,45 @@ const OESSimulator = () => {
         {/* ================================================================ */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-800">OES 시스템 개요</h2>
+            <h2 className="text-2xl font-bold text-gray-100">OES 시스템 개요</h2>
 
             {/* System Diagram */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-indigo-700 mb-4">OES 시스템 구성도</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+              <h3 className="text-xl font-bold text-indigo-400 mb-4">OES 시스템 구성도</h3>
               <OESSystemDiagram />
               <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="bg-gray-950 rounded-lg p-3 text-center">
                   <div className="text-2xl mb-1">🔭</div>
-                  <h4 className="font-bold text-sm text-gray-800">뷰포트</h4>
-                  <p className="text-xs text-gray-600">석영(Quartz) 유리창으로 UV~NIR 투과</p>
+                  <h4 className="font-bold text-sm text-gray-100">뷰포트</h4>
+                  <p className="text-xs text-gray-400">석영(Quartz) 유리창으로 UV~NIR 투과</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="bg-gray-950 rounded-lg p-3 text-center">
                   <div className="text-2xl mb-1">🔬</div>
-                  <h4 className="font-bold text-sm text-gray-800">집광 광학계</h4>
-                  <p className="text-xs text-gray-600">렌즈 + 광섬유로 빛을 분광기에 전달</p>
+                  <h4 className="font-bold text-sm text-gray-100">집광 광학계</h4>
+                  <p className="text-xs text-gray-400">렌즈 + 광섬유로 빛을 분광기에 전달</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="bg-gray-950 rounded-lg p-3 text-center">
                   <div className="text-2xl mb-1">🌈</div>
-                  <h4 className="font-bold text-sm text-gray-800">분광기</h4>
-                  <p className="text-xs text-gray-600">회절격자로 빛을 파장별 분리</p>
+                  <h4 className="font-bold text-sm text-gray-100">분광기</h4>
+                  <p className="text-xs text-gray-400">회절격자로 빛을 파장별 분리</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="bg-gray-950 rounded-lg p-3 text-center">
                   <div className="text-2xl mb-1">📊</div>
-                  <h4 className="font-bold text-sm text-gray-800">CCD 검출기</h4>
-                  <p className="text-xs text-gray-600">파장별 빛의 세기를 전기신호로 변환</p>
+                  <h4 className="font-bold text-sm text-gray-100">CCD 검출기</h4>
+                  <p className="text-xs text-gray-400">파장별 빛의 세기를 전기신호로 변환</p>
                 </div>
               </div>
             </div>
 
             {/* Electron Shell Theory Dropdown */}
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 overflow-hidden">
               <button onClick={() => setShowShellTheory(!showShellTheory)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-all">
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-700 transition-all">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">⚛️</span>
                   <div className="text-left">
-                    <h3 className="text-xl font-bold text-indigo-700">보강 학습: 전자 껍데기와 전이 이론</h3>
-                    <p className="text-sm text-gray-500">spdf 껍데기, 에너지 준위, 여기/발광 원리 (클릭하여 펼치기)</p>
+                    <h3 className="text-xl font-bold text-indigo-400">보강 학습: 전자 껍데기와 전이 이론</h3>
+                    <p className="text-sm text-gray-400">spdf 껍데기, 에너지 준위, 여기/발광 원리 (클릭하여 펼치기)</p>
                   </div>
                 </div>
                 <span className={`text-2xl text-indigo-400 transition-transform duration-300 ${showShellTheory ? 'rotate-180' : ''}`}>
@@ -1297,9 +1485,9 @@ const OESSimulator = () => {
               {showShellTheory && (
                 <div className="px-6 pb-6 border-t border-gray-100">
                   <div className="mt-4 space-y-4">
-                    <div className="bg-indigo-50 rounded-lg p-4">
+                    <div className="bg-indigo-900/30 rounded-lg p-4">
                       <h4 className="font-bold text-indigo-800 mb-2">왜 이 이론이 중요한가?</h4>
-                      <p className="text-sm text-indigo-700 leading-relaxed">
+                      <p className="text-sm text-indigo-400 leading-relaxed">
                         OES에서 측정하는 <strong>발광선의 파장</strong>은 원자 내 전자가 높은 에너지 껍데기에서 낮은 껍데기로 떨어질 때 방출되는 빛의 파장입니다.
                         각 원소마다 껍데기 구조가 다르기 때문에 <strong>고유한 파장의 빛</strong>이 나옵니다. 이것이 OES로 원소를 식별하는 핵심 원리입니다.
                       </p>
@@ -1308,9 +1496,9 @@ const OESSimulator = () => {
                     <ElectronTransitionAnimation />
 
                     <div className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg p-4">
-                      <h4 className="font-bold text-gray-800 mb-3">정리: OES 발광 과정</h4>
+                      <h4 className="font-bold text-gray-100 mb-3">정리: OES 발광 과정</h4>
                       <div className="flex items-center gap-2 flex-wrap text-sm">
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full font-bold">1. 전자 충돌</span>
+                        <span className="bg-blue-100 text-blue-300 px-3 py-1.5 rounded-full font-bold">1. 전자 충돌</span>
                         <span className="text-gray-400 font-bold">→</span>
                         <span className="bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-full font-bold">2. 여기 (↑ 높은 껍데기)</span>
                         <span className="text-gray-400 font-bold">→</span>
@@ -1318,7 +1506,7 @@ const OESSimulator = () => {
                         <span className="text-gray-400 font-bold">→</span>
                         <span className="bg-red-100 text-red-800 px-3 py-1.5 rounded-full font-bold">4. 전이 (↓ 낮은 껍데기)</span>
                         <span className="text-gray-400 font-bold">→</span>
-                        <span className="bg-green-100 text-green-800 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
+                        <span className="bg-green-100 text-green-300 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
                       </div>
                     </div>
                   </div>
@@ -1327,8 +1515,8 @@ const OESSimulator = () => {
             </div>
 
             {/* Gas Database */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-indigo-700 mb-4">가스별 주요 발광선 데이터베이스</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+              <h3 className="text-xl font-bold text-indigo-400 mb-4">가스별 주요 발광선 데이터베이스</h3>
               <div className="space-y-4">
                 {Object.entries(OES_DATABASE).map(([key, gas]) => (
                   <div key={key} className="border rounded-lg overflow-hidden">
@@ -1337,7 +1525,7 @@ const OESSimulator = () => {
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-950">
                           <tr>
                             <th className="px-3 py-2 text-left">파장 (nm)</th>
                             <th className="px-3 py-2 text-left">상대 세기</th>
@@ -1348,11 +1536,11 @@ const OESSimulator = () => {
                         </thead>
                         <tbody>
                           {gas.lines.filter(l => l.intensity >= 0.4).map((line, i) => (
-                            <tr key={i} className="border-t hover:bg-gray-50">
+                            <tr key={i} className="border-t hover:bg-gray-700">
                               <td className="px-3 py-2 font-mono font-bold">{line.wavelength}</td>
                               <td className="px-3 py-2">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-24 bg-gray-200 rounded-full h-2">
+                                  <div className="w-24 bg-gray-700 rounded-full h-2">
                                     <div className="h-2 rounded-full" style={{width: `${line.intensity * 100}%`, backgroundColor: gas.color}}/>
                                   </div>
                                   <span className="text-xs">{(line.intensity * 100).toFixed(0)}%</span>
@@ -1374,14 +1562,14 @@ const OESSimulator = () => {
             </div>
 
             {/* Wavelength ranges */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-indigo-700 mb-4">파장 대역별 색상</h3>
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+              <h3 className="text-xl font-bold text-indigo-400 mb-4">파장 대역별 색상</h3>
               <div className="flex rounded-lg overflow-hidden h-12">
                 {[
                   { range: 'UV (200-380nm)', color: 'bg-purple-800', text: 'white' },
                   { range: '보라 (380-450nm)', color: 'bg-violet-600', text: 'white' },
-                  { range: '파랑 (450-495nm)', color: 'bg-blue-500', text: 'white' },
-                  { range: '초록 (495-570nm)', color: 'bg-green-500', text: 'white' },
+                  { range: '파랑 (450-495nm)', color: 'bg-blue-900/300', text: 'white' },
+                  { range: '초록 (495-570nm)', color: 'bg-green-900/300', text: 'white' },
                   { range: '노랑 (570-590nm)', color: 'bg-yellow-400', text: 'black' },
                   { range: '주황 (590-620nm)', color: 'bg-orange-500', text: 'white' },
                   { range: '빨강 (620-750nm)', color: 'bg-red-600', text: 'white' },
@@ -1405,11 +1593,11 @@ const OESSimulator = () => {
             {/* Mode selector */}
             <div className="flex gap-4">
               <button onClick={() => setSimMode(1)}
-                className={`flex-1 py-3 rounded-xl font-bold text-lg transition-all ${simMode === 1 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
+                className={`flex-1 py-3 rounded-xl font-bold text-lg transition-all ${simMode === 1 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
                 모드 1: OES 측정 관찰
               </button>
               <button onClick={() => setSimMode(2)}
-                className={`flex-1 py-3 rounded-xl font-bold text-lg transition-all ${simMode === 2 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
+                className={`flex-1 py-3 rounded-xl font-bold text-lg transition-all ${simMode === 2 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
                 모드 2: 가스별 분석 실습
               </button>
             </div>
@@ -1418,18 +1606,18 @@ const OESSimulator = () => {
             {simMode === 1 && (
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Left: Chamber */}
-                <div className="bg-white rounded-xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">플라즈마 챔버</h3>
+                <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+                  <h3 className="text-lg font-bold text-gray-100 mb-4">플라즈마 챔버</h3>
                   <PlasmaChamberSVG isPlasmaOn={isPlasmaOn} gasType={selectedGas} power={rfPower} />
 
                   {/* Controls */}
                   <div className="mt-4 space-y-4">
                     <div className="flex items-center gap-4">
-                      <label className="text-sm font-bold text-gray-700 w-20">가스 선택:</label>
+                      <label className="text-sm font-bold text-gray-300 w-20">가스 선택:</label>
                       <div className="flex gap-2 flex-wrap">
                         {Object.keys(OES_DATABASE).map(gas => (
                           <button key={gas} onClick={() => { setSelectedGas(gas); setIsPlasmaOn(false); }}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${selectedGas === gas ? 'text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${selectedGas === gas ? 'text-white shadow' : 'bg-gray-700 text-gray-400 hover:bg-gray-700'}`}
                             style={selectedGas === gas ? {backgroundColor: OES_DATABASE[gas].color} : {}}>
                             {gas}
                           </button>
@@ -1437,10 +1625,10 @@ const OESSimulator = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <label className="text-sm font-bold text-gray-700 w-20">RF 파워:</label>
+                      <label className="text-sm font-bold text-gray-300 w-20">RF 파워:</label>
                       <input type="range" min="50" max="500" value={rfPower} onChange={e => setRfPower(Number(e.target.value))}
-                        className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                      <span className="text-sm font-mono font-bold text-gray-700 w-16">{rfPower} W</span>
+                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"/>
+                      <span className="text-sm font-mono font-bold text-gray-300 w-16">{rfPower} W</span>
                     </div>
                     <button onClick={() => setIsPlasmaOn(!isPlasmaOn)}
                       className={`w-full py-4 rounded-xl font-bold text-xl transition-all transform hover:scale-[1.02] ${isPlasmaOn ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'}`}>
@@ -1450,13 +1638,13 @@ const OESSimulator = () => {
                 </div>
 
                 {/* Right: OES Spectrum */}
-                <div className="bg-white rounded-xl shadow-md p-6">
+                <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-gray-800">OES 스펙트럼</h3>
+                    <h3 className="text-lg font-bold text-gray-100">OES 스펙트럼</h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">정규화:</span>
+                      <span className="text-sm text-gray-400">정규화:</span>
                       <button onClick={() => setShowNormalized(!showNormalized)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${showNormalized ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${showNormalized ? 'bg-green-900/300 text-white' : 'bg-gray-700 text-gray-400'}`}>
                         {showNormalized ? 'ON' : 'OFF'}
                       </button>
                     </div>
@@ -1472,7 +1660,8 @@ const OESSimulator = () => {
                             tick={{fontSize: 10}}/>
                           <YAxis label={{value: showNormalized ? '세기 (정규화)' : '세기 (a.u.)', angle: -90, position: 'insideLeft', offset: 0}}
                             tick={{fontSize: 10}}/>
-                          <Tooltip formatter={(val) => [parseFloat(val).toFixed(4), '세기']}
+                          <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#E5E7EB' }}
+                            formatter={(val) => [parseFloat(val).toFixed(4), '세기']}
                             labelFormatter={(val) => `${val} nm`}/>
                           <Line type="monotone" dataKey="intensity" stroke={OES_DATABASE[selectedGas]?.color || '#8B5CF6'}
                             dot={false} strokeWidth={1.5} isAnimationActive={false}/>
@@ -1480,8 +1669,8 @@ const OESSimulator = () => {
                       </ResponsiveContainer>
 
                       {/* Peak identification */}
-                      <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-bold text-sm text-gray-700 mb-2">주요 피크 ({OES_DATABASE[selectedGas]?.name})</h4>
+                      <div className="mt-4 bg-gray-950 rounded-lg p-4">
+                        <h4 className="font-bold text-sm text-gray-300 mb-2">주요 피크 ({OES_DATABASE[selectedGas]?.name})</h4>
                         <div className="flex flex-wrap gap-2">
                           {OES_DATABASE[selectedGas]?.lines.filter(l => l.intensity >= 0.4).map((line, i) => (
                             <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-mono font-bold"
@@ -1509,24 +1698,24 @@ const OESSimulator = () => {
             {/* ===================== MODE 2 ===================== */}
             {simMode === 2 && (
               <div className="space-y-6">
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <h3 className="font-bold text-blue-800 mb-2">실습 안내</h3>
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-900/30 rounded-xl p-4 border border-blue-700">
+                  <h3 className="font-bold text-blue-300 mb-2">실습 안내</h3>
+                  <p className="text-sm text-blue-300">
                     다양한 가스의 플라즈마를 켜보고 OES 스펙트럼을 수집하세요. 각 스펙트럼에서 주요 피크를 찾고, 어떤 여기된 종(species)이 있는지 직접 분석해보세요.
                   </p>
                 </div>
 
                 {/* Controls */}
-                <div className="bg-white rounded-xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">측정 조건 설정</h3>
+                <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+                  <h3 className="text-lg font-bold text-gray-100 mb-4">측정 조건 설정</h3>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <label className="text-sm font-bold text-gray-700 w-20">가스:</label>
+                        <label className="text-sm font-bold text-gray-300 w-20">가스:</label>
                         <div className="flex gap-2 flex-wrap">
                           {Object.keys(OES_DATABASE).map(gas => (
                             <button key={gas} onClick={() => { setMode2Gas(gas); setMode2PlasmaOn(false); }}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${mode2Gas === gas ? 'text-white shadow' : 'bg-gray-100 text-gray-600'}`}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${mode2Gas === gas ? 'text-white shadow' : 'bg-gray-700 text-gray-400'}`}
                               style={mode2Gas === gas ? {backgroundColor: OES_DATABASE[gas].color} : {}}>
                               {gas}
                             </button>
@@ -1534,10 +1723,10 @@ const OESSimulator = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <label className="text-sm font-bold text-gray-700 w-20">파워:</label>
+                        <label className="text-sm font-bold text-gray-300 w-20">파워:</label>
                         <input type="range" min="50" max="500" value={mode2Power}
                           onChange={e => setMode2Power(Number(e.target.value))}
-                          className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                          className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"/>
                         <span className="text-sm font-mono font-bold w-16">{mode2Power}W</span>
                       </div>
                     </div>
@@ -1556,8 +1745,8 @@ const OESSimulator = () => {
 
                 {/* Current Spectrum */}
                 {mode2PlasmaOn && (
-                  <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">
+                  <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+                    <h3 className="text-lg font-bold text-gray-100 mb-4">
                       현재 스펙트럼: {OES_DATABASE[mode2Gas]?.name} ({mode2Power}W)
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
@@ -1567,7 +1756,8 @@ const OESSimulator = () => {
                         <XAxis dataKey="wavelength" type="number" domain={[200, 950]}
                           label={{value: '파장 (nm)', position: 'insideBottom', offset: -10}} tick={{fontSize: 10}}/>
                         <YAxis label={{value: '정규화 세기', angle: -90, position: 'insideLeft'}} tick={{fontSize: 10}}/>
-                        <Tooltip formatter={val => [parseFloat(val).toFixed(4), '세기']} labelFormatter={val => `${val} nm`}/>
+                        <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#E5E7EB' }}
+                        formatter={val => [parseFloat(val).toFixed(4), '세기']} labelFormatter={val => `${val} nm`}/>
                         <Line type="monotone" dataKey="intensity" stroke={OES_DATABASE[mode2Gas]?.color}
                           dot={false} strokeWidth={1.5} isAnimationActive={false}/>
                       </LineChart>
@@ -1577,9 +1767,9 @@ const OESSimulator = () => {
 
                 {/* Collected Spectra */}
                 {collectedSpectra.length > 0 && (
-                  <div className="bg-white rounded-xl shadow-md p-6">
+                  <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-bold text-gray-800">수집된 스펙트럼 ({collectedSpectra.length}개)</h3>
+                      <h3 className="text-lg font-bold text-gray-100">수집된 스펙트럼 ({collectedSpectra.length}개)</h3>
                       <button onClick={() => setCollectedSpectra([])}
                         className="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm font-bold hover:bg-red-200">
                         전체 삭제
@@ -1608,11 +1798,11 @@ const OESSimulator = () => {
                     {/* List */}
                     <div className="mt-4 space-y-2">
                       {collectedSpectra.map((spec, i) => (
-                        <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
+                        <div key={i} className="flex items-center justify-between bg-gray-950 rounded-lg px-4 py-2">
                           <div className="flex items-center gap-3">
                             <div className="w-4 h-4 rounded-full" style={{backgroundColor: OES_DATABASE[spec.gas]?.color}}/>
                             <span className="font-bold text-sm">{spec.gas}</span>
-                            <span className="text-xs text-gray-500">{spec.power}W · {spec.timestamp}</span>
+                            <span className="text-xs text-gray-400">{spec.power}W · {spec.timestamp}</span>
                           </div>
                           <button onClick={() => setCollectedSpectra(prev => prev.filter((_, j) => j !== i))}
                             className="text-red-400 hover:text-red-600 text-sm">✕</button>
@@ -1624,14 +1814,14 @@ const OESSimulator = () => {
 
                 {/* Species Identification */}
                 {collectedSpectra.length > 0 && (
-                  <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">여기된 종(Species) 분석</h3>
-                    <p className="text-sm text-gray-600 mb-4">수집된 스펙트럼에서 관찰되는 여기된 종을 모두 선택하세요.</p>
+                  <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
+                    <h3 className="text-lg font-bold text-gray-100 mb-4">여기된 종(Species) 분석</h3>
+                    <p className="text-sm text-gray-400 mb-4">수집된 스펙트럼에서 관찰되는 여기된 종을 모두 선택하세요.</p>
 
                     <div className="grid sm:grid-cols-3 md:grid-cols-4 gap-2 mb-4">
                       {['Ar I', 'N₂ SPS', 'N₂⁺ FNS', 'N I', 'O I', 'O II', 'F I', 'CF₂', 'CF', 'C I', 'He I', 'N₂ FPS'].map(species => (
                         <button key={species} onClick={() => toggleSpecies(species)}
-                          className={`px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all ${identifiedSpecies.includes(species) ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500 hover:border-gray-400'}`}>
+                          className={`px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all ${identifiedSpecies.includes(species) ? 'border-indigo-500 bg-indigo-900/30 text-indigo-400' : 'border-gray-700 text-gray-400 hover:border-gray-400'}`}>
                           {species}
                         </button>
                       ))}
@@ -1639,18 +1829,18 @@ const OESSimulator = () => {
 
                     <div className="flex gap-3">
                       <button onClick={() => setShowMode2Answer(!showMode2Answer)}
-                        className="px-6 py-2 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition-all">
+                        className="px-6 py-2 bg-amber-900/300 text-white rounded-lg font-bold hover:bg-amber-600 transition-all">
                         {showMode2Answer ? '정답 숨기기' : '정답 확인'}
                       </button>
                     </div>
 
                     {showMode2Answer && (
-                      <div className="mt-4 bg-green-50 rounded-lg p-4 border border-green-200">
-                        <h4 className="font-bold text-green-800 mb-2">정답:</h4>
+                      <div className="mt-4 bg-green-900/30 rounded-lg p-4 border border-green-700">
+                        <h4 className="font-bold text-green-300 mb-2">정답:</h4>
                         {collectedSpectra.map((spec, i) => (
                           <div key={i} className="mb-2">
                             <span className="font-bold" style={{color: OES_DATABASE[spec.gas]?.color}}>{spec.gas}:</span>
-                            <span className="text-sm text-gray-700 ml-2">
+                            <span className="text-sm text-gray-300 ml-2">
                               {OES_DATABASE[spec.gas]?.lines.filter(l => l.intensity >= 0.3).map(l => l.species).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
                             </span>
                           </div>
@@ -1660,7 +1850,7 @@ const OESSimulator = () => {
 
                     {/* User Notes */}
                     <div className="mt-4">
-                      <label className="text-sm font-bold text-gray-700">분석 노트:</label>
+                      <label className="text-sm font-bold text-gray-300">분석 노트:</label>
                       <textarea value={userNotes} onChange={e => setUserNotes(e.target.value)}
                         className="w-full mt-1 p-3 border rounded-lg text-sm resize-none h-24 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         placeholder="관찰한 내용, 피크 위치, 종 식별 결과 등을 기록하세요..."/>
@@ -1674,33 +1864,42 @@ const OESSimulator = () => {
 
 
         {/* ================================================================ */}
+        {/* TAB: PRACTICAL SIMULATOR */}
+        {/* ================================================================ */}
+        {activeTab === 'practical' && (
+          <div className="-mx-4 sm:-mx-6 -my-4 sm:-my-6" style={{ height: 'calc(100vh - 120px)' }}>
+            <OESPracticalSimulator />
+          </div>
+        )}
+
+        {/* ================================================================ */}
         {/* TAB: QUIZ */}
         {/* ================================================================ */}
         {activeTab === 'quiz' && (
           <div className="space-y-6 max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800">문제풀이</h2>
+            <h2 className="text-2xl font-bold text-gray-100">문제풀이</h2>
 
             {!quizCompleted ? (
               <div className="space-y-6">
                 {/* Progress */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">문제 {currentQuestion + 1} / {quizQuestions.length}</span>
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <span className="text-sm text-gray-400">문제 {currentQuestion + 1} / {quizQuestions.length}</span>
+                  <div className="flex-1 bg-gray-700 rounded-full h-2">
                     <div className="bg-indigo-600 rounded-full h-2 transition-all"
                       style={{width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%`}}/>
                   </div>
-                  <span className="text-sm font-bold text-indigo-600">{score}점</span>
+                  <span className="text-sm font-bold text-indigo-400">{score}점</span>
                 </div>
 
                 {/* Question Card */}
-                <div className="bg-white rounded-xl shadow-md p-6">
+                <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${quizQuestions[currentQuestion].type === 'simulator' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${quizQuestions[currentQuestion].type === 'simulator' ? 'bg-purple-100 text-purple-300' : 'bg-blue-100 text-blue-300'}`}>
                       {quizQuestions[currentQuestion].type === 'simulator' ? '시뮬레이터 문제' : '기본 문제'}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-gray-800 mb-6">
+                  <h3 className="text-lg font-bold text-gray-100 mb-6">
                     Q{currentQuestion + 1}. {quizQuestions[currentQuestion].question}
                   </h3>
 
@@ -1720,19 +1919,19 @@ const OESSimulator = () => {
                         className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                           showResult
                             ? i === quizQuestions[currentQuestion].answer
-                              ? 'border-green-500 bg-green-50 text-green-800'
+                              ? 'border-green-500 bg-green-900/30 text-green-300'
                               : i === selectedAnswer
-                                ? 'border-red-500 bg-red-50 text-red-800'
-                                : 'border-gray-200 text-gray-400'
+                                ? 'border-red-500 bg-red-900/30 text-red-800'
+                                : 'border-gray-700 text-gray-400'
                             : selectedAnswer === i
-                              ? 'border-indigo-500 bg-indigo-50 text-indigo-800'
-                              : 'border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                              ? 'border-indigo-500 bg-indigo-900/30 text-indigo-800'
+                              : 'border-gray-700 text-gray-300 hover:border-gray-400 hover:bg-gray-700'
                         }`}>
                         <div className="flex items-center gap-3">
                           <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                             showResult
-                              ? i === quizQuestions[currentQuestion].answer ? 'bg-green-500 text-white' : i === selectedAnswer ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500'
-                              : 'bg-gray-200 text-gray-600'
+                              ? i === quizQuestions[currentQuestion].answer ? 'bg-green-900/300 text-white' : i === selectedAnswer ? 'bg-red-900/300 text-white' : 'bg-gray-700 text-gray-400'
+                              : 'bg-gray-700 text-gray-400'
                           }`}>
                             {showResult && i === quizQuestions[currentQuestion].answer ? '✓' : showResult && i === selectedAnswer ? '✗' : String.fromCharCode(65 + i)}
                           </span>
@@ -1744,13 +1943,13 @@ const OESSimulator = () => {
 
                   {/* Explanation */}
                   {showResult && (
-                    <div className={`mt-6 p-4 rounded-lg ${selectedAnswer === quizQuestions[currentQuestion].answer ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                    <div className={`mt-6 p-4 rounded-lg ${selectedAnswer === quizQuestions[currentQuestion].answer ? 'bg-green-900/30 border border-green-700' : 'bg-amber-900/30 border border-amber-700'}`}>
                       <p className="font-bold text-sm mb-2">
                         {selectedAnswer === quizQuestions[currentQuestion].answer ? '✅ 정답입니다!' : '❌ 오답입니다.'}
                       </p>
-                      <p className="text-sm text-gray-700">{quizQuestions[currentQuestion].explanation}</p>
+                      <p className="text-sm text-gray-300">{quizQuestions[currentQuestion].explanation}</p>
                       {quizQuestions[currentQuestion].type === 'simulator' && (
-                        <p className="text-xs text-indigo-600 mt-2 font-semibold">
+                        <p className="text-xs text-indigo-400 mt-2 font-semibold">
                           💡 시뮬레이터 측정 탭에서 직접 확인해볼 수 있습니다!
                         </p>
                       )}
@@ -1777,11 +1976,11 @@ const OESSimulator = () => {
               </div>
             ) : (
               /* Quiz Complete */
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
+              <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-8 text-center">
                 <div className="text-6xl mb-4">{score >= quizQuestions.length * 0.8 ? '🎉' : score >= quizQuestions.length * 0.5 ? '👍' : '📚'}</div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">문제풀이 완료!</h3>
-                <p className="text-4xl font-bold text-indigo-600 mb-4">{score} / {quizQuestions.length}</p>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-2xl font-bold text-gray-100 mb-2">문제풀이 완료!</h3>
+                <p className="text-4xl font-bold text-indigo-400 mb-4">{score} / {quizQuestions.length}</p>
+                <p className="text-gray-400 mb-6">
                   {score >= quizQuestions.length * 0.8 ? '훌륭합니다! OES에 대한 이해도가 높습니다.' :
                    score >= quizQuestions.length * 0.5 ? '좋습니다! 이론과 시뮬레이터를 다시 확인해보세요.' :
                    '이론 탭과 시뮬레이터를 활용하여 더 학습해보세요!'}
@@ -1793,7 +1992,7 @@ const OESSimulator = () => {
                     다시 풀기
                   </button>
                   <button onClick={() => setActiveTab('simulator')}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">
+                    className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg font-bold hover:bg-gray-600">
                     시뮬레이터로 이동
                   </button>
                 </div>
