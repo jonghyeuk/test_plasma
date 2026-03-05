@@ -398,6 +398,291 @@ const PlasmaChamberSVG = ({ isPlasmaOn, gasType, power }) => {
 
 
 // ============================================================
+// Electron Shell Transition Animation Component
+// ============================================================
+const ElectronTransitionAnimation = () => {
+  const [animPhase, setAnimPhase] = useState('ground'); // ground, exciting, excited, emitting, ground2
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [selectedElement, setSelectedElement] = useState('Ar');
+
+  const elements = {
+    Ar: {
+      name: 'Argon (Ar)',
+      shells: [
+        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
+        { n: 2, label: '2s2p', electrons: 8, radius: 70, sublabel: 'L' },
+        { n: 3, label: '3s3p', electrons: 8, radius: 100, sublabel: 'M' },
+      ],
+      excitedShell: { n: 4, label: '4s/4p', radius: 135, sublabel: 'N' },
+      emissionWl: '811.5 nm',
+      emissionColor: '#EF4444',
+      transition: '4p → 4s (실제로는 4p[5/2]→4s[3/2])',
+    },
+    He: {
+      name: 'Helium (He)',
+      shells: [
+        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
+      ],
+      excitedShell: { n: 3, label: '3d', radius: 100, sublabel: 'M (excited)' },
+      emissionWl: '587.6 nm',
+      emissionColor: '#F59E0B',
+      transition: '3d³D → 2p³P',
+    },
+    O: {
+      name: 'Oxygen (O)',
+      shells: [
+        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
+        { n: 2, label: '2s2p', electrons: 6, radius: 70, sublabel: 'L' },
+      ],
+      excitedShell: { n: 3, label: '3p', radius: 100, sublabel: 'M (excited)' },
+      emissionWl: '777.4 nm',
+      emissionColor: '#EF4444',
+      transition: '3p⁵P → 3s⁵S',
+    },
+  };
+
+  const elem = elements[selectedElement];
+
+  useEffect(() => {
+    if (!isAutoPlay) return;
+    const sequence = ['ground', 'exciting', 'excited', 'emitting', 'ground2'];
+    const durations = [800, 1200, 1000, 1500, 1000];
+    let step = 0;
+    setAnimPhase('ground');
+
+    const advance = () => {
+      step++;
+      if (step >= sequence.length) step = 0;
+      setAnimPhase(sequence[step]);
+    };
+
+    let timeout;
+    const run = () => {
+      timeout = setTimeout(() => {
+        advance();
+        run();
+      }, durations[step]);
+    };
+    run();
+
+    return () => clearTimeout(timeout);
+  }, [isAutoPlay, selectedElement]);
+
+  const showExcitedShell = animPhase === 'exciting' || animPhase === 'excited' || animPhase === 'emitting';
+  const electronMovingUp = animPhase === 'exciting';
+  const electronMovingDown = animPhase === 'emitting';
+  const showPhoton = animPhase === 'emitting' || animPhase === 'ground2';
+
+  return (
+    <div className="space-y-4">
+      {/* Element selector */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm font-bold text-gray-700">원소 선택:</span>
+        {Object.entries(elements).map(([key, el]) => (
+          <button key={key} onClick={() => { setSelectedElement(key); setAnimPhase('ground'); setIsAutoPlay(false); }}
+            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${selectedElement === key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {el.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Animation */}
+      <div className="bg-gray-900 rounded-xl p-4 relative overflow-hidden">
+        <svg width="100%" viewBox="0 0 600 400" className="max-w-2xl mx-auto">
+          <defs>
+            <filter id="photonGlow">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="shellGlow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          {/* Nucleus */}
+          <circle cx="200" cy="200" r="18" fill="#F59E0B" stroke="#FBBF24" strokeWidth="2" filter="url(#shellGlow)"/>
+          <text x="200" y="205" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">{selectedElement}</text>
+
+          {/* Ground state shells */}
+          {elem.shells.map((shell, i) => (
+            <g key={i}>
+              <circle cx="200" cy="200" r={shell.radius} fill="none" stroke="#4B5563" strokeWidth="1" strokeDasharray="4,4" opacity="0.6"/>
+              <text x={200 + shell.radius + 5} y="195" fill="#9CA3AF" fontSize="9">{shell.sublabel}</text>
+              {/* Electrons on shell */}
+              {Array.from({length: Math.min(shell.electrons, 8)}, (_, j) => {
+                const angle = (j / Math.min(shell.electrons, 8)) * 2 * Math.PI - Math.PI / 2;
+                const isLastShellLastElectron = i === elem.shells.length - 1 && j === Math.min(shell.electrons, 8) - 1;
+                const shouldHide = isLastShellLastElectron && (animPhase === 'excited' || animPhase === 'emitting');
+                return (
+                  <circle key={j} cx={200 + shell.radius * Math.cos(angle)} cy={200 + shell.radius * Math.sin(angle)}
+                    r="5" fill={shouldHide ? 'transparent' : '#3B82F6'} stroke={shouldHide ? 'transparent' : '#60A5FA'} strokeWidth="1"
+                    opacity={shouldHide ? 0 : 0.9}>
+                    {!shouldHide && <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>}
+                  </circle>
+                );
+              })}
+            </g>
+          ))}
+
+          {/* Excited shell (appears during excitation) */}
+          {showExcitedShell && (
+            <g>
+              <circle cx="200" cy="200" r={elem.excitedShell.radius} fill="none"
+                stroke={elem.emissionColor} strokeWidth="1.5" strokeDasharray="6,3" opacity="0.7">
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <text x={200 + elem.excitedShell.radius + 5} y="195" fill={elem.emissionColor} fontSize="9" fontWeight="bold">
+                {elem.excitedShell.sublabel}
+              </text>
+            </g>
+          )}
+
+          {/* Electron moving UP (excitation) */}
+          {electronMovingUp && (
+            <circle r="6" fill="#FBBF24" filter="url(#photonGlow)">
+              <animate attributeName="cx" values={`${200 + elem.shells[elem.shells.length-1].radius};${200 + elem.excitedShell.radius}`} dur="1s" fill="freeze"/>
+              <animate attributeName="cy" values="200;200" dur="1s"/>
+            </circle>
+          )}
+
+          {/* Electron on excited shell */}
+          {(animPhase === 'excited' || animPhase === 'emitting') && !electronMovingDown && (
+            <circle cx={200 + elem.excitedShell.radius} cy="200" r="6" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5">
+              <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
+            </circle>
+          )}
+
+          {/* Electron moving DOWN (de-excitation / emission) */}
+          {electronMovingDown && (
+            <g>
+              <circle r="6" fill="#3B82F6" stroke="#60A5FA" strokeWidth="1.5">
+                <animate attributeName="cx" values={`${200 + elem.excitedShell.radius};${200 + elem.shells[elem.shells.length-1].radius}`} dur="1s" fill="freeze"/>
+                <animate attributeName="cy" values="200;200" dur="1s"/>
+              </circle>
+            </g>
+          )}
+
+          {/* Photon emission (wavy line going right) */}
+          {showPhoton && (
+            <g filter="url(#photonGlow)">
+              <path d="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200"
+                fill="none" stroke={elem.emissionColor} strokeWidth="3" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0.5" dur="1.5s" fill="freeze"/>
+                <animate attributeName="d" values="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200;M 380 200 Q 395 180, 410 200 Q 425 220, 440 200 Q 455 180, 470 200 Q 485 220, 500 200 Q 515 180, 530 200" dur="1.5s" fill="freeze"/>
+              </path>
+              <text x="460" y="175" fill={elem.emissionColor} fontSize="14" fontWeight="bold" opacity="0">
+                {elem.emissionWl}
+                <animate attributeName="opacity" values="0;0;1" dur="1s" fill="freeze"/>
+              </text>
+            </g>
+          )}
+
+          {/* Incoming electron (cause of excitation) */}
+          {electronMovingUp && (
+            <g>
+              <circle r="4" fill="#EF4444">
+                <animate attributeName="cx" values="50;180" dur="0.8s" fill="freeze"/>
+                <animate attributeName="cy" values="120;190" dur="0.8s" fill="freeze"/>
+              </circle>
+              <text x="60" y="110" fill="#FCA5A5" fontSize="10" fontWeight="bold">고에너지 전자 충돌!</text>
+            </g>
+          )}
+
+          {/* Phase labels */}
+          <rect x="350" y="290" width="220" height="80" rx="8" fill="#1F2937" stroke="#374151" strokeWidth="1"/>
+          <text x="460" y="315" textAnchor="middle" fill="#E5E7EB" fontSize="13" fontWeight="bold">
+            {animPhase === 'ground' || animPhase === 'ground2' ? '바닥 상태 (Ground State)' :
+             animPhase === 'exciting' ? '여기 중... (Excitation)' :
+             animPhase === 'excited' ? '들뜬 상태 (Excited State)' :
+             '발광! (Emission)'}
+          </text>
+          <text x="460" y="340" textAnchor="middle" fill="#9CA3AF" fontSize="10">
+            {animPhase === 'ground' || animPhase === 'ground2' ? '전자가 안정적인 껍데기에 위치' :
+             animPhase === 'exciting' ? '전자 충돌로 높은 에너지 준위로 이동' :
+             animPhase === 'excited' ? '불안정! 곧 낮은 준위로 돌아감' :
+             `전이: ${elem.transition}`}
+          </text>
+          {showPhoton && (
+            <text x="460" y="358" textAnchor="middle" fill={elem.emissionColor} fontSize="11" fontWeight="bold">
+              방출 파장: {elem.emissionWl}
+            </text>
+          )}
+
+          {/* Energy level diagram on right side */}
+          <line x1="560" y1="100" x2="560" y2="350" stroke="#374151" strokeWidth="1"/>
+          <text x="575" y="95" fill="#9CA3AF" fontSize="9">에너지</text>
+          <polygon points="555,105 565,105 560,95" fill="#9CA3AF"/>
+          {elem.shells.map((shell, i) => (
+            <g key={i}>
+              <line x1="540" y1={340 - i * 50} x2="580" y2={340 - i * 50} stroke="#6B7280" strokeWidth="2"/>
+              <text x="590" y={344 - i * 50} fill="#9CA3AF" fontSize="8">{shell.label}</text>
+            </g>
+          ))}
+          {showExcitedShell && (
+            <g>
+              <line x1="540" y1={340 - elem.shells.length * 50 - 30} x2="580" y2={340 - elem.shells.length * 50 - 30}
+                stroke={elem.emissionColor} strokeWidth="2" strokeDasharray="4,2"/>
+              <text x="590" y={344 - elem.shells.length * 50 - 26} fill={elem.emissionColor} fontSize="8" fontWeight="bold">
+                {elem.excitedShell.label}
+              </text>
+            </g>
+          )}
+        </svg>
+
+        {/* Controls */}
+        <div className="flex gap-3 justify-center mt-3">
+          <button onClick={() => { setAnimPhase('ground'); setIsAutoPlay(false); }}
+            className="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg text-sm font-bold hover:bg-gray-600">초기화</button>
+          <button onClick={() => setIsAutoPlay(!isAutoPlay)}
+            className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${isAutoPlay ? 'bg-red-600 text-white' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+            {isAutoPlay ? '⏹ 정지' : '▶ 자동 재생'}
+          </button>
+          {!isAutoPlay && (
+            <div className="flex gap-2">
+              <button onClick={() => setAnimPhase('exciting')} className="px-3 py-2 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700">여기</button>
+              <button onClick={() => setAnimPhase('excited')} className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700">들뜬 상태</button>
+              <button onClick={() => setAnimPhase('emitting')} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">발광</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Explanation */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="bg-blue-50 rounded-lg p-4">
+          <h5 className="font-bold text-blue-800 mb-2">전자 껍데기(Electron Shell)란?</h5>
+          <p className="text-sm text-blue-700 leading-relaxed">
+            원자의 전자는 <strong>특정 에너지 준위(껍데기)</strong>에만 존재할 수 있습니다.
+            안쪽부터 K(n=1), L(n=2), M(n=3), N(n=4)... 순으로 번호를 매기며,
+            각 껍데기는 다시 <strong>s, p, d, f 부껍데기(subshell)</strong>로 나뉩니다.
+          </p>
+          <div className="mt-2 text-xs text-blue-600 space-y-1">
+            <p><strong>s</strong>: 구형, 최대 2개 전자</p>
+            <p><strong>p</strong>: 아령형, 최대 6개 전자</p>
+            <p><strong>d</strong>: 클로버형, 최대 10개 전자</p>
+            <p><strong>f</strong>: 복잡한 형태, 최대 14개 전자</p>
+          </div>
+        </div>
+        <div className="bg-amber-50 rounded-lg p-4">
+          <h5 className="font-bold text-amber-800 mb-2">OES 전이 표기법 읽는 법</h5>
+          <p className="text-sm text-amber-700 leading-relaxed">
+            OES 데이터에서 보이는 <strong>4p→4s</strong> 같은 표기는 전자가 4p 부껍데기에서 4s 부껍데기로 전이하면서 빛을 방출했다는 뜻입니다.
+          </p>
+          <div className="mt-2 text-xs text-amber-600 space-y-1">
+            <p><strong>Ar I 811.5nm</strong>: 4p[5/2] → 4s[3/2]</p>
+            <p><strong>O I 777.4nm</strong>: 3p⁵P → 3s⁵S</p>
+            <p><strong>He I 587.6nm</strong>: 3d³D → 2p³P</p>
+            <p className="mt-2 font-semibold">높은 에너지 → 낮은 에너지 = 빛 방출!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
 // Main OES Simulator Component
 // ============================================================
 const OESSimulator = () => {
@@ -425,6 +710,12 @@ const OESSimulator = () => {
   const [userNotes, setUserNotes] = useState('');
   const [identifiedSpecies, setIdentifiedSpecies] = useState([]);
   const [showMode2Answer, setShowMode2Answer] = useState(false);
+
+  // Overview dropdown states
+  const [showShellTheory, setShowShellTheory] = useState(false);
+
+  // Mode 2 live spectrum (with noise)
+  const [mode2LiveData, setMode2LiveData] = useState([]);
 
   // Quiz states
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -586,15 +877,35 @@ const OESSimulator = () => {
     }
   }, [isTheoryPlaying, theoryStep]);
 
-  // Generate spectrum when plasma turns on
+  // Generate spectrum with real-time noise animation
   useEffect(() => {
-    if (isPlasmaOn) {
-      const data = generateSpectrumData(selectedGas, rfPower);
-      setSpectrumData(showNormalized ? normalizeSpectrum(data) : data);
-    } else {
+    if (!isPlasmaOn) {
       setSpectrumData([]);
+      return;
     }
+    const updateSpectrum = () => {
+      const data = generateSpectrumData(selectedGas, rfPower, true);
+      setSpectrumData(showNormalized ? normalizeSpectrum(data) : data);
+    };
+    updateSpectrum();
+    const interval = setInterval(updateSpectrum, 500);
+    return () => clearInterval(interval);
   }, [isPlasmaOn, selectedGas, rfPower, showNormalized]);
+
+  // Mode 2 live spectrum with noise
+  useEffect(() => {
+    if (!mode2PlasmaOn) {
+      setMode2LiveData([]);
+      return;
+    }
+    const update = () => {
+      const data = generateSpectrumData(mode2Gas, mode2Power, true);
+      setMode2LiveData(normalizeSpectrum(data));
+    };
+    update();
+    const interval = setInterval(update, 500);
+    return () => clearInterval(interval);
+  }, [mode2PlasmaOn, mode2Gas, mode2Power]);
 
   // Format theory content with styling (same pattern as existing)
   const formatTheoryContent = (text) => {
@@ -968,6 +1279,53 @@ const OESSimulator = () => {
               </div>
             </div>
 
+            {/* Electron Shell Theory Dropdown */}
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              <button onClick={() => setShowShellTheory(!showShellTheory)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-all">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⚛️</span>
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold text-indigo-700">보강 학습: 전자 껍데기와 전이 이론</h3>
+                    <p className="text-sm text-gray-500">spdf 껍데기, 에너지 준위, 여기/발광 원리 (클릭하여 펼치기)</p>
+                  </div>
+                </div>
+                <span className={`text-2xl text-indigo-400 transition-transform duration-300 ${showShellTheory ? 'rotate-180' : ''}`}>
+                  ▼
+                </span>
+              </button>
+              {showShellTheory && (
+                <div className="px-6 pb-6 border-t border-gray-100">
+                  <div className="mt-4 space-y-4">
+                    <div className="bg-indigo-50 rounded-lg p-4">
+                      <h4 className="font-bold text-indigo-800 mb-2">왜 이 이론이 중요한가?</h4>
+                      <p className="text-sm text-indigo-700 leading-relaxed">
+                        OES에서 측정하는 <strong>발광선의 파장</strong>은 원자 내 전자가 높은 에너지 껍데기에서 낮은 껍데기로 떨어질 때 방출되는 빛의 파장입니다.
+                        각 원소마다 껍데기 구조가 다르기 때문에 <strong>고유한 파장의 빛</strong>이 나옵니다. 이것이 OES로 원소를 식별하는 핵심 원리입니다.
+                      </p>
+                    </div>
+
+                    <ElectronTransitionAnimation />
+
+                    <div className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg p-4">
+                      <h4 className="font-bold text-gray-800 mb-3">정리: OES 발광 과정</h4>
+                      <div className="flex items-center gap-2 flex-wrap text-sm">
+                        <span className="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full font-bold">1. 전자 충돌</span>
+                        <span className="text-gray-400 font-bold">→</span>
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-full font-bold">2. 여기 (↑ 높은 껍데기)</span>
+                        <span className="text-gray-400 font-bold">→</span>
+                        <span className="bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full font-bold">3. 불안정 (들뜬 상태)</span>
+                        <span className="text-gray-400 font-bold">→</span>
+                        <span className="bg-red-100 text-red-800 px-3 py-1.5 rounded-full font-bold">4. 전이 (↓ 낮은 껍데기)</span>
+                        <span className="text-gray-400 font-bold">→</span>
+                        <span className="bg-green-100 text-green-800 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Gas Database */}
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-xl font-bold text-indigo-700 mb-4">가스별 주요 발광선 데이터베이스</h3>
@@ -1203,7 +1561,7 @@ const OESSimulator = () => {
                       현재 스펙트럼: {OES_DATABASE[mode2Gas]?.name} ({mode2Power}W)
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={normalizeSpectrum(generateSpectrumData(mode2Gas, mode2Power))}
+                      <LineChart data={mode2LiveData}
                         margin={{top: 5, right: 20, bottom: 20, left: 10}}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.3}/>
                         <XAxis dataKey="wavelength" type="number" domain={[200, 950]}
