@@ -409,34 +409,50 @@ const ElectronTransitionAnimation = () => {
     Ar: {
       name: 'Argon (Ar)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
-        { n: 2, label: '2s2p', electrons: 8, radius: 70, sublabel: 'L' },
-        { n: 3, label: '3s3p', electrons: 8, radius: 100, sublabel: 'M' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -3206 },
+        { n: 2, label: '2s²2p⁶', electrons: 8, radius: 65, sublabel: 'L (n=2)', eV: -326 },
+        { n: 3, label: '3s²3p⁶', electrons: 8, radius: 90, sublabel: 'M (n=3)', eV: -29.2 },
       ],
-      excitedShell: { n: 4, label: '4s/4p', radius: 135, sublabel: 'N' },
-      emissionWl: '811.5 nm',
+      // Ar: 전자가 3p → 4p로 여기, 그 다음 4p → 4s로 전이하며 발광
+      excitedShell: { n: 4, label: '4p', radius: 135, sublabel: '4p (excited)', eV: -1.59 },
+      landingShell: { n: 4, label: '4s', radius: 120, sublabel: '4s', eV: -3.12 },
+      emissionWl: '811.5',
       emissionColor: '#EF4444',
-      transition: '4p → 4s (실제로는 4p[5/2]→4s[3/2])',
+      emissionRGB: 'rgb(255,30,30)',
+      transitionFrom: '4p[5/2]',
+      transitionTo: '4s[3/2]',
+      deltaE: '1.53 eV',
+      transition: '4p[5/2] → 4s[3/2]',
     },
     He: {
       name: 'Helium (He)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -24.6 },
       ],
-      excitedShell: { n: 3, label: '3d', radius: 100, sublabel: 'M (excited)' },
-      emissionWl: '587.6 nm',
+      excitedShell: { n: 3, label: '3d', radius: 110, sublabel: '3d (excited)', eV: -1.51 },
+      landingShell: { n: 2, label: '2p', radius: 75, sublabel: '2p', eV: -3.62 },
+      emissionWl: '587.6',
       emissionColor: '#F59E0B',
+      emissionRGB: 'rgb(230,200,0)',
+      transitionFrom: '3d³D',
+      transitionTo: '2p³P',
+      deltaE: '2.11 eV',
       transition: '3d³D → 2p³P',
     },
     O: {
       name: 'Oxygen (O)',
       shells: [
-        { n: 1, label: '1s', electrons: 2, radius: 40, sublabel: 'K' },
-        { n: 2, label: '2s2p', electrons: 6, radius: 70, sublabel: 'L' },
+        { n: 1, label: '1s²', electrons: 2, radius: 40, sublabel: 'K (n=1)', eV: -538 },
+        { n: 2, label: '2s²2p⁴', electrons: 6, radius: 70, sublabel: 'L (n=2)', eV: -13.6 },
       ],
-      excitedShell: { n: 3, label: '3p', radius: 100, sublabel: 'M (excited)' },
-      emissionWl: '777.4 nm',
+      excitedShell: { n: 3, label: '3p', radius: 110, sublabel: '3p (excited)', eV: -4.19 },
+      landingShell: { n: 3, label: '3s', radius: 90, sublabel: '3s', eV: -5.78 },
+      emissionWl: '777.4',
       emissionColor: '#EF4444',
+      emissionRGB: 'rgb(255,30,30)',
+      transitionFrom: '3p⁵P',
+      transitionTo: '3s⁵S',
+      deltaE: '1.59 eV',
       transition: '3p⁵P → 3s⁵S',
     },
   };
@@ -446,7 +462,7 @@ const ElectronTransitionAnimation = () => {
   useEffect(() => {
     if (!isAutoPlay) return;
     const sequence = ['ground', 'exciting', 'excited', 'emitting', 'ground2'];
-    const durations = [800, 1200, 1000, 1500, 1000];
+    const durations = [800, 1200, 1000, 1800, 1200];
     let step = 0;
     setAnimPhase('ground');
 
@@ -469,9 +485,21 @@ const ElectronTransitionAnimation = () => {
   }, [isAutoPlay, selectedElement]);
 
   const showExcitedShell = animPhase === 'exciting' || animPhase === 'excited' || animPhase === 'emitting';
+  const showLandingShell = animPhase === 'emitting' || animPhase === 'ground2';
   const electronMovingUp = animPhase === 'exciting';
   const electronMovingDown = animPhase === 'emitting';
   const showPhoton = animPhase === 'emitting' || animPhase === 'ground2';
+
+  // Energy diagram positions
+  const edX = 530; // center x of energy diagram
+  const edTop = 80;
+  const edBottom = 360;
+  const edRange = edBottom - edTop;
+
+  // Map shells to Y positions on energy diagram (higher energy = higher position)
+  const shellEnergyY = (shellIndex) => edBottom - shellIndex * 55;
+  const excitedEnergyY = edBottom - elem.shells.length * 55 - 25;
+  const landingEnergyY = edBottom - elem.shells.length * 55 + 20;
 
   return (
     <div className="space-y-4">
@@ -488,7 +516,7 @@ const ElectronTransitionAnimation = () => {
 
       {/* Animation */}
       <div className="bg-gray-900 rounded-xl p-4 relative overflow-hidden">
-        <svg width="100%" viewBox="0 0 600 400" className="max-w-2xl mx-auto">
+        <svg width="100%" viewBox="0 0 700 420" className="max-w-3xl mx-auto">
           <defs>
             <filter id="photonGlow">
               <feGaussianBlur stdDeviation="6" result="blur"/>
@@ -498,24 +526,33 @@ const ElectronTransitionAnimation = () => {
               <feGaussianBlur stdDeviation="2" result="blur"/>
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
+            <marker id="arrowDown" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#F59E0B"/>
+            </marker>
+            <marker id="arrowUp" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#EF4444"/>
+            </marker>
           </defs>
 
+          {/* ===== LEFT SIDE: Orbital View ===== */}
+          <text x="180" y="25" textAnchor="middle" fill="#D1D5DB" fontSize="13" fontWeight="bold">궤도 모형 (Orbital View)</text>
+
           {/* Nucleus */}
-          <circle cx="200" cy="200" r="18" fill="#F59E0B" stroke="#FBBF24" strokeWidth="2" filter="url(#shellGlow)"/>
-          <text x="200" y="205" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">{selectedElement}</text>
+          <circle cx="180" cy="210" r="18" fill="#F59E0B" stroke="#FBBF24" strokeWidth="2" filter="url(#shellGlow)"/>
+          <text x="180" y="215" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">{selectedElement}</text>
 
           {/* Ground state shells */}
           {elem.shells.map((shell, i) => (
             <g key={i}>
-              <circle cx="200" cy="200" r={shell.radius} fill="none" stroke="#4B5563" strokeWidth="1" strokeDasharray="4,4" opacity="0.6"/>
-              <text x={200 + shell.radius + 5} y="195" fill="#9CA3AF" fontSize="9">{shell.sublabel}</text>
+              <circle cx="180" cy="210" r={shell.radius} fill="none" stroke="#4B5563" strokeWidth="1" strokeDasharray="4,4" opacity="0.6"/>
+              <text x={180 - shell.radius - 3} y="205" textAnchor="end" fill="#9CA3AF" fontSize="8">{shell.sublabel}</text>
               {/* Electrons on shell */}
               {Array.from({length: Math.min(shell.electrons, 8)}, (_, j) => {
                 const angle = (j / Math.min(shell.electrons, 8)) * 2 * Math.PI - Math.PI / 2;
                 const isLastShellLastElectron = i === elem.shells.length - 1 && j === Math.min(shell.electrons, 8) - 1;
                 const shouldHide = isLastShellLastElectron && (animPhase === 'excited' || animPhase === 'emitting');
                 return (
-                  <circle key={j} cx={200 + shell.radius * Math.cos(angle)} cy={200 + shell.radius * Math.sin(angle)}
+                  <circle key={j} cx={180 + shell.radius * Math.cos(angle)} cy={210 + shell.radius * Math.sin(angle)}
                     r="5" fill={shouldHide ? 'transparent' : '#3B82F6'} stroke={shouldHide ? 'transparent' : '#60A5FA'} strokeWidth="1"
                     opacity={shouldHide ? 0 : 0.9}>
                     {!shouldHide && <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>}
@@ -525,15 +562,28 @@ const ElectronTransitionAnimation = () => {
             </g>
           ))}
 
+          {/* Landing shell (where electron falls TO) */}
+          {showLandingShell && (
+            <g>
+              <circle cx="180" cy="210" r={elem.landingShell.radius} fill="none"
+                stroke="#10B981" strokeWidth="2" strokeDasharray="6,3" opacity="0.8">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+              </circle>
+              <text x={180 + elem.landingShell.radius + 3} y="225" fill="#10B981" fontSize="9" fontWeight="bold">
+                ← {elem.landingShell.sublabel} (도착)
+              </text>
+            </g>
+          )}
+
           {/* Excited shell (appears during excitation) */}
           {showExcitedShell && (
             <g>
-              <circle cx="200" cy="200" r={elem.excitedShell.radius} fill="none"
+              <circle cx="180" cy="210" r={elem.excitedShell.radius} fill="none"
                 stroke={elem.emissionColor} strokeWidth="1.5" strokeDasharray="6,3" opacity="0.7">
                 <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
               </circle>
-              <text x={200 + elem.excitedShell.radius + 5} y="195" fill={elem.emissionColor} fontSize="9" fontWeight="bold">
-                {elem.excitedShell.sublabel}
+              <text x={180 + elem.excitedShell.radius + 3} y="205" fill={elem.emissionColor} fontSize="9" fontWeight="bold">
+                {elem.excitedShell.sublabel} {electronMovingUp ? '(여기 중↑)' : animPhase === 'emitting' ? '(출발)' : ''}
               </text>
             </g>
           )}
@@ -541,40 +591,76 @@ const ElectronTransitionAnimation = () => {
           {/* Electron moving UP (excitation) */}
           {electronMovingUp && (
             <circle r="6" fill="#FBBF24" filter="url(#photonGlow)">
-              <animate attributeName="cx" values={`${200 + elem.shells[elem.shells.length-1].radius};${200 + elem.excitedShell.radius}`} dur="1s" fill="freeze"/>
-              <animate attributeName="cy" values="200;200" dur="1s"/>
+              <animate attributeName="cx" values={`${180 + elem.shells[elem.shells.length-1].radius};${180 + elem.excitedShell.radius}`} dur="1s" fill="freeze"/>
+              <animate attributeName="cy" values="210;210" dur="1s"/>
             </circle>
           )}
 
-          {/* Electron on excited shell */}
-          {(animPhase === 'excited' || animPhase === 'emitting') && !electronMovingDown && (
-            <circle cx={200 + elem.excitedShell.radius} cy="200" r="6" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5">
-              <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
-            </circle>
-          )}
-
-          {/* Electron moving DOWN (de-excitation / emission) */}
-          {electronMovingDown && (
+          {/* Electron sitting on excited shell */}
+          {animPhase === 'excited' && (
             <g>
-              <circle r="6" fill="#3B82F6" stroke="#60A5FA" strokeWidth="1.5">
-                <animate attributeName="cx" values={`${200 + elem.excitedShell.radius};${200 + elem.shells[elem.shells.length-1].radius}`} dur="1s" fill="freeze"/>
-                <animate attributeName="cy" values="200;200" dur="1s"/>
+              <circle cx={180 + elem.excitedShell.radius} cy="210" r="6" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5">
+                <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
               </circle>
+              <text x={180 + elem.excitedShell.radius} y="195" textAnchor="middle" fill="#FBBF24" fontSize="8" fontWeight="bold">불안정!</text>
             </g>
           )}
 
-          {/* Photon emission (wavy line going right) */}
+          {/* Electron moving DOWN with transition label */}
+          {electronMovingDown && (
+            <g>
+              <circle r="7" fill="#3B82F6" stroke="#93C5FD" strokeWidth="2" filter="url(#shellGlow)">
+                <animate attributeName="cx" values={`${180 + elem.excitedShell.radius};${180 + elem.landingShell.radius}`} dur="1.2s" fill="freeze"/>
+                <animate attributeName="cy" values="210;210" dur="1.2s"/>
+              </circle>
+              {/* Curved arrow showing transition direction on orbital */}
+              <path d={`M ${180 + elem.excitedShell.radius - 10} 195 Q ${180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} 180, ${180 + elem.landingShell.radius + 10} 195`}
+                fill="none" stroke="#F59E0B" strokeWidth="2" markerEnd="url(#arrowDown)" opacity="0">
+                <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze"/>
+              </path>
+              {/* Transition label on orbital */}
+              <text x={180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} y="175"
+                textAnchor="middle" fill="#FBBF24" fontSize="11" fontWeight="bold" opacity="0">
+                {elem.transitionFrom} → {elem.transitionTo}
+                <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze"/>
+              </text>
+            </g>
+          )}
+
+          {/* Show transition label after emission too */}
+          {animPhase === 'ground2' && (
+            <g>
+              <text x={180 + (elem.excitedShell.radius + elem.landingShell.radius)/2} y="175"
+                textAnchor="middle" fill="#FBBF24" fontSize="11" fontWeight="bold">
+                {elem.transitionFrom} → {elem.transitionTo}
+              </text>
+            </g>
+          )}
+
+          {/* Photon emission (wavy line going outward) */}
           {showPhoton && (
             <g filter="url(#photonGlow)">
-              <path d="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200"
-                fill="none" stroke={elem.emissionColor} strokeWidth="3" opacity="0">
-                <animate attributeName="opacity" values="0;1;1;0.5" dur="1.5s" fill="freeze"/>
-                <animate attributeName="d" values="M 340 200 Q 355 185, 370 200 Q 385 215, 400 200 Q 415 185, 430 200 Q 445 215, 460 200 Q 475 185, 490 200;M 380 200 Q 395 180, 410 200 Q 425 220, 440 200 Q 455 180, 470 200 Q 485 220, 500 200 Q 515 180, 530 200" dur="1.5s" fill="freeze"/>
+              {/* Wavy photon */}
+              <path fill="none" stroke={elem.emissionColor} strokeWidth="3" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0.8" dur="1.5s" fill="freeze"/>
+                <animate attributeName="d"
+                  values="M 180 260 Q 190 248, 200 260 Q 210 272, 220 260 Q 230 248, 240 260 Q 250 272, 260 260;M 200 280 Q 215 262, 230 280 Q 245 298, 260 280 Q 275 262, 290 280 Q 305 298, 320 280 Q 335 262, 350 280"
+                  dur="1.5s" fill="freeze"/>
               </path>
-              <text x="460" y="175" fill={elem.emissionColor} fontSize="14" fontWeight="bold" opacity="0">
-                {elem.emissionWl}
+              {/* Wavelength + energy label */}
+              <g opacity="0">
                 <animate attributeName="opacity" values="0;0;1" dur="1s" fill="freeze"/>
-              </text>
+                <rect x="260" y="255" width="105" height="50" rx="6" fill="#1F2937" stroke={elem.emissionColor} strokeWidth="1.5"/>
+                <text x="312" y="273" textAnchor="middle" fill={elem.emissionColor} fontSize="13" fontWeight="bold">
+                  λ = {elem.emissionWl} nm
+                </text>
+                <text x="312" y="290" textAnchor="middle" fill="#D1D5DB" fontSize="10">
+                  ΔE = {elem.deltaE}
+                </text>
+                <text x="312" y="302" textAnchor="middle" fill="#9CA3AF" fontSize="8">
+                  (= hc/λ)
+                </text>
+              </g>
             </g>
           )}
 
@@ -582,51 +668,151 @@ const ElectronTransitionAnimation = () => {
           {electronMovingUp && (
             <g>
               <circle r="4" fill="#EF4444">
-                <animate attributeName="cx" values="50;180" dur="0.8s" fill="freeze"/>
-                <animate attributeName="cy" values="120;190" dur="0.8s" fill="freeze"/>
+                <animate attributeName="cx" values="30;160" dur="0.8s" fill="freeze"/>
+                <animate attributeName="cy" values="130;200" dur="0.8s" fill="freeze"/>
               </circle>
-              <text x="60" y="110" fill="#FCA5A5" fontSize="10" fontWeight="bold">고에너지 전자 충돌!</text>
+              <text x="35" y="120" fill="#FCA5A5" fontSize="10" fontWeight="bold">고에너지 전자 e⁻ 충돌!</text>
             </g>
           )}
 
-          {/* Phase labels */}
-          <rect x="350" y="290" width="220" height="80" rx="8" fill="#1F2937" stroke="#374151" strokeWidth="1"/>
-          <text x="460" y="315" textAnchor="middle" fill="#E5E7EB" fontSize="13" fontWeight="bold">
-            {animPhase === 'ground' || animPhase === 'ground2' ? '바닥 상태 (Ground State)' :
-             animPhase === 'exciting' ? '여기 중... (Excitation)' :
-             animPhase === 'excited' ? '들뜬 상태 (Excited State)' :
-             '발광! (Emission)'}
-          </text>
-          <text x="460" y="340" textAnchor="middle" fill="#9CA3AF" fontSize="10">
-            {animPhase === 'ground' || animPhase === 'ground2' ? '전자가 안정적인 껍데기에 위치' :
-             animPhase === 'exciting' ? '전자 충돌로 높은 에너지 준위로 이동' :
-             animPhase === 'excited' ? '불안정! 곧 낮은 준위로 돌아감' :
-             `전이: ${elem.transition}`}
-          </text>
-          {showPhoton && (
-            <text x="460" y="358" textAnchor="middle" fill={elem.emissionColor} fontSize="11" fontWeight="bold">
-              방출 파장: {elem.emissionWl}
-            </text>
+          {/* ===== DIVIDER ===== */}
+          <line x1="390" y1="40" x2="390" y2="380" stroke="#374151" strokeWidth="1" strokeDasharray="4,4"/>
+
+          {/* ===== RIGHT SIDE: Energy Level Diagram ===== */}
+          <text x={edX + 40} y="25" textAnchor="middle" fill="#D1D5DB" fontSize="13" fontWeight="bold">에너지 준위도</text>
+
+          {/* Energy axis */}
+          <line x1={edX - 50} y1={edTop} x2={edX - 50} y2={edBottom} stroke="#4B5563" strokeWidth="1.5"/>
+          <polygon points={`${edX-55},${edTop+10} ${edX-45},${edTop+10} ${edX-50},${edTop}`} fill="#9CA3AF"/>
+          <text x={edX - 55} y={edTop - 5} textAnchor="middle" fill="#9CA3AF" fontSize="9">E (eV)</text>
+
+          {/* Ground state energy levels */}
+          {elem.shells.map((shell, i) => {
+            const y = shellEnergyY(i);
+            return (
+              <g key={i}>
+                <line x1={edX - 30} y1={y} x2={edX + 80} y2={y} stroke="#6B7280" strokeWidth="2"/>
+                <text x={edX + 85} y={y + 4} fill="#9CA3AF" fontSize="9">{shell.label}</text>
+                <text x={edX - 35} y={y + 4} textAnchor="end" fill="#6B7280" fontSize="8">{shell.eV}</text>
+              </g>
+            );
+          })}
+
+          {/* Landing shell energy level (where electron falls to) */}
+          {(showExcitedShell || showLandingShell) && (
+            <g>
+              <line x1={edX - 30} y1={landingEnergyY} x2={edX + 80} y2={landingEnergyY}
+                stroke="#10B981" strokeWidth="2.5"/>
+              <text x={edX + 85} y={landingEnergyY + 4} fill="#10B981" fontSize="9" fontWeight="bold">
+                {elem.landingShell.label}
+              </text>
+              <text x={edX - 35} y={landingEnergyY + 4} textAnchor="end" fill="#10B981" fontSize="8">
+                {elem.landingShell.eV}
+              </text>
+              {showLandingShell && (
+                <text x={edX + 25} y={landingEnergyY - 6} textAnchor="middle" fill="#10B981" fontSize="8" fontWeight="bold">
+                  도착 ↓
+                </text>
+              )}
+            </g>
           )}
 
-          {/* Energy level diagram on right side */}
-          <line x1="560" y1="100" x2="560" y2="350" stroke="#374151" strokeWidth="1"/>
-          <text x="575" y="95" fill="#9CA3AF" fontSize="9">에너지</text>
-          <polygon points="555,105 565,105 560,95" fill="#9CA3AF"/>
-          {elem.shells.map((shell, i) => (
-            <g key={i}>
-              <line x1="540" y1={340 - i * 50} x2="580" y2={340 - i * 50} stroke="#6B7280" strokeWidth="2"/>
-              <text x="590" y={344 - i * 50} fill="#9CA3AF" fontSize="8">{shell.label}</text>
-            </g>
-          ))}
+          {/* Excited shell energy level */}
           {showExcitedShell && (
             <g>
-              <line x1="540" y1={340 - elem.shells.length * 50 - 30} x2="580" y2={340 - elem.shells.length * 50 - 30}
-                stroke={elem.emissionColor} strokeWidth="2" strokeDasharray="4,2"/>
-              <text x="590" y={344 - elem.shells.length * 50 - 26} fill={elem.emissionColor} fontSize="8" fontWeight="bold">
+              <line x1={edX - 30} y1={excitedEnergyY} x2={edX + 80} y2={excitedEnergyY}
+                stroke={elem.emissionColor} strokeWidth="2.5" strokeDasharray="6,3"/>
+              <text x={edX + 85} y={excitedEnergyY + 4} fill={elem.emissionColor} fontSize="9" fontWeight="bold">
                 {elem.excitedShell.label}
               </text>
+              <text x={edX - 35} y={excitedEnergyY + 4} textAnchor="end" fill={elem.emissionColor} fontSize="8">
+                {elem.excitedShell.eV}
+              </text>
             </g>
+          )}
+
+          {/* Excitation arrow (UP) on energy diagram */}
+          {electronMovingUp && (
+            <g>
+              <line x1={edX} y1={shellEnergyY(elem.shells.length - 1) - 5}
+                x2={edX} y2={excitedEnergyY + 8}
+                stroke="#EF4444" strokeWidth="2.5" markerEnd="url(#arrowUp)">
+                <animate attributeName="y2" values={`${shellEnergyY(elem.shells.length - 1) - 5};${excitedEnergyY + 8}`} dur="1s" fill="freeze"/>
+              </line>
+              <text x={edX + 10} y={(shellEnergyY(elem.shells.length - 1) + excitedEnergyY) / 2} fill="#FCA5A5" fontSize="9" fontWeight="bold">
+                여기 ↑
+              </text>
+            </g>
+          )}
+
+          {/* Electron dot on energy diagram */}
+          {animPhase === 'excited' && (
+            <circle cx={edX + 25} cy={excitedEnergyY} r="5" fill="#FBBF24">
+              <animate attributeName="opacity" values="0.7;1;0.7" dur="0.8s" repeatCount="indefinite"/>
+            </circle>
+          )}
+
+          {/* Transition arrow (DOWN) on energy diagram with photon wave */}
+          {(electronMovingDown || animPhase === 'ground2') && (
+            <g>
+              {/* Down arrow */}
+              <line x1={edX + 25} y1={excitedEnergyY + 5} x2={edX + 25} y2={landingEnergyY - 5}
+                stroke="#F59E0B" strokeWidth="3" markerEnd="url(#arrowDown)"/>
+
+              {/* Transition labels */}
+              <text x={edX + 38} y={excitedEnergyY + 15} fill={elem.emissionColor} fontSize="9" fontWeight="bold">
+                {elem.transitionFrom}
+              </text>
+              <text x={edX + 38} y={landingEnergyY - 8} fill="#10B981" fontSize="9" fontWeight="bold">
+                {elem.transitionTo}
+              </text>
+
+              {/* ΔE bracket */}
+              <line x1={edX - 15} y1={excitedEnergyY} x2={edX - 15} y2={landingEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <line x1={edX - 20} y1={excitedEnergyY} x2={edX - 10} y2={excitedEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <line x1={edX - 20} y1={landingEnergyY} x2={edX - 10} y2={landingEnergyY} stroke="#FBBF24" strokeWidth="1"/>
+              <text x={edX - 25} y={(excitedEnergyY + landingEnergyY) / 2 - 3} textAnchor="end" fill="#FBBF24" fontSize="9" fontWeight="bold">
+                ΔE
+              </text>
+              <text x={edX - 25} y={(excitedEnergyY + landingEnergyY) / 2 + 9} textAnchor="end" fill="#FBBF24" fontSize="8">
+                = {elem.deltaE}
+              </text>
+
+              {/* Photon wavy going right from the transition */}
+              <path fill="none" stroke={elem.emissionColor} strokeWidth="2.5" filter="url(#photonGlow)"
+                d={`M ${edX + 50} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 60} ${(excitedEnergyY + landingEnergyY) / 2 - 10}, ${edX + 70} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 80} ${(excitedEnergyY + landingEnergyY) / 2 + 10}, ${edX + 90} ${(excitedEnergyY + landingEnergyY) / 2} Q ${edX + 100} ${(excitedEnergyY + landingEnergyY) / 2 - 10}, ${edX + 110} ${(excitedEnergyY + landingEnergyY) / 2}`}>
+                <animate attributeName="opacity" values="0;1;1" dur="0.8s" fill="freeze"/>
+              </path>
+              <text x={edX + 70} y={(excitedEnergyY + landingEnergyY) / 2 - 18} textAnchor="middle" fill={elem.emissionColor} fontSize="11" fontWeight="bold">
+                λ = {elem.emissionWl} nm
+              </text>
+
+              {/* Formula */}
+              <text x={edX + 70} y={(excitedEnergyY + landingEnergyY) / 2 + 28} textAnchor="middle" fill="#9CA3AF" fontSize="8">
+                ΔE = hc/λ = {elem.deltaE}
+              </text>
+            </g>
+          )}
+
+          {/* ===== BOTTOM: Phase info box ===== */}
+          <rect x="20" y="365" width="660" height="45" rx="8" fill="#1F2937" stroke="#374151" strokeWidth="1"/>
+          <text x="350" y="385" textAnchor="middle" fill="#E5E7EB" fontSize="13" fontWeight="bold">
+            {animPhase === 'ground' || animPhase === 'ground2' ? '바닥 상태 (Ground State) — 전자가 안정적인 궤도에 위치' :
+             animPhase === 'exciting' ? '여기 중 (Excitation) — 전자 충돌로 높은 에너지 궤도로 이동!' :
+             animPhase === 'excited' ? '들뜬 상태 (Excited) — 불안정! 곧 낮은 궤도로 떨어짐' :
+             `발광! (Emission) — ${elem.transitionFrom} → ${elem.transitionTo} 전이, λ = ${elem.emissionWl} nm 방출`}
+          </text>
+          {(electronMovingDown || animPhase === 'ground2') && (
+            <text x="350" y="403" textAnchor="middle" fill="#FBBF24" fontSize="10">
+              에너지 차이 ΔE = {elem.deltaE} → 이 에너지에 해당하는 파장 {elem.emissionWl} nm의 빛(광자)이 방출됩니다
+            </text>
+          )}
+          {(animPhase === 'ground' || animPhase === 'exciting' || animPhase === 'excited') && (
+            <text x="350" y="403" textAnchor="middle" fill="#9CA3AF" fontSize="10">
+              {animPhase === 'ground' ? `${elem.name} — 전이: ${elem.transition} (${elem.emissionWl} nm)` :
+               animPhase === 'exciting' ? `전자가 ${elem.shells[elem.shells.length-1].label} 궤도에서 ${elem.excitedShell.label} 궤도로 올라갑니다` :
+               `${elem.excitedShell.label} 궤도의 전자는 불안정하여 곧 ${elem.landingShell.label} 궤도로 떨어집니다`}
+            </text>
           )}
         </svg>
 
@@ -640,9 +826,9 @@ const ElectronTransitionAnimation = () => {
           </button>
           {!isAutoPlay && (
             <div className="flex gap-2">
-              <button onClick={() => setAnimPhase('exciting')} className="px-3 py-2 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700">여기</button>
-              <button onClick={() => setAnimPhase('excited')} className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700">들뜬 상태</button>
-              <button onClick={() => setAnimPhase('emitting')} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">발광</button>
+              <button onClick={() => setAnimPhase('exciting')} className="px-3 py-2 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700">1. 여기</button>
+              <button onClick={() => setAnimPhase('excited')} className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700">2. 들뜬</button>
+              <button onClick={() => setAnimPhase('emitting')} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">3. 발광</button>
             </div>
           )}
         </div>
