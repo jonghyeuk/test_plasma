@@ -1283,7 +1283,7 @@ const OESSimulator = () => {
                     여기된 전자는 불안정하여 <strong>낮은 에너지 준위로 전이</strong>하면서 에너지 차이에 해당하는 파장의 광자를 방출합니다.
                   </p>
                   <div className="bg-indigo-900/30 rounded-lg p-4 font-mono text-center">
-                    <p className="text-indigo-800 font-bold">ΔE = E₂ - E₁ = hν = hc/λ</p>
+                    <p className="text-indigo-300 font-bold">ΔE = E₂ - E₁ = hν = hc/λ</p>
                     <p className="text-sm text-indigo-400 mt-2">h: 플랑크 상수, c: 광속, λ: 파장</p>
                   </div>
                   <p className="text-gray-300 leading-relaxed">
@@ -1483,10 +1483,10 @@ const OESSimulator = () => {
                 </span>
               </button>
               {showShellTheory && (
-                <div className="px-6 pb-6 border-t border-gray-100">
+                <div className="px-6 pb-6 border-t border-gray-700">
                   <div className="mt-4 space-y-4">
                     <div className="bg-indigo-900/30 rounded-lg p-4">
-                      <h4 className="font-bold text-indigo-800 mb-2">왜 이 이론이 중요한가?</h4>
+                      <h4 className="font-bold text-indigo-300 mb-2">왜 이 이론이 중요한가?</h4>
                       <p className="text-sm text-indigo-400 leading-relaxed">
                         OES에서 측정하는 <strong>발광선의 파장</strong>은 원자 내 전자가 높은 에너지 껍데기에서 낮은 껍데기로 떨어질 때 방출되는 빛의 파장입니다.
                         각 원소마다 껍데기 구조가 다르기 때문에 <strong>고유한 파장의 빛</strong>이 나옵니다. 이것이 OES로 원소를 식별하는 핵심 원리입니다.
@@ -1495,18 +1495,18 @@ const OESSimulator = () => {
 
                     <ElectronTransitionAnimation />
 
-                    <div className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg p-4">
+                    <div className="bg-gradient-to-r from-gray-800 to-indigo-900/40 rounded-lg p-4">
                       <h4 className="font-bold text-gray-100 mb-3">정리: OES 발광 과정</h4>
                       <div className="flex items-center gap-2 flex-wrap text-sm">
-                        <span className="bg-blue-100 text-blue-300 px-3 py-1.5 rounded-full font-bold">1. 전자 충돌</span>
+                        <span className="bg-blue-900/40 text-blue-300 px-3 py-1.5 rounded-full font-bold">1. 전자 충돌</span>
                         <span className="text-gray-400 font-bold">→</span>
-                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-full font-bold">2. 여기 (↑ 높은 껍데기)</span>
+                        <span className="bg-yellow-900/40 text-yellow-300 px-3 py-1.5 rounded-full font-bold">2. 여기 (↑ 높은 껍데기)</span>
                         <span className="text-gray-400 font-bold">→</span>
-                        <span className="bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full font-bold">3. 불안정 (들뜬 상태)</span>
+                        <span className="bg-orange-900/40 text-orange-300 px-3 py-1.5 rounded-full font-bold">3. 불안정 (들뜬 상태)</span>
                         <span className="text-gray-400 font-bold">→</span>
-                        <span className="bg-red-100 text-red-800 px-3 py-1.5 rounded-full font-bold">4. 전이 (↓ 낮은 껍데기)</span>
+                        <span className="bg-red-900/40 text-red-300 px-3 py-1.5 rounded-full font-bold">4. 전이 (↓ 낮은 껍데기)</span>
                         <span className="text-gray-400 font-bold">→</span>
-                        <span className="bg-green-100 text-green-300 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
+                        <span className="bg-green-900/40 text-green-300 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
                       </div>
                     </div>
                   </div>
@@ -1771,7 +1771,7 @@ const OESSimulator = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-bold text-gray-100">수집된 스펙트럼 ({collectedSpectra.length}개)</h3>
                       <button onClick={() => setCollectedSpectra([])}
-                        className="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm font-bold hover:bg-red-200">
+                        className="px-3 py-1 bg-red-900/40 text-red-400 rounded-lg text-sm font-bold hover:bg-red-900/60">
                         전체 삭제
                       </button>
                     </div>
@@ -1894,7 +1894,7 @@ const OESSimulator = () => {
                 {/* Question Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${quizQuestions[currentQuestion].type === 'simulator' ? 'bg-purple-100 text-purple-300' : 'bg-blue-100 text-blue-300'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${quizQuestions[currentQuestion].type === 'simulator' ? 'bg-purple-900/40 text-purple-300' : 'bg-blue-900/40 text-blue-300'}`}>
                       {quizQuestions[currentQuestion].type === 'simulator' ? '시뮬레이터 문제' : '기본 문제'}
                     </span>
                   </div>
@@ -1921,10 +1921,10 @@ const OESSimulator = () => {
                             ? i === quizQuestions[currentQuestion].answer
                               ? 'border-green-500 bg-green-900/30 text-green-300'
                               : i === selectedAnswer
-                                ? 'border-red-500 bg-red-900/30 text-red-800'
+                                ? 'border-red-500 bg-red-900/30 text-red-300'
                                 : 'border-gray-700 text-gray-400'
                             : selectedAnswer === i
-                              ? 'border-indigo-500 bg-indigo-900/30 text-indigo-800'
+                              ? 'border-indigo-500 bg-indigo-900/30 text-indigo-300'
                               : 'border-gray-700 text-gray-300 hover:border-gray-400 hover:bg-gray-700'
                         }`}>
                         <div className="flex items-center gap-3">
