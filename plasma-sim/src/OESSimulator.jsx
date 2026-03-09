@@ -870,6 +870,256 @@ const ElectronTransitionAnimation = () => {
 
 
 // ============================================================
+// Story Step SVG Illustrations
+// ============================================================
+const StoryIllustration = ({ step, isVisible }) => {
+  const illustrations = {
+    // Step 1: Plasma chamber with purple glow
+    0: (
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        {/* Chamber body */}
+        <rect x="60" y="50" width="180" height="200" rx="12" fill="#1e1b4b" stroke="#6366f1" strokeWidth="2">
+          <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+        </rect>
+        {/* Viewport window */}
+        <circle cx="150" cy="40" r="15" fill="#312e81" stroke="#818cf8" strokeWidth="2"/>
+        <circle cx="150" cy="40" r="8" fill="#4f46e5" opacity="0.6">
+          <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        {/* Plasma glow */}
+        <ellipse cx="150" cy="150" rx="65" ry="70" fill="url(#plasmaGlow1)" opacity="0.7">
+          <animate attributeName="rx" values="60;70;60" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite"/>
+        </ellipse>
+        {/* Wafer */}
+        <rect x="100" y="200" width="100" height="8" rx="2" fill="#64748b" stroke="#94a3b8" strokeWidth="1"/>
+        <rect x="105" y="198" width="90" height="4" rx="1" fill="#475569"/>
+        {/* Electrons */}
+        {[0,1,2,3,4,5].map(i => (
+          <circle key={i} cx={100 + (i % 3) * 25 + Math.random()*10} cy={120 + Math.floor(i/3)*30} r="3" fill="#c084fc">
+            <animate attributeName="cx" values={`${100+i*15};${130+i*10};${100+i*15}`} dur={`${1.5+i*0.3}s`} repeatCount="indefinite"/>
+            <animate attributeName="cy" values={`${120+i*10};${140+i*8};${120+i*10}`} dur={`${2+i*0.2}s`} repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;1;0.6" dur={`${1+i*0.2}s`} repeatCount="indefinite"/>
+          </circle>
+        ))}
+        {/* Light rays from plasma */}
+        {[0,1,2].map(i => (
+          <line key={i} x1="150" y1={110+i*15} x2={245} y2={90+i*20} stroke="#a78bfa" strokeWidth="1" opacity="0.4">
+            <animate attributeName="opacity" values="0.2;0.6;0.2" dur={`${2+i*0.5}s`} repeatCount="indefinite"/>
+          </line>
+        ))}
+        {/* Question mark */}
+        <text x="150" y="285" textAnchor="middle" fill="#c084fc" fontSize="18" fontWeight="bold" opacity="0.8">
+          <tspan>플라즈마 안에서 무슨 일이?</tspan>
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+        </text>
+        <defs>
+          <radialGradient id="plasmaGlow1" cx="50%" cy="50%">
+            <stop offset="0%" stopColor="#a855f7" stopOpacity="0.8"/>
+            <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.4"/>
+            <stop offset="100%" stopColor="#4c1d95" stopOpacity="0"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    ),
+    // Step 2: Electron collision and photon emission
+    1: (
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        {/* Atom nucleus */}
+        <circle cx="150" cy="150" r="20" fill="#1e3a5f" stroke="#3b82f6" strokeWidth="2"/>
+        <text x="150" y="155" textAnchor="middle" fill="#93c5fd" fontSize="12" fontWeight="bold">Ar</text>
+        {/* Electron orbits */}
+        <ellipse cx="150" cy="150" rx="55" ry="55" fill="none" stroke="#1e40af" strokeWidth="1" strokeDasharray="4 4" opacity="0.5"/>
+        <ellipse cx="150" cy="150" rx="90" ry="90" fill="none" stroke="#1e40af" strokeWidth="1" strokeDasharray="4 4" opacity="0.3"/>
+        {/* Ground state electron */}
+        <circle cx="205" cy="150" r="6" fill="#3b82f6">
+          <animate attributeName="cx" values="205;150;150;240;240;205" dur="6s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="150;95;60;60;150;150" dur="6s" repeatCount="indefinite"/>
+        </circle>
+        {/* Energy level labels */}
+        <text x="260" y="155" fill="#60a5fa" fontSize="10">E₁ (바닥)</text>
+        <text x="260" y="65" fill="#f59e0b" fontSize="10">E₂ (들뜬)</text>
+        {/* Incoming electron */}
+        <circle cx="30" cy="150" r="4" fill="#f97316">
+          <animate attributeName="cx" values="30;130;30" dur="6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;0;0;0;0;1" dur="6s" repeatCount="indefinite"/>
+        </circle>
+        <text x="40" y="140" fill="#fb923c" fontSize="9">고에너지 e⁻</text>
+        {/* Collision flash */}
+        <circle cx="150" cy="100" r="0" fill="#fbbf24" opacity="0">
+          <animate attributeName="r" values="0;0;15;0;0;0" dur="6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0;0.8;0;0;0" dur="6s" repeatCount="indefinite"/>
+        </circle>
+        {/* Photon emission */}
+        <g opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;1;0" dur="6s" repeatCount="indefinite"/>
+          <line x1="230" y1="80" x2="270" y2="40" stroke="#fbbf24" strokeWidth="2"/>
+          <polygon points="270,40 265,52 258,43" fill="#fbbf24"/>
+          <text x="255" y="35" fill="#fcd34d" fontSize="11" fontWeight="bold">hν (빛!)</text>
+        </g>
+        {/* Labels */}
+        <text x="150" y="280" textAnchor="middle" fill="#60a5fa" fontSize="13" fontWeight="bold">
+          빛의 지문 = 원자의 고유 파장
+        </text>
+      </svg>
+    ),
+    // Step 3: OES System components
+    2: (
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        {/* Chamber */}
+        <rect x="10" y="80" width="60" height="80" rx="6" fill="#1e1b4b" stroke="#6366f1" strokeWidth="1.5"/>
+        <text x="40" y="125" textAnchor="middle" fill="#a5b4fc" fontSize="8">챔버</text>
+        {/* Plasma glow in chamber */}
+        <circle cx="40" cy="115" r="15" fill="#7c3aed" opacity="0.5">
+          <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        {/* Viewport */}
+        <rect x="65" y="105" width="20" height="20" rx="3" fill="#312e81" stroke="#818cf8" strokeWidth="1.5"/>
+        <text x="75" y="140" textAnchor="middle" fill="#a5b4fc" fontSize="7">①뷰포트</text>
+        {/* Light beam from viewport */}
+        <line x1="85" y1="115" x2="115" y2="115" stroke="#c084fc" strokeWidth="2" opacity="0.6">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+        </line>
+        {/* Lens */}
+        <ellipse cx="120" cy="115" rx="5" ry="15" fill="none" stroke="#06b6d4" strokeWidth="2"/>
+        <text x="120" y="145" textAnchor="middle" fill="#67e8f9" fontSize="7">②렌즈</text>
+        {/* Optical fiber */}
+        <path d="M 125 115 Q 145 100 165 115" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 2">
+          <animate attributeName="stroke-dashoffset" values="0;-10" dur="1s" repeatCount="indefinite"/>
+        </path>
+        <text x="145" y="95" textAnchor="middle" fill="#fbbf24" fontSize="7">광섬유</text>
+        {/* Spectrometer */}
+        <rect x="165" y="95" width="55" height="40" rx="5" fill="#064e3b" stroke="#10b981" strokeWidth="1.5"/>
+        <text x="192" y="118" textAnchor="middle" fill="#6ee7b7" fontSize="8">③분광기</text>
+        {/* Diffraction grating inside */}
+        {[0,1,2,3,4].map(i => (
+          <line key={i} x1={175+i*8} y1="100" x2={175+i*8} y2="130" stroke="#34d399" strokeWidth="0.5" opacity="0.5"/>
+        ))}
+        {/* Rainbow spectrum coming out */}
+        {['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'].map((c,i) => (
+          <line key={i} x1="220" y1={100+i*6} x2="250" y2={175+i*8} stroke={c} strokeWidth="2" opacity="0.7">
+            <animate attributeName="opacity" values={`${0.4+i*0.1};${0.8+i*0.03};${0.4+i*0.1}`} dur={`${2+i*0.3}s`} repeatCount="indefinite"/>
+          </line>
+        ))}
+        {/* CCD Detector */}
+        <rect x="245" y="170" width="45" height="70" rx="5" fill="#1e1b4b" stroke="#818cf8" strokeWidth="1.5"/>
+        <text x="267" y="195" textAnchor="middle" fill="#a5b4fc" fontSize="7">④CCD</text>
+        <text x="267" y="210" textAnchor="middle" fill="#a5b4fc" fontSize="7">검출기</text>
+        {/* Mini spectrum on CCD */}
+        <polyline points="252,225 256,222 260,228 264,215 268,225 272,220 276,225 280,223" fill="none" stroke="#22d3ee" strokeWidth="1.5"/>
+        {/* Label */}
+        <text x="150" y="280" textAnchor="middle" fill="#34d399" fontSize="13" fontWeight="bold">
+          빛 → 렌즈 → 분광 → 검출
+        </text>
+      </svg>
+    ),
+    // Step 4: Spectrum analysis - peaks
+    3: (
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        {/* Graph background */}
+        <rect x="40" y="30" width="240" height="180" rx="4" fill="#0f172a" stroke="#334155" strokeWidth="1"/>
+        {/* Grid lines */}
+        {[0,1,2,3].map(i => (
+          <line key={i} x1="40" y1={66+i*36} x2="280" y2={66+i*36} stroke="#1e293b" strokeWidth="0.5"/>
+        ))}
+        {/* Axes */}
+        <line x1="40" y1="210" x2="280" y2="210" stroke="#64748b" strokeWidth="1"/>
+        <line x1="40" y1="30" x2="40" y2="210" stroke="#64748b" strokeWidth="1"/>
+        <text x="160" y="230" textAnchor="middle" fill="#94a3b8" fontSize="10">파장 (nm)</text>
+        <text x="20" y="120" textAnchor="middle" fill="#94a3b8" fontSize="9" transform="rotate(-90 20 120)">Intensity</text>
+        {/* Normal spectrum baseline */}
+        <polyline points="50,200 80,198 110,195 130,190 150,185 170,190 190,195 210,192 230,196 250,198 270,200"
+          fill="none" stroke="#475569" strokeWidth="1" strokeDasharray="3 3"/>
+        {/* F peak at 685.6nm - decreasing */}
+        <rect x="130" y="60" width="20" height="150" rx="2" fill="url(#fPeakGrad)" opacity="0.3"/>
+        <line x1="140" y1="60" x2="140" y2="210" stroke="#22d3ee" strokeWidth="2">
+          <animate attributeName="y1" values="60;120;60" dur="4s" repeatCount="indefinite"/>
+        </line>
+        <text x="140" y="50" textAnchor="middle" fill="#22d3ee" fontSize="9" fontWeight="bold">F 685.6nm</text>
+        <text x="140" y="245" textAnchor="middle" fill="#22d3ee" fontSize="8">↓ 감소!</text>
+        {/* O peak at 777.4nm - increasing abnormally */}
+        <rect x="200" y="40" width="20" height="170" rx="2" fill="url(#oPeakGrad)" opacity="0.3"/>
+        <line x1="210" y1="40" x2="210" y2="210" stroke="#ef4444" strokeWidth="2">
+          <animate attributeName="y1" values="100;40;100" dur="4s" repeatCount="indefinite"/>
+        </line>
+        <text x="210" y="32" textAnchor="middle" fill="#ef4444" fontSize="9" fontWeight="bold">O 777.4nm</text>
+        <text x="210" y="245" textAnchor="middle" fill="#ef4444" fontSize="8">↑ 비정상!</text>
+        {/* Alert indicator */}
+        <g>
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+          <circle cx="255" cy="50" r="12" fill="#dc2626" opacity="0.2"/>
+          <text x="255" y="55" textAnchor="middle" fill="#fca5a5" fontSize="14">⚠</text>
+        </g>
+        {/* Diagnosis arrow */}
+        <text x="150" y="275" textAnchor="middle" fill="#f97316" fontSize="12" fontWeight="bold">
+          O₂ 피크 ↑ = 공기 누출 발견!
+        </text>
+        <defs>
+          <linearGradient id="fPeakGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0"/>
+          </linearGradient>
+          <linearGradient id="oPeakGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+    // Step 5: Learning path
+    4: (
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        {/* Path line */}
+        <path d="M 50 250 Q 80 200 100 180 Q 130 150 150 140 Q 180 125 200 110 Q 230 90 260 60"
+          fill="none" stroke="url(#pathGrad)" strokeWidth="3" strokeDasharray="8 4">
+          <animate attributeName="stroke-dashoffset" values="0;-24" dur="2s" repeatCount="indefinite"/>
+        </path>
+        {/* Step nodes */}
+        {[
+          { x: 50, y: 250, label: '이론', icon: '📖', delay: '0s' },
+          { x: 100, y: 180, label: '개요', icon: '🔍', delay: '0.5s' },
+          { x: 150, y: 140, label: '시뮬레이터', icon: '🖥️', delay: '1s' },
+          { x: 210, y: 105, label: '실습', icon: '🔬', delay: '1.5s' },
+          { x: 260, y: 60, label: '문제풀이', icon: '📝', delay: '2s' },
+        ].map((node, i) => (
+          <g key={i}>
+            <circle cx={node.x} cy={node.y} r="22" fill="#1e1b4b" stroke="#818cf8" strokeWidth="2">
+              <animate attributeName="stroke" values="#818cf8;#c084fc;#818cf8" dur="3s" begin={node.delay} repeatCount="indefinite"/>
+            </circle>
+            <text x={node.x} y={node.y+5} textAnchor="middle" fontSize="18">{node.icon}</text>
+            <text x={node.x} y={node.y+38} textAnchor="middle" fill="#c4b5fd" fontSize="10" fontWeight="bold">{node.label}</text>
+          </g>
+        ))}
+        {/* Star at the end */}
+        <g>
+          <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+          <text x="260" y="30" textAnchor="middle" fontSize="22">⭐</text>
+          <text x="260" y="18" textAnchor="middle" fill="#fbbf24" fontSize="9" fontWeight="bold">OES 전문가!</text>
+        </g>
+        {/* You are here */}
+        <g>
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+          <text x="50" y="280" textAnchor="middle" fill="#ec4899" fontSize="10" fontWeight="bold">▲ 지금 여기!</text>
+        </g>
+        <defs>
+          <linearGradient id="pathGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ec4899"/>
+            <stop offset="50%" stopColor="#a855f7"/>
+            <stop offset="100%" stopColor="#6366f1"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  };
+
+  return (
+    <div className={`transition-all duration-700 ease-in-out ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+      {illustrations[step] || null}
+    </div>
+  );
+};
+
+// ============================================================
 // Main OES Simulator Component
 // ============================================================
 const OESSimulator = () => {
@@ -880,6 +1130,7 @@ const OESSimulator = () => {
   const [isTheoryPlaying, setIsTheoryPlaying] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [showDetailedContent, setShowDetailedContent] = useState(false);
+  const [svgVisible, setSvgVisible] = useState(true);
 
   // Simulator states
   const [simMode, setSimMode] = useState(1);
@@ -1137,12 +1388,20 @@ const OESSimulator = () => {
     });
   };
 
-  const startTheory = () => { setIsTheoryPlaying(true); setTheoryStep(0); setTypedText(''); };
+  const startTheory = () => { setIsTheoryPlaying(true); setTheoryStep(0); setTypedText(''); setSvgVisible(true); };
+  const changeStep = (newStep) => {
+    setSvgVisible(false);
+    setTimeout(() => {
+      setTheoryStep(newStep);
+      setTypedText('');
+      setSvgVisible(true);
+    }, 400);
+  };
   const nextTheoryStep = () => {
-    if (theoryStep < storySteps.length - 1) { setTheoryStep(theoryStep + 1); setTypedText(''); }
+    if (theoryStep < storySteps.length - 1) { changeStep(theoryStep + 1); }
     else { setShowDetailedContent(true); setIsTheoryPlaying(false); }
   };
-  const prevTheoryStep = () => { if (theoryStep > 0) { setTheoryStep(theoryStep - 1); setTypedText(''); } };
+  const prevTheoryStep = () => { if (theoryStep > 0) { changeStep(theoryStep - 1); } };
   const skipTheory = () => { setShowDetailedContent(true); setIsTheoryPlaying(false); };
 
   // Mode 2 collect spectrum
@@ -1210,24 +1469,33 @@ const OESSimulator = () => {
                 </button>
               </div>
             ) : isTheoryPlaying ? (
-              <div className="max-w-3xl mx-auto">
+              <div className="max-w-6xl mx-auto">
                 {/* Progress */}
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-sm text-gray-400">Step {theoryStep + 1} / {storySteps.length}</span>
                   <div className="flex gap-2">
                     {storySteps.map((_, i) => (
-                      <div key={i} className={`w-3 h-3 rounded-full transition-all ${i <= theoryStep ? 'bg-indigo-600 scale-110' : 'bg-gray-300'}`}/>
+                      <div key={i} className={`w-3 h-3 rounded-full transition-all ${i <= theoryStep ? 'bg-indigo-600 scale-110' : 'bg-gray-700'}`}/>
                     ))}
                   </div>
                   <button onClick={skipTheory} className="text-sm text-gray-400 hover:text-gray-300">건너뛰기 →</button>
                 </div>
 
-                {/* Story Card */}
-                <div className={`bg-gradient-to-br ${storySteps[theoryStep].color} rounded-2xl p-8 text-white shadow-2xl min-h-[400px]`}>
-                  <h3 className="text-2xl font-bold mb-6">{storySteps[theoryStep].title}</h3>
-                  <div className="text-lg leading-relaxed">
-                    {formatTheoryContent(typedText)}
-                    <span className="animate-pulse">|</span>
+                {/* Story Card - Two Column Layout */}
+                <div className={`bg-gradient-to-br ${storySteps[theoryStep].color} rounded-2xl shadow-2xl min-h-[420px] flex flex-col lg:flex-row overflow-hidden`}>
+                  {/* Left: SVG Illustration */}
+                  <div className="lg:w-2/5 w-full p-6 flex items-center justify-center bg-black/20 border-b lg:border-b-0 lg:border-r border-white/10">
+                    <div className="w-full max-w-[280px]">
+                      <StoryIllustration step={theoryStep} isVisible={svgVisible} />
+                    </div>
+                  </div>
+                  {/* Right: Story Text */}
+                  <div className="lg:w-3/5 w-full p-8 text-white flex flex-col justify-center">
+                    <h3 className="text-2xl font-bold mb-6">{storySteps[theoryStep].title}</h3>
+                    <div className="text-base leading-relaxed overflow-y-auto max-h-[320px]">
+                      {formatTheoryContent(typedText)}
+                      <span className="animate-pulse">|</span>
+                    </div>
                   </div>
                 </div>
 
