@@ -932,13 +932,29 @@ const StoryIllustration = ({ step, isVisible }) => {
         <ellipse cx="150" cy="150" rx="55" ry="55" fill="none" stroke="#1e40af" strokeWidth="1" strokeDasharray="4 4" opacity="0.5"/>
         <ellipse cx="150" cy="150" rx="90" ry="90" fill="none" stroke="#1e40af" strokeWidth="1" strokeDasharray="4 4" opacity="0.3"/>
         {/* Ground state electron */}
+        {/* Bound electron: starts at ground, gets excited UP, then falls DOWN emitting light */}
         <circle cx="205" cy="150" r="6" fill="#3b82f6">
+          {/* ground(E1) → collision → excited(E2 상위) → stays → falls back(E1 하위) → photon! */}
           <animate attributeName="cx" values="205;150;150;240;240;205" dur="6s" repeatCount="indefinite"/>
           <animate attributeName="cy" values="150;95;60;60;150;150" dur="6s" repeatCount="indefinite"/>
         </circle>
         {/* Energy level labels */}
         <text x="260" y="155" fill="#60a5fa" fontSize="10">E₁ (바닥)</text>
         <text x="260" y="65" fill="#f59e0b" fontSize="10">E₂ (들뜬)</text>
+        {/* Up arrow: excitation */}
+        <g opacity="0">
+          <animate attributeName="opacity" values="0;0;0.9;0.9;0;0" dur="6s" repeatCount="indefinite"/>
+          <line x1="230" y1="140" x2="230" y2="75" stroke="#f59e0b" strokeWidth="2"/>
+          <polygon points="230,75 225,85 235,85" fill="#f59e0b"/>
+          <text x="215" y="105" fill="#fbbf24" fontSize="8" fontWeight="bold">여기↑</text>
+        </g>
+        {/* Down arrow: transition (de-excitation) */}
+        <g opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;0.9;0" dur="6s" repeatCount="indefinite"/>
+          <line x1="250" y1="75" x2="250" y2="140" stroke="#22d3ee" strokeWidth="2"/>
+          <polygon points="250,140 245,130 255,130" fill="#22d3ee"/>
+          <text x="270" y="105" fill="#67e8f9" fontSize="8" fontWeight="bold">전이↓</text>
+        </g>
         {/* Incoming electron */}
         <circle cx="30" cy="150" r="4" fill="#f97316">
           <animate attributeName="cx" values="30;130;30" dur="6s" repeatCount="indefinite"/>
@@ -950,12 +966,17 @@ const StoryIllustration = ({ step, isVisible }) => {
           <animate attributeName="r" values="0;0;15;0;0;0" dur="6s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="0;0;0.8;0;0;0" dur="6s" repeatCount="indefinite"/>
         </circle>
-        {/* Photon emission */}
+        {/* Photon emission - appears when electron falls DOWN */}
         <g opacity="0">
-          <animate attributeName="opacity" values="0;0;0;0;1;0" dur="6s" repeatCount="indefinite"/>
-          <line x1="230" y1="80" x2="270" y2="40" stroke="#fbbf24" strokeWidth="2"/>
-          <polygon points="270,40 265,52 258,43" fill="#fbbf24"/>
-          <text x="255" y="35" fill="#fcd34d" fontSize="11" fontWeight="bold">hν (빛!)</text>
+          <animate attributeName="opacity" values="0;0;0;0;0.8;0" dur="6s" repeatCount="indefinite"/>
+          <line x1="210" y1="140" x2="250" y2="170" stroke="#fbbf24" strokeWidth="2"/>
+          <polygon points="250,170 242,165 245,158" fill="#fbbf24"/>
+          <text x="260" y="180" fill="#fcd34d" fontSize="11" fontWeight="bold">hν (빛!)</text>
+          {/* Light burst effect */}
+          <circle cx="230" cy="155" r="8" fill="#fbbf24" opacity="0.3">
+            <animate attributeName="r" values="8;18;8" dur="1s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.3;0;0.3" dur="1s" repeatCount="indefinite"/>
+          </circle>
         </g>
         {/* Labels */}
         <text x="150" y="280" textAnchor="middle" fill="#60a5fa" fontSize="13" fontWeight="bold">
