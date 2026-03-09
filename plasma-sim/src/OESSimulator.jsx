@@ -948,27 +948,9 @@ const StoryIllustration = ({ step, isVisible }) => {
           <polygon points="230,75 225,85 235,85" fill="#f59e0b"/>
           <text x="215" y="105" fill="#fbbf24" fontSize="8" fontWeight="bold">여기↑</text>
         </g>
-        {/* Down arrow: transition (de-excitation) */}
+        {/* Photon emission - appears 1s after electron falls DOWN */}
         <g opacity="0">
-          <animate attributeName="opacity" values="0;0;0;0;0.9;0" dur="6s" repeatCount="indefinite"/>
-          <line x1="250" y1="75" x2="250" y2="140" stroke="#22d3ee" strokeWidth="2"/>
-          <polygon points="250,140 245,130 255,130" fill="#22d3ee"/>
-          <text x="270" y="105" fill="#67e8f9" fontSize="8" fontWeight="bold">전이↓</text>
-        </g>
-        {/* Incoming electron */}
-        <circle cx="30" cy="150" r="4" fill="#f97316">
-          <animate attributeName="cx" values="30;130;30" dur="6s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="1;0;0;0;0;1" dur="6s" repeatCount="indefinite"/>
-        </circle>
-        <text x="40" y="140" fill="#fb923c" fontSize="9">고에너지 e⁻</text>
-        {/* Collision flash */}
-        <circle cx="150" cy="100" r="0" fill="#fbbf24" opacity="0">
-          <animate attributeName="r" values="0;0;15;0;0;0" dur="6s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;0;0.8;0;0;0" dur="6s" repeatCount="indefinite"/>
-        </circle>
-        {/* Photon emission - appears when electron falls DOWN */}
-        <g opacity="0">
-          <animate attributeName="opacity" values="0;0;0;0;0.8;0" dur="6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0;0;0;0;0.8;0" dur="7s" repeatCount="indefinite"/>
           <line x1="210" y1="140" x2="250" y2="170" stroke="#fbbf24" strokeWidth="2"/>
           <polygon points="250,170 242,165 245,158" fill="#fbbf24"/>
           <text x="260" y="180" fill="#fcd34d" fontSize="11" fontWeight="bold">hν (빛!)</text>
