@@ -1790,13 +1790,13 @@ const OESSimulator = () => {
               <h3 className="text-xl font-bold text-indigo-400 mb-4">가스별 주요 발광선 데이터베이스</h3>
               <div className="space-y-4">
                 {Object.entries(OES_DATABASE).map(([key, gas]) => (
-                  <div key={key} className="border rounded-lg overflow-hidden">
+                  <div key={key} className="border border-gray-700 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 font-bold text-white" style={{backgroundColor: gas.color}}>
                       {gas.name}
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-950">
+                      <table className="w-full text-sm text-gray-200">
+                        <thead className="bg-gray-950 text-gray-400">
                           <tr>
                             <th className="px-3 py-2 text-left">파장 (nm)</th>
                             <th className="px-3 py-2 text-left">상대 세기</th>
@@ -1807,8 +1807,8 @@ const OESSimulator = () => {
                         </thead>
                         <tbody>
                           {gas.lines.filter(l => l.intensity >= 0.4).map((line, i) => (
-                            <tr key={i} className="border-t hover:bg-gray-700">
-                              <td className="px-3 py-2 font-mono font-bold">{line.wavelength}</td>
+                            <tr key={i} className="border-t border-gray-700 hover:bg-gray-700">
+                              <td className="px-3 py-2 font-mono font-bold text-gray-100">{line.wavelength}</td>
                               <td className="px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <div className="w-24 bg-gray-700 rounded-full h-2">
