@@ -1154,6 +1154,7 @@ const OESSimulator = () => {
 
   // Overview dropdown states
   const [showShellTheory, setShowShellTheory] = useState(false);
+  const [showMolecularTransition, setShowMolecularTransition] = useState(false);
 
   // Mode 2 live spectrum (with noise)
   const [mode2LiveData, setMode2LiveData] = useState([]);
@@ -1638,21 +1639,134 @@ const OESSimulator = () => {
             {/* 4. Actinometry */}
             <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 space-y-4">
               <h3 className="text-xl font-bold text-indigo-400">4. Actinometry (활성종 정량 분석)</h3>
-              <div className="space-y-3">
-                <p className="text-gray-300 leading-relaxed">
-                  OES 발광 세기는 해당 종의 밀도뿐만 아니라, 전자 온도와 밀도에도 의존합니다. 따라서 발광 세기만으로는 절대 밀도를 알 수 없습니다.
-                </p>
-                <p className="text-gray-300 leading-relaxed">
-                  <strong>Actinometry</strong>는 알려진 농도의 비활성 가스(주로 Ar)를 소량 추가하여, 활성종과 비활성 가스의 발광선 비율로부터 활성종 밀도를 추정하는 기법입니다.
-                </p>
-                <div className="bg-amber-900/30 rounded-lg p-4 font-mono text-center">
-                  <p className="text-lg font-bold text-amber-300">[X] / [Ar] ∝ I_X / I_Ar</p>
-                  <p className="text-sm text-amber-300 mt-2">조건: 두 발광선의 들뜬 에너지 준위가 비슷해야 함</p>
-                </div>
-                <div className="bg-red-900/30 rounded-lg p-3">
-                  <p className="text-sm text-red-300">
-                    <strong>주의:</strong> Actinometry의 정확도는 두 전이의 여기 임계 에너지(threshold energy)가 유사할 때만 보장됩니다. 예: F(685.6nm, 14.5eV) vs Ar(750.4nm, 13.5eV)
+              <div className="space-y-4">
+                {/* 왜 필요한가? */}
+                <div className="bg-indigo-900/20 rounded-lg p-4 border border-indigo-800/30">
+                  <h4 className="font-bold text-indigo-300 mb-2">왜 발광 세기만으로는 부족할까?</h4>
+                  <p className="text-gray-300 leading-relaxed text-sm">
+                    OES에서 측정하는 발광 세기(I)는 단순히 그 종의 농도만 반영하는 게 아닙니다.
+                    실제로는 <strong className="text-amber-300">전자 온도(Tₑ)</strong>, <strong className="text-amber-300">전자 밀도(nₑ)</strong>,
+                    그리고 <strong className="text-amber-300">여기 확률</strong>까지 모두 영향을 줍니다.
                   </p>
+                  <div className="bg-gray-900/50 rounded-lg p-3 mt-3 font-mono text-center">
+                    <p className="text-amber-300 text-sm">I_X = nₑ · n_X · k_X(Tₑ)</p>
+                    <p className="text-xs text-gray-400 mt-1">발광세기 = 전자밀도 × 활성종밀도 × 여기율계수(전자온도 함수)</p>
+                  </div>
+                  <p className="text-gray-400 leading-relaxed text-sm mt-3">
+                    즉, 플라즈마 조건이 바뀌면 같은 농도의 가스라도 발광 세기가 달라질 수 있습니다.
+                    그래서 <strong className="text-cyan-300">기준이 되는 가스</strong>가 필요합니다!
+                  </p>
+                </div>
+
+                {/* Actinometry 핵심 아이디어 */}
+                <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-800/30">
+                  <h4 className="font-bold text-amber-300 mb-2">Actinometry의 핵심 아이디어</h4>
+                  <p className="text-gray-300 leading-relaxed text-sm mb-3">
+                    <strong>알려진 농도</strong>의 비활성 가스(주로 <strong className="text-cyan-300">Ar</strong>)를 소량 추가합니다.
+                    Ar의 농도는 우리가 넣어준 만큼이니 알고 있죠. 이 Ar을 "기준 자"로 사용하는 겁니다!
+                  </p>
+
+                  {/* SVG 다이어그램 */}
+                  <div className="flex justify-center my-4">
+                    <svg viewBox="0 0 400 200" className="w-full max-w-md">
+                      {/* 왼쪽: 활성종 X */}
+                      <rect x="10" y="30" width="150" height="140" rx="8" fill="#1e1b4b" stroke="#6366f1" strokeWidth="1.5"/>
+                      <text x="85" y="55" textAnchor="middle" fill="#a5b4fc" fontSize="11" fontWeight="bold">활성종 X (예: F)</text>
+                      <text x="85" y="80" textAnchor="middle" fill="#fbbf24" fontSize="10">I_X = nₑ · n_X · k_X</text>
+                      <text x="85" y="105" textAnchor="middle" fill="#94a3b8" fontSize="9">n_X = ? (모르는 값)</text>
+                      <text x="85" y="125" textAnchor="middle" fill="#94a3b8" fontSize="9">nₑ, k_X = 복잡함...</text>
+                      <circle cx="85" cy="150" r="10" fill="#ef4444" opacity="0.3">
+                        <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
+                      </circle>
+                      <text x="85" y="154" textAnchor="middle" fill="#fca5a5" fontSize="8">685.6nm</text>
+
+                      {/* 오른쪽: 기준 가스 Ar */}
+                      <rect x="240" y="30" width="150" height="140" rx="8" fill="#0c2e1e" stroke="#10b981" strokeWidth="1.5"/>
+                      <text x="315" y="55" textAnchor="middle" fill="#6ee7b7" fontSize="11" fontWeight="bold">기준 가스 Ar</text>
+                      <text x="315" y="80" textAnchor="middle" fill="#fbbf24" fontSize="10">I_Ar = nₑ · n_Ar · k_Ar</text>
+                      <text x="315" y="105" textAnchor="middle" fill="#34d399" fontSize="9">n_Ar = 알고 있음! ✓</text>
+                      <text x="315" y="125" textAnchor="middle" fill="#94a3b8" fontSize="9">nₑ, k_Ar = 복잡함...</text>
+                      <circle cx="315" cy="150" r="10" fill="#8b5cf6" opacity="0.3">
+                        <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
+                      </circle>
+                      <text x="315" y="154" textAnchor="middle" fill="#c4b5fd" fontSize="8">750.4nm</text>
+
+                      {/* 가운데 나누기 기호 */}
+                      <text x="200" y="100" textAnchor="middle" fill="#fbbf24" fontSize="24" fontWeight="bold">÷</text>
+                      <text x="200" y="125" textAnchor="middle" fill="#fbbf24" fontSize="9">비율!</text>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 수식 전개 */}
+                <div className="bg-gray-900/50 rounded-lg p-5 space-y-3">
+                  <h4 className="font-bold text-gray-100 mb-2">수식으로 이해하기 (차근차근!)</h4>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="bg-gray-800 rounded-lg p-3">
+                      <p className="text-gray-400 mb-1">Step 1: 두 발광 세기의 비율을 구하면...</p>
+                      <p className="font-mono text-cyan-300 text-center">I_X / I_Ar = (nₑ · n_X · k_X) / (nₑ · n_Ar · k_Ar)</p>
+                    </div>
+
+                    <div className="bg-gray-800 rounded-lg p-3">
+                      <p className="text-gray-400 mb-1">Step 2: nₑ(전자밀도)가 양쪽에 같으니 <strong className="text-green-400">약분!</strong></p>
+                      <p className="font-mono text-cyan-300 text-center">I_X / I_Ar = (n_X · k_X) / (n_Ar · k_Ar)</p>
+                      <p className="text-xs text-green-400 text-center mt-1">→ 전자밀도의 영향이 사라짐!</p>
+                    </div>
+
+                    <div className="bg-gray-800 rounded-lg p-3">
+                      <p className="text-gray-400 mb-1">Step 3: 두 전이의 여기 에너지가 비슷하면 k_X ≈ k_Ar 이므로...</p>
+                      <p className="font-mono text-cyan-300 text-center">I_X / I_Ar ≈ n_X / n_Ar</p>
+                      <p className="text-xs text-green-400 text-center mt-1">→ 여기율 계수도 약분!</p>
+                    </div>
+
+                    <div className="bg-amber-900/30 rounded-lg p-3 border border-amber-700/50">
+                      <p className="text-gray-400 mb-1">최종 결과:</p>
+                      <p className="font-mono text-amber-300 text-lg text-center font-bold">n_X = n_Ar × (I_X / I_Ar)</p>
+                      <p className="text-xs text-amber-400 text-center mt-1">활성종 밀도 = Ar 농도(아는 값) × 세기 비율(측정값)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 우리가 알 수 있는 것들 */}
+                <div className="bg-green-900/20 rounded-lg p-4 border border-green-800/30">
+                  <h4 className="font-bold text-green-300 mb-3">이 수식으로 우리가 알 수 있는 것들</h4>
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <div className="text-green-400 font-bold mb-1">1. 활성종 밀도 추정</div>
+                      <p className="text-gray-400">에칭에 실제로 참여하는 F, Cl, O 라디칼의 농도를 정량적으로 파악</p>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <div className="text-green-400 font-bold mb-1">2. 공정 안정성 모니터링</div>
+                      <p className="text-gray-400">시간에 따른 활성종 농도 변화를 추적하여 공정 이상 조기 감지</p>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <div className="text-green-400 font-bold mb-1">3. 가스 유량 최적화</div>
+                      <p className="text-gray-400">투입 가스량 대비 실제 라디칼 생성 효율을 정량적으로 비교</p>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <div className="text-green-400 font-bold mb-1">4. 챔버 상태 진단</div>
+                      <p className="text-gray-400">챔버 벽 오염이나 누출 시 활성종 비율 변화로 이상 감지</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 주의사항 */}
+                <div className="bg-red-900/20 rounded-lg p-4 border border-red-800/30">
+                  <h4 className="font-bold text-red-300 mb-2">핵심 조건: 여기 에너지가 비슷해야 한다!</h4>
+                  <p className="text-sm text-gray-300 leading-relaxed mb-3">
+                    k_X ≈ k_Ar 가 성립하려면, 두 발광선의 <strong className="text-amber-300">여기 임계 에너지(threshold energy)</strong>가 비슷해야 합니다.
+                    에너지가 많이 다르면 전자온도 변화에 따라 비율이 달라지므로 정확도가 떨어집니다.
+                  </p>
+                  <div className="bg-gray-900/50 rounded-lg p-3">
+                    <p className="text-sm font-mono text-gray-300 text-center">
+                      <span className="text-cyan-300">F (685.6nm): 14.5eV</span>
+                      {' '}vs{' '}
+                      <span className="text-purple-300">Ar (750.4nm): 13.5eV</span>
+                      {' → '}
+                      <span className="text-green-400">차이 ~1eV ✓ (적합!)</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1779,6 +1893,184 @@ const OESSimulator = () => {
                         <span className="text-gray-400 font-bold">→</span>
                         <span className="bg-green-900/40 text-green-300 px-3 py-1.5 rounded-full font-bold">5. 광자 방출 (hν)</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Molecular Transition Notation Dropdown */}
+            <div className="bg-gray-800 rounded-xl shadow-lg shadow-black/20 overflow-hidden">
+              <button onClick={() => setShowMolecularTransition(!showMolecularTransition)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-700 transition-all">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📐</span>
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold text-indigo-400">분자 전이 표기법 읽는 법</h3>
+                    <p className="text-sm text-gray-400">C³Πu → B³Πg 같은 표기가 무슨 뜻일까? (클릭하여 펼치기)</p>
+                  </div>
+                </div>
+                <span className={`text-2xl text-indigo-400 transition-transform duration-300 ${showMolecularTransition ? 'rotate-180' : ''}`}>
+                  ▼
+                </span>
+              </button>
+              {showMolecularTransition && (
+                <div className="px-6 pb-6 border-t border-gray-700">
+                  <div className="mt-4 space-y-4">
+
+                    {/* 왜 원자와 다른가? */}
+                    <div className="bg-indigo-900/20 rounded-lg p-4 border border-indigo-800/30">
+                      <h4 className="font-bold text-indigo-300 mb-2">원자 전이 vs 분자 전이</h4>
+                      <p className="text-sm text-gray-300 leading-relaxed">
+                        Ar, O 같은 <strong className="text-cyan-300">원자</strong>는 전자 하나의 껍데기 이동(4p→4s)으로 표기합니다.
+                        하지만 N₂, CF₄ 같은 <strong className="text-amber-300">분자</strong>는 여러 전자가 함께 만드는
+                        <strong className="text-amber-300"> 분자 전자 상태(molecular electronic state)</strong> 사이의 전이로 표기합니다.
+                      </p>
+                    </div>
+
+                    {/* SVG: 분자 전이 표기법 해부 */}
+                    <div className="flex justify-center">
+                      <svg viewBox="0 0 520 380" className="w-full max-w-2xl">
+                        {/* 배경 */}
+                        <rect x="0" y="0" width="520" height="380" rx="12" fill="#0f172a"/>
+
+                        {/* 제목 */}
+                        <text x="260" y="30" textAnchor="middle" fill="#818cf8" fontSize="14" fontWeight="bold">
+                          분자 전이 표기법 해부하기
+                        </text>
+
+                        {/* 메인 표기: C³Πu(v'=0) → B³Πg(v"=0) */}
+                        <text x="260" y="70" textAnchor="middle" fill="#fbbf24" fontSize="22" fontWeight="bold" fontFamily="monospace">
+                          C³Πu(v'=0) → B³Πg(v"=0)
+                        </text>
+
+                        {/* 화살표와 라벨들 - 왼쪽(상위): C³Πu(v'=0) */}
+                        {/* C 라벨 */}
+                        <line x1="95" y1="78" x2="95" y2="105" stroke="#ef4444" strokeWidth="1.5"/>
+                        <rect x="55" y="107" width="80" height="28" rx="4" fill="#7f1d1d" stroke="#ef4444" strokeWidth="1"/>
+                        <text x="95" y="125" textAnchor="middle" fill="#fca5a5" fontSize="10" fontWeight="bold">상태 이름 (C)</text>
+
+                        {/* ³ 라벨 */}
+                        <line x1="115" y1="55" x2="115" y2="145" stroke="#a855f7" strokeWidth="1.5"/>
+                        <rect x="70" y="145" width="90" height="28" rx="4" fill="#3b0764" stroke="#a855f7" strokeWidth="1"/>
+                        <text x="115" y="163" textAnchor="middle" fill="#c4b5fd" fontSize="10" fontWeight="bold">스핀 다중도 (³)</text>
+
+                        {/* Πu 라벨 */}
+                        <line x1="145" y1="78" x2="145" y2="185" stroke="#3b82f6" strokeWidth="1.5"/>
+                        <rect x="100" y="185" width="90" height="28" rx="4" fill="#172554" stroke="#3b82f6" strokeWidth="1"/>
+                        <text x="145" y="203" textAnchor="middle" fill="#93c5fd" fontSize="10" fontWeight="bold">대칭성 (Πu)</text>
+
+                        {/* (v'=0) 라벨 */}
+                        <line x1="205" y1="78" x2="205" y2="225" stroke="#10b981" strokeWidth="1.5"/>
+                        <rect x="155" y="225" width="100" height="28" rx="4" fill="#052e16" stroke="#10b981" strokeWidth="1"/>
+                        <text x="205" y="243" textAnchor="middle" fill="#6ee7b7" fontSize="10" fontWeight="bold">진동 양자수 (v'=0)</text>
+
+                        {/* 화살표: 전이 방향 */}
+                        <line x1="270" y1="78" x2="270" y2="105" stroke="#fbbf24" strokeWidth="1.5"/>
+                        <rect x="235" y="107" width="70" height="28" rx="4" fill="#422006" stroke="#fbbf24" strokeWidth="1"/>
+                        <text x="270" y="125" textAnchor="middle" fill="#fcd34d" fontSize="10" fontWeight="bold">전이 방향</text>
+
+                        {/* 에너지 준위 다이어그램 */}
+                        <rect x="30" y="270" width="460" height="100" rx="8" fill="#1e1b4b" stroke="#4338ca" strokeWidth="1"/>
+
+                        {/* 상위 에너지 준위 C */}
+                        <line x1="80" y1="290" x2="210" y2="290" stroke="#ef4444" strokeWidth="3"/>
+                        <text x="145" y="285" textAnchor="middle" fill="#fca5a5" fontSize="10" fontWeight="bold">C³Πu (상위 - 들뜬 상태)</text>
+                        <text x="60" y="295" fill="#94a3b8" fontSize="9">E₂</text>
+
+                        {/* 하위 에너지 준위 B */}
+                        <line x1="80" y1="345" x2="210" y2="345" stroke="#3b82f6" strokeWidth="3"/>
+                        <text x="145" y="362" textAnchor="middle" fill="#93c5fd" fontSize="10" fontWeight="bold">B³Πg (하위 - 도착 상태)</text>
+                        <text x="60" y="350" fill="#94a3b8" fontSize="9">E₁</text>
+
+                        {/* 전이 화살표 */}
+                        <line x1="145" y1="295" x2="145" y2="340" stroke="#fbbf24" strokeWidth="2"/>
+                        <polygon points="145,340 140,332 150,332" fill="#fbbf24"/>
+
+                        {/* 광자 방출 */}
+                        <line x1="155" y1="315" x2="195" y2="315" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4 2">
+                          <animate attributeName="stroke-dashoffset" values="0;-12" dur="1s" repeatCount="indefinite"/>
+                        </line>
+                        <text x="210" y="319" fill="#fcd34d" fontSize="10" fontWeight="bold">hν (337.1nm)</text>
+
+                        {/* 오른쪽: 진동 준위 설명 */}
+                        <rect x="280" y="278" width="195" height="75" rx="6" fill="#052e16" stroke="#10b981" strokeWidth="1"/>
+                        <text x="377" y="295" textAnchor="middle" fill="#6ee7b7" fontSize="10" fontWeight="bold">진동 양자수 (v)</text>
+                        {[0,1,2,3].map(i => (
+                          <g key={i}>
+                            <line x1={295} y1={310+i*10} x2={360} y2={310+i*10} stroke="#34d399" strokeWidth={i===0?2:0.8} opacity={i===0?1:0.5}/>
+                            <text x={370} y={314+i*10} fill={i===0?"#6ee7b7":"#4ade80"} fontSize="8" opacity={i===0?1:0.5}>{`v=${i}`}</text>
+                          </g>
+                        ))}
+                        <text x="440" y="318" fill="#94a3b8" fontSize="8">같은 전자상태</text>
+                        <text x="440" y="330" fill="#94a3b8" fontSize="8">안에서도 진동</text>
+                        <text x="440" y="342" fill="#94a3b8" fontSize="8">준위가 나뉨!</text>
+                      </svg>
+                    </div>
+
+                    {/* 각 기호 설명 카드 */}
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="bg-red-900/20 rounded-lg p-3 border border-red-800/30">
+                        <h5 className="font-bold text-red-300 mb-1 text-sm">상태 이름 (알파벳)</h5>
+                        <p className="text-xs text-gray-300 leading-relaxed">
+                          <strong className="text-red-300">X</strong> = 바닥 상태 (가장 낮은 에너지)<br/>
+                          <strong className="text-red-300">A, B, C, D...</strong> = 들뜬 상태 (에너지 순서대로)<br/>
+                          알파벳이 뒤로 갈수록 에너지가 높습니다.<br/>
+                          <span className="text-gray-500">예: X(바닥) {'<'} A {'<'} B {'<'} C</span>
+                        </p>
+                      </div>
+                      <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-800/30">
+                        <h5 className="font-bold text-purple-300 mb-1 text-sm">스핀 다중도 (위 첨자 숫자)</h5>
+                        <p className="text-xs text-gray-300 leading-relaxed">
+                          <strong className="text-purple-300">³</strong> = 삼중항(triplet), <strong className="text-purple-300">²</strong> = 이중항(doublet), <strong className="text-purple-300">¹</strong> = 단일항(singlet)<br/>
+                          전자 스핀이 어떻게 배열되어 있는지를 나타냅니다.<br/>
+                          <span className="text-gray-500">같은 다중도끼리의 전이가 잘 일어남</span>
+                        </p>
+                      </div>
+                      <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-800/30">
+                        <h5 className="font-bold text-blue-300 mb-1 text-sm">대칭성 (Π, Σ, g, u)</h5>
+                        <p className="text-xs text-gray-300 leading-relaxed">
+                          <strong className="text-blue-300">Σ</strong> = 축 방향 각운동량 0, <strong className="text-blue-300">Π</strong> = 각운동량 1<br/>
+                          <strong className="text-blue-300">g</strong> = 대칭(gerade), <strong className="text-blue-300">u</strong> = 비대칭(ungerade)<br/>
+                          <span className="text-gray-500">분자의 전자 궤도 모양을 분류하는 방법</span>
+                        </p>
+                      </div>
+                      <div className="bg-green-900/20 rounded-lg p-3 border border-green-800/30">
+                        <h5 className="font-bold text-green-300 mb-1 text-sm">진동 양자수 (v=0, 1, 2...)</h5>
+                        <p className="text-xs text-gray-300 leading-relaxed">
+                          분자는 원자 사이의 결합이 진동합니다. <strong className="text-green-300">v=0</strong>이 가장 낮은 진동 에너지.<br/>
+                          <strong className="text-green-300">v'</strong> = 상위 상태의 진동, <strong className="text-green-300">v"</strong> = 하위 상태의 진동<br/>
+                          <span className="text-gray-500">v'=0→v"=0 전이가 가장 강한 발광선!</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 실전 읽기 예제 */}
+                    <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-800/30">
+                      <h4 className="font-bold text-amber-300 mb-3">실전 읽기 연습</h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="bg-gray-900/50 rounded-lg p-3">
+                          <p className="font-mono text-cyan-300 mb-1">N₂ SPS: C³Πu(v'=0) → B³Πg(v"=0) — 337.1nm</p>
+                          <p className="text-gray-400">"N₂ 분자의 <strong className="text-red-300">C 상태</strong>(삼중항, Π, 비대칭)에서 <strong className="text-blue-300">B 상태</strong>(삼중항, Π, 대칭)로 전이. 둘 다 가장 낮은 진동 준위(v=0)에서 전이. 이것이 <strong className="text-amber-300">Second Positive System</strong>의 가장 강한 발광선!"</p>
+                        </div>
+                        <div className="bg-gray-900/50 rounded-lg p-3">
+                          <p className="font-mono text-cyan-300 mb-1">N₂⁺ FNS: B²Σu⁺ → X²Σg⁺ — 391.4nm</p>
+                          <p className="text-gray-400">"N₂⁺ <strong className="text-amber-300">이온</strong>의 <strong className="text-red-300">B 상태</strong>(이중항, Σ, 비대칭)에서 <strong className="text-blue-300">X 바닥 상태</strong>(이중항, Σ, 대칭)로 전이. 이것이 <strong className="text-amber-300">First Negative System</strong>. 이온화된 질소에서만 나오는 발광선!"</p>
+                        </div>
+                        <div className="bg-gray-900/50 rounded-lg p-3">
+                          <p className="font-mono text-cyan-300 mb-1">비교: Ar I 811.5nm — 4p[5/2] → 4s[3/2]</p>
+                          <p className="text-gray-400">"이건 <strong className="text-green-300">원자</strong> 전이! 분자 표기법과 다르게, 전자 하나의 궤도(4p→4s) 변화로 간단하게 표기합니다."</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 요약 */}
+                    <div className="bg-gradient-to-r from-gray-800 to-indigo-900/40 rounded-lg p-4">
+                      <h4 className="font-bold text-gray-100 mb-2">한줄 요약</h4>
+                      <p className="text-sm text-gray-300">
+                        분자 전이 표기법은 <strong className="text-amber-300">[상태이름][스핀다중도][대칭성](진동양자수)</strong> 형태입니다.
+                        처음엔 복잡해 보이지만, 각 부분이 분자의 에너지 상태를 정확히 설명해주는 "주소"라고 생각하면 됩니다!
+                      </p>
                     </div>
                   </div>
                 </div>
