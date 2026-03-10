@@ -3,6 +3,7 @@ import PlasmaSimulatorI from './PlasmaSimulatorI'
 import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
 import OESSimulator from './OESSimulator'
+import ImpedanceProbeSimulator from './ImpedanceProbeSimulator'
 import './App.css'
 
 function App() {
@@ -17,6 +18,14 @@ function App() {
       icon: '🌈',
       color: 'from-violet-500 to-purple-600',
       component: OESSimulator
+    },
+    {
+      id: 'impedance',
+      name: 'Impedance Probe',
+      description: 'RF 임피던스 진단 · V, I, Phase',
+      icon: '📡',
+      color: 'from-emerald-500 to-teal-600',
+      component: ImpedanceProbeSimulator
     },
     {
       id: 'sim1',
@@ -88,7 +97,7 @@ function App() {
           <h1 className="text-2xl font-bold mb-2 text-cyan-400">진단기술</h1>
           <h2 className="text-xl font-semibold mb-3 text-gray-200">실습센터</h2>
           <p className="text-sm text-gray-400">Plasma Diagnostic Training Center</p>
-          <span className="text-xs text-gray-500 mt-2 inline-block">ver 1.3</span>
+          <span className="text-xs text-gray-500 mt-2 inline-block">ver 1.4</span>
         </div>
 
         {/* Simulator Navigation */}
