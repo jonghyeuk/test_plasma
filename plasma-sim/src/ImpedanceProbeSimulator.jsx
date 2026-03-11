@@ -573,10 +573,10 @@ const ImpedanceProbeSimulator = () => {
                 </div>
 
                 {/* Story Card - Two Column Layout (matching OES) */}
-                <div className={`bg-gradient-to-br ${storySteps[theoryStep].color} rounded-2xl shadow-2xl min-h-[420px] flex flex-col lg:flex-row overflow-hidden`}>
+                <div className={`bg-gradient-to-br ${storySteps[theoryStep].color} rounded-2xl shadow-2xl min-h-[480px] flex flex-col lg:flex-row overflow-hidden`}>
                   {/* Left: SVG Illustration */}
-                  <div className="lg:w-2/5 w-full p-6 flex items-center justify-center bg-black/20 border-b lg:border-b-0 lg:border-r border-white/10">
-                    <div className="w-full max-w-[280px]">
+                  <div className="lg:w-5/12 w-full p-8 flex items-center justify-center bg-black/20 border-b lg:border-b-0 lg:border-r border-white/10">
+                    <div className="w-full max-w-[380px]">
                       <ImpedanceStoryIllustration step={theoryStep} isVisible={svgVisible} />
                     </div>
                   </div>
@@ -755,7 +755,7 @@ const ImpedanceProbeSimulator = () => {
               <h3 className="text-lg font-bold text-emerald-400 mb-4">CCP vs ICP 비교</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-900 rounded-lg p-4 border border-blue-700/50">
-                  <div className="h-48 mb-3">
+                  <div className="h-72 mb-3">
                     <SourceDiagramSVG sourceType="CCP" />
                   </div>
                   <h4 className="text-blue-400 font-bold text-center">CCP (Capacitively Coupled)</h4>
@@ -767,7 +767,7 @@ const ImpedanceProbeSimulator = () => {
                   </ul>
                 </div>
                 <div className="bg-gray-900 rounded-lg p-4 border border-purple-700/50">
-                  <div className="h-48 mb-3">
+                  <div className="h-72 mb-3">
                     <SourceDiagramSVG sourceType="ICP" />
                   </div>
                   <h4 className="text-purple-400 font-bold text-center">ICP (Inductively Coupled)</h4>
@@ -876,7 +876,7 @@ const ImpedanceProbeSimulator = () => {
                 </div>
 
                 {/* Source Diagram */}
-                <div className="h-44 bg-gray-900 rounded-lg border border-gray-700 p-2">
+                <div className="h-64 bg-gray-900 rounded-lg border border-gray-700 p-2">
                   <SourceDiagramSVG sourceType={sourceType} />
                 </div>
 
