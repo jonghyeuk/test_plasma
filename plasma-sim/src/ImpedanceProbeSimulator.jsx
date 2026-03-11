@@ -157,10 +157,11 @@ const SourceDiagramSVG = ({ sourceType }) => {
       <text x="130" y="20" textAnchor="middle" fill="#fbbf24" fontSize="7">RF ~</text>
       {/* Equivalent circuit */}
       <text x="130" y="185" textAnchor="middle" fill="#94a3b8" fontSize="8">등가: C_sh + R_p + C_sh (용량성)</text>
-      <text x="130" y="196" textAnchor="middle" fill="#60a5fa" fontSize="8" fontWeight="bold">X {'<'} 0</text>
+      <text x="130" y="196" textAnchor="middle" fill="#60a5fa" fontSize="8" fontWeight="bold">X {'<'} 0 | 추천: L-Type</text>
     </svg>
   );
-  return (
+
+  if (sourceType === 'ICP') return (
     <svg viewBox="0 0 260 200" className="w-full h-full">
       <text x="130" y="18" textAnchor="middle" fill="#c4b5fd" fontSize="11" fontWeight="bold">ICP (Inductively Coupled Plasma)</text>
       {/* Chamber */}
@@ -195,7 +196,99 @@ const SourceDiagramSVG = ({ sourceType }) => {
       <text x="130" y="20" textAnchor="middle" fill="#fbbf24" fontSize="7">RF ~</text>
       {/* Equivalent circuit */}
       <text x="130" y="185" textAnchor="middle" fill="#94a3b8" fontSize="8">등가: L_coil + R_p (유도성)</text>
-      <text x="130" y="196" textAnchor="middle" fill="#a78bfa" fontSize="8" fontWeight="bold">X {'>'} 0</text>
+      <text x="130" y="196" textAnchor="middle" fill="#a78bfa" fontSize="8" fontWeight="bold">X {'>'} 0 | 추천: Gamma-Type</text>
+    </svg>
+  );
+
+  if (sourceType === 'Hybrid') return (
+    <svg viewBox="0 0 260 200" className="w-full h-full">
+      <text x="130" y="18" textAnchor="middle" fill="#fb7185" fontSize="10" fontWeight="bold">Hybrid (CCP + ICP Dual Source)</text>
+      {/* Chamber */}
+      <rect x="50" y="30" width="160" height="140" rx="8" fill="#0f172a" stroke="#334155" strokeWidth="1.5"/>
+      {/* ICP Coil on top */}
+      <path d="M 70 42 Q 85 32 100 42 Q 115 52 130 42 Q 145 32 160 42 Q 175 52 190 42" fill="none" stroke="#a855f7" strokeWidth="2">
+        <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <text x="130" y="36" textAnchor="middle" fill="#c4b5fd" fontSize="5">ICP 코일 (Source RF)</text>
+      {/* Dielectric window */}
+      <rect x="65" y="48" width="130" height="5" rx="1" fill="#1e3a5f" stroke="#0ea5e9" strokeWidth="0.5"/>
+      {/* Induced E-field */}
+      {[90,120,150].map((x,i) => (
+        <g key={i}>
+          <line x1={x} y1="58" x2={x} y2="72" stroke="#a78bfa" strokeWidth="0.8" opacity="0.4">
+            <animate attributeName="opacity" values="0.2;0.6;0.2" dur={`${1.5+i*0.3}s`} repeatCount="indefinite"/>
+          </line>
+          <polygon points={`${x},72 ${x-2},67 ${x+2},67`} fill="#a78bfa" opacity="0.4"/>
+        </g>
+      ))}
+      {/* Plasma bulk - larger due to dual source */}
+      <ellipse cx="130" cy="100" rx="50" ry="28" fill="#7c3aed" opacity="0.35">
+        <animate attributeName="opacity" values="0.25;0.45;0.25" dur="1.8s" repeatCount="indefinite"/>
+      </ellipse>
+      <text x="130" y="96" textAnchor="middle" fill="#c4b5fd" fontSize="7">Plasma</text>
+      <text x="130" y="107" textAnchor="middle" fill="#e879f9" fontSize="6">고밀도 + 이온제어</text>
+      {/* Bottom electrode (CCP bias) */}
+      <rect x="70" y="138" width="120" height="10" rx="2" fill="#475569" stroke="#3b82f6" strokeWidth="1.2"/>
+      <text x="130" y="146" textAnchor="middle" fill="#93c5fd" fontSize="5">하부 전극 (Bias RF)</text>
+      {/* Sheath at bottom */}
+      <rect x="75" y="128" width="110" height="8" rx="1" fill="#3b82f6" opacity="0.12"/>
+      <text x="130" y="135" textAnchor="middle" fill="#60a5fa" fontSize="4.5">Sheath (C)</text>
+      {/* Dual RF connections */}
+      <line x1="130" y1="30" x2="130" y2="22" stroke="#a855f7" strokeWidth="1.5"/>
+      <text x="130" y="20" textAnchor="middle" fill="#c4b5fd" fontSize="6">Source RF ~</text>
+      <line x1="130" y1="148" x2="130" y2="160" stroke="#3b82f6" strokeWidth="1.5"/>
+      <text x="130" y="168" textAnchor="middle" fill="#60a5fa" fontSize="6">Bias RF ~</text>
+      {/* Equivalent circuit */}
+      <text x="130" y="182" textAnchor="middle" fill="#94a3b8" fontSize="7">등가: L_coil + C_sh + R_p (복합)</text>
+      <text x="130" y="194" textAnchor="middle" fill="#fb7185" fontSize="7" fontWeight="bold">X 부호 가변 | 추천: Pi-Type</text>
+    </svg>
+  );
+
+  // Helicon
+  return (
+    <svg viewBox="0 0 260 200" className="w-full h-full">
+      <text x="130" y="18" textAnchor="middle" fill="#5eead4" fontSize="10" fontWeight="bold">Helicon Wave Plasma Source</text>
+      {/* Chamber - cylindrical representation */}
+      <rect x="50" y="30" width="160" height="140" rx="8" fill="#0f172a" stroke="#334155" strokeWidth="1.5"/>
+      {/* Helicon antenna (double-saddle coil) */}
+      <ellipse cx="130" cy="50" rx="55" ry="8" fill="none" stroke="#14b8a6" strokeWidth="2"/>
+      <ellipse cx="130" cy="50" rx="55" ry="8" fill="none" stroke="#14b8a6" strokeWidth="1.5" strokeDasharray="6 4">
+        <animate attributeName="stroke-dashoffset" values="0;-20" dur="1s" repeatCount="indefinite"/>
+      </ellipse>
+      <text x="130" y="38" textAnchor="middle" fill="#5eead4" fontSize="5">헬리콘 안테나</text>
+      {/* Magnetic field lines (axial B0) */}
+      {[85,110,135,160,175].map((x,i) => (
+        <g key={i}>
+          <line x1={x} y1="62" x2={x} y2="145" stroke="#2dd4bf" strokeWidth="0.6" opacity="0.25" strokeDasharray="2 3"/>
+          <polygon points={`${x},145 ${x-2},139 ${x+2},139`} fill="#2dd4bf" opacity="0.3"/>
+        </g>
+      ))}
+      <text x="215" y="100" textAnchor="start" fill="#2dd4bf" fontSize="5" transform="rotate(90,215,100)">B0 (축방향 자기장)</text>
+      {/* Helicon wave pattern */}
+      <path d={`M 70 95 Q 85 80 100 95 Q 115 110 130 95 Q 145 80 160 95 Q 175 110 190 95`}
+        fill="none" stroke="#67e8f9" strokeWidth="1.2" opacity="0.5">
+        <animate attributeName="stroke-dashoffset" values="0;-40" dur="1.5s" repeatCount="indefinite"/>
+      </path>
+      <text x="130" y="75" textAnchor="middle" fill="#67e8f9" fontSize="5">헬리콘 파동</text>
+      {/* Ultra-high density plasma */}
+      <ellipse cx="130" cy="110" rx="50" ry="22" fill="#7c3aed" opacity="0.45">
+        <animate attributeName="opacity" values="0.3;0.55;0.3" dur="1.5s" repeatCount="indefinite"/>
+      </ellipse>
+      <text x="130" y="107" textAnchor="middle" fill="#e9d5ff" fontSize="7">Plasma</text>
+      <text x="130" y="118" textAnchor="middle" fill="#c084fc" fontSize="6">초고밀도 (10¹³/cm³)</text>
+      {/* Wafer */}
+      <rect x="75" y="148" width="110" height="6" rx="2" fill="#475569" stroke="#64748b" strokeWidth="0.8"/>
+      <text x="130" y="154" textAnchor="middle" fill="#94a3b8" fontSize="4.5">Wafer</text>
+      {/* Magnet coils on sides */}
+      <rect x="42" y="55" width="8" height="90" rx="2" fill="#0d9488" opacity="0.4" stroke="#14b8a6" strokeWidth="0.5"/>
+      <rect x="210" y="55" width="8" height="90" rx="2" fill="#0d9488" opacity="0.4" stroke="#14b8a6" strokeWidth="0.5"/>
+      <text x="38" y="100" textAnchor="middle" fill="#2dd4bf" fontSize="4" transform="rotate(-90,38,100)">전자석</text>
+      {/* RF connection */}
+      <line x1="130" y1="30" x2="130" y2="22" stroke="#f59e0b" strokeWidth="2"/>
+      <text x="130" y="20" textAnchor="middle" fill="#fbbf24" fontSize="6">RF (13.56MHz)</text>
+      {/* Equivalent circuit */}
+      <text x="130" y="177" textAnchor="middle" fill="#94a3b8" fontSize="7">등가: L_ant + R_wave + R_p (강유도성)</text>
+      <text x="130" y="190" textAnchor="middle" fill="#5eead4" fontSize="7" fontWeight="bold">X {'>'} 0 (강) | 낮은 R | 추천: T-Type</text>
     </svg>
   );
 };
@@ -492,6 +585,13 @@ const ImpedanceProbeSimulator = () => {
   const [matchBoxType, setMatchBoxType] = useState('L');
   const autoRef = useRef(null);
 
+  // Source → Recommended Matching Circuit mapping
+  const sourceMatchMap = { CCP: 'L', ICP: 'Gamma', Hybrid: 'Pi', Helicon: 'T' };
+  const handleSourceChange = (newSource) => {
+    setSourceType(newSource);
+    setMatchBoxType(sourceMatchMap[newSource]);
+  };
+
   // Quiz states
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -590,11 +690,25 @@ const ImpedanceProbeSimulator = () => {
     const gf = { Ar: 1.0, O2: 1.3, N2: 1.2, CF4: 1.5, Cl2: 1.4 }[gasType] || 1.0;
     let R, X;
     if (sourceType === 'CCP') {
+      // 용량성: sheath 캐패시턴스 지배, X < 0
       R = (800 / (rfPower + 50)) * (pressure / 10) * gf + 2;
       X = -(200 - rfPower * 0.15 + pressure * 0.8) * gf;
-    } else {
+    } else if (sourceType === 'ICP') {
+      // 유도성: 코일 인덕턴스 지배, X > 0
       R = (400 / (rfPower + 100)) * (pressure / 8) * gf + 1;
       X = (60 - rfPower * 0.08 + pressure * 1.2) * gf;
+    } else if (sourceType === 'Hybrid') {
+      // CCP+ICP 복합: 중간 특성, X는 조건에 따라 부호 변동
+      const ccpR = (800 / (rfPower + 50)) * (pressure / 10) * gf + 2;
+      const ccpX = -(200 - rfPower * 0.15 + pressure * 0.8) * gf;
+      const icpR = (400 / (rfPower + 100)) * (pressure / 8) * gf + 1;
+      const icpX = (60 - rfPower * 0.08 + pressure * 1.2) * gf;
+      R = (ccpR * 0.4 + icpR * 0.6);  // ICP 소스가 주력, CCP는 바이어스
+      X = (ccpX * 0.35 + icpX * 0.65); // X 부호가 조건에 따라 바뀜
+    } else {
+      // Helicon: 초고밀도, 매우 낮은 R, 강한 유도성 X > 0
+      R = (200 / (rfPower + 200)) * (pressure / 5) * gf + 0.5;
+      X = (120 - rfPower * 0.05 + pressure * 2.0) * gf;
     }
     return { R: Math.round(R * 10) / 10, X: Math.round(X * 10) / 10 };
   }, [sourceType, rfPower, pressure, gasType]);
@@ -716,7 +830,9 @@ const ImpedanceProbeSimulator = () => {
     for (let p = 50; p <= 800; p += 50) {
       let R, X;
       if (sourceType === 'CCP') { R = (800/(p+50))*(pressure/10)*gf+2; X = -(200-p*0.15+pressure*0.8)*gf; }
-      else { R = (400/(p+100))*(pressure/8)*gf+1; X = (60-p*0.08+pressure*1.2)*gf; }
+      else if (sourceType === 'ICP') { R = (400/(p+100))*(pressure/8)*gf+1; X = (60-p*0.08+pressure*1.2)*gf; }
+      else if (sourceType === 'Hybrid') { R = ((800/(p+50))*(pressure/10)*gf+2)*0.4+((400/(p+100))*(pressure/8)*gf+1)*0.6; X = (-(200-p*0.15+pressure*0.8)*gf)*0.35+((60-p*0.08+pressure*1.2)*gf)*0.65; }
+      else { R = (200/(p+200))*(pressure/5)*gf+0.5; X = (120-p*0.05+pressure*2.0)*gf; }
       data.push({ power: p, R: Math.round(R*10)/10, X: Math.round(X*10)/10 });
     }
     return data;
@@ -926,21 +1042,26 @@ const ImpedanceProbeSimulator = () => {
 
             {/* Section 4: Matching Network */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-bold text-amber-400 mb-4">4. 매칭 네트워크 (L-Type)</h3>
+              <h3 className="text-xl font-bold text-amber-400 mb-4">4. 매칭 네트워크 토폴로지</h3>
               <div className="bg-gray-900 rounded-lg p-4 mb-4 border border-gray-700">
                 <div className="text-center space-y-2">
-                  <p className="text-gray-300 font-mono">RF Gen (50Ω) → [C₁ Load / C₂ Tune] → Plasma (Z_L)</p>
-                  <p className="text-amber-300 text-sm mt-2">C₁(Load/Shunt): 리액턴스 보상 | C₂(Tune/Series): 저항 매칭</p>
+                  <p className="text-gray-300 font-mono text-sm">소스 임피던스 특성에 따라 최적의 매칭 회로가 달라집니다.</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                    <div className="text-xs text-amber-300 font-mono">L: C₁↕ + C₂─</div>
+                    <div className="text-xs text-purple-300 font-mono">Pi: C₁↕ + L─ + C₂↕</div>
+                    <div className="text-xs text-sky-300 font-mono">T: L₁─ + C↕ + L₂─</div>
+                    <div className="text-xs text-emerald-300 font-mono">Γ: L─ + C↕</div>
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                   <h4 className="text-amber-400 font-bold mb-2">Auto Mode</h4>
-                  <p className="text-gray-300 text-sm">컨트롤러가 Γ를 모니터링하며 C₁, C₂를 자동 조절합니다. 반사 전력을 최소화하는 방향으로 스텝 모터가 움직입니다.</p>
+                  <p className="text-gray-300 text-sm">컨트롤러가 Γ를 모니터링하며 가변 소자를 자동 조절합니다. 반사 전력을 최소화하는 방향으로 스텝 모터가 움직입니다.</p>
                 </div>
                 <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                   <h4 className="text-amber-400 font-bold mb-2">Manual Mode</h4>
-                  <p className="text-gray-300 text-sm">엔지니어가 직접 C₁, C₂를 조절합니다. 특수 공정이나 자동 매칭이 불안정할 때 사용합니다.</p>
+                  <p className="text-gray-300 text-sm">엔지니어가 직접 가변 소자를 조절합니다. 특수 공정이나 자동 매칭이 불안정할 때 사용합니다.</p>
                 </div>
               </div>
             </div>
@@ -982,9 +1103,9 @@ const ImpedanceProbeSimulator = () => {
               </div>
             </div>
 
-            {/* CCP vs ICP */}
+            {/* Source Types Comparison (4 types) */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-              <h3 className="text-lg font-bold text-emerald-400 mb-4">CCP vs ICP 비교</h3>
+              <h3 className="text-lg font-bold text-emerald-400 mb-4">플라즈마 소스 4종 비교</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-900 rounded-lg p-4 border border-blue-700/50">
                   <div className="h-72 mb-3">
@@ -995,7 +1116,7 @@ const ImpedanceProbeSimulator = () => {
                     <li>• 두 평행판 전극 사이 방전</li>
                     <li>• Sheath가 커패시터 역할 → <span className="text-blue-400">X &lt; 0 (용량성)</span></li>
                     <li>• 낮은 전자 밀도, 높은 이온 에너지</li>
-                    <li>• 에칭 공정에 주로 사용</li>
+                    <li>• 추천 매칭: <span className="text-amber-400 font-bold">L-Type</span></li>
                   </ul>
                 </div>
                 <div className="bg-gray-900 rounded-lg p-4 border border-purple-700/50">
@@ -1007,7 +1128,31 @@ const ImpedanceProbeSimulator = () => {
                     <li>• RF 코일에 의한 유도 결합</li>
                     <li>• 코일 인덕턴스 지배 → <span className="text-purple-400">X &gt; 0 (유도성)</span></li>
                     <li>• 높은 전자 밀도, 독립적 이온 에너지 제어</li>
-                    <li>• 고밀도 에칭/증착에 사용</li>
+                    <li>• 추천 매칭: <span className="text-emerald-400 font-bold">Gamma-Type</span></li>
+                  </ul>
+                </div>
+                <div className="bg-gray-900 rounded-lg p-4 border border-rose-700/50">
+                  <div className="h-72 mb-3">
+                    <SourceDiagramSVG sourceType="Hybrid" />
+                  </div>
+                  <h4 className="text-rose-400 font-bold text-center">Hybrid (CCP + ICP)</h4>
+                  <ul className="text-gray-300 text-sm mt-2 space-y-1">
+                    <li>• 상부 ICP (소스) + 하부 CCP (바이어스)</li>
+                    <li>• 복합 임피던스 → <span className="text-rose-400">X 부호 가변</span></li>
+                    <li>• 고밀도 + 이온 에너지 독립 제어</li>
+                    <li>• 추천 매칭: <span className="text-purple-400 font-bold">Pi-Type</span> (넓은 매칭 범위)</li>
+                  </ul>
+                </div>
+                <div className="bg-gray-900 rounded-lg p-4 border border-teal-700/50">
+                  <div className="h-72 mb-3">
+                    <SourceDiagramSVG sourceType="Helicon" />
+                  </div>
+                  <h4 className="text-teal-400 font-bold text-center">Helicon Wave Plasma</h4>
+                  <ul className="text-gray-300 text-sm mt-2 space-y-1">
+                    <li>• 헬리콘 파동 + 축방향 자기장</li>
+                    <li>• 초고밀도 (10¹³/cm³) → <span className="text-teal-400">매우 낮은 R, 강한 X &gt; 0</span></li>
+                    <li>• R&D / 특수 증착에 사용</li>
+                    <li>• 추천 매칭: <span className="text-sky-400 font-bold">T-Type</span> (극단 임피던스 대응)</li>
                   </ul>
                 </div>
               </div>
@@ -1017,19 +1162,78 @@ const ImpedanceProbeSimulator = () => {
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
               <button onClick={() => setShowMatchingDetail(!showMatchingDetail)}
                 className="w-full flex items-center justify-between text-lg font-bold text-amber-400">
-                <span>매칭 네트워크 상세</span>
+                <span>매칭 네트워크 4종 상세</span>
                 <span className="text-gray-400">{showMatchingDetail ? '▲' : '▼'}</span>
               </button>
               {showMatchingDetail && (
                 <div className="mt-4 space-y-4">
+                  {/* Source → Circuit Mapping Table */}
                   <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                    <h4 className="text-amber-300 font-bold mb-2">L-Type 매칭 회로</h4>
-                    <p className="text-gray-300 text-sm mb-2">가장 일반적인 RF 매칭 구조입니다. 두 개의 가변 커패시터로 구성됩니다.</p>
-                    <div className="font-mono text-sm text-center py-3 text-gray-300">
-                      <p>RF 50Ω ──┤C₁ (Load/Shunt)├── node ──┤C₂ (Tune/Series)├── Z_plasma</p>
-                      <p className="text-gray-500 mt-1">C₁: 병렬 → 서셉턴스 보상 | C₂: 직렬 → 저항 변환</p>
+                    <h4 className="text-yellow-300 font-bold mb-3">소스 → 매칭 회로 매핑</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-600">
+                            <th className="text-left py-2 px-3 text-gray-300">소스</th>
+                            <th className="text-left py-2 px-3 text-gray-300">임피던스 특성</th>
+                            <th className="text-left py-2 px-3 text-gray-300">추천 매칭</th>
+                            <th className="text-left py-2 px-3 text-gray-300">이유</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-gray-300">
+                          <tr className="border-b border-gray-700">
+                            <td className="py-2 px-3 text-blue-400 font-bold">CCP</td>
+                            <td className="py-2 px-3">X &lt; 0 (용량성)</td>
+                            <td className="py-2 px-3 text-amber-400 font-bold">L-Type</td>
+                            <td className="py-2 px-3 text-xs">범용, 단순 구조로 CCP 매칭 충분</td>
+                          </tr>
+                          <tr className="border-b border-gray-700">
+                            <td className="py-2 px-3 text-purple-400 font-bold">ICP</td>
+                            <td className="py-2 px-3">X &gt; 0 (유도성)</td>
+                            <td className="py-2 px-3 text-emerald-400 font-bold">Gamma-Type</td>
+                            <td className="py-2 px-3 text-xs">직렬 L로 유도성 보상에 최적</td>
+                          </tr>
+                          <tr className="border-b border-gray-700">
+                            <td className="py-2 px-3 text-rose-400 font-bold">Hybrid</td>
+                            <td className="py-2 px-3">X 부호 가변</td>
+                            <td className="py-2 px-3 text-purple-400 font-bold">Pi-Type</td>
+                            <td className="py-2 px-3 text-xs">넓은 매칭 범위, 고조파 억제</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2 px-3 text-teal-400 font-bold">Helicon</td>
+                            <td className="py-2 px-3">낮은 R, 강 X &gt; 0</td>
+                            <td className="py-2 px-3 text-sky-400 font-bold">T-Type</td>
+                            <td className="py-2 px-3 text-xs">극단 임피던스 변환, 고전력 대응</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
+
+                  {/* 4 Circuit Topologies */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-900 rounded-lg p-4 border border-amber-700/50">
+                      <h4 className="text-amber-300 font-bold mb-2">L-Type (C₁ + C₂)</h4>
+                      <p className="text-gray-300 text-sm mb-1">가장 일반적인 RF 매칭 구조.</p>
+                      <p className="font-mono text-xs text-gray-400">RF → C₁(Shunt) → C₂(Series) → Plasma</p>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-purple-700/50">
+                      <h4 className="text-purple-300 font-bold mb-2">Pi-Type (C₁ + L + C₂)</h4>
+                      <p className="text-gray-300 text-sm mb-1">넓은 매칭 범위, 고조파 필터링 우수.</p>
+                      <p className="font-mono text-xs text-gray-400">RF → C₁(Shunt) → L(Series) → C₂(Shunt) → Plasma</p>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-sky-700/50">
+                      <h4 className="text-sky-300 font-bold mb-2">T-Type (L₁ + C + L₂)</h4>
+                      <p className="text-gray-300 text-sm mb-1">고전력용, 넓은 임피던스 변환 범위.</p>
+                      <p className="font-mono text-xs text-gray-400">RF → L₁(Series) → C(Shunt) → L₂(Series) → Plasma</p>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-emerald-700/50">
+                      <h4 className="text-emerald-300 font-bold mb-2">Gamma-Type (L + C)</h4>
+                      <p className="text-gray-300 text-sm mb-1">심플 구조, ICP 유도성 부하에 적합.</p>
+                      <p className="font-mono text-xs text-gray-400">RF → L(Series) → C(Shunt) → Plasma</p>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-4 text-center">
                       <div className="text-2xl mb-1">🟢</div>
@@ -1095,16 +1299,25 @@ const ImpedanceProbeSimulator = () => {
                 {/* Source Type Toggle */}
                 <div>
                   <label className="text-xs text-gray-400 mb-2 block">소스 타입</label>
-                  <div className="flex gap-2">
-                    {['CCP', 'ICP'].map(s => (
-                      <button key={s} onClick={() => setSourceType(s)}
-                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                          sourceType === s
-                            ? s === 'CCP' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
-                            : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                        }`}>{s}</button>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { id: 'CCP', label: 'CCP', desc: '용량성', active: 'bg-blue-600/30 border-blue-500 text-blue-300' },
+                      { id: 'ICP', label: 'ICP', desc: '유도성', active: 'bg-purple-600/30 border-purple-500 text-purple-300' },
+                      { id: 'Hybrid', label: 'Hybrid', desc: 'CCP+ICP', active: 'bg-rose-600/30 border-rose-500 text-rose-300' },
+                      { id: 'Helicon', label: 'Helicon', desc: '초고밀도', active: 'bg-teal-600/30 border-teal-500 text-teal-300' },
+                    ].map(s => (
+                      <button key={s.id} onClick={() => handleSourceChange(s.id)}
+                        className={`py-2 px-1 rounded-lg text-center transition-all border ${
+                          sourceType === s.id
+                            ? s.active
+                            : 'bg-gray-900 border-gray-700 text-gray-500 hover:bg-gray-800 hover:text-gray-400'
+                        }`}>
+                        <div className="text-xs font-bold">{s.label}</div>
+                        <div className="text-[9px] opacity-70">{s.desc}</div>
+                      </button>
                     ))}
                   </div>
+                  <div className="text-[10px] text-gray-600 mt-1">소스 변경 시 추천 매칭 회로 자동 선택</div>
                 </div>
 
                 {/* Source Diagram */}
