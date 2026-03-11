@@ -201,9 +201,201 @@ const SourceDiagramSVG = ({ sourceType }) => {
 };
 
 // ============================================================
+// Matching Circuit SVG Diagrams per Topology
+// ============================================================
+const MatchingCircuitSVG = ({ type, c1, c2, c3, isMatched }) => {
+  const glow = isMatched ? '#22c55e' : '#ef4444';
+  const glowOp = isMatched ? 0.4 : 0.2;
+
+  // Common SVG elements
+  const rfSource = (
+    <g>
+      <rect x="5" y="55" width="40" height="30" rx="4" fill="#1e3a5f" stroke="#3b82f6" strokeWidth="1.2"/>
+      <text x="25" y="68" textAnchor="middle" fill="#93c5fd" fontSize="6" fontWeight="bold">RF</text>
+      <text x="25" y="77" textAnchor="middle" fill="#60a5fa" fontSize="5">50Ω</text>
+      <line x1="45" y1="70" x2="60" y2="70" stroke="#fbbf24" strokeWidth="1.5"/>
+    </g>
+  );
+  const plasmaLoad = (
+    <g>
+      <rect x="235" y="55" width="40" height="30" rx="4" fill="#3b0764" stroke="#a855f7" strokeWidth="1.2">
+        <animate attributeName="fill-opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="255" y="68" textAnchor="middle" fill="#c4b5fd" fontSize="6" fontWeight="bold">Plasma</text>
+      <text x="255" y="77" textAnchor="middle" fill="#a78bfa" fontSize="5">Z_L</text>
+    </g>
+  );
+  const groundLine = (y) => (
+    <g>
+      <line x1="60" y1={y} x2="220" y2={y} stroke="#475569" strokeWidth="1" strokeDasharray="3 2"/>
+    </g>
+  );
+  // Capacitor symbol (vertical, at x,y center)
+  const capSym = (cx, cy, label, value, color = '#f59e0b') => (
+    <g>
+      <line x1={cx} y1={cy - 8} x2={cx} y2={cy - 3} stroke={color} strokeWidth="1.5"/>
+      <line x1={cx - 6} y1={cy - 3} x2={cx + 6} y2={cy - 3} stroke={color} strokeWidth="1.5"/>
+      <line x1={cx - 6} y1={cy + 3} x2={cx + 6} y2={cy + 3} stroke={color} strokeWidth="1.5"/>
+      <line x1={cx} y1={cy + 3} x2={cx} y2={cy + 8} stroke={color} strokeWidth="1.5"/>
+      <text x={cx + 10} y={cy - 2} fill={color} fontSize="5.5" fontWeight="bold">{label}</text>
+      <text x={cx + 10} y={cy + 5} fill="#94a3b8" fontSize="4.5">{value}</text>
+    </g>
+  );
+  // Inductor symbol (horizontal, from x1 to x2 at y)
+  const indSym = (x1, x2, y, label, color = '#8b5cf6') => {
+    const mid = (x1 + x2) / 2;
+    const w = x2 - x1;
+    return (
+      <g>
+        <path d={`M ${x1} ${y} Q ${x1 + w * 0.125} ${y - 8} ${x1 + w * 0.25} ${y} Q ${x1 + w * 0.375} ${y + 8} ${mid} ${y} Q ${x1 + w * 0.625} ${y - 8} ${x1 + w * 0.75} ${y} Q ${x1 + w * 0.875} ${y + 8} ${x2} ${y}`}
+          fill="none" stroke={color} strokeWidth="1.5"/>
+        <text x={mid} y={y - 10} textAnchor="middle" fill={color} fontSize="5.5" fontWeight="bold">{label}</text>
+      </g>
+    );
+  };
+
+  // Status glow behind matching box region
+  const statusGlow = (
+    <rect x="58" y="42" width="164" height="60" rx="6" fill={glow} opacity={glowOp}>
+      <animate attributeName="opacity" values={`${glowOp * 0.5};${glowOp};${glowOp * 0.5}`} dur="2s" repeatCount="indefinite"/>
+    </rect>
+  );
+
+  if (type === 'L') return (
+    <svg viewBox="0 0 280 140" className="w-full h-full">
+      <text x="140" y="14" textAnchor="middle" fill="#fbbf24" fontSize="8" fontWeight="bold">L-Type Matching Network</text>
+      <text x="140" y="24" textAnchor="middle" fill="#94a3b8" fontSize="5.5">C1 (Shunt) + C2 (Series)</text>
+      {statusGlow}
+      {rfSource}
+      {/* Matching box outline */}
+      <rect x="60" y="44" width="160" height="56" rx="6" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="4 2"/>
+      {/* Signal path: top line */}
+      <line x1="60" y1="70" x2="100" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C1 shunt (vertical) */}
+      {capSym(100, 85, 'C1', `${c1.toFixed(0)}%`)}
+      <line x1="100" y1="70" x2="100" y2={85 - 8} stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="100" y1={85 + 8} x2="100" y2="100" stroke="#475569" strokeWidth="1"/>
+      {/* Continue line */}
+      <line x1="100" y1="70" x2="140" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C2 series (horizontal as capacitor) */}
+      <line x1="140" y1="70" x2="150" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="150" y1="62" x2="150" y2="78" stroke="#f59e0b" strokeWidth="1.5"/>
+      <line x1="156" y1="62" x2="156" y2="78" stroke="#f59e0b" strokeWidth="1.5"/>
+      <line x1="156" y1="70" x2="170" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      <text x="153" y="58" textAnchor="middle" fill="#f59e0b" fontSize="5.5" fontWeight="bold">C2</text>
+      <text x="153" y="88" textAnchor="middle" fill="#94a3b8" fontSize="4.5">{c2.toFixed(0)}%</text>
+      {/* To plasma */}
+      <line x1="170" y1="70" x2="235" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {plasmaLoad}
+      {/* Ground */}
+      <line x1="100" y1="100" x2="100" y2="105" stroke="#475569" strokeWidth="1"/>
+      <line x1="92" y1="105" x2="108" y2="105" stroke="#475569" strokeWidth="1.5"/>
+      <line x1="95" y1="108" x2="105" y2="108" stroke="#475569" strokeWidth="1"/>
+      <line x1="97" y1="111" x2="103" y2="111" stroke="#475569" strokeWidth="0.8"/>
+      <text x="140" y="135" textAnchor="middle" fill="#94a3b8" fontSize="5">가장 일반적인 구조 | CCP/ICP 범용</text>
+    </svg>
+  );
+
+  if (type === 'Pi') return (
+    <svg viewBox="0 0 280 140" className="w-full h-full">
+      <text x="140" y="14" textAnchor="middle" fill="#8b5cf6" fontSize="8" fontWeight="bold">Pi (π)-Type Matching Network</text>
+      <text x="140" y="24" textAnchor="middle" fill="#94a3b8" fontSize="5.5">C1 (Shunt) + L (Series) + C2 (Shunt)</text>
+      {statusGlow}
+      {rfSource}
+      <rect x="60" y="44" width="160" height="56" rx="6" fill="none" stroke="#8b5cf6" strokeWidth="1" strokeDasharray="4 2"/>
+      {/* Top line */}
+      <line x1="60" y1="70" x2="85" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C1 shunt left */}
+      {capSym(85, 85, 'C1', `${c1.toFixed(0)}%`, '#8b5cf6')}
+      <line x1="85" y1="70" x2="85" y2={85 - 8} stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="85" y1={85 + 8} x2="85" y2="100" stroke="#475569" strokeWidth="1"/>
+      {/* L series */}
+      <line x1="85" y1="70" x2="110" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {indSym(110, 170, 70, 'L', '#8b5cf6')}
+      <line x1="170" y1="70" x2="195" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C2 shunt right */}
+      {capSym(195, 85, 'C2', `${c2.toFixed(0)}%`, '#8b5cf6')}
+      <line x1="195" y1="70" x2="195" y2={85 - 8} stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="195" y1={85 + 8} x2="195" y2="100" stroke="#475569" strokeWidth="1"/>
+      {/* To plasma */}
+      <line x1="195" y1="70" x2="235" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {plasmaLoad}
+      {/* Ground symbols */}
+      {[85, 195].map(gx => (
+        <g key={gx}>
+          <line x1={gx} y1="100" x2={gx} y2="105" stroke="#475569" strokeWidth="1"/>
+          <line x1={gx - 8} y1="105" x2={gx + 8} y2="105" stroke="#475569" strokeWidth="1.5"/>
+          <line x1={gx - 5} y1="108" x2={gx + 5} y2="108" stroke="#475569" strokeWidth="1"/>
+          <line x1={gx - 3} y1="111" x2={gx + 3} y2="111" stroke="#475569" strokeWidth="0.8"/>
+        </g>
+      ))}
+      <text x="140" y="135" textAnchor="middle" fill="#94a3b8" fontSize="5">넓은 매칭 범위 | 고조파 필터링 우수</text>
+    </svg>
+  );
+
+  if (type === 'T') return (
+    <svg viewBox="0 0 280 140" className="w-full h-full">
+      <text x="140" y="14" textAnchor="middle" fill="#0ea5e9" fontSize="8" fontWeight="bold">T-Type Matching Network</text>
+      <text x="140" y="24" textAnchor="middle" fill="#94a3b8" fontSize="5.5">L1 (Series) + C (Shunt) + L2 (Series)</text>
+      {statusGlow}
+      {rfSource}
+      <rect x="60" y="44" width="160" height="56" rx="6" fill="none" stroke="#0ea5e9" strokeWidth="1" strokeDasharray="4 2"/>
+      {/* L1 series */}
+      <line x1="60" y1="70" x2="70" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {indSym(70, 115, 70, 'L1', '#0ea5e9')}
+      <line x1="115" y1="70" x2="140" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C shunt center */}
+      {capSym(140, 85, 'C', `${c1.toFixed(0)}%`, '#0ea5e9')}
+      <line x1="140" y1="70" x2="140" y2={85 - 8} stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="140" y1={85 + 8} x2="140" y2="100" stroke="#475569" strokeWidth="1"/>
+      {/* L2 series */}
+      <line x1="140" y1="70" x2="155" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {indSym(155, 200, 70, 'L2', '#0ea5e9')}
+      <line x1="200" y1="70" x2="235" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {plasmaLoad}
+      {/* Ground */}
+      <line x1="140" y1="100" x2="140" y2="105" stroke="#475569" strokeWidth="1"/>
+      <line x1="132" y1="105" x2="148" y2="105" stroke="#475569" strokeWidth="1.5"/>
+      <line x1="135" y1="108" x2="145" y2="108" stroke="#475569" strokeWidth="1"/>
+      <line x1="137" y1="111" x2="143" y2="111" stroke="#475569" strokeWidth="0.8"/>
+      <text x="140" y="135" textAnchor="middle" fill="#94a3b8" fontSize="5">고전력용 | 넓은 임피던스 변환 범위</text>
+    </svg>
+  );
+
+  // Gamma type
+  return (
+    <svg viewBox="0 0 280 140" className="w-full h-full">
+      <text x="140" y="14" textAnchor="middle" fill="#10b981" fontSize="8" fontWeight="bold">Gamma (Γ)-Type Matching Network</text>
+      <text x="140" y="24" textAnchor="middle" fill="#94a3b8" fontSize="5.5">L (Series) + C (Shunt)</text>
+      {statusGlow}
+      {rfSource}
+      <rect x="60" y="44" width="160" height="56" rx="6" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="4 2"/>
+      {/* L series */}
+      <line x1="60" y1="70" x2="80" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {indSym(80, 140, 70, 'L', '#10b981')}
+      <line x1="140" y1="70" x2="170" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {/* C shunt */}
+      {capSym(170, 85, 'C', `${c1.toFixed(0)}%`, '#10b981')}
+      <line x1="170" y1="70" x2="170" y2={85 - 8} stroke="#fbbf24" strokeWidth="1.2"/>
+      <line x1="170" y1={85 + 8} x2="170" y2="100" stroke="#475569" strokeWidth="1"/>
+      {/* To plasma */}
+      <line x1="170" y1="70" x2="235" y2="70" stroke="#fbbf24" strokeWidth="1.2"/>
+      {plasmaLoad}
+      {/* Ground */}
+      <line x1="170" y1="100" x2="170" y2="105" stroke="#475569" strokeWidth="1"/>
+      <line x1="162" y1="105" x2="178" y2="105" stroke="#475569" strokeWidth="1.5"/>
+      <line x1="165" y1="108" x2="175" y2="108" stroke="#475569" strokeWidth="1"/>
+      <line x1="167" y1="111" x2="173" y2="111" stroke="#475569" strokeWidth="0.8"/>
+      <text x="140" y="135" textAnchor="middle" fill="#94a3b8" fontSize="5">심플 구조 | ICP 유도성 부하에 적합</text>
+    </svg>
+  );
+};
+
+
+// ============================================================
 // Matching Box Display UI
 // ============================================================
-const MatchingBoxDisplay = ({ c1, c2, gamma, mode, onC1Change, onC2Change }) => {
+const MatchingBoxDisplay = ({ c1, c2, gamma, mode, matchBoxType, onC1Change, onC2Change }) => {
   const isMatched = gamma < 0.1;
   const ledColor = isMatched ? '#22c55e' : gamma < 0.3 ? '#eab308' : '#ef4444';
   return (
@@ -212,7 +404,7 @@ const MatchingBoxDisplay = ({ c1, c2, gamma, mode, onC1Change, onC2Change }) => 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full animate-pulse" style={{backgroundColor: ledColor, boxShadow: `0 0 8px ${ledColor}`}}/>
-          <span className="text-gray-400 text-xs font-mono">MATCHING CONTROLLER</span>
+          <span className="text-gray-400 text-xs font-mono">MATCHING CONTROLLER ({matchBoxType})</span>
         </div>
         <span className="text-xs font-mono px-2 py-0.5 rounded bg-gray-800 text-gray-400">
           {mode === 'auto' ? 'AUTO' : 'MANUAL'}
@@ -223,11 +415,11 @@ const MatchingBoxDisplay = ({ c1, c2, gamma, mode, onC1Change, onC2Change }) => 
       <div className="bg-black rounded-lg p-3 mb-3 border border-gray-700 font-mono">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-[10px] text-gray-600 mb-0.5">C1 LOAD</div>
+            <div className="text-[10px] text-gray-600 mb-0.5">{matchBoxType === 'T' ? 'C SHUNT' : matchBoxType === 'Gamma' ? 'L SERIES' : 'C1 LOAD'}</div>
             <div className="text-2xl font-bold text-green-400 tabular-nums">{c1.toFixed(1)}<span className="text-sm text-green-600 ml-1">%</span></div>
           </div>
           <div>
-            <div className="text-[10px] text-gray-600 mb-0.5">C2 TUNE</div>
+            <div className="text-[10px] text-gray-600 mb-0.5">{matchBoxType === 'T' ? 'L RATIO' : matchBoxType === 'Gamma' ? 'C SHUNT' : 'C2 TUNE'}</div>
             <div className="text-2xl font-bold text-green-400 tabular-nums">{c2.toFixed(1)}<span className="text-sm text-green-600 ml-1">%</span></div>
           </div>
         </div>
@@ -245,19 +437,26 @@ const MatchingBoxDisplay = ({ c1, c2, gamma, mode, onC1Change, onC2Change }) => 
         </div>
       </div>
 
+      {/* Circuit Topology SVG */}
+      <div className="bg-gray-900 rounded-lg p-2 mb-3 border border-gray-700">
+        <MatchingCircuitSVG type={matchBoxType} c1={c1} c2={c2} c3={0} isMatched={isMatched} />
+      </div>
+
       {/* Manual Controls */}
       {mode === 'manual' && (
         <div className="space-y-3">
           <div>
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>C1 LOAD</span><span>{c1.toFixed(1)}%</span>
+              <span>{matchBoxType === 'T' ? 'C SHUNT' : matchBoxType === 'Gamma' ? 'L SERIES' : 'C1 LOAD'}</span>
+              <span>{c1.toFixed(1)}%</span>
             </div>
             <input type="range" min="0" max="100" step="0.5" value={c1} onChange={e => onC1Change(Number(e.target.value))}
               className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-amber-500"/>
           </div>
           <div>
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>C2 TUNE</span><span>{c2.toFixed(1)}%</span>
+              <span>{matchBoxType === 'T' ? 'L RATIO' : matchBoxType === 'Gamma' ? 'C SHUNT' : 'C2 TUNE'}</span>
+              <span>{c2.toFixed(1)}%</span>
             </div>
             <input type="range" min="0" max="100" step="0.5" value={c2} onChange={e => onC2Change(Number(e.target.value))}
               className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-amber-500"/>
@@ -290,6 +489,7 @@ const ImpedanceProbeSimulator = () => {
   const [matchC1, setMatchC1] = useState(50);
   const [matchC2, setMatchC2] = useState(50);
   const [matchMode, setMatchMode] = useState('manual');
+  const [matchBoxType, setMatchBoxType] = useState('L');
   const autoRef = useRef(null);
 
   // Quiz states
@@ -399,16 +599,32 @@ const ImpedanceProbeSimulator = () => {
     return { R: Math.round(R * 10) / 10, X: Math.round(X * 10) / 10 };
   }, [sourceType, rfPower, pressure, gasType]);
 
-  // Optimal C1/C2 for current plasma
+  // Optimal C1/C2 for current plasma — varies by circuit topology
   const calcOptimalMatch = useCallback(() => {
     const plasma = calcPlasmaImpedance();
-    const optC1 = 50 - plasma.X * 0.05;
-    const optC2 = 50 + (50 - plasma.R) * 0.3;
+    let optC1, optC2;
+    if (matchBoxType === 'L') {
+      // L-type: C1 shunt compensates reactance, C2 series matches resistance
+      optC1 = 50 - plasma.X * 0.05;
+      optC2 = 50 + (50 - plasma.R) * 0.3;
+    } else if (matchBoxType === 'Pi') {
+      // Pi-type: two shunt caps + series inductor — wider range, better harmonic rejection
+      optC1 = 50 - plasma.X * 0.04 + (50 - plasma.R) * 0.1;
+      optC2 = 50 + plasma.X * 0.03 + (50 - plasma.R) * 0.2;
+    } else if (matchBoxType === 'T') {
+      // T-type: two series inductors + shunt cap — high power handling
+      optC1 = 50 - plasma.X * 0.06;
+      optC2 = 50 + (50 - plasma.R) * 0.25 - plasma.X * 0.02;
+    } else {
+      // Gamma-type: series L + shunt C — simple, best for inductive loads
+      optC1 = 50 - plasma.X * 0.07 + (50 - plasma.R) * 0.15;
+      optC2 = 50 + (50 - plasma.R) * 0.35;
+    }
     return {
       c1: Math.max(0, Math.min(100, Math.round(optC1 * 10) / 10)),
       c2: Math.max(0, Math.min(100, Math.round(optC2 * 10) / 10))
     };
-  }, [calcPlasmaImpedance]);
+  }, [calcPlasmaImpedance, matchBoxType]);
 
   // Auto matching animation
   useEffect(() => {
@@ -431,14 +647,30 @@ const ImpedanceProbeSimulator = () => {
     } else if (autoRef.current) {
       clearInterval(autoRef.current);
     }
-  }, [matchMode, calcOptimalMatch, sourceType, rfPower, pressure, gasType]);
+  }, [matchMode, calcOptimalMatch, sourceType, rfPower, pressure, gasType, matchBoxType]);
 
   const calcAll = useCallback(() => {
     const plasma = calcPlasmaImpedance();
     const c1Factor = (matchC1 - 50) * 0.8;
     const c2Factor = (matchC2 - 50) * 0.6;
-    let Zr = Math.max(1, plasma.R + c1Factor * 0.05);
-    let Zi = plasma.X + c1Factor + c2Factor;
+    let Zr, Zi;
+    if (matchBoxType === 'L') {
+      // L-type: shunt C1 + series C2
+      Zr = Math.max(1, plasma.R + c1Factor * 0.05);
+      Zi = plasma.X + c1Factor + c2Factor;
+    } else if (matchBoxType === 'Pi') {
+      // Pi-type: dual shunt C + series L — smoother transformation, wider range
+      Zr = Math.max(1, plasma.R + c1Factor * 0.04 + c2Factor * 0.03);
+      Zi = plasma.X + c1Factor * 0.8 + c2Factor * 0.7;
+    } else if (matchBoxType === 'T') {
+      // T-type: dual series L + shunt C — strong resistance transform
+      Zr = Math.max(1, plasma.R + c1Factor * 0.08);
+      Zi = plasma.X + c1Factor * 0.9 + c2Factor * 0.5;
+    } else {
+      // Gamma-type: series L + shunt C — direct, less knobs
+      Zr = Math.max(1, plasma.R + c1Factor * 0.06);
+      Zi = plasma.X + c1Factor * 1.1 + c2Factor * 0.4;
+    }
     const Z0 = 50;
     const dR = Zr - Z0;
     const magSum = (Zr + Z0) * (Zr + Z0) + Zi * Zi;
@@ -465,7 +697,7 @@ const ImpedanceProbeSimulator = () => {
       efficiency: Math.round(((pDelivered / pForward) * 100) * 10) / 10,
       Zmag: Math.round(Zmag * 10) / 10
     };
-  }, [calcPlasmaImpedance, matchC1, matchC2, rfPower]);
+  }, [calcPlasmaImpedance, matchC1, matchC2, rfPower, matchBoxType]);
 
   const generateWaveform = useCallback(() => {
     const c = calcAll();
@@ -931,11 +1163,35 @@ const ImpedanceProbeSimulator = () => {
                   </div>
                 </div>
 
+                {/* Circuit Type Selector */}
+                <div>
+                  <label className="text-xs text-gray-400 mb-2 block">회로 토폴로지</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { id: 'L', label: 'L-Type', desc: 'C+C', active: 'bg-amber-600/30 border-amber-500 text-amber-300' },
+                      { id: 'Pi', label: 'Pi (π)', desc: 'C+L+C', active: 'bg-purple-600/30 border-purple-500 text-purple-300' },
+                      { id: 'T', label: 'T-Type', desc: 'L+C+L', active: 'bg-sky-600/30 border-sky-500 text-sky-300' },
+                      { id: 'Gamma', label: 'Gamma', desc: 'L+C', active: 'bg-emerald-600/30 border-emerald-500 text-emerald-300' },
+                    ].map(t => (
+                      <button key={t.id} onClick={() => setMatchBoxType(t.id)}
+                        className={`py-2 px-1 rounded-lg text-center transition-all border ${
+                          matchBoxType === t.id
+                            ? t.active
+                            : 'bg-gray-900 border-gray-700 text-gray-500 hover:bg-gray-800 hover:text-gray-400'
+                        }`}>
+                        <div className="text-xs font-bold">{t.label}</div>
+                        <div className="text-[9px] opacity-70">{t.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Matching Box Display */}
                 <MatchingBoxDisplay
                   c1={matchC1} c2={matchC2}
                   gamma={calc.gamma}
                   mode={matchMode}
+                  matchBoxType={matchBoxType}
                   onC1Change={setMatchC1} onC2Change={setMatchC2}
                 />
 
