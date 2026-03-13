@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // ============================================================
 // CSS Keyframe Animations (injected once)
@@ -1575,7 +1577,10 @@ const OESLectureMaterials = () => {
   const [slideDirection, setSlideDirection] = useState('next');
   const [isAnimating, setIsAnimating] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const containerRef = useRef(null);
+  const slideRef = useRef(null);
 
   const slides = createSlides();
   const totalSlides = slides.length;
@@ -1623,6 +1628,78 @@ const OESLectureMaterials = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [currentSlide, isAnimating]);
 
+  // PDF Download
+  const downloadPDF = useCallback(async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    setDownloadProgress(0);
+
+    const savedSlide = currentSlide;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [960, 600] });
+
+    // Create a hidden container for rendering slides
+    const offscreen = document.createElement('div');
+    offscreen.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:960px;z-index:-1;';
+    document.body.appendChild(offscreen);
+
+    try {
+      for (let i = 0; i < totalSlides; i++) {
+        setDownloadProgress(Math.round(((i + 1) / totalSlides) * 100));
+
+        // Temporarily switch to slide i so React renders it
+        setCurrentSlide(i);
+        // Wait for render
+        await new Promise(r => setTimeout(r, 350));
+
+        const slideEl = slideRef.current;
+        if (!slideEl) continue;
+
+        const canvas = await html2canvas(slideEl, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#030712',
+          width: slideEl.scrollWidth,
+          height: Math.max(slideEl.scrollHeight, 520),
+          logging: false,
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const pdfW = 960;
+        const pdfH = 600;
+        const imgRatio = canvas.width / canvas.height;
+        const pageRatio = pdfW / pdfH;
+
+        let drawW, drawH, drawX, drawY;
+        if (imgRatio > pageRatio) {
+          drawW = pdfW;
+          drawH = pdfW / imgRatio;
+          drawX = 0;
+          drawY = (pdfH - drawH) / 2;
+        } else {
+          drawH = pdfH;
+          drawW = pdfH * imgRatio;
+          drawX = (pdfW - drawW) / 2;
+          drawY = 0;
+        }
+
+        if (i > 0) pdf.addPage([960, 600], 'landscape');
+        pdf.setFillColor(3, 7, 18);
+        pdf.rect(0, 0, pdfW, pdfH, 'F');
+        pdf.addImage(imgData, 'JPEG', drawX, drawY, drawW, drawH);
+      }
+
+      pdf.save('OES_Lecture_Materials.pdf');
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      document.body.removeChild(offscreen);
+      setCurrentSlide(savedSlide);
+      setIsDownloading(false);
+      setDownloadProgress(0);
+    }
+  }, [currentSlide, isDownloading, totalSlides]);
+
   return (
     <div className="space-y-4" ref={containerRef}>
       {/* Header Bar */}
@@ -1643,6 +1720,17 @@ const OESLectureMaterials = () => {
             className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm font-medium transition-colors"
           >
             {showOverview ? '✕ 닫기' : '📋 전체 목차'}
+          </button>
+          <button
+            onClick={downloadPDF}
+            disabled={isDownloading}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              isDownloading
+                ? 'bg-indigo-800 text-indigo-300 cursor-wait'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            }`}
+          >
+            {isDownloading ? `⏳ ${downloadProgress}%` : '📥 PDF'}
           </button>
         </div>
       </div>
@@ -1688,6 +1776,7 @@ const OESLectureMaterials = () => {
 
       {/* Slide Content */}
       <div
+        ref={slideRef}
         className={`bg-gradient-to-br ${slide.gradient} rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
           isAnimating
             ? slideDirection === 'next' ? 'opacity-0 translate-x-8' : 'opacity-0 -translate-x-8'
