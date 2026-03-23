@@ -713,49 +713,85 @@ const ImpedanceProbeSimulator = () => {
     return { R: Math.round(R * 10) / 10, X: Math.round(X * 10) / 10 };
   }, [sourceType, rfPower, pressure, gasType]);
 
-  // Optimal C1/C2 for current plasma — varies by circuit topology
+  // ---- Matching network impedance transformation ----
+  // Given C1, C2 (0-100 sliders) and plasma impedance, compute the
+  // impedance seen by the RF generator after the matching network.
+  // The formulas are simplified but physically motivated:
+  //   C1 primarily tunes reactance (cancels X)
+  //   C2 primarily transforms resistance (brings R toward 50Ω)
+  const transformImpedance = useCallback((plasma, c1, c2, boxType) => {
+    // Map slider (0-100) to a signed tuning range centered at 50
+    const t1 = (c1 - 50);  // range: -50 to +50
+    const t2 = (c2 - 50);  // range: -50 to +50
+    const dR = 50 - plasma.R;  // how far R is from 50Ω
+    let Zr, Zi;
+    if (boxType === 'L') {
+      // L-type: C1 shunt cancels reactance, C2 series transforms R
+      Zi = plasma.X + t1 * 4.0 + t2 * 1.0;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.5 + t1 * dR / 200);
+    } else if (boxType === 'Pi') {
+      // Pi-type: dual shunt C + series L — wider range, best for large |X|
+      Zi = plasma.X + t1 * 3.5 + t2 * 2.5;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.2 + t1 * dR / 50 * 0.8);
+    } else if (boxType === 'T') {
+      // T-type: dual series L + shunt C — strong R & X transform
+      Zi = plasma.X + t1 * 3.8 + t2 * 1.5;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.8 + t1 * dR / 100);
+    } else {
+      // Gamma-type: series L + shunt C — good for inductive loads
+      Zi = plasma.X + t1 * 3.5 + t2 * 1.2;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.0 + t1 * dR / 50 * 0.5);
+    }
+    return { R: Zr, X: Zi };
+  }, []);
+
+  // Optimal C1/C2 for current plasma — solve reverse: find c1,c2 such that Zr≈50, Zi≈0
   const calcOptimalMatch = useCallback(() => {
     const plasma = calcPlasmaImpedance();
-    let optC1, optC2;
-    if (matchBoxType === 'L') {
-      // L-type: C1 shunt compensates reactance, C2 series matches resistance
-      optC1 = 50 - plasma.X * 0.05;
-      optC2 = 50 + (50 - plasma.R) * 0.3;
-    } else if (matchBoxType === 'Pi') {
-      // Pi-type: two shunt caps + series inductor — wider range, better harmonic rejection
-      optC1 = 50 - plasma.X * 0.04 + (50 - plasma.R) * 0.1;
-      optC2 = 50 + plasma.X * 0.03 + (50 - plasma.R) * 0.2;
-    } else if (matchBoxType === 'T') {
-      // T-type: two series inductors + shunt cap — high power handling
-      optC1 = 50 - plasma.X * 0.06;
-      optC2 = 50 + (50 - plasma.R) * 0.25 - plasma.X * 0.02;
-    } else {
-      // Gamma-type: series L + shunt C — simple, best for inductive loads
-      optC1 = 50 - plasma.X * 0.07 + (50 - plasma.R) * 0.15;
-      optC2 = 50 + (50 - plasma.R) * 0.35;
+    // Use numerical search: try combinations and find best match
+    let bestC1 = 50, bestC2 = 50, bestErr = Infinity;
+    for (let c1 = 0; c1 <= 100; c1 += 1) {
+      for (let c2 = 0; c2 <= 100; c2 += 1) {
+        const z = transformImpedance(plasma, c1, c2, matchBoxType);
+        const err = (z.R - 50) * (z.R - 50) + z.X * z.X;
+        if (err < bestErr) {
+          bestErr = err;
+          bestC1 = c1;
+          bestC2 = c2;
+        }
+      }
     }
-    return {
-      c1: Math.max(0, Math.min(100, Math.round(optC1 * 10) / 10)),
-      c2: Math.max(0, Math.min(100, Math.round(optC2 * 10) / 10))
-    };
-  }, [calcPlasmaImpedance, matchBoxType]);
+    // Refine with 0.1 step around best
+    for (let c1 = Math.max(0, bestC1 - 1.5); c1 <= Math.min(100, bestC1 + 1.5); c1 += 0.1) {
+      for (let c2 = Math.max(0, bestC2 - 1.5); c2 <= Math.min(100, bestC2 + 1.5); c2 += 0.1) {
+        const z = transformImpedance(plasma, c1, c2, matchBoxType);
+        const err = (z.R - 50) * (z.R - 50) + z.X * z.X;
+        if (err < bestErr) {
+          bestErr = err;
+          bestC1 = Math.round(c1 * 10) / 10;
+          bestC2 = Math.round(c2 * 10) / 10;
+        }
+      }
+    }
+    return { c1: bestC1, c2: bestC2 };
+  }, [calcPlasmaImpedance, matchBoxType, transformImpedance]);
 
-  // Auto matching animation
+  // Auto matching animation — converges in ~1-2 seconds
   useEffect(() => {
     if (matchMode === 'auto') {
-      const opt = calcOptimalMatch();
       const interval = setInterval(() => {
+        const opt = calcOptimalMatch();
         setMatchC1(prev => {
           const diff = opt.c1 - prev;
-          if (Math.abs(diff) < 0.3) return opt.c1;
-          return Math.round((prev + diff * 0.15) * 10) / 10;
+          if (Math.abs(diff) < 0.2) return opt.c1;
+          return Math.round((prev + diff * 0.35) * 10) / 10;
         });
         setMatchC2(prev => {
           const diff = opt.c2 - prev;
-          if (Math.abs(diff) < 0.3) return opt.c2;
-          return Math.round((prev + diff * 0.15) * 10) / 10;
+          if (Math.abs(diff) < 0.2) return opt.c2;
+          return Math.round((prev + diff * 0.35) * 10) / 10;
         });
-      }, 50);
+      }, 80);
       autoRef.current = interval;
       return () => clearInterval(interval);
     } else if (autoRef.current) {
@@ -765,26 +801,9 @@ const ImpedanceProbeSimulator = () => {
 
   const calcAll = useCallback(() => {
     const plasma = calcPlasmaImpedance();
-    const c1Factor = (matchC1 - 50) * 0.8;
-    const c2Factor = (matchC2 - 50) * 0.6;
-    let Zr, Zi;
-    if (matchBoxType === 'L') {
-      // L-type: shunt C1 + series C2
-      Zr = Math.max(1, plasma.R + c1Factor * 0.05);
-      Zi = plasma.X + c1Factor + c2Factor;
-    } else if (matchBoxType === 'Pi') {
-      // Pi-type: dual shunt C + series L — smoother transformation, wider range
-      Zr = Math.max(1, plasma.R + c1Factor * 0.04 + c2Factor * 0.03);
-      Zi = plasma.X + c1Factor * 0.8 + c2Factor * 0.7;
-    } else if (matchBoxType === 'T') {
-      // T-type: dual series L + shunt C — strong resistance transform
-      Zr = Math.max(1, plasma.R + c1Factor * 0.08);
-      Zi = plasma.X + c1Factor * 0.9 + c2Factor * 0.5;
-    } else {
-      // Gamma-type: series L + shunt C — direct, less knobs
-      Zr = Math.max(1, plasma.R + c1Factor * 0.06);
-      Zi = plasma.X + c1Factor * 1.1 + c2Factor * 0.4;
-    }
+    const matched = transformImpedance(plasma, matchC1, matchC2, matchBoxType);
+    const Zr = matched.R;
+    const Zi = matched.X;
     const Z0 = 50;
     const dR = Zr - Z0;
     const magSum = (Zr + Z0) * (Zr + Z0) + Zi * Zi;
@@ -811,7 +830,7 @@ const ImpedanceProbeSimulator = () => {
       efficiency: Math.round(((pDelivered / pForward) * 100) * 10) / 10,
       Zmag: Math.round(Zmag * 10) / 10
     };
-  }, [calcPlasmaImpedance, matchC1, matchC2, rfPower, matchBoxType]);
+  }, [calcPlasmaImpedance, transformImpedance, matchC1, matchC2, rfPower, matchBoxType]);
 
   const generateWaveform = useCallback(() => {
     const c = calcAll();
