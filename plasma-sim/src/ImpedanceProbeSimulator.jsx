@@ -714,33 +714,54 @@ const ImpedanceProbeSimulator = () => {
   }, [sourceType, rfPower, pressure, gasType]);
 
   // ---- Matching network impedance transformation ----
-  // Given C1, C2 (0-100 sliders) and plasma impedance, compute the
-  // impedance seen by the RF generator after the matching network.
-  // The formulas are simplified but physically motivated:
-  //   C1 primarily tunes reactance (cancels X)
-  //   C2 primarily transforms resistance (brings R toward 50Ω)
+  // Each matching topology has physical strengths/weaknesses:
+  //   L-type:     Best for capacitive loads (CCP). Struggles with inductive.
+  //   Gamma-type: Best for inductive loads (ICP). Struggles with capacitive.
+  //   Pi-type:    Widest range, good for mixed (Hybrid). Moderate at everything.
+  //   T-type:     Best for extreme impedance (Helicon). High power handling.
+  // Mismatch between source and box type reduces tuning range realistically.
   const transformImpedance = useCallback((plasma, c1, c2, boxType) => {
-    // Map slider (0-100) to a signed tuning range centered at 50
     const t1 = (c1 - 50);  // range: -50 to +50
-    const t2 = (c2 - 50);  // range: -50 to +50
-    const dR = 50 - plasma.R;  // how far R is from 50Ω
+    const t2 = (c2 - 50);
+    const dR = 50 - plasma.R;
+    const isCapacitive = plasma.X < 0;  // CCP-like
+    const isInductive = plasma.X > 0;   // ICP-like
+    const absX = Math.abs(plasma.X);
+
     let Zr, Zi;
     if (boxType === 'L') {
-      // L-type: C1 shunt cancels reactance, C2 series transforms R
-      Zi = plasma.X + t1 * 4.0 + t2 * 1.0;
-      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.5 + t1 * dR / 200);
+      // L-type: excellent for capacitive (X<0), poor for inductive (X>0)
+      // Shunt C + series C: naturally cancels negative reactance well
+      const xEff = isCapacitive ? 4.0 : 1.8;  // much weaker for inductive loads
+      const rEff = isCapacitive ? 2.5 : 1.2;
+      // High |X| inductive loads overwhelm L-type range
+      const penalty = isInductive && absX > 80 ? 0.5 : 1.0;
+      Zi = plasma.X + t1 * xEff * penalty + t2 * 1.0 * penalty;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * rEff * penalty + t1 * dR / 200);
     } else if (boxType === 'Pi') {
-      // Pi-type: dual shunt C + series L — wider range, best for large |X|
-      Zi = plasma.X + t1 * 3.5 + t2 * 2.5;
-      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.2 + t1 * dR / 50 * 0.8);
+      // Pi-type: wide range, works for both signs of X, best for mixed/hybrid
+      // Dual shunt C + series L gives symmetric tuning range
+      const xEff = 3.5;
+      const rEff = 2.2;
+      Zi = plasma.X + t1 * xEff + t2 * 2.5;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * rEff + t1 * dR / 50 * 0.8);
     } else if (boxType === 'T') {
-      // T-type: dual series L + shunt C — strong R & X transform
-      Zi = plasma.X + t1 * 3.8 + t2 * 1.5;
-      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.8 + t1 * dR / 100);
+      // T-type: strong transform for extreme impedance (very low R, high |X|)
+      // Dual series L + shunt C: best when R<<50 and |X|>>50 (Helicon)
+      // Less effective for normal impedance ranges
+      const extremeFactor = (absX > 50 && plasma.R < 10) ? 1.0 : 0.65;
+      const xEff = 3.8 * extremeFactor;
+      const rEff = 2.8 * extremeFactor;
+      Zi = plasma.X + t1 * xEff + t2 * 1.5 * extremeFactor;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * rEff + t1 * dR / 100);
     } else {
-      // Gamma-type: series L + shunt C — good for inductive loads
-      Zi = plasma.X + t1 * 3.5 + t2 * 1.2;
-      Zr = Math.max(1, plasma.R + t2 * dR / 50 * 2.0 + t1 * dR / 50 * 0.5);
+      // Gamma-type: series L + shunt C — optimized for inductive loads (ICP)
+      // The series L adds to inductive X, shunt C cancels it
+      const xEff = isInductive ? 3.8 : 1.6;  // much weaker for capacitive loads
+      const rEff = isInductive ? 2.2 : 1.0;
+      const penalty = isCapacitive && absX > 80 ? 0.5 : 1.0;
+      Zi = plasma.X + t1 * xEff * penalty + t2 * 1.2 * penalty;
+      Zr = Math.max(1, plasma.R + t2 * dR / 50 * rEff * penalty + t1 * dR / 50 * 0.5 * penalty);
     }
     return { R: Zr, X: Zi };
   }, []);
