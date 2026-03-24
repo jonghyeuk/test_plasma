@@ -39,31 +39,39 @@ const GAS_DB = {
 };
 
 // Generate mixed spectrum from multiple gases with flow rates
+// Returns data with per-gas intensity columns for colored rendering
 const generateMixedSpectrum = (gasFlows, power) => {
   const data = [];
   const powerFactor = power / 300;
   const totalFlow = Object.values(gasFlows).reduce((sum, f) => sum + f, 0);
   if (totalFlow === 0 || power === 0) return [];
 
+  const activeGasKeys = Object.entries(gasFlows).filter(([, f]) => f > 0).map(([k]) => k);
+
   for (let wl = 200; wl <= 950; wl += 1) {
-    let intensity = 0;
-    Object.entries(gasFlows).forEach(([gasKey, flow]) => {
-      if (flow <= 0) return;
+    const point = { wavelength: wl };
+    let total = 0;
+    activeGasKeys.forEach(gasKey => {
       const gas = GAS_DB[gasKey];
       if (!gas) return;
-      const flowFactor = Math.sqrt(flow / 100); // non-linear: even small flow is detectable
+      const flow = gasFlows[gasKey];
+      const flowFactor = Math.sqrt(flow / 100);
+      let gasIntensity = 0;
       gas.lines.forEach(line => {
         const width = 2.5 + Math.random() * 0.3;
         const dist = Math.abs(wl - line.wl);
         if (dist < width * 5) {
-          intensity += line.int * powerFactor * flowFactor * Math.exp(-0.5 * Math.pow(dist / width, 2));
+          gasIntensity += line.int * powerFactor * flowFactor * Math.exp(-0.5 * Math.pow(dist / width, 2));
         }
       });
+      point[`gas_${gasKey}`] = parseFloat(gasIntensity.toFixed(4));
+      total += gasIntensity;
     });
-    // noise
-    intensity += (Math.random() - 0.5) * 0.015 * powerFactor;
-    intensity = Math.max(0, intensity);
-    data.push({ wavelength: wl, intensity: parseFloat(intensity.toFixed(4)) });
+    // noise on total
+    total += (Math.random() - 0.5) * 0.015 * powerFactor;
+    total = Math.max(0, total);
+    point.intensity = parseFloat(total.toFixed(4));
+    data.push(point);
   }
   return data;
 };
@@ -468,10 +476,34 @@ const OESPracticalSimulator = () => {
                       label={{ value: 'Intensity (a.u.)', angle: -90, position: 'insideLeft', fill: '#9CA3AF', fontSize: 11 }}/>
                     <Tooltip
                       contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', fontSize: '12px', color: '#E5E7EB' }}
-                      formatter={val => [parseFloat(val).toFixed(4), 'Intensity']}
+                      formatter={(val, name) => {
+                        if (name.startsWith('gas_')) {
+                          const gasKey = name.replace('gas_', '');
+                          return [parseFloat(val).toFixed(4), GAS_DB[gasKey]?.symbol || gasKey];
+                        }
+                        return [parseFloat(val).toFixed(4), 'Total'];
+                      }}
                       labelFormatter={val => `${val} nm`}/>
-                    <Line type="monotone" dataKey="intensity" stroke="#22D3EE"
-                      dot={false} strokeWidth={1.2} isAnimationActive={false}/>
+                    {/* Per-gas colored lines */}
+                    {activeGases.map(([key]) => (
+                      <Line key={key} type="monotone" dataKey={`gas_${key}`}
+                        stroke={GAS_DB[key].color} name={`gas_${key}`}
+                        dot={false} strokeWidth={1.5} isAnimationActive={false}/>
+                    ))}
+                    {/* Faint total line when multiple gases active */}
+                    {activeGases.length > 1 && (
+                      <Line type="monotone" dataKey="intensity" stroke="#22D3EE"
+                        dot={false} strokeWidth={0.5} strokeDasharray="2 2" isAnimationActive={false} name="total"/>
+                    )}
+                    <Legend
+                      wrapperStyle={{ fontSize: '10px' }}
+                      formatter={(value) => {
+                        if (value.startsWith('gas_')) {
+                          const gasKey = value.replace('gas_', '');
+                          return GAS_DB[gasKey]?.symbol || gasKey;
+                        }
+                        return value === 'total' ? 'Total' : value;
+                      }}/>
                   </LineChart>
                 </ResponsiveContainer>
               </div>

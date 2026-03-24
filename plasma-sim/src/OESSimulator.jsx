@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ReferenceLine, ScatterChart, Scatter } from 'recharts';
 import OESPracticalSimulator from './OESPracticalSimulator';
 import OESLectureMaterials from './OESLectureMaterials';
+import OESEndpointDetection from './OESEndpointDetection';
 
 // ============================================================
 // OES Emission Line Database
@@ -1174,6 +1175,7 @@ const OESSimulator = () => {
     { id: 'simulator', name: '시뮬레이터 측정', icon: '🔬' },
     { id: 'practical', name: '실전 시뮬레이터', icon: '🏭' },
     { id: 'quiz', name: '문제풀이', icon: '✏️' },
+    { id: 'endpoint', name: 'Endpoint Detection', icon: '🎯' },
     { id: 'lecture', name: '강의 자료', icon: '🎓' },
   ];
 
@@ -2564,6 +2566,13 @@ const OESSimulator = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB: ENDPOINT DETECTION */}
+        {/* ================================================================ */}
+        {activeTab === 'endpoint' && (
+          <OESEndpointDetection />
         )}
 
         {/* ================================================================ */}
