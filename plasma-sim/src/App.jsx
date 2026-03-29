@@ -4,6 +4,7 @@ import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
 import OESSimulator from './OESSimulator'
 import ImpedanceProbeSimulator from './ImpedanceProbeSimulator'
+import RGAEducation from './RGAEducation'
 import RGAViewer from './RGAViewer'
 import './App.css'
 
@@ -29,20 +30,12 @@ function App() {
       component: ImpedanceProbeSimulator
     },
     {
-      id: 'rga-edu',
-      name: 'RGA 교육',
-      description: 'Residual Gas Analyzer 교육 자료',
+      id: 'rga',
+      name: 'RGA',
+      description: 'Residual Gas Analyzer',
       icon: '📘',
       color: 'from-orange-500 to-amber-600',
-      iframeSrc: '/rgaeducation.html'
-    },
-    {
-      id: 'rga-principle',
-      name: 'RGA 동작 원리',
-      description: 'RGA 원리 애니메이션',
-      icon: '⚙️',
-      color: 'from-orange-500 to-red-600',
-      iframeSrc: '/rgaprinciple.html'
+      component: RGAEducation
     },
     {
       id: 'rga-sim',
