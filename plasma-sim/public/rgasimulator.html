@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#1c1c1e;color:#d4d4d4;font-family:'Courier New',monospace;font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
+.titlebar{background:#2a2a2e;border-bottom:1px solid #444;padding:4px 10px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.titlebar-logo{background:#006688;color:#00ffee;font-weight:bold;font-size:11px;padding:2px 7px;border-radius:2px;letter-spacing:1px;}
+.titlebar-title{color:#aaa;font-size:11px;}
+.titlebar-status{margin-left:auto;display:flex;gap:14px;align-items:center;}
+.tled{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.tled.on{background:#00ff88;} .tled.off{background:#444;} .tled.warn{background:#ffaa00;}
+.tled.blink{animation:blink .5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+.menubar{background:#252528;border-bottom:1px solid #3a3a3a;padding:2px 8px;display:flex;gap:0;flex-shrink:0;position:relative;}
+.menu-item{padding:3px 12px;cursor:pointer;font-size:11px;color:#bbb;position:relative;}
+.menu-item:hover,.menu-item.open{background:#3a3a3e;color:#fff;}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#2a2a30;border:1px solid #555;z-index:200;min-width:230px;box-shadow:0 4px 12px #000c;}
+.menu-item.open>.dropdown{display:block;}
+.dd-item{padding:6px 16px;cursor:pointer;font-size:11px;color:#ccc;white-space:nowrap;display:block;}
+.dd-item:hover{background:#005577;color:#fff;}
+.dd-sep{height:1px;background:#3a3a3a;margin:3px 0;}
+.dd-label{padding:4px 14px;font-size:10px;color:#556677;text-transform:uppercase;letter-spacing:.5px;}
+
+.toolbar{background:#2e2e32;border-bottom:1px solid #444;padding:3px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.tb-btn{background:#3a3a3e;border:1px solid #555;color:#ccc;padding:3px 10px;cursor:pointer;border-radius:2px;font-size:11px;font-family:inherit;}
+.tb-btn:hover{background:#505058;color:#fff;}
+.tb-btn.active{background:#005577;border-color:#0088aa;color:#00eeff;}
+.tb-btn.danger{background:#550000;border-color:#880000;color:#ff6666;}
+.tb-btn:disabled{opacity:.4;cursor:default;}
+.tb-sep{width:1px;height:20px;background:#555;margin:0 2px;}
+.tb-label{color:#888;font-size:10px;}
+.tb-val{color:#00ffaa;font-family:'Courier New';font-size:11px;min-width:55px;}
+
+.workspace{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT PANEL */
+.left-panel{width:218px;background:#232326;border-right:1px solid #444;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.panel-header{background:#2a2a2e;border-bottom:1px solid #444;padding:4px 8px;font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;}
+.section{border-bottom:1px solid #2a2a2a;padding:8px;}
+.section-title{font-size:10px;color:#556677;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* 측정 모드 탭 */
+.mmode-tabs{display:flex;border-bottom:1px solid #333;margin-bottom:8px;}
+.mmode-tab{flex:1;padding:4px 0;text-align:center;cursor:pointer;font-size:10px;color:#667788;border-bottom:2px solid transparent;}
+.mmode-tab.active{color:#00ccff;border-bottom-color:#00ccff;}
+.mmode-panel{display:none;}
+.mmode-panel.active{display:block;}
+
+.mode-btn{display:block;width:100%;text-align:left;background:#1e1e22;border:1px solid #2e2e2e;color:#999;padding:5px 8px;margin-bottom:3px;cursor:pointer;border-radius:2px;font-size:11px;font-family:inherit;transition:all .15s;}
+.mode-btn:hover{background:#2a2a32;color:#ddd;border-color:#444;}
+.mode-btn.active{background:#003355;border-color:#0066aa;color:#00ccff;}
+.mode-btn .mode-p{font-size:9px;color:#00aa77;font-family:'Courier New';}
+.mode-btn.active .mode-p{color:#00ffaa;}
+
+/* Single Mass */
+.smm-box{background:#0d1e0d;border:1px solid #1a3a1a;border-radius:4px;padding:8px;margin-bottom:6px;}
+.smm-mz{font-family:'Orbitron','Courier New',monospace;font-size:28px;color:#00ff88;text-align:center;margin:4px 0;}
+.smm-name{font-size:11px;color:#00aa66;text-align:center;margin-bottom:6px;}
+.smm-pp{font-family:'Courier New';font-size:13px;color:#00ffaa;text-align:center;}
+
+input[type=number]{background:#1e1e22;border:1px solid #3a3a3a;color:#00ccff;padding:4px 8px;width:100%;font-size:13px;font-family:'Courier New';text-align:center;border-radius:2px;}
+input[type=number]:focus{outline:none;border-color:#0088bb;}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:#2a3a3a;border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;background:#0088bb;border-radius:50%;}
+select{background:#1e1e22;border:1px solid #3a3a3a;color:#bbb;padding:3px 5px;width:100%;font-size:11px;font-family:inherit;cursor:pointer;}
+
+.param-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.param-label{color:#778899;font-size:11px;}
+.param-val{color:#00ffaa;font-size:11px;font-family:'Courier New';}
+.range-wrap{margin-bottom:6px;}
+.range-label{display:flex;justify-content:space-between;margin-bottom:2px;}
+.range-label span{font-size:10px;color:#667788;}
+.range-label .rv{color:#00ccff;font-family:'Courier New';}
+
+/* CHART */
+.chart-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.chart-tabs{background:#252528;border-bottom:1px solid #444;display:flex;flex-shrink:0;}
+.chart-tab{padding:4px 14px;cursor:pointer;border-right:1px solid #333;font-size:11px;color:#667788;}
+.chart-tab:hover{color:#bbb;}
+.chart-tab.active{color:#00ccff;background:#1c1c1e;border-bottom:2px solid #00aacc;}
+.chart-wrap{flex:1;position:relative;overflow:hidden;}
+canvas{position:absolute;top:0;left:0;}
+
+/* RIGHT PANEL */
+.right-panel{width:195px;background:#232326;border-left:1px solid #444;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.pp-scroll{flex:1;overflow-y:auto;}
+.gas-row{padding:5px 8px;border-bottom:1px solid #1e1e1e;}
+.gas-header{display:flex;justify-content:space-between;align-items:center;}
+.gas-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.gas-name{font-size:11px;color:#aabbcc;}
+.gas-pp{font-size:10px;color:#00ffaa;font-family:'Courier New';}
+.gas-bar-bg{width:100%;height:3px;background:#1a1a1a;margin-top:3px;border-radius:1px;}
+.gas-bar-fill{height:3px;border-radius:1px;transition:width .3s;}
+
+.alarm-scroll{height:140px;overflow-y:auto;flex-shrink:0;}
+.alarm-row{display:flex;gap:5px;padding:4px 8px;border-bottom:1px solid #1a1a1a;align-items:flex-start;}
+.alarm-dot{width:6px;height:6px;border-radius:50%;margin-top:2px;flex-shrink:0;}
+.alarm-msg{font-size:10px;color:#aaa;line-height:1.4;flex:1;}
+.alarm-time{font-size:9px;color:#445566;white-space:nowrap;}
+
+.statusbar{background:#191920;border-top:1px solid #2a2a2a;padding:3px 10px;display:flex;gap:16px;align-items:center;flex-shrink:0;}
+.sb-item{display:flex;gap:5px;align-items:center;}
+.sb-label{color:#445566;font-size:10px;}
+.sb-val{color:#00bbdd;font-size:10px;font-family:'Courier New';}
+
+/* REVEAL OVERLAY */
+.reveal-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;}
+.reveal-overlay.show{display:flex;}
+.reveal-box{background:#141820;border:1px solid #446688;padding:20px 28px;min-width:340px;max-width:480px;}
+.reveal-box h3{font-size:14px;margin-bottom:12px;border-bottom:1px solid #334;padding-bottom:8px;}
+.reveal-cause{font-size:16px;margin-bottom:10px;}
+.reveal-detail{font-size:11px;color:#7799aa;line-height:1.8;margin-bottom:14px;}
+.reveal-peaks{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.rpeak{padding:3px 10px;border-radius:3px;font-size:11px;font-family:'Courier New';}
+.reveal-btn{background:#005577;border:1px solid #0088aa;color:#00eeff;padding:6px 18px;cursor:pointer;font-family:inherit;font-size:12px;margin-right:8px;}
+.reveal-btn:hover{background:#007799;}
+.reveal-btn.sec{background:#2a2a36;border-color:#445;color:#aaa;}
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="titlebar-logo">RGASoft</div>
+  <span class="titlebar-title">Residual Gas Analyzer — Simulation Mode v3.2</span>
+  <div class="titlebar-status">
+    <div class="tled off" id="ledFilament"></div><span style="color:#556677;font-size:10px">Filament</span>
+    <div class="tled off" id="ledScan"></div><span style="color:#556677;font-size:10px">Scan</span>
+    <span id="clockDisp" style="color:#556677;font-size:10px;min-width:55px;text-align:right;"></span>
+  </div>
+</div>
+
+<div class="menubar">
+  <div class="menu-item" onclick="toggleMenu(this)">File
+    <div class="dropdown">
+      <div class="dd-item" onclick="clearData();closeMenus()">New Measurement</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="closeMenus()">Save Data...</div>
+    </div>
+  </div>
+  <div class="menu-item" onclick="toggleMenu(this)">View
+    <div class="dropdown">
+      <div class="dd-item" onclick="setChartTab('analog');closeMenus()">Analog Sweep</div>
+      <div class="dd-item" onclick="setChartTab('bar');closeMenus()">Bar Chart</div>
+      <div class="dd-item" onclick="setChartTab('trend');closeMenus()">Trend (P vs t)</div>
+      <div class="dd-item" onclick="setChartTab('smm');closeMenus()">Single Mass Trend</div>
+      <div class="dd-item" onclick="setChartTab('table');closeMenus()">Peak Table</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="toggleLogScale();closeMenus()">Toggle Log Scale</div>
+      <div class="dd-item" onclick="toggleAutoScale();closeMenus()">Toggle Auto Scale</div>
+    </div>
+  </div>
+  <div class="menu-item" onclick="toggleMenu(this)">Scan
+    <div class="dropdown">
+      <div class="dd-item" onclick="toggleScan();closeMenus()">Start / Stop</div>
+      <div class="dd-item" onclick="singleScan();closeMenus()">Single Scan</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="runDegas();closeMenus()">Degas Ionizer</div>
+    </div>
+  </div>
+  <div class="menu-item" onclick="toggleMenu(this)">Scenario
+    <div class="dropdown">
+      <div class="dd-label">Chamber Condition Setup</div>
+      <div class="dd-item" onclick="setScenario('none');closeMenus()">◎ None (자유 관찰)</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="setScenario('base');closeMenus()">✓ Base Vacuum (정상)</div>
+      <div class="dd-item" onclick="setScenario('moisture');closeMenus()">💧 Moisture Outgassing</div>
+      <div class="dd-item" onclick="setScenario('leak');closeMenus()">🔴 Air Leak 발생</div>
+      <div class="dd-item" onclick="setScenario('oil');closeMenus()">🛢 HC Oil Backstream</div>
+      <div class="dd-item" onclick="setScenario('sputter');closeMenus()">⚛ Ar Sputtering</div>
+      <div class="dd-item" onclick="setScenario('etch');closeMenus()">🧪 CF₄ Etch Process</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="setScenario('leak_slow');closeMenus()">🔴 Air Leak (서서히)</div>
+      <div class="dd-item" onclick="setScenario('leak_sudden');closeMenus()">🔴 Air Leak (갑작스럽게)</div>
+    </div>
+  </div>
+  <div class="menu-item" onclick="toggleMenu(this)">Alarms
+    <div class="dropdown">
+      <div class="dd-item" onclick="clearAlarms();closeMenus()">Clear All</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="tb-btn" id="btnFilament" onclick="toggleFilament()">Filament OFF</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btnScan" onclick="toggleScan()" disabled>▶ Scan</button>
+  <button class="tb-btn" id="btnSingle" onclick="singleScan()" disabled>Single</button>
+  <button class="tb-btn" onclick="runDegas()">Degas</button>
+  <div class="tb-sep"></div>
+  <span class="tb-label">Total P:</span>
+  <span class="tb-val" id="tbPressure">—</span>
+  <div class="tb-sep"></div>
+  <span class="tb-label">Status:</span>
+  <span class="tb-val" id="tbMode" style="color:#ffaa00">STANDBY</span>
+  <div class="tb-sep"></div>
+  <span class="tb-label">Scan#:</span>
+  <span class="tb-val" id="tbScanNum">0</span>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btnAS" onclick="toggleAutoScale()">AutoScale:ON</button>
+  <button class="tb-btn" id="btnLog" onclick="toggleLogScale()">Log:OFF</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" style="background:#2a1500;border-color:#664400;color:#ffaa44;" onclick="showReveal()">? 진단 확인</button>
+  <div style="margin-left:auto;display:flex;gap:5px;align-items:center;">
+    <span class="tb-label">Units:</span>
+    <select id="unitSel" style="width:65px;font-size:10px;" onchange="updateUnits()">
+      <option>Torr</option><option>mbar</option><option>Pa</option><option>A</option>
+    </select>
+  </div>
+</div>
+
+<div class="workspace" style="position:relative;">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel-header">Measurement Mode</div>
+
+    <div class="section">
+      <!-- 측정 모드 탭 -->
+      <div class="mmode-tabs">
+        <div class="mmode-tab active" id="mmtab_full" onclick="setMMode('full')">Full Scan</div>
+        <div class="mmode-tab" id="mmtab_smm" onclick="setMMode('smm')">Single Mass</div>
+        <div class="mmode-tab" id="mmtab_multi" onclick="setMMode('multi')">Multi Track</div>
+      </div>
+
+      <!-- Full Scan 패널 -->
+      <div class="mmode-panel active" id="mmp_full">
+        <div class="section-title">Scan Range</div>
+        <div class="range-wrap">
+          <div class="range-label"><span>Start m/z</span><span class="rv" id="rv_start">1</span></div>
+          <input type="range" min="1" max="50" value="1" id="sl_start" oninput="setScanParam()">
+        </div>
+        <div class="range-wrap">
+          <div class="range-label"><span>End m/z</span><span class="rv" id="rv_end">100</span></div>
+          <input type="range" min="10" max="200" value="100" id="sl_end" oninput="setScanParam()">
+        </div>
+        <div style="font-size:10px;color:#445566;margin-top:4px;">
+          💡 전체 범위 모니터링<br>이상 감지 후 Single Mass로 집중
+        </div>
+      </div>
+
+      <!-- Single Mass Monitor 패널 -->
+      <div class="mmode-panel" id="mmp_smm">
+        <div class="section-title">Target m/z</div>
+        <div class="smm-box">
+          <div class="smm-mz" id="smmMzDisp">28</div>
+          <div class="smm-name" id="smmNameDisp">N₂ / CO</div>
+          <div class="smm-pp" id="smmPPDisp">—</div>
+        </div>
+        <input type="number" id="smmMzInput" value="28" min="1" max="200"
+          oninput="setSMMMz(this.value)" style="margin-bottom:6px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;">
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(2)">H₂ (2)</button>
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(18)">H₂O (18)</button>
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(28)">N₂ (28)</button>
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(32)">O₂ (32)</button>
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(40)">Ar (40)</button>
+          <button class="tb-btn" style="font-size:10px;" onclick="setSMMMz(44)">CO₂ (44)</button>
+        </div>
+        <div style="font-size:10px;color:#445566;margin-top:6px;">
+          💡 특정 가스를 시간축으로<br>집중 추적 — 트렌드 분석
+        </div>
+      </div>
+
+      <!-- Multi Track 패널 -->
+      <div class="mmode-panel" id="mmp_multi">
+        <div class="section-title">Track m/z List</div>
+        <div id="multiTrackList"></div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <input type="number" id="multiMzAdd" value="32" min="1" max="200"
+            style="width:70px;background:#1e1e22;border:1px solid #3a3a3a;color:#00ccff;padding:3px 6px;font-size:11px;font-family:'Courier New';">
+          <button class="tb-btn" style="flex:1;font-size:10px;" onclick="addMultiTrack()">+ Add</button>
+        </div>
+        <div style="font-size:10px;color:#445566;margin-top:6px;">
+          💡 여러 가스 동시 트렌드<br>Air Leak: 28+32+40 추적
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Scan Speed / Noise</div>
+      <div class="range-wrap">
+        <div class="range-label"><span>Speed</span><span class="rv" id="rv_speed">Med</span></div>
+        <input type="range" min="1" max="5" value="3" id="sl_speed" oninput="setSpeed(this.value)">
+      </div>
+      <div class="range-wrap">
+        <div class="range-label"><span>Noise</span><span class="rv" id="rv_noise">Low</span></div>
+        <input type="range" min="0" max="4" value="1" id="sl_noise" oninput="setNoise(this.value)">
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Ionizer Status</div>
+      <div class="param-row"><span class="param-label">Filament</span><span class="param-val" id="prFil" style="color:#ff4444">OFF</span></div>
+      <div class="param-row"><span class="param-label">Emission</span><span class="param-val" id="prEmission">—</span></div>
+      <div class="param-row"><span class="param-label">Electron E</span><span class="param-val">70 eV</span></div>
+      <div class="param-row"><span class="param-label">Detector</span><span class="param-val">Faraday</span></div>
+    </div>
+
+    <!-- 현재 시나리오 -->
+    <div class="section">
+      <div class="section-title">Chamber Condition</div>
+      <div class="param-val" id="scenLabel" style="color:#ffaa00;font-size:11px;">Base Vacuum</div>
+    </div>
+  </div>
+
+  <!-- CENTER CHART -->
+  <div class="chart-area">
+    <div class="chart-tabs">
+      <div class="chart-tab active" id="tab_analog" onclick="setChartTab('analog')">Analog Sweep</div>
+      <div class="chart-tab" id="tab_bar" onclick="setChartTab('bar')">Bar Chart</div>
+      <div class="chart-tab" id="tab_trend" onclick="setChartTab('trend')">Trend (P vs t)</div>
+      <div class="chart-tab" id="tab_smm" onclick="setChartTab('smm')">Single Mass Trend</div>
+      <div class="chart-tab" id="tab_table" onclick="setChartTab('table')">Peak Table</div>
+    </div>
+    <div class="chart-wrap" id="chartWrap">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="panel-header">Partial Pressures</div>
+    <div class="pp-scroll" id="ppList"></div>
+    <div class="panel-header">Alarms / Events</div>
+    <div class="alarm-scroll" id="alarmList"></div>
+  </div>
+
+  <!-- REVEAL OVERLAY -->
+  <div class="reveal-overlay" id="revealOverlay">
+    <div class="reveal-box">
+      <h3 id="revTitle" style="color:#ff9900;">★ 진단 결과 공개</h3>
+      <div class="reveal-cause" id="revCause"></div>
+      <div class="reveal-peaks" id="revPeaks"></div>
+      <div class="reveal-detail" id="revDetail"></div>
+      <button class="reveal-btn" onclick="document.getElementById('revealOverlay').classList.remove('show')">확인</button>
+      <button class="reveal-btn sec" onclick="clearData();document.getElementById('revealOverlay').classList.remove('show')">새 측정 시작</button>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <div class="sb-item"><span class="sb-label">Total P:</span><span class="sb-val" id="sbP">—</span></div>
+  <div class="sb-item"><span class="sb-label">Scan m/z:</span><span class="sb-val" id="sbMz">—</span></div>
+  <div class="sb-item"><span class="sb-label">Int:</span><span class="sb-val" id="sbInt">—</span></div>
+  <div class="sb-item"><span class="sb-label">Mode:</span><span class="sb-val" id="sbMMode">Full Scan</span></div>
+  <div class="sb-item" style="margin-left:auto;"><span class="sb-label">Cursor:</span><span class="sb-val" id="sbCursor">—</span></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const UNIT_FACTORS={Torr:1,mbar:1.33322,Pa:133.322,A:1e-4};
+const GAS_COLORS={
+  2:'#00f5dd',14:'#ffdd66',16:'#88aaff',17:'#66bbff',18:'#3399ff',
+  19:'#88ddff',28:'#ffaa00',31:'#ff7788',32:'#ff4455',36:'#cc88ff',
+  38:'#bb66ff',40:'#aa44ff',41:'#ff7722',43:'#ff6600',44:'#ffee00',
+  50:'#ff6633',55:'#ff5500',57:'#ff4400',69:'#ff9933',85:'#ffbb33'
+};
+const GAS_NAMES={
+  2:'H₂',14:'N⁺',16:'O⁺',17:'OH⁺',18:'H₂O',19:'F⁺',
+  28:'N₂/CO',31:'CF⁺',32:'O₂',36:'³⁶Ar',38:'³⁸Ar',
+  40:'Ar',41:'HC⁺',43:'HC⁺',44:'CO₂',50:'CF₂⁺',
+  55:'HC⁺',57:'HC⁺',69:'CF₃⁺',85:'C₂F₄⁺'
+};
+const CRACK={
+  18:{17:0.25,16:0.01},28:{14:0.07},32:{16:0.11},
+  40:{36:0.0034,38:0.0006},44:{28:0.08,16:0.05},
+  69:{50:0.4,31:0.25,19:0.15},
+};
+
+// 시나리오 = 챔버의 실제 물리 상태 (강사가 설정)
+const SCENARIOS={
+  none:   {label:'None',      peaks:{},                           pressure:1e-10},
+  base:   {label:'Base Vacuum',peaks:{2:1.8e-9,18:3e-10,17:8e-11,28:1e-10,44:2e-11}, pressure:2.5e-9},
+  moisture:{label:'Moisture Outgassing',peaks:{2:8e-9,18:6e-8,17:2e-8,28:4e-9,44:6e-10},pressure:8e-8},
+  leak:   {label:'Air Leak',  peaks:{2:1.5e-8,18:8e-9,28:3.5e-7,32:9e-8,40:4e-9,44:2e-9,14:2e-8},pressure:5e-7},
+  oil:    {label:'HC Contamination',peaks:{2:4e-9,18:2e-9,28:3e-9,41:7e-9,43:5e-9,44:6e-9,55:3e-9,57:2e-9,69:1.5e-9},pressure:3e-8},
+  sputter:{label:'Ar Sputtering',peaks:{2:1.5e-5,18:6e-6,40:2.5e-3,36:8.5e-6,38:2.6e-6,28:3e-6},pressure:3e-3},
+  etch:   {label:'CF₄ Etch',  peaks:{2:4e-7,19:7e-6,28:3e-6,31:4e-6,50:8e-6,69:1e-5,85:2e-6,32:1.5e-6},pressure:2e-5},
+  leak_slow:  {label:'Air Leak (서서히)',  peaks:{2:1.5e-8,18:8e-9,28:3.5e-7,32:9e-8,40:4e-9},pressure:5e-7, ramp:true, rampTime:30000},
+  leak_sudden:{label:'Air Leak (갑작스럽게)',peaks:{2:1.5e-8,18:8e-9,28:3.5e-7,32:9e-8,40:4e-9},pressure:5e-7, ramp:false, delay:12000},
+};
+
+// 진단 결과 텍스트
+const REVEAL_INFO={
+  none:   {cause:'✓ 정상 / 자유 관찰',color:'#00ff88',
+    detail:'특별한 이상 없음. 기준 스펙트럼으로 활용하세요.',peaks:[]},
+  base:   {cause:'✓ 정상 — Base Vacuum',color:'#00ff88',
+    detail:'H₂ dominant, H₂O 소량. 진공 시스템 정상 상태입니다.\n기준 스펙트럼으로 저장하고 이후 변화와 비교하세요.',
+    peaks:[{mz:2,label:'H₂ 우세'},{mz:18,label:'H₂O 소량'}]},
+  moisture:{cause:'💧 수분 오염 — Outgassing',color:'#3399ff',
+    detail:'m/z 18(H₂O)와 m/z 17(OH⁺)이 동시에 높습니다.\n챔버 벤팅 후 흡착된 수분이 방출되는 Outgassing입니다.\n대응: 베이킹(Baking) 100~200°C 실시.',
+    peaks:[{mz:18,label:'H₂O 폭증'},{mz:17,label:'OH⁺ 동반'}]},
+  leak:   {cause:'🔴 Air Leak 발생!',color:'#ff4455',
+    detail:'m/z 28(N₂), 32(O₂), 40(Ar)이 공기 조성비(78:21:1)로 동시 증가.\n외부 공기가 챔버로 유입되는 Air Leak입니다.\n대응: 플랜지·밸브·O-ring 점검, He Leak Detector 사용.',
+    peaks:[{mz:28,label:'N₂ 폭증'},{mz:32,label:'O₂ 동반'},{mz:40,label:'Ar 동반'}]},
+  oil:    {cause:'🛢 HC 오일 오염',color:'#ff7722',
+    detail:'m/z 41~70 범위에 탄화수소(HC) 계열 피크 다수 출현.\n오일 펌프 역류(Backstream) 또는 유기물 오염입니다.\n대응: 펌프 격리, 챔버 세정, 오일 트랩 확인.',
+    peaks:[{mz:41,label:'HC⁺'},{mz:43,label:'HC⁺'},{mz:55,label:'HC⁺'}]},
+  sputter:{cause:'⚛ Ar 스퍼터링 공정',color:'#aa44ff',
+    detail:'m/z 40(Ar)이 압도적으로 높고, 36/38 동위원소 피크 확인.\n정상적인 Ar 스퍼터링 공정 스펙트럼입니다.',
+    peaks:[{mz:40,label:'Ar dominant'},{mz:36,label:'³⁶Ar'},{mz:38,label:'³⁸Ar'}]},
+  etch:   {cause:'🧪 CF₄ 식각 공정',color:'#ffee00',
+    detail:'m/z 50(CF₂⁺), 69(CF₃⁺), 85(C₂F₄⁺) 등 불소계 피크 다수.\nCF₄ 플라즈마 식각 공정 스펙트럼입니다.',
+    peaks:[{mz:69,label:'CF₃⁺ 주피크'},{mz:50,label:'CF₂⁺'},{mz:31,label:'CF⁺'}]},
+  leak_slow:   {cause:'🔴 Air Leak (서서히 진행)',color:'#ff4455',
+    detail:'처음에는 미세했지만 시간이 지나면서 m/z 28,32가 서서히 상승.\n작은 누설이 점점 커지는 패턴입니다.\n대응: 초기에 발견할수록 대응이 쉽습니다.',
+    peaks:[{mz:28,label:'N₂ 증가'},{mz:32,label:'O₂ 증가'}]},
+  leak_sudden: {cause:'🔴 Air Leak (갑작스러운)',color:'#ff2222',
+    detail:'정상 스캔 중 갑자기 N₂/O₂ 피크가 폭증했습니다.\n기계적 충격이나 부품 파손으로 인한 급격한 누설입니다.\n대응: 즉시 챔버 격리 후 점검.',
+    peaks:[{mz:28,label:'N₂ 폭증'},{mz:32,label:'O₂ 폭증'},{mz:40,label:'Ar 동반'}]},
+};
+
+// ── STATE ──────────────────────────────────────────────
+let S={
+  filamentOn:false, scanning:false,
+  scenario:'base',
+  chartTab:'analog', mmode:'full',
+  autoScale:true, logScale:false,
+  scanNum:0, scanMz:1, startMz:1, endMz:100,
+  specData:{}, prevSpec:{}, trendData:[],
+  smmMz:28, smmTrend:[],        // Single Mass Monitor
+  multiTrack:[28,32,40],         // Multi Track
+  multiTrend:{},
+  cursorMz:null, alarms:[],
+  scenRampFactor:0,             // 서서히 증가 시나리오용
+  scenRampTimer:null,
+  scenDelayTimer:null,
+  scenActive:false,
+};
+let unitLabel='Torr', unitFactor=1;
+let speedMs=180, noiseAmp=0.02;
+let scanTimer=null;
+
+// ── MENU ───────────────────────────────────────────────
+function toggleMenu(el){
+  const was=el.classList.contains('open');
+  closeMenus();
+  if(!was) el.classList.add('open');
+}
+function closeMenus(){
+  document.querySelectorAll('.menu-item.open').forEach(m=>m.classList.remove('open'));
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.menu-item')) closeMenus();
+});
+
+// ── FILAMENT ───────────────────────────────────────────
+function toggleFilament(){
+  if(!S.filamentOn){
+    if(getCurrentPressure()>1e-4){addAlarm('danger','Overpressure! Cannot turn on filament.');return;}
+    S.filamentOn=true;
+    document.getElementById('btnFilament').textContent='Filament ON';
+    document.getElementById('btnFilament').classList.add('active');
+    document.getElementById('btnScan').disabled=false;
+    document.getElementById('btnSingle').disabled=false;
+    document.getElementById('prFil').textContent='ON';
+    document.getElementById('prFil').style.color='#00ff88';
+    document.getElementById('prEmission').textContent='1.00 mA';
+    document.getElementById('ledFilament').className='tled on';
+    addAlarm('ok','Filament ON — emission 1.00 mA');
+    setTbMode('IDLE','#00ccff');
+  } else {
+    stopScan();
+    S.filamentOn=false;
+    document.getElementById('btnFilament').textContent='Filament OFF';
+    document.getElementById('btnFilament').classList.remove('active');
+    document.getElementById('btnScan').disabled=true;
+    document.getElementById('btnSingle').disabled=true;
+    document.getElementById('prFil').textContent='OFF';
+    document.getElementById('prFil').style.color='#ff4444';
+    document.getElementById('prEmission').textContent='—';
+    document.getElementById('ledFilament').className='tled off';
+    addAlarm('warn','Filament OFF');
+    setTbMode('STANDBY','#ffaa00');
+  }
+}
+
+// ── SCENARIO (강사용) ────────────────────────────────
+function setScenario(key){
+  // 기존 타이머 정리
+  if(S.scenRampTimer){clearInterval(S.scenRampTimer);S.scenRampTimer=null;}
+  if(S.scenDelayTimer){clearTimeout(S.scenDelayTimer);S.scenDelayTimer=null;}
+  S.scenRampFactor=0;
+  S.scenActive=false;
+  S.scenario=key;
+
+  const scen=SCENARIOS[key];
+  document.getElementById('scenLabel').textContent=scen.label;
+
+  // 과압 보호
+  if(scen.pressure>1e-4 && S.filamentOn){
+    addAlarm('danger','OVERPRESSURE scenario — filament auto-off!');
+    S.filamentOn=false;
+    document.getElementById('btnFilament').textContent='Filament OFF';
+    document.getElementById('btnFilament').classList.remove('active');
+    document.getElementById('ledFilament').className='tled off';
+    document.getElementById('prFil').textContent='OFF';
+    document.getElementById('prFil').style.color='#ff4444';
+    stopScan(); return;
+  }
+
+  // 서서히 증가 시나리오
+  if(scen.ramp){
+    S.scenRampFactor=0.02;
+    S.scenActive=true;
+    const step=1/((scen.rampTime||20000)/500);
+    S.scenRampTimer=setInterval(()=>{
+      S.scenRampFactor=Math.min(1,S.scenRampFactor+step);
+      updatePressureDisplay();
+      if(S.scanNum>0) addAlarm('warn','Pressure rising — check m/z 28,32');
+      if(S.scenRampFactor>=1) clearInterval(S.scenRampTimer);
+    },500);
+  }
+  // 갑작스러운 시나리오
+  else if(scen.delay){
+    S.scenRampFactor=0;
+    S.scenActive=false;
+    S.scenDelayTimer=setTimeout(()=>{
+      S.scenActive=true;
+      S.scenRampFactor=1;
+      addAlarm('danger','SUDDEN CHANGE — anomaly detected!');
+      updatePressureDisplay();
+    }, scen.delay);
+  }
+  else {
+    S.scenRampFactor=1;
+    S.scenActive=true;
+  }
+
+  // 스캔 중이면 재시작
+  if(S.scanning){
+    if(scanTimer){clearTimeout(scanTimer);scanTimer=null;}
+    S.prevSpec={...S.specData}; S.specData={}; S.scanMz=S.startMz;
+    doScanStep();
+  }
+  updatePressureDisplay();
+}
+
+function getCurrentPressure(){
+  const scen=SCENARIOS[S.scenario];
+  if(!S.scenActive||S.scenRampFactor===0) return SCENARIOS['base'].pressure;
+  return scen.pressure*S.scenRampFactor + SCENARIOS['base'].pressure*(1-S.scenRampFactor);
+}
+
+function getPP(mz){
+  const scen=SCENARIOS[S.scenario];
+  const base=SCENARIOS['base'];
+  let pp=0;
+  if(S.scenActive && S.scenRampFactor>0){
+    const scenPP=scen.peaks[mz]||0;
+    const basePP=base.peaks[mz]||0;
+    pp=scenPP*S.scenRampFactor + basePP*(1-S.scenRampFactor);
+  } else {
+    pp=base.peaks[mz]||0;
+  }
+  // cracking
+  const peakSrc=S.scenActive?scen.peaks:base.peaks;
+  for(const [pmz,cracks] of Object.entries(CRACK)){
+    const ppp=(peakSrc[parseInt(pmz)]||0)*S.scenRampFactor + (base.peaks[parseInt(pmz)]||0)*(1-S.scenRampFactor);
+    if(ppp>0 && cracks[mz]) pp+=ppp*cracks[mz];
+  }
+  if(pp>0) pp*=(1+(Math.random()-0.5)*2*noiseAmp);
+  else pp+=noiseAmp*5e-14*Math.random();
+  return Math.max(0,pp);
+}
+
+// ── SCAN ───────────────────────────────────────────────
+function toggleScan(){S.scanning?stopScan():startScan();}
+function singleScan(){startScan(true);}
+
+function startScan(single=false){
+  if(!S.filamentOn) return;
+  S.scanning=true;
+  S.scanMz=S.startMz;
+  S.prevSpec={...S.specData}; S.specData={};
+  document.getElementById('btnScan').textContent='■ Stop';
+  document.getElementById('btnScan').classList.add('danger');
+  document.getElementById('ledScan').className='tled on';
+  setTbMode('SCANNING','#00ff88');
+  doScanStep(single);
+}
+
+function doScanStep(single=false){
+  if(!S.scanning) return;
+  const mz=Math.round(S.scanMz);
+
+  // Single Mass Monitor 모드: 타겟 m/z만 측정
+  if(S.mmode==='smm'){
+    const pp=getPP(S.smmMz);
+    S.smmTrend.push({t:Date.now(),v:pp});
+    if(S.smmTrend.length>200) S.smmTrend.shift();
+    S.specData[S.smmMz]=pp;
+    document.getElementById('sbMz').textContent=S.smmMz;
+    document.getElementById('sbInt').textContent=pp>1e-14?pp.toExponential(2):'<1e-14';
+    document.getElementById('smmPPDisp').textContent=pp>1e-14?formatP(pp):'< det.limit';
+    updatePPList();
+    if(S.chartTab==='smm') drawChart();
+    scanTimer=setTimeout(()=>doScanStep(single),speedMs*2);
+    return;
+  }
+
+  // Multi Track 모드
+  if(S.mmode==='multi'){
+    S.multiTrack.forEach(tmz=>{
+      const pp=getPP(tmz);
+      if(!S.multiTrend[tmz]) S.multiTrend[tmz]=[];
+      S.multiTrend[tmz].push({t:Date.now(),v:pp});
+      if(S.multiTrend[tmz].length>200) S.multiTrend[tmz].shift();
+      S.specData[tmz]=pp;
+    });
+    updatePPList();
+    if(S.chartTab==='trend'||S.chartTab==='smm') drawChart();
+    scanTimer=setTimeout(()=>doScanStep(single),speedMs*3);
+    return;
+  }
+
+  // Full Scan 모드
+  const pp=getPP(mz);
+  S.specData[mz]=pp;
+  document.getElementById('sbMz').textContent=mz;
+  document.getElementById('sbInt').textContent=pp>1e-14?pp.toExponential(2):'<1e-14';
+  if(S.chartTab==='analog') drawChart();
+  S.scanMz++;
+  if(S.scanMz>S.endMz){
+    S.scanNum++;
+    document.getElementById('tbScanNum').textContent=S.scanNum;
+    S.trendData.push({t:Date.now(),p:getCurrentPressure()});
+    if(S.trendData.length>200) S.trendData.shift();
+    // SMM 트렌드도 동시 업데이트
+    const smmPP=S.specData[S.smmMz]||getPP(S.smmMz);
+    S.smmTrend.push({t:Date.now(),v:smmPP});
+    if(S.smmTrend.length>200) S.smmTrend.shift();
+    document.getElementById('smmPPDisp').textContent=smmPP>1e-14?formatP(smmPP):'< det.limit';
+    checkAlarms(); updatePPList();
+    if(S.chartTab!=='analog') drawChart();
+    if(single){stopScan();return;}
+    S.scanMz=S.startMz;
+    S.prevSpec={...S.specData}; S.specData={};
+  }
+  scanTimer=setTimeout(()=>doScanStep(single),speedMs);
+}
+
+function stopScan(){
+  S.scanning=false;
+  if(scanTimer){clearTimeout(scanTimer);scanTimer=null;}
+  document.getElementById('btnScan').textContent='▶ Scan';
+  document.getElementById('btnScan').classList.remove('danger');
+  document.getElementById('ledScan').className='tled off';
+  if(S.filamentOn) setTbMode('IDLE','#00ccff');
+  drawChart();
+}
+
+// ── MEASUREMENT MODE ───────────────────────────────────
+function setMMode(m){
+  S.mmode=m;
+  document.querySelectorAll('.mmode-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mmode-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('mmtab_'+m).classList.add('active');
+  document.getElementById('mmp_'+m).classList.add('active');
+  document.getElementById('sbMMode').textContent=
+    m==='full'?'Full Scan':m==='smm'?'Single Mass':'Multi Track';
+  // SMM 모드면 자동으로 SMM 트렌드 탭 전환
+  if(m==='smm') setChartTab('smm');
+  if(m==='multi') setChartTab('trend');
+  if(m==='full') setChartTab('analog');
+}
+
+function setSMMMz(v){
+  S.smmMz=parseInt(v);
+  document.getElementById('smmMzInput').value=S.smmMz;
+  document.getElementById('smmMzDisp').textContent=S.smmMz;
+  document.getElementById('smmNameDisp').textContent=GAS_NAMES[S.smmMz]||('m/z '+S.smmMz);
+  S.smmTrend=[];
+}
+
+// Multi Track
+function addMultiTrack(){
+  const v=parseInt(document.getElementById('multiMzAdd').value);
+  if(v&&!S.multiTrack.includes(v)&&S.multiTrack.length<8){
+    S.multiTrack.push(v);
+    S.multiTrend[v]=[];
+    renderMultiTrackList();
+  }
+}
+function removeMultiTrack(mz){
+  S.multiTrack=S.multiTrack.filter(m=>m!==mz);
+  delete S.multiTrend[mz];
+  renderMultiTrackList();
+}
+function renderMultiTrackList(){
+  document.getElementById('multiTrackList').innerHTML=
+    S.multiTrack.map(mz=>`
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:${GAS_COLORS[mz]||'#667788'};flex-shrink:0;"></div>
+      <span style="flex:1;font-size:11px;color:#aabb cc;">${GAS_NAMES[mz]||'m/z '+mz} (${mz})</span>
+      <button onclick="removeMultiTrack(${mz})" style="background:none;border:none;color:#556677;cursor:pointer;font-size:10px;">✕</button>
+    </div>`).join('');
+}
+
+// ── CHART ─────────────────────────────────────────────
+function setChartTab(t){
+  S.chartTab=t;
+  document.querySelectorAll('.chart-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab_'+t).classList.add('active');
+  drawChart();
+}
+function toggleAutoScale(){S.autoScale=!S.autoScale;document.getElementById('btnAS').textContent='AutoScale:'+(S.autoScale?'ON':'OFF');drawChart();}
+function toggleLogScale(){S.logScale=!S.logScale;document.getElementById('btnLog').textContent='Log:'+(S.logScale?'ON':'OFF');drawChart();}
+
+function drawChart(){
+  if(S.chartTab==='table'){drawTable();return;}
+  if(S.chartTab==='smm'){drawSMMTrend();return;}
+  if(S.chartTab==='trend'){drawTrend();return;}
+
+  const canvas=document.getElementById('mainCanvas');
+  const wrap=document.getElementById('chartWrap');
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.fillStyle='#0e0e12';ctx.fillRect(0,0,W,H);
+
+  const pad={l:74,r:16,t:16,b:38};
+  const gW=W-pad.l-pad.r,gH=H-pad.t-pad.b;
+  const disp=Object.keys(S.specData).length>0?S.specData:S.prevSpec;
+  const prev=S.chartTab==='analog'?S.prevSpec:{};
+
+  let maxPP=0;
+  Object.values(disp).forEach(v=>{if(v>maxPP)maxPP=v;});
+  if(!S.autoScale||maxPP===0) maxPP=getCurrentPressure()*1.5;
+  if(maxPP===0) maxPP=1e-9;
+
+  // y축
+  for(let i=0;i<=6;i++){
+    const y=pad.t+gH*i/6;
+    ctx.strokeStyle='#1a1e26';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const v=maxPP*(1-i/6)*unitFactor;
+    if(v>0){
+      const e=Math.floor(Math.log10(v));
+      const mv=(v/Math.pow(10,e)).toFixed(1);
+      ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='right';
+      ctx.fillText(mv+'e'+e,pad.l-3,y+3);
+    }
+  }
+  ctx.save();ctx.translate(10,pad.t+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+  ctx.fillText('Partial Pressure ('+unitLabel+')',0,0);ctx.restore();
+
+  // x축
+  const SM=S.startMz,EM=S.endMz;
+  const xStep=Math.max(5,Math.ceil((EM-SM)/10/5)*5);
+  for(let m=SM;m<=EM;m+=xStep){
+    const px=pad.l+gW*(m-SM)/(EM-SM);
+    ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+    ctx.fillText(m,px,pad.t+gH+14);
+    ctx.strokeStyle='#181c24';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(px,pad.t);ctx.lineTo(px,pad.t+gH);ctx.stroke();
+  }
+  ctx.fillStyle='#3a5060';ctx.textAlign='center';ctx.fillText('m/z',pad.l+gW/2,pad.t+gH+26);
+  ctx.strokeStyle='#2a3040';ctx.lineWidth=1;ctx.strokeRect(pad.l,pad.t,gW,gH);
+
+  function ppToY(pp){return pad.t+gH*(1-Math.min(1,pp/maxPP));}
+  function mzToX(mz){return pad.l+gW*(mz-SM)/(EM-SM);}
+
+  if(S.chartTab==='analog'){
+    // 이전 스캔 (희미하게)
+    const pm=Object.keys(prev).map(Number).filter(m=>m>=SM&&m<=EM).sort((a,b)=>a-b);
+    if(pm.length>1){
+      ctx.beginPath();ctx.strokeStyle='#003322';ctx.lineWidth=1;
+      pm.forEach((m,i)=>{const x=mzToX(m),y=ppToY(prev[m]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.stroke();
+    }
+    // 현재 스캔
+    const cm=Object.keys(disp).map(Number).filter(m=>m>=SM&&m<=EM).sort((a,b)=>a-b);
+    if(cm.length>0){
+      ctx.beginPath();ctx.strokeStyle='#00ff88';ctx.lineWidth=1.5;
+      cm.forEach((m,i)=>{const x=mzToX(m),y=ppToY(disp[m]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.stroke();
+      if(S.scanning){
+        const lastM=cm[cm.length-1];const cx=mzToX(lastM);
+        ctx.strokeStyle='rgba(255,170,0,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+        ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,pad.t+gH);ctx.stroke();ctx.setLineDash([]);
+      }
+    }
+    // 피크 라벨
+    Object.entries(disp).forEach(([mzStr,pp])=>{
+      const mz=parseInt(mzStr);
+      if(mz<SM||mz>EM||pp/maxPP<0.05) return;
+      const x=mzToX(mz),y=ppToY(pp),col=GAS_COLORS[mz]||'#778899';
+      ctx.fillStyle=col;ctx.font='bold 9px Courier New';ctx.textAlign='center';
+      ctx.fillText(GAS_NAMES[mz]||(mz+''),x,y-13);
+      ctx.font='9px Courier New';ctx.fillText(mz,x,y-5);
+      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    });
+  }
+
+  if(S.chartTab==='bar'){
+    const barW=Math.max(3,Math.floor(gW/(EM-SM)*0.7));
+    Object.entries(disp).forEach(([mzStr,pp])=>{
+      const mz=parseInt(mzStr);
+      if(mz<SM||mz>EM) return;
+      const x=mzToX(mz),y=ppToY(pp),bH=pad.t+gH-y;
+      if(bH<1) return;
+      const col=GAS_COLORS[mz]||'#556677';
+      ctx.fillStyle=col;ctx.fillRect(x-barW/2,y,barW,bH);
+      if(pp/maxPP>0.04){
+        ctx.fillStyle=col;ctx.font='bold 9px Courier New';ctx.textAlign='center';
+        ctx.fillText(GAS_NAMES[mz]||(mz+''),x,y-12);
+        ctx.font='9px Courier New';ctx.fillText(mz,x,y-4);
+      }
+    });
+  }
+
+  // 커서
+  if(S.cursorMz!==null){
+    const cx=mzToX(S.cursorMz);
+    ctx.strokeStyle='#ffffff22';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,pad.t+gH);ctx.stroke();
+  }
+}
+
+// Single Mass Monitor 트렌드
+function drawSMMTrend(){
+  const canvas=document.getElementById('mainCanvas');
+  const wrap=document.getElementById('chartWrap');
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.fillStyle='#0e0e12';ctx.fillRect(0,0,W,H);
+
+  const pad={l:74,r:16,t:30,b:38};
+  const gW=W-pad.l-pad.r,gH=H-pad.t-pad.b;
+  const col=GAS_COLORS[S.smmMz]||'#00ff88';
+  const data=S.smmTrend;
+
+  // 제목
+  ctx.fillStyle=col;ctx.font='bold 12px Courier New';ctx.textAlign='center';
+  ctx.fillText('Single Mass Monitor — m/z '+S.smmMz+' ('+( GAS_NAMES[S.smmMz]||'?')+')',pad.l+gW/2,pad.t-10);
+
+  ctx.strokeStyle='#2a3040';ctx.lineWidth=1;ctx.strokeRect(pad.l,pad.t,gW,gH);
+
+  if(data.length<2){
+    ctx.fillStyle='#334455';ctx.font='11px Courier New';ctx.textAlign='center';
+    ctx.fillText('Single Mass mode로 전환 후 스캔 시작',pad.l+gW/2,pad.t+gH/2);
+    return;
+  }
+
+  const maxV=Math.max(...data.map(d=>d.v))*1.3||1e-9;
+  for(let i=0;i<=5;i++){
+    const y=pad.t+gH*i/5;
+    ctx.strokeStyle='#1a1e26';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const v=maxV*(1-i/5)*unitFactor;
+    if(v>0){
+      const e=Math.floor(Math.log10(v));const mv=(v/Math.pow(10,e)).toFixed(1);
+      ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='right';
+      ctx.fillText(mv+'e'+e,pad.l-3,y+3);
+    }
+  }
+  ctx.save();ctx.translate(10,pad.t+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+  ctx.fillText(unitLabel,0,0);ctx.restore();
+  ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+  ctx.fillText('Time →',pad.l+gW/2,pad.t+gH+26);
+
+  // 선
+  ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();
+  data.forEach((d,i)=>{
+    const x=pad.l+gW*i/Math.max(data.length-1,1);
+    const y=pad.t+gH*(1-d.v/maxV);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // 채우기
+  ctx.fillStyle=col+'18';
+  ctx.lineTo(pad.l+gW*(data.length-1)/Math.max(data.length-1,1),pad.t+gH);
+  ctx.lineTo(pad.l,pad.t+gH);ctx.closePath();ctx.fill();
+
+  // 현재값
+  const last=data[data.length-1];
+  ctx.fillStyle=col;ctx.font='bold 11px Courier New';ctx.textAlign='left';
+  ctx.fillText('Current: '+formatP(last.v),pad.l+5,pad.t+18);
+}
+
+// Trend (P vs t)
+function drawTrend(){
+  const canvas=document.getElementById('mainCanvas');
+  const wrap=document.getElementById('chartWrap');
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.fillStyle='#0e0e12';ctx.fillRect(0,0,W,H);
+  const pad={l:74,r:16,t:16,b:38};
+  const gW=W-pad.l-pad.r,gH=H-pad.t-pad.b;
+  ctx.strokeStyle='#2a3040';ctx.lineWidth=1;ctx.strokeRect(pad.l,pad.t,gW,gH);
+  ctx.save();ctx.translate(10,pad.t+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+  ctx.fillText('Total Pressure ('+unitLabel+')',0,0);ctx.restore();
+  ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='center';
+  ctx.fillText('Scan #',pad.l+gW/2,pad.t+gH+26);
+  for(let i=0;i<=5;i++){
+    const y=pad.t+gH*i/5;
+    ctx.strokeStyle='#1a1e26';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  }
+
+  // Multi Track 모드면 각 가스별 트렌드 표시
+  if(S.mmode==='multi'){
+    const allData=Object.values(S.multiTrend).flat();
+    if(allData.length===0){
+      ctx.fillStyle='#334455';ctx.font='11px Courier New';ctx.textAlign='center';
+      ctx.fillText('Multi Track 모드로 전환 후 스캔 시작',pad.l+gW/2,pad.t+gH/2);
+      return;
+    }
+    const maxV=Math.max(...allData.map(d=>d.v))*1.3||1e-9;
+    S.multiTrack.forEach(mz=>{
+      const data=S.multiTrend[mz]||[];
+      if(data.length<2) return;
+      const col=GAS_COLORS[mz]||'#667788';
+      ctx.strokeStyle=col;ctx.lineWidth=1.5;
+      ctx.beginPath();
+      data.forEach((d,i)=>{
+        const x=pad.l+gW*i/Math.max(data.length-1,1);
+        const y=pad.t+gH*(1-d.v/maxV);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+      // 라벨
+      const last=data[data.length-1];
+      const lx=pad.l+gW*(data.length-1)/Math.max(data.length-1,1);
+      const ly=pad.t+gH*(1-last.v/maxV);
+      ctx.fillStyle=col;ctx.font='9px Courier New';ctx.textAlign='left';
+      ctx.fillText('m/z'+mz,lx+2,ly);
+    });
+    return;
+  }
+
+  // 전체 압력 트렌드
+  const data=S.trendData;
+  if(data.length<2){
+    ctx.fillStyle='#334455';ctx.font='11px Courier New';ctx.textAlign='center';
+    ctx.fillText('Run continuous scan to build trend',pad.l+gW/2,pad.t+gH/2);
+    return;
+  }
+  const maxP=Math.max(...data.map(d=>d.p))*1.3;
+  for(let i=0;i<=5;i++){
+    const v=maxP*(1-i/5)*unitFactor;
+    const y=pad.t+gH*i/5;
+    if(v>0){
+      const e=Math.floor(Math.log10(v));const m=(v/Math.pow(10,e)).toFixed(1);
+      ctx.fillStyle='#3a5060';ctx.font='9px Courier New';ctx.textAlign='right';
+      ctx.fillText(m+'e'+e,pad.l-3,y+3);
+    }
+  }
+  ctx.strokeStyle='#00ccff';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  data.forEach((d,i)=>{
+    const x=pad.l+gW*i/Math.max(data.length-1,1);
+    const y=pad.t+gH*(1-d.p/maxP);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.fillStyle='rgba(0,200,255,0.06)';
+  ctx.lineTo(pad.l+gW,pad.t+gH);ctx.lineTo(pad.l,pad.t+gH);ctx.closePath();ctx.fill();
+}
+
+function drawTable(){
+  const canvas=document.getElementById('mainCanvas');
+  const wrap=document.getElementById('chartWrap');
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.fillStyle='#0e0e12';ctx.fillRect(0,0,W,H);
+  const cols=[{l:'m/z',w:50},{l:'Species',w:90},{l:'Partial Pressure',w:160},{l:'Rel. %',w:70},{l:'Status',w:90}];
+  let x=14,y=30;
+  ctx.fillStyle='#1c2430';ctx.fillRect(8,10,W-16,22);
+  ctx.fillStyle='#5588aa';ctx.font='bold 10px Courier New';ctx.textAlign='left';
+  cols.forEach(c=>{ctx.fillText(c.l,x,y);x+=c.w;});
+  const disp=Object.keys(S.specData).length>0?S.specData:S.prevSpec;
+  const maxPP=Math.max(...Object.values(disp),1e-15);
+  Object.keys(disp).map(Number).sort((a,b)=>(disp[b]||0)-(disp[a]||0)).forEach((mz,ri)=>{
+    if(y>H-20) return;
+    const pp=disp[mz]||0;
+    const rel=(pp/maxPP*100).toFixed(1);
+    const col=GAS_COLORS[mz]||'#6688aa';
+    y=40+ri*19;x=14;
+    if(ri%2===0){ctx.fillStyle='#13151e';ctx.fillRect(8,y-12,W-16,18);}
+    ctx.fillStyle=col;ctx.font='10px Courier New';ctx.textAlign='left';
+    ctx.fillText(mz,x,y);x+=cols[0].w;
+    ctx.fillStyle='#bbccdd';ctx.fillText(GAS_NAMES[mz]||('m/z '+mz),x,y);x+=cols[1].w;
+    ctx.fillStyle='#00ffaa';ctx.fillText(formatP(pp),x,y);x+=cols[2].w;
+    ctx.fillStyle='#ffcc00';ctx.fillText(rel+'%',x,y);x+=cols[3].w;
+    const st=parseFloat(rel)>30?'HIGH':parseFloat(rel)>10?'ELEVATED':'Normal';
+    ctx.fillStyle=st==='HIGH'?'#ff4444':st==='ELEVATED'?'#ffaa00':'#00aa66';
+    ctx.fillText(st,x,y);
+  });
+}
+
+// ── REVEAL (진단 공개) ────────────────────────────────
+function showReveal(){
+  const info=REVEAL_INFO[S.scenario]||REVEAL_INFO['none'];
+  document.getElementById('revTitle').textContent='★ 진단 결과 공개 — '+SCENARIOS[S.scenario].label;
+  document.getElementById('revTitle').style.color=info.color;
+  document.getElementById('revCause').innerHTML=`<span style="color:${info.color};font-size:18px;">${info.cause}</span>`;
+  document.getElementById('revPeaks').innerHTML=info.peaks.map(p=>
+    `<div class="rpeak" style="background:${(GAS_COLORS[p.mz]||'#667788')}22;color:${GAS_COLORS[p.mz]||'#aaa'};border:1px solid ${GAS_COLORS[p.mz]||'#445'}44;">
+      m/z ${p.mz} — ${p.label}
+    </div>`).join('');
+  document.getElementById('revDetail').textContent=info.detail;
+  document.getElementById('revealOverlay').classList.add('show');
+}
+
+// ── PP LIST ───────────────────────────────────────────
+function updatePPList(){
+  const disp=Object.keys(S.specData).length>0?S.specData:S.prevSpec;
+  const maxPP=Math.max(...Object.values(disp),1e-15);
+  const sorted=Object.keys(disp).map(Number).sort((a,b)=>(disp[b]||0)-(disp[a]||0)).slice(0,14);
+  document.getElementById('ppList').innerHTML=sorted.map(mz=>{
+    const pp=disp[mz]||0,col=GAS_COLORS[mz]||'#556677';
+    const pct=Math.min(100,pp/maxPP*100).toFixed(1);
+    return `<div class="gas-row">
+      <div class="gas-header">
+        <span><span class="gas-dot" style="background:${col}"></span><span class="gas-name">${GAS_NAMES[mz]||'m/z '+mz} (${mz})</span></span>
+        <span class="gas-pp">${formatP(pp)}</span>
+      </div>
+      <div class="gas-bar-bg"><div class="gas-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+  updatePressureDisplay();
+}
+
+// ── ALARMS ────────────────────────────────────────────
+function checkAlarms(){
+  const d=S.specData;
+  if((d[28]||0)>1e-7&&(d[32]||0)>2e-8) addAlarm('danger','⚠ Air Leak? — m/z 28+32 elevated');
+  if((d[18]||0)>5e-8) addAlarm('warn','H₂O(18) high — moisture contamination?');
+  if((d[41]||0)>1e-9||(d[55]||0)>1e-9) addAlarm('warn','HC detected — oil contamination?');
+  if(getCurrentPressure()>1e-4&&S.filamentOn) addAlarm('danger','OVERPRESSURE!');
+}
+function addAlarm(type,msg){
+  const t=new Date().toLocaleTimeString('ko-KR',{hour12:false});
+  S.alarms.unshift({type,msg,t});
+  if(S.alarms.length>30) S.alarms.pop();
+  renderAlarms();
+}
+function clearAlarms(){S.alarms=[];renderAlarms();}
+function renderAlarms(){
+  const colors={danger:'#ff4444',warn:'#ffaa00',ok:'#00aa66'};
+  document.getElementById('alarmList').innerHTML=
+    S.alarms.slice(0,10).map(a=>`
+    <div class="alarm-row">
+      <div class="alarm-dot" style="background:${colors[a.type]||'#888'}"></div>
+      <span class="alarm-msg">${a.msg}</span>
+      <span class="alarm-time">${a.t}</span>
+    </div>`).join('');
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function updatePressureDisplay(){
+  const p=getCurrentPressure(),s=formatP(p);
+  document.getElementById('tbPressure').textContent=s;
+  document.getElementById('sbP').textContent=s;
+}
+function formatP(p){
+  const v=p*unitFactor;
+  if(v<=0) return '<1e-14 '+unitLabel;
+  const e=Math.floor(Math.log10(v));
+  return (v/Math.pow(10,e)).toFixed(2)+'e'+e+' '+unitLabel;
+}
+function setScanParam(){
+  S.startMz=parseInt(document.getElementById('sl_start').value);
+  S.endMz=parseInt(document.getElementById('sl_end').value);
+  document.getElementById('rv_start').textContent=S.startMz;
+  document.getElementById('rv_end').textContent=S.endMz;
+}
+function setSpeed(v){
+  const i=parseInt(v)-1;
+  speedMs=[120,60,25,10,3][i];
+  document.getElementById('rv_speed').textContent=['V.Slow','Slow','Med','Fast','V.Fast'][i];
+}
+function setNoise(v){
+  const i=parseInt(v);
+  noiseAmp=[0,0.02,0.06,0.15,0.35][i];
+  document.getElementById('rv_noise').textContent=['None','Low','Med','High','V.High'][i];
+}
+function setTbMode(label,color){
+  document.getElementById('tbMode').textContent=label;
+  document.getElementById('tbMode').style.color=color;
+}
+function clearData(){
+  stopScan();
+  S.specData={};S.prevSpec={};S.trendData=[];
+  S.smmTrend=[];S.multiTrend={};S.scanNum=0;
+  document.getElementById('tbScanNum').textContent=0;
+  drawChart();updatePPList();
+}
+function updateUnits(){
+  unitLabel=document.getElementById('unitSel').value;
+  unitFactor=UNIT_FACTORS[unitLabel];
+  updatePressureDisplay();drawChart();
+}
+function runDegas(){
+  if(!S.filamentOn){addAlarm('warn','Filament must be ON.');return;}
+  addAlarm('ok','Degas started (5s)...');
+  setTbMode('DEGAS','#ffaa00');
+  document.getElementById('ledScan').className='tled blink';
+  setTimeout(()=>{
+    noiseAmp=Math.max(0,noiseAmp*0.4);
+    addAlarm('ok','Degas complete.');
+    document.getElementById('ledScan').className=S.scanning?'tled on':'tled off';
+    if(S.filamentOn) setTbMode('IDLE','#00ccff');
+  },5000);
+}
+
+// ── CURSOR ────────────────────────────────────────────
+document.getElementById('mainCanvas').addEventListener('mousemove',function(e){
+  if(S.chartTab==='trend'||S.chartTab==='smm'||S.chartTab==='table') return;
+  const wrap=document.getElementById('chartWrap');
+  const rect=wrap.getBoundingClientRect();
+  const gW=wrap.clientWidth-74-16;
+  const relX=e.clientX-rect.left-74;
+  const mz=Math.round(S.startMz+(relX/gW)*(S.endMz-S.startMz));
+  if(mz>=S.startMz&&mz<=S.endMz){
+    S.cursorMz=mz;
+    const disp=Object.keys(S.specData).length>0?S.specData:S.prevSpec;
+    const pp=disp[mz]||0;
+    document.getElementById('sbCursor').textContent=
+      `m/z ${mz}  ${GAS_NAMES[mz]||''}  ${pp>0?formatP(pp):'< det.limit'}`;
+  }
+});
+document.getElementById('mainCanvas').addEventListener('mouseleave',()=>{
+  S.cursorMz=null;document.getElementById('sbCursor').textContent='—';
+});
+
+// ── CLOCK + INIT ──────────────────────────────────────
+setInterval(()=>{
+  document.getElementById('clockDisp').textContent=
+    new Date().toLocaleTimeString('ko-KR',{hour12:false});
+},1000);
+setInterval(()=>{
+  if(S.chartTab==='bar'||S.chartTab==='table'||S.chartTab==='trend') drawChart();
+},500);
+window.addEventListener('resize',()=>drawChart());
+
+// 초기 시나리오 = base vacuum
+setScenario('base');
+renderMultiTrackList();
+drawChart();
+addAlarm('ok','RGASoft v3.2 — initialized');
+addAlarm('warn','Filament OFF — click to start');
+document.getElementById('clockDisp').textContent=
+  new Date().toLocaleTimeString('ko-KR',{hour12:false});
+</script>
+</body>
+</html>
