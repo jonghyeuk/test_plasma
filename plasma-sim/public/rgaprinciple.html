@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RGA 동작 원리 애니메이션</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#07101e;color:#e0e0e0;font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+.header{background:linear-gradient(135deg,#0d1b2a,#1a2744);border-bottom:2px solid rgba(0,245,255,.2);padding:12px 20px;display:flex;align-items:center;gap:12px;}
+.header-icon{width:38px;height:38px;background:linear-gradient(135deg,#00f5ff,#0080ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.header-title{font-family:'Orbitron',sans-serif;font-size:14px;color:#00f5ff;letter-spacing:2px;}
+.header-sub{font-size:11px;color:#8899aa;margin-top:1px;}
+
+.main{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:14px;max-width:1200px;margin:0 auto;}
+
+/* 왼쪽: 애니메이션 영역 */
+.anim-wrap{display:flex;flex-direction:column;gap:10px;}
+.card{background:#0d1b2a;border:1px solid #1a2744;border-radius:10px;padding:14px;}
+.card-title{font-family:'Orbitron',sans-serif;font-size:10px;color:#00f5ff;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';width:3px;height:12px;background:#00f5ff;border-radius:2px;flex-shrink:0;}
+
+/* 메인 SVG 애니메이션 */
+#rgaSVG{width:100%;border-radius:8px;background:#040c18;border:1px solid #1a2744;display:block;}
+
+/* 오른쪽: 컨트롤 + 스펙트럼 */
+.right-col{display:flex;flex-direction:column;gap:10px;}
+
+/* 가스 선택 */
+.gas-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.gas-btn{padding:8px 6px;border:1px solid #1a2744;border-radius:7px;background:#0a1420;cursor:pointer;text-align:center;transition:all .2s;user-select:none;}
+.gas-btn:hover{border-color:rgba(0,245,255,.3);}
+.gas-btn.active{border-color:rgba(0,245,255,.6);background:#0d2535;}
+.gas-btn .gas-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.gas-btn .gas-mz{font-size:10px;color:#556677;}
+.gas-btn .gas-bar{height:4px;border-radius:2px;margin-top:5px;transition:width .4s;}
+
+/* 슬라이더 */
+.slider-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.slider-lbl{font-size:11px;color:#7788aa;display:flex;justify-content:space-between;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;background:#1a2744;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#00f5ff;border-radius:50%;}
+
+/* m/z 스캔 표시 */
+.scan-info{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.scan-box{flex:1;min-width:70px;background:#060d18;border:1px solid #1a2744;border-radius:6px;padding:6px 8px;}
+.scan-box-lbl{font-size:9px;color:#556677;margin-bottom:2px;}
+.scan-box-val{font-family:'Orbitron',sans-serif;font-size:13px;color:#00ff88;}
+
+/* 실시간 스펙트럼 */
+#specCanvas{display:block;width:100%;height:170px;background:#040c18;border:1px solid #1a2744;border-radius:8px;}
+
+/* 카운터 바 */
+.count-bars{display:flex;flex-direction:column;gap:5px;}
+.count-row{display:flex;align-items:center;gap:6px;font-size:11px;}
+.count-lbl{width:60px;text-align:right;color:#7799bb;flex-shrink:0;}
+.count-track{flex:1;height:12px;background:#060d18;border-radius:3px;overflow:hidden;border:1px solid #1a2744;}
+.count-fill{height:100%;border-radius:3px;transition:width .3s;}
+.count-num{width:34px;text-align:right;font-family:'Orbitron',sans-serif;font-size:9px;color:#aabbcc;}
+
+/* 버튼 */
+.btn-row{display:flex;gap:7px;margin-top:6px;}
+.btn{padding:7px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:700;transition:all .2s;}
+.btn-cyan{background:linear-gradient(135deg,#005f6b,#00a8b5);color:#fff;}
+.btn-orange{background:linear-gradient(135deg,#7a3000,#c05000);color:#fff;}
+.btn-purple{background:linear-gradient(135deg,#3a0070,#7000c0);color:#fff;}
+
+/* 진단 박스 */
+.diag-box{padding:9px 12px;border-radius:7px;font-size:12px;line-height:1.6;}
+.diag-normal{background:#001a10;border:1px solid #004422;color:#00cc88;}
+.diag-warn{background:#1a1000;border:1px solid #443300;color:#ff9900;}
+.diag-alert{background:#1a0000;border:1px solid #440000;color:#ff5555;}
+
+/* 범례 */
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:#8899bb;}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+@media(max-width:700px){.main{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">⚛</div>
+  <div>
+    <div class="header-title">RGA INTERACTIVE — 동작 원리 시뮬레이터</div>
+    <div class="header-sub">이온 생성 → 사중극자 분리 → 검출기 카운팅 실시간 애니메이션</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 왼쪽: 애니메이션 -->
+  <div class="anim-wrap">
+    <div class="card">
+      <div class="card-title">RGA 내부 동작 — 실시간 이온 추적</div>
+      <svg id="rgaSVG" viewBox="0 0 700 360"></svg>
+      <div class="legend" id="ionLegend"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">검출기 이온 카운트 (현재 스캔 m/z별)</div>
+      <div class="count-bars" id="countBars"></div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 컨트롤 + 스펙트럼 -->
+  <div class="right-col">
+
+    <div class="card">
+      <div class="card-title">가스 조성 설정</div>
+      <div class="gas-grid" id="gasGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">스캔 파라미터</div>
+      <div class="slider-row">
+        <div class="slider-lbl"><span>현재 스캔 m/z</span><span id="scanMzLbl" style="color:#00f5ff;font-family:'Orbitron',sans-serif;">—</span></div>
+        <input type="range" id="scanMz" min="1" max="100" value="2" oninput="setScanMz(this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-lbl"><span>이온 발생 속도</span><span id="rateLbl">보통</span></div>
+        <input type="range" id="rateSlider" min="1" max="5" value="3" oninput="setRate(this.value)">
+      </div>
+      <div class="scan-info">
+        <div class="scan-box"><div class="scan-box-lbl">스캔 m/z</div><div class="scan-box-val" id="sbMz">—</div></div>
+        <div class="scan-box"><div class="scan-box-lbl">통과 이온</div><div class="scan-box-val" id="sbPass" style="color:#00f5ff;">0</div></div>
+        <div class="scan-box"><div class="scan-box-lbl">소멸 이온</div><div class="scan-box-val" id="sbFail" style="color:#ff4455;">0</div></div>
+        <div class="scan-box"><div class="scan-box-lbl">총 감지</div><div class="scan-box-val" id="sbTotal" style="color:#ffcc00;">0</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-cyan" onclick="toggleScan()">▶ 자동 스캔</button>
+        <button class="btn btn-purple" onclick="stepScan()">→ 단계 이동</button>
+        <button class="btn btn-orange" onclick="resetAll()">↺ 리셋</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">실시간 RGA 스펙트럼</div>
+      <canvas id="specCanvas"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">진단 결과</div>
+      <div id="diagBox" class="diag-box diag-normal">가스를 설정하고 스캔을 시작하세요.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── GAS DATA ──────────────────────────────────────────
+const GASES = [
+  {id:'H2',   label:'H₂',   mz:2,  color:'#00f5ff', desc:'정상 진공', val:80},
+  {id:'H2O',  label:'H₂O',  mz:18, color:'#0088ff', desc:'수분 오염', val:15},
+  {id:'N2',   label:'N₂',   mz:28, color:'#ff9900', desc:'공기/누출', val:8},
+  {id:'O2',   label:'O₂',   mz:32, color:'#ff4455', desc:'공기 누출', val:2},
+  {id:'Ar',   label:'Ar',   mz:40, color:'#aa44ff', desc:'공정 가스', val:0},
+  {id:'CO2',  label:'CO₂',  mz:44, color:'#ffcc00', desc:'반응 산물', val:3},
+];
+
+// ── STATE ────────────────────────────────────────────
+let ions = [];          // active ion particles
+let scanMz = 2;         // 현재 필터 m/z
+let autoScan = false;
+let scanTimer = null;
+let autoScanDir = 1;
+let passCount = {}; GASES.forEach(g=>passCount[g.mz]=0);
+let totalPass=0, totalFail=0, totalDetect=0;
+let rateLevel = 3;      // 1~5
+let animFrame = null;
+let lastSpawn = 0;
+let specData = {};      // mz → cumulative count
+GASES.forEach(g=>specData[g.mz]=0);
+
+// SVG dimensions (viewBox)
+const VW=700, VH=360;
+// Layout zones
+const ZONES = {
+  chamber: {x:10,  y:60,  w:115, h:200},
+  ionizer: {x:135, y:80,  w:100, h:160},
+  lens:    {x:245, y:95,  w:55,  h:130},
+  quad:    {x:310, y:60,  w:220, h:200},
+  detect:  {x:540, y:80,  w:100, h:160},
+};
+const ION_PATH_Y = VH/2 - 20; // center y of ion travel
+
+// ── BUILD STATIC SVG ──────────────────────────────────
+const svg = document.getElementById('rgaSVG');
+
+function makeSVGEl(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+
+function buildStaticSVG(){
+  svg.innerHTML = '';
+
+  // background
+  const bg = makeSVGEl('rect',{x:0,y:0,width:VW,height:VH,fill:'#040c18'});
+  svg.appendChild(bg);
+
+  // === 챔버 ===
+  const cz = ZONES.chamber;
+  const chamberG = makeSVGEl('g',{});
+  chamberG.appendChild(makeSVGEl('rect',{x:cz.x,y:cz.y,width:cz.w,height:cz.h,rx:8,fill:'#0a1e30',stroke:'#1e5070','stroke-width':1.5}));
+  const cl = makeSVGEl('text',{x:cz.x+cz.w/2,y:cz.y-6,'text-anchor':'middle',fill:'#4488aa','font-size':10});
+  cl.textContent='챔버 (가스 분자)';
+  chamberG.appendChild(cl);
+  // 분자 아이콘들 (static)
+  GASES.forEach((g,i)=>{
+    const mx = cz.x+18+Math.floor(i%2)*55;
+    const my = cz.y+30+Math.floor(i/2)*58;
+    const c = makeSVGEl('circle',{cx:mx,cy:my,r:12,fill:'#060f1a',stroke:g.color,'stroke-width':1.5,'opacity':'0.5',id:'mol_'+g.id});
+    const t = makeSVGEl('text',{x:mx,y:my+4,'text-anchor':'middle',fill:g.color,'font-size':9,'opacity':'0.5',id:'molt_'+g.id});
+    t.textContent=g.label;
+    chamberG.appendChild(c); chamberG.appendChild(t);
+  });
+  svg.appendChild(chamberG);
+
+  // === 이온화부 ===
+  const iz = ZONES.ionizer;
+  const ionG = makeSVGEl('g',{});
+  ionG.appendChild(makeSVGEl('rect',{x:iz.x,y:iz.y,width:iz.w,height:iz.h,rx:6,fill:'#0d2a10',stroke:'#00aa55','stroke-width':1.5}));
+  const it = makeSVGEl('text',{x:iz.x+iz.w/2,y:iz.y-6,'text-anchor':'middle',fill:'#00cc88','font-size':10});
+  it.textContent='이온화부';
+  ionG.appendChild(it);
+  // 필라멘트 지그재그
+  const filPath = makeSVGEl('path',{d:`M${iz.x+12},${ION_PATH_Y-28} Q${iz.x+26},${ION_PATH_Y-40} ${iz.x+40},${ION_PATH_Y-28} Q${iz.x+54},${ION_PATH_Y-16} ${iz.x+68},${ION_PATH_Y-28} Q${iz.x+82},${ION_PATH_Y-40} ${iz.x+96},${ION_PATH_Y-28}`,stroke:'#ffcc00','stroke-width':2.5,fill:'none'});
+  ionG.appendChild(filPath);
+  const flt = makeSVGEl('text',{x:iz.x+iz.w/2,y:ION_PATH_Y-46,'text-anchor':'middle',fill:'#ffcc00','font-size':9});
+  flt.textContent='Filament (e⁻ 70eV)';
+  ionG.appendChild(flt);
+  // e- 방향 화살표
+  for(let ei=0;ei<3;ei++){
+    const ex = iz.x+20+ei*36;
+    const arr = makeSVGEl('text',{x:ex,y:ION_PATH_Y-8,'text-anchor':'middle',fill:'#ffcc006a','font-size':11});
+    arr.textContent='↓';
+    ionG.appendChild(arr);
+  }
+  const ionLabel = makeSVGEl('text',{x:iz.x+iz.w/2,y:iz.y+iz.h-6,'text-anchor':'middle',fill:'#00aa55','font-size':9});
+  ionLabel.textContent='M → M⁺ + e⁻';
+  ionG.appendChild(ionLabel);
+  svg.appendChild(ionG);
+
+  // === 이온 렌즈 ===
+  const lz = ZONES.lens;
+  const lensG = makeSVGEl('g',{});
+  lensG.appendChild(makeSVGEl('rect',{x:lz.x,y:lz.y,width:lz.w,height:lz.h,rx:5,fill:'#0d1a30',stroke:'#0066aa','stroke-width':1.5}));
+  const lt = makeSVGEl('text',{x:lz.x+lz.w/2,y:lz.y-6,'text-anchor':'middle',fill:'#4499cc','font-size':10});
+  lt.textContent='이온 렌즈';
+  lensG.appendChild(lt);
+  // 렌즈 링
+  for(let li=0;li<3;li++){
+    const ly2 = lz.y+25+li*38;
+    lensG.appendChild(makeSVGEl('rect',{x:lz.x+6,y:ly2,width:lz.w-12,height:8,rx:2,fill:'#1a3060',stroke:'#0066aa','stroke-width':1,'opacity':0.8}));
+  }
+  svg.appendChild(lensG);
+
+  // === 사중극자 ===
+  const qz = ZONES.quad;
+  const quadG = makeSVGEl('g',{});
+  quadG.appendChild(makeSVGEl('rect',{x:qz.x,y:qz.y,width:qz.w,height:qz.h,rx:8,fill:'#1a1000',stroke:'#ff9900','stroke-width':1.8}));
+  const qt = makeSVGEl('text',{x:qz.x+qz.w/2,y:qz.y-6,'text-anchor':'middle',fill:'#ff9900','font-size':10});
+  qt.textContent='사중극자 질량 필터 (Quadrupole)';
+  quadG.appendChild(qt);
+  // 4개 로드
+  const rodColor = '#3a2000', rodStroke = '#ff9900';
+  // top rod
+  quadG.appendChild(makeSVGEl('rect',{x:qz.x+12,y:qz.y+10,width:qz.w-24,height:22,rx:5,fill:rodColor,stroke:rodStroke,'stroke-width':1.2}));
+  // bottom rod
+  quadG.appendChild(makeSVGEl('rect',{x:qz.x+12,y:qz.y+qz.h-32,width:qz.w-24,height:22,rx:5,fill:rodColor,stroke:rodStroke,'stroke-width':1.2}));
+  // left rod
+  quadG.appendChild(makeSVGEl('rect',{x:qz.x+10,y:qz.y+35,width:22,height:qz.h-70,rx:5,fill:rodColor,stroke:rodStroke,'stroke-width':1.2}));
+  // right rod
+  quadG.appendChild(makeSVGEl('rect',{x:qz.x+qz.w-32,y:qz.y+35,width:22,height:qz.h-70,rx:5,fill:rodColor,stroke:rodStroke,'stroke-width':1.2}));
+  // RF/DC 라벨
+  const rfLabel = makeSVGEl('text',{x:qz.x+qz.w/2,y:qz.y+23,'text-anchor':'middle',fill:'#886600','font-size':8});
+  rfLabel.textContent='+RF/DC';
+  quadG.appendChild(rfLabel);
+  const rfLabel2 = makeSVGEl('text',{x:qz.x+qz.w/2,y:qz.y+qz.h-12,'text-anchor':'middle',fill:'#886600','font-size':8});
+  rfLabel2.textContent='−RF/DC';
+  quadG.appendChild(rfLabel2);
+  // 현재 스캔 m/z 표시
+  const mzBadge = makeSVGEl('rect',{x:qz.x+qz.w/2-30,y:qz.y+qz.h/2-11,width:60,height:22,rx:5,fill:'#2a1500',stroke:'#ff9900','stroke-width':1});
+  quadG.appendChild(mzBadge);
+  const mzText = makeSVGEl('text',{x:qz.x+qz.w/2,y:qz.y+qz.h/2+4,'text-anchor':'middle',fill:'#ff9900','font-size':11,'font-weight':'bold','font-family':'Orbitron,sans-serif',id:'mzText'});
+  mzText.textContent='m/z —';
+  quadG.appendChild(mzText);
+  svg.appendChild(quadG);
+
+  // === 검출기 ===
+  const dz = ZONES.detect;
+  const detG = makeSVGEl('g',{});
+  detG.appendChild(makeSVGEl('rect',{x:dz.x,y:dz.y,width:dz.w,height:dz.h,rx:6,fill:'#1a0a1a',stroke:'#aa44ff','stroke-width':1.5}));
+  const dtt = makeSVGEl('text',{x:dz.x+dz.w/2,y:dz.y-6,'text-anchor':'middle',fill:'#cc88ff','font-size':10});
+  dtt.textContent='검출기 (Faraday Cup)';
+  detG.appendChild(dtt);
+  // cup shape
+  const cup = makeSVGEl('path',{d:`M${dz.x+15},${ION_PATH_Y-28} L${dz.x+15},${ION_PATH_Y+28} L${dz.x+65},${ION_PATH_Y+28} L${dz.x+65},${ION_PATH_Y-28}`,stroke:'#8833cc','stroke-width':2.5,fill:'#0f0820'});
+  detG.appendChild(cup);
+  // 카운트 숫자
+  const cntText = makeSVGEl('text',{x:dz.x+dz.w/2,y:ION_PATH_Y+6,'text-anchor':'middle',fill:'#cc88ff','font-size':14,'font-weight':'bold','font-family':'Orbitron,sans-serif',id:'detCount'});
+  cntText.textContent='0';
+  detG.appendChild(cntText);
+  const cntLbl = makeSVGEl('text',{x:dz.x+dz.w/2,y:ION_PATH_Y+20,'text-anchor':'middle',fill:'#7755aa','font-size':8});
+  cntLbl.textContent='ion count';
+  detG.appendChild(cntLbl);
+  // 신호 바
+  const sigBg = makeSVGEl('rect',{x:dz.x+10,y:dz.y+dz.h-30,width:dz.w-20,height:12,rx:3,fill:'#0a0515',stroke:'#330055','stroke-width':1});
+  detG.appendChild(sigBg);
+  const sigFill = makeSVGEl('rect',{x:dz.x+10,y:dz.y+dz.h-30,width:0,height:12,rx:3,fill:'#aa44ff',id:'sigFill'});
+  detG.appendChild(sigFill);
+  svg.appendChild(detG);
+
+  // === ECU 박스 ===
+  const ecuG = makeSVGEl('g',{});
+  ecuG.appendChild(makeSVGEl('rect',{x:645,y:120,width:50,height:80,rx:5,fill:'#0a1428',stroke:'#334466','stroke-width':1}));
+  const ecut = makeSVGEl('text',{x:670,y:143,'text-anchor':'middle',fill:'#7799bb','font-size':8,'font-weight':'bold'});
+  ecut.textContent='ECU';
+  ecuG.appendChild(ecut);
+  for(let ri=0;ri<3;ri++){
+    ecuG.appendChild(makeSVGEl('rect',{x:651,y:150+ri*18,width:38,height:11,rx:2,fill:'#0d2030'}));
+  }
+  const ledColors=['#00f5ff','#00ff88','#ff9900'];
+  ledColors.forEach((c,i)=>{
+    ecuG.appendChild(makeSVGEl('circle',{cx:658,cy:155+i*18,r:3,fill:c,'opacity':'0.8',id:'led'+i}));
+  });
+  svg.appendChild(ecuG);
+  // ECU 연결선
+  const ecuLine = makeSVGEl('line',{x1:640,y1:160,x2:645,y2:160,stroke:'#334466','stroke-width':1,'stroke-dasharray':'3,2'});
+  svg.appendChild(ecuLine);
+
+  // === 흐름 화살표 (static) ===
+  const arrows = [
+    {x1:cz.x+cz.w,y1:ION_PATH_Y,x2:iz.x-2,y2:ION_PATH_Y,color:'#334455'},
+    {x1:iz.x+iz.w,y1:ION_PATH_Y,x2:lz.x-2,y2:ION_PATH_Y,color:'#334455'},
+    {x1:lz.x+lz.w,y1:ION_PATH_Y,x2:qz.x,y2:ION_PATH_Y,color:'#334455'},
+    {x1:qz.x+qz.w,y1:ION_PATH_Y,x2:dz.x,y2:ION_PATH_Y,color:'#334455'},
+  ];
+  arrows.forEach(a=>{
+    const line = makeSVGEl('line',{x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,stroke:a.color,'stroke-width':1.2,'stroke-dasharray':'4,3'});
+    svg.appendChild(line);
+  });
+
+  // === 단계 라벨 ===
+  const steps=[
+    {x:70,  label:'① 가스 분자'},
+    {x:185, label:'② 이온화'},
+    {x:272, label:'③ 집속'},
+    {x:420, label:'④ m/z 분리'},
+    {x:590, label:'⑤ 검출'},
+  ];
+  steps.forEach(s=>{
+    const sl = makeSVGEl('text',{x:s.x,y:VH-8,'text-anchor':'middle',fill:'#334455','font-size':9});
+    sl.textContent=s.label;
+    svg.appendChild(sl);
+  });
+
+  // 이온 레이어 (이온이 그려질 g 태그 — 맨 위)
+  const ionLayer = makeSVGEl('g',{id:'ionLayer'});
+  svg.appendChild(ionLayer);
+
+  // === 연결 배관 그리기 ===
+  // 챔버 → 이온화부 포트
+  svg.insertBefore(makeSVGEl('rect',{x:cz.x+cz.w,y:ION_PATH_Y-8,width:iz.x-(cz.x+cz.w),height:16,fill:'#0a1828',stroke:'none'}),ionLayer);
+}
+
+buildStaticSVG();
+
+// ── GAS GRID ─────────────────────────────────────────
+function buildGasGrid(){
+  const grid = document.getElementById('gasGrid');
+  grid.innerHTML='';
+  GASES.forEach(g=>{
+    const btn = document.createElement('div');
+    btn.className='gas-btn';
+    btn.id='gbtn_'+g.id;
+    btn.innerHTML=`<div class="gas-name" style="color:${g.color}">${g.label}</div>
+      <div class="gas-mz">m/z = ${g.mz} | ${g.desc}</div>
+      <input type="range" min="0" max="100" value="${g.val}" style="margin-top:5px;width:100%"
+        oninput="setGasVal('${g.id}',this.value)">
+      <div style="display:flex;justify-content:space-between;margin-top:2px;">
+        <span style="font-size:9px;color:#556677">0</span>
+        <span style="font-size:10px;color:${g.color};font-family:'Orbitron',sans-serif" id="gval_${g.id}">${g.val}</span>
+        <span style="font-size:9px;color:#556677">100</span>
+      </div>`;
+    grid.appendChild(btn);
+  });
+}
+buildGasGrid();
+
+function setGasVal(id, v){
+  const g = GASES.find(g=>g.id===id);
+  if(!g) return;
+  g.val = parseInt(v);
+  document.getElementById('gval_'+id).textContent=v;
+  updateMoleculeOpacity();
+  updateDiagnosis();
+}
+
+function updateMoleculeOpacity(){
+  const maxV = Math.max(...GASES.map(g=>g.val),1);
+  GASES.forEach(g=>{
+    const op = 0.15 + (g.val/maxV)*0.85;
+    const mol = document.getElementById('mol_'+g.id);
+    const molt = document.getElementById('molt_'+g.id);
+    if(mol){ mol.setAttribute('opacity',op); mol.setAttribute('stroke-width',1.5+g.val/maxV*2); }
+    if(molt) molt.setAttribute('opacity',op);
+  });
+}
+updateMoleculeOpacity();
+
+// ── COUNT BARS ───────────────────────────────────────
+function buildCountBars(){
+  const el = document.getElementById('countBars');
+  el.innerHTML='';
+  GASES.forEach(g=>{
+    el.innerHTML+=`<div class="count-row">
+      <div class="count-lbl" style="color:${g.color}">${g.label}(${g.mz})</div>
+      <div class="count-track"><div class="count-fill" id="cbar_${g.id}" style="background:${g.color};width:0%"></div></div>
+      <div class="count-num" id="cnum_${g.id}">0</div>
+    </div>`;
+  });
+}
+buildCountBars();
+
+function updateCountBars(){
+  const maxC = Math.max(...GASES.map(g=>passCount[g.mz]),1);
+  GASES.forEach(g=>{
+    const pct = passCount[g.mz]/maxC*100;
+    const bar = document.getElementById('cbar_'+g.id);
+    const num = document.getElementById('cnum_'+g.id);
+    if(bar) bar.style.width=pct+'%';
+    if(num) num.textContent=passCount[g.mz];
+  });
+  document.getElementById('sbTotal').textContent=totalDetect;
+  document.getElementById('sbPass').textContent=totalPass;
+  document.getElementById('sbFail').textContent=totalFail;
+}
+
+// ── ION PARTICLES ────────────────────────────────────
+class Ion {
+  constructor(gas){
+    this.gas = gas;
+    this.mz = gas.mz;
+    this.color = gas.color;
+    this.label = gas.label;
+    this.x = ZONES.ionizer.x + 5;
+    this.y = ION_PATH_Y + (Math.random()-0.5)*20;
+    this.r = 6;
+    this.phase = 'ionizer'; // ionizer → lens → quad → detect/destroy
+    this.targetX = ZONES.lens.x + 5;
+    this.speed = 1.8 + Math.random()*1.2;
+    this.alive = true;
+    this.passed = false; // 사중극자 통과 여부
+    this.wobble = 0;
+    this.wobbleAmp = (Math.random() > 0.5 ? 1 : -1) * (8 + Math.random()*6);
+    this.opacity = 1;
+    this.trail = []; // 궤적
+    // 통과 여부 결정 — 사중극자는 현재 scanMz와 정확히 일치하는 m/z만 통과
+    // diff=0: 거의 확실히 통과(95%), diff=1: 5% 통과(노이즈), diff>=2: 완전 소멸
+    const diff = Math.abs(this.mz - scanMz);
+    this.willPass = diff === 0 ? Math.random() < 0.95
+                  : diff === 1 ? Math.random() < 0.04
+                  : false;
+
+    // SVG element
+    this.g = makeSVGEl('g',{});
+    // trail path
+    this.trailPath = makeSVGEl('polyline',{points:'',stroke:this.color,'stroke-width':1,'fill':'none','opacity':'0.3'});
+    this.g.appendChild(this.trailPath);
+    // circle
+    this.circle = makeSVGEl('circle',{cx:this.x,cy:this.y,r:this.r,fill:this.color+'44',stroke:this.color,'stroke-width':1.5});
+    this.g.appendChild(this.circle);
+    // label
+    this.text = makeSVGEl('text',{x:this.x,y:this.y+3,'text-anchor':'middle',fill:this.color,'font-size':7,'font-weight':'bold'});
+    this.text.textContent=this.label;
+    this.g.appendChild(this.text);
+    // charge indicator
+    this.chargeDot = makeSVGEl('circle',{cx:this.x+5,cy:this.y-5,r:2.5,fill:'#ffcc00'});
+    this.g.appendChild(this.chargeDot);
+
+    document.getElementById('ionLayer').appendChild(this.g);
+  }
+
+  update(){
+    if(!this.alive) return;
+    const prevX=this.x, prevY=this.y;
+
+    // phase별 동작
+    if(this.phase==='ionizer'){
+      this.x += this.speed;
+      this.y += (ION_PATH_Y - this.y)*0.08;
+      if(this.x >= ZONES.lens.x) this.phase='lens';
+    }
+    else if(this.phase==='lens'){
+      this.x += this.speed;
+      this.y += (ION_PATH_Y - this.y)*0.2; // 집속
+      if(this.x >= ZONES.quad.x+50) this.phase='quad_enter';
+    }
+    else if(this.phase==='quad_enter'){
+      this.x += this.speed;
+      this.wobble += 0.25;
+      if(this.willPass){
+        // 통과 이온: 중심선 따라 약한 진동
+        this.y = ION_PATH_Y + Math.sin(this.wobble)*5;
+      } else {
+        // 소멸 이온: 빠르게 로드 쪽으로 튕겨나감
+        this.wobbleAmp += (this.wobbleAmp > 0 ? 3.5 : -3.5);
+        this.y = ION_PATH_Y + Math.max(-58, Math.min(58, this.wobbleAmp));
+      }
+      // 로드 충돌 판정
+      const qz=ZONES.quad;
+      if(!this.willPass && Math.abs(this.y - ION_PATH_Y) > 44){
+        this.phase='destroy';
+        totalFail++;
+        spawnSpark(this.x,this.y,this.color);
+      }
+      if(this.x >= ZONES.detect.x-5 && this.willPass){
+        this.phase='detect';
+        this.passed=true;
+        passCount[this.mz]=(passCount[this.mz]||0)+1;
+        specData[this.mz]=(specData[this.mz]||0)+1;
+        totalPass++; totalDetect++;
+        flashDetector(this.color);
+        updateCountBars();
+        updateSpectrum();
+      }
+    }
+    else if(this.phase==='detect'){
+      this.x += this.speed;
+      this.y += (ION_PATH_Y - this.y)*0.15;
+      this.opacity -= 0.06;
+      if(this.opacity<=0){ this.destroy(); return; }
+    }
+    else if(this.phase==='destroy'){
+      this.opacity -= 0.12;
+      if(this.opacity<=0){ this.destroy(); return; }
+    }
+
+    // 화면 밖
+    if(this.x > VW+10){ this.destroy(); return; }
+
+    // 업데이트 SVG
+    this.circle.setAttribute('cx',this.x);
+    this.circle.setAttribute('cy',this.y);
+    this.circle.setAttribute('opacity',this.opacity);
+    this.circle.setAttribute('fill',this.color+(Math.round(this.opacity*0x44).toString(16).padStart(2,'0')));
+    this.text.setAttribute('x',this.x);
+    this.text.setAttribute('y',this.y+3);
+    this.text.setAttribute('opacity',this.opacity);
+    this.chargeDot.setAttribute('cx',this.x+5);
+    this.chargeDot.setAttribute('cy',this.y-5);
+    this.chargeDot.setAttribute('opacity',this.opacity*0.8);
+    if(this.phase==='destroy'){
+      this.circle.setAttribute('stroke','#ff4455');
+      this.circle.setAttribute('r',this.r*(2-this.opacity));
+    }
+
+    // 궤적
+    this.trail.push(`${Math.round(this.x)},${Math.round(this.y)}`);
+    if(this.trail.length>12) this.trail.shift();
+    this.trailPath.setAttribute('points',this.trail.join(' '));
+    this.trailPath.setAttribute('opacity',this.opacity*0.25);
+  }
+
+  destroy(){
+    this.alive=false;
+    if(this.g.parentNode) this.g.parentNode.removeChild(this.g);
+  }
+}
+
+// spark particles
+let sparks=[];
+function spawnSpark(x,y,color){
+  for(let i=0;i<6;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=1+Math.random()*3;
+    sparks.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,color,life:1,
+      el: (()=>{
+        const c=makeSVGEl('circle',{cx:x,cy:y,r:2.5,fill:color,'opacity':1});
+        document.getElementById('ionLayer').appendChild(c);
+        return c;
+      })()
+    });
+  }
+}
+function updateSparks(){
+  sparks=sparks.filter(s=>{
+    s.x+=s.vx; s.y+=s.vy; s.life-=0.1;
+    s.el.setAttribute('cx',s.x); s.el.setAttribute('cy',s.y);
+    s.el.setAttribute('opacity',s.life);
+    if(s.life<=0){if(s.el.parentNode)s.el.parentNode.removeChild(s.el);return false;}
+    return true;
+  });
+}
+
+// 검출기 flash
+let flashTimer=null;
+function flashDetector(color){
+  const cup = document.getElementById('ionLayer');
+  const dz=ZONES.detect;
+  const flash=makeSVGEl('circle',{cx:dz.x+40,cy:ION_PATH_Y,r:18,fill:color,'opacity':0.5});
+  cup.appendChild(flash);
+  let op=0.5;
+  const fi=setInterval(()=>{
+    op-=0.08; flash.setAttribute('opacity',Math.max(0,op));
+    if(op<=0){clearInterval(fi);if(flash.parentNode)flash.parentNode.removeChild(flash);}
+  },30);
+  // 신호 바 pulse
+  const sigFill=document.getElementById('sigFill');
+  const maxC=Math.max(...GASES.map(g=>passCount[g.mz]),1);
+  const pct=Math.min((passCount[scanMz]||0)/maxC*100*(ZONES.detect.w-20)/100*(ZONES.detect.w-20),ZONES.detect.w-20);
+  if(sigFill) sigFill.setAttribute('width',Math.min(pct,ZONES.detect.w-20));
+  // 카운트 텍스트
+  const cntText=document.getElementById('detCount');
+  if(cntText) cntText.textContent=totalDetect;
+}
+
+// ── SPAWN IONS ───────────────────────────────────────
+function spawnIon(){
+  // 현재 가스 조성 기반 확률적 선택
+  const total = GASES.reduce((s,g)=>s+g.val,0);
+  if(total===0) return;
+  let r=Math.random()*total, cum=0;
+  for(const g of GASES){
+    cum+=g.val;
+    if(r<=cum){ ions.push(new Ion(g)); return; }
+  }
+}
+
+const RATE_INTERVALS = [800,500,300,180,80];
+let spawnInterval = RATE_INTERVALS[2];
+
+function setRate(v){
+  rateLevel=parseInt(v);
+  spawnInterval=RATE_INTERVALS[rateLevel-1];
+  const labels=['매우 느림','느림','보통','빠름','매우 빠름'];
+  document.getElementById('rateLbl').textContent=labels[rateLevel-1];
+}
+
+// ── SCAN MZ ──────────────────────────────────────────
+function setScanMz(v){
+  scanMz=parseInt(v);
+  document.getElementById('scanMzLbl').textContent='m/z '+scanMz;
+  document.getElementById('sbMz').textContent=scanMz;
+  const mzText=document.getElementById('mzText');
+  if(mzText) mzText.textContent='m/z '+scanMz;
+  // 현재 스캔 m/z에 맞는 가스 강조
+  GASES.forEach(g=>{
+    const diff=Math.abs(g.mz-scanMz);
+    const mol=document.getElementById('mol_'+g.id);
+    if(mol) mol.setAttribute('stroke-width',diff===0?3:1.5);
+  });
+}
+setScanMz(2);
+
+// ── AUTO SCAN ─────────────────────────────────────────
+function toggleScan(){
+  autoScan=!autoScan;
+  document.querySelector('.btn-cyan').textContent=autoScan?'⏸ 일시 정지':'▶ 자동 스캔';
+  if(autoScan){
+    // 자동으로 m/z 1→100 스캔
+    scanTimer=setInterval(()=>{
+      let cur=parseInt(document.getElementById('scanMz').value);
+      cur+=autoScanDir;
+      if(cur>100){cur=100;autoScanDir=-1;}
+      if(cur<1){cur=1;autoScanDir=1;}
+      document.getElementById('scanMz').value=cur;
+      setScanMz(cur);
+    },60);
+  } else {
+    if(scanTimer){clearInterval(scanTimer);scanTimer=null;}
+  }
+}
+
+function stepScan(){
+  let cur=parseInt(document.getElementById('scanMz').value)+1;
+  if(cur>100) cur=1;
+  document.getElementById('scanMz').value=cur;
+  setScanMz(cur);
+}
+
+function resetAll(){
+  autoScan=false;
+  if(scanTimer){clearInterval(scanTimer);scanTimer=null;}
+  document.querySelector('.btn-cyan').textContent='▶ 자동 스캔';
+  ions.forEach(i=>i.destroy());
+  ions=[];
+  sparks.forEach(s=>{if(s.el.parentNode)s.el.parentNode.removeChild(s.el);});
+  sparks=[];
+  passCount={}; GASES.forEach(g=>passCount[g.mz]=0);
+  specData={}; GASES.forEach(g=>specData[g.mz]=0);
+  totalPass=0; totalFail=0; totalDetect=0;
+  updateCountBars();
+  updateSpectrum();
+  document.getElementById('scanMz').value=2; setScanMz(2);
+  document.getElementById('detCount').textContent='0';
+  document.getElementById('sigFill').setAttribute('width',0);
+  document.getElementById('diagBox').className='diag-box diag-normal';
+  document.getElementById('diagBox').textContent='가스를 설정하고 스캔을 시작하세요.';
+  updateCountBars();
+}
+
+// ── SPECTRUM ─────────────────────────────────────────
+function updateSpectrum(){
+  const canvas=document.getElementById('specCanvas');
+  if(!canvas) return;
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const W=rect.width||320, H=rect.height||170;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const pad={l:36,r:8,t:16,b:28};
+  const gW=W-pad.l-pad.r, gH=H-pad.t-pad.b;
+
+  ctx.fillStyle='#040c18'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#0f1e30'; ctx.lineWidth=0.8;
+  for(let i=0;i<=5;i++){
+    const y=pad.t+gH*i/5;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  }
+  ctx.strokeStyle='#1e3050'; ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+gH);ctx.lineTo(W-pad.r,pad.t+gH);ctx.stroke();
+
+  ctx.fillStyle='#445566'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+  [0,20,40,60,80,100].forEach(x=>ctx.fillText(x, pad.l+gW*x/100, pad.t+gH+14));
+  ctx.fillText('m/z', pad.l+gW/2, H-2);
+
+  const maxC=Math.max(...Object.values(specData),1);
+  GASES.forEach(g=>{
+    const cnt=specData[g.mz]||0;
+    const frac=cnt/maxC;
+    const px=pad.l+gW*g.mz/100;
+    const bH=gH*frac;
+    if(bH<1) return;
+    const grad=ctx.createLinearGradient(0,pad.t+gH-bH,0,pad.t+gH);
+    grad.addColorStop(0,g.color);
+    grad.addColorStop(1,g.color+'22');
+    ctx.fillStyle=grad;
+    ctx.fillRect(px-4,pad.t+gH-bH,8,bH);
+    if(frac>0.1){
+      ctx.fillStyle=g.color; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(g.mz,px,pad.t+gH-bH-10);
+      ctx.font='8px sans-serif'; ctx.fillText(g.label,px,pad.t+gH-bH-2);
+    }
+  });
+
+  // 현재 스캔 라인
+  const sx=pad.l+gW*scanMz/100;
+  ctx.strokeStyle='rgba(255,153,0,0.6)'; ctx.lineWidth=1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(sx,pad.t);ctx.lineTo(sx,pad.t+gH);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#ff9900'; ctx.font='bold 9px Orbitron,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('▼'+scanMz,sx,pad.t+10);
+}
+
+// ── DIAGNOSIS ────────────────────────────────────────
+function updateDiagnosis(){
+  const box=document.getElementById('diagBox');
+  const h2o=GASES.find(g=>g.id==='H2O').val;
+  const n2=GASES.find(g=>g.id==='N2').val;
+  const o2=GASES.find(g=>g.id==='O2').val;
+  const ar=GASES.find(g=>g.id==='Ar').val;
+  const co2=GASES.find(g=>g.id==='CO2').val;
+
+  if(n2>40 && o2>10){
+    box.className='diag-box diag-alert';
+    box.textContent='🔴 Air Leak 의심 — m/z 28(N₂)과 32(O₂)가 동시에 높습니다. 플랜지·밸브·씰 점검 필요.';
+  } else if(h2o>50){
+    box.className='diag-box diag-warn';
+    box.textContent='💧 수분 오염 — m/z 18(H₂O) 높음. 챔버 베이킹(Baking) 권장.';
+  } else if(co2>40){
+    box.className='diag-box diag-warn';
+    box.textContent='⚠ 유기 오염 의심 — m/z 44(CO₂) 높음. 오일 역류 또는 유기물 오염 가능성.';
+  } else if(ar>60){
+    box.className='diag-box diag-normal';
+    box.textContent='⚛ Ar 공정 가스 잔류 — 정상 스퍼터링 공정 패턴.';
+  } else {
+    box.className='diag-box diag-normal';
+    box.textContent='✅ 정상 — H₂ 우세, 기타 가스 소량. 진공 상태 양호.';
+  }
+}
+
+// ── LED BLINK ────────────────────────────────────────
+let ledPhase=0;
+function updateLEDs(){
+  ledPhase+=0.05;
+  const led0=document.getElementById('led0');
+  const led1=document.getElementById('led1');
+  const led2=document.getElementById('led2');
+  if(led0) led0.setAttribute('opacity',0.5+Math.sin(ledPhase)*0.4);
+  if(led1) led1.setAttribute('opacity',0.5+Math.sin(ledPhase+1)*0.4);
+  if(led2) led2.setAttribute('opacity',ions.length>0?0.9:0.2);
+}
+
+// ── MAIN LOOP ────────────────────────────────────────
+let lastTime=0;
+function loop(ts){
+  animFrame=requestAnimationFrame(loop);
+
+  // 이온 스폰
+  if(ts-lastSpawn > spawnInterval){
+    spawnIon();
+    lastSpawn=ts;
+  }
+
+  // 이온 업데이트
+  ions=ions.filter(i=>{i.update();return i.alive;});
+  updateSparks();
+  updateLEDs();
+
+  // 최대 이온 수 제한
+  if(ions.length>60){
+    const oldest=ions.shift();
+    if(oldest) oldest.destroy();
+  }
+}
+animFrame=requestAnimationFrame(loop);
+
+// ── LEGEND ───────────────────────────────────────────
+const leg=document.getElementById('ionLegend');
+GASES.forEach(g=>{
+  leg.innerHTML+=`<div class="leg"><div class="leg-dot" style="background:${g.color}"></div>${g.label} m/z=${g.mz}</div>`;
+});
+
+// 초기 스펙트럼
+updateSpectrum();
+updateDiagnosis();
+setInterval(updateSpectrum,200);
+
+// resize
+window.addEventListener('resize',()=>updateSpectrum());
+</script>
+</body>
+</html>
