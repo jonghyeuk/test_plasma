@@ -4,6 +4,7 @@ import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
 import OESSimulator from './OESSimulator'
 import ImpedanceProbeSimulator from './ImpedanceProbeSimulator'
+import RGAViewer from './RGAViewer'
 import './App.css'
 
 function App() {
@@ -26,6 +27,30 @@ function App() {
       icon: '📡',
       color: 'from-emerald-500 to-teal-600',
       component: ImpedanceProbeSimulator
+    },
+    {
+      id: 'rga-edu',
+      name: 'RGA 교육',
+      description: 'Residual Gas Analyzer 교육 자료',
+      icon: '📘',
+      color: 'from-orange-500 to-amber-600',
+      iframeSrc: '/rgaeducation.html'
+    },
+    {
+      id: 'rga-principle',
+      name: 'RGA 동작 원리',
+      description: 'RGA 원리 애니메이션',
+      icon: '⚙️',
+      color: 'from-orange-500 to-red-600',
+      iframeSrc: '/rgaprinciple.html'
+    },
+    {
+      id: 'rga-sim',
+      name: 'RGA 시뮬레이터',
+      description: 'RGA 측정 시뮬레이션',
+      icon: '🧪',
+      color: 'from-amber-500 to-orange-600',
+      iframeSrc: '/rgasimulator.html'
     },
     {
       id: 'sim1',
@@ -53,7 +78,8 @@ function App() {
     }
   ];
 
-  const SelectedComponent = simulators.find(s => s.id === selectedSimulator)?.component;
+  const selected = simulators.find(s => s.id === selectedSimulator);
+  const SelectedComponent = selected?.component;
 
   return (
     <div className="flex h-screen bg-gray-950 relative">
@@ -160,6 +186,7 @@ function App() {
         {/* Simulator Content */}
         <main className="flex-1 overflow-auto bg-gray-950">
           {SelectedComponent && <SelectedComponent />}
+          {selected?.iframeSrc && <RGAViewer src={selected.iframeSrc} />}
         </main>
       </div>
     </div>
