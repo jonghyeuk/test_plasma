@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RGA 시뮬레이터</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0e1a;color:#e0e0e0;font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+.header{background:linear-gradient(135deg,#0d1b2a,#1a2744);border-bottom:2px solid rgba(0,245,255,0.2);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.header-icon{width:42px;height:42px;background:linear-gradient(135deg,#00f5ff,#0080ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.header-title{font-family:'Orbitron',sans-serif;font-size:15px;color:#00f5ff;letter-spacing:2px;}
+.header-sub{font-size:11px;color:#8899aa;margin-top:2px;}
+.status-bar{margin-left:auto;display:flex;gap:20px;}
+.status-item{display:flex;flex-direction:column;align-items:center;}
+.status-val{font-family:'Orbitron',sans-serif;font-size:12px;color:#00ff88;}
+.status-lbl{font-size:10px;color:#556677;margin-top:2px;}
+.tabs{display:flex;background:#080c14;border-bottom:1px solid #1a2744;overflow-x:auto;}
+.tab{padding:11px 18px;cursor:pointer;font-size:13px;color:#667788;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none;}
+.tab:hover{color:#aabbcc;}
+.tab.active{color:#00f5ff;border-bottom-color:#00f5ff;background:#0d1b2a;}
+.tab-num{font-family:'Orbitron',sans-serif;font-size:10px;color:#334455;margin-right:5px;}
+.panel{display:none;padding:18px;max-width:1100px;margin:0 auto;}
+.panel.active{display:block;}
+.card{background:#0d1b2a;border:1px solid #1a2744;border-radius:10px;padding:16px;margin-bottom:14px;}
+.card-title{font-family:'Orbitron',sans-serif;font-size:11px;color:#00f5ff;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';width:4px;height:13px;background:#00f5ff;border-radius:2px;flex-shrink:0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.cb{background:#060d18;border-left:3px solid #ff6b00;padding:13px;border-radius:0 8px 8px 0;margin-bottom:10px;}
+.cb h4{color:#ff9944;font-size:13px;margin-bottom:5px;}
+.cb p{font-size:13px;color:#aabbc0;line-height:1.75;}
+.hl{color:#00f5ff;font-weight:700;}
+.wn{color:#ff6b00;font-weight:700;}
+.spec-canvas{display:block;width:100%;height:260px;background:#060d18;border:1px solid #1a2744;border-radius:8px;}
+.ctrl-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;}
+.ctrl-group{display:flex;flex-direction:column;gap:4px;}
+.ctrl-label{font-size:11px;color:#7788aa;}
+select,input[type=range]{background:#0a1420;border:1px solid #1e3050;color:#ccdde8;padding:5px 9px;border-radius:6px;font-size:13px;font-family:'Noto Sans KR',sans-serif;}
+select{cursor:pointer;}
+input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;cursor:pointer;padding:0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#00f5ff;border-radius:50%;}
+.btn{padding:7px 15px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Noto Sans KR',sans-serif;transition:all .2s;font-weight:700;}
+.btn-cyan{background:linear-gradient(135deg,#005f6b,#00a8b5);color:#fff;}
+.btn-cyan:hover{background:linear-gradient(135deg,#007a88,#00c8d8);}
+.btn-orange{background:linear-gradient(135deg,#7a3000,#c05000);color:#fff;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#0a1828;color:#7799bb;font-weight:400;padding:7px 11px;text-align:left;border-bottom:1px solid #1a2744;}
+td{padding:6px 11px;border-bottom:1px solid #0f1e30;color:#cce0ee;}
+tr:hover td{background:#0d1e34;}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;}
+.badge-ok{background:#003322;color:#00cc88;}
+.badge-warn{background:#332200;color:#ff9900;}
+.badge-alert{background:#330000;color:#ff4444;}
+.scen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;margin-bottom:14px;}
+.scen-btn{padding:11px;border:1px solid #1a2744;border-radius:8px;background:#0a1420;cursor:pointer;text-align:left;transition:all .2s;}
+.scen-btn:hover,.scen-btn.active{border-color:rgba(0,245,255,0.4);background:#0d2030;}
+.scen-btn h5{font-size:12px;color:#00f5ff;margin-bottom:3px;}
+.scen-btn p{font-size:11px;color:#667788;}
+.di{display:flex;align-items:flex-start;gap:11px;padding:11px;border-radius:8px;margin-bottom:7px;}
+.di-ok{background:#001a10;border:1px solid #004422;}
+.di-w{background:#1a1000;border:1px solid #443300;}
+.di-a{background:#1a0000;border:1px solid #440000;}
+.di-icon{font-size:19px;flex-shrink:0;line-height:1;}
+.di-text h4{font-size:13px;font-weight:700;margin-bottom:3px;}
+.di-text p{font-size:12px;color:#aabbcc;line-height:1.65;}
+/* 퀴즈 - 글자 명확히 보이게 */
+.quiz-q{background:#060d18;border:1px solid #1a2744;border-radius:8px;padding:14px;margin-bottom:11px;}
+.quiz-q p{font-size:13px;color:#ddeeff;margin-bottom:11px;line-height:1.7;}
+.quiz-opts{display:flex;flex-direction:column;gap:6px;}
+.quiz-opt{padding:9px 14px;border:1px solid #2a3d55;border-radius:6px;background:#0d1e34;cursor:pointer;font-size:13px;color:#ccdde8;transition:all .2s;text-align:left;font-family:'Noto Sans KR',sans-serif;}
+.quiz-opt:hover{border-color:rgba(0,245,255,0.4);background:#102030;color:#fff;}
+.quiz-opt.correct{background:#002a15;border-color:#00aa55;color:#00ff88 !important;}
+.quiz-opt.wrong{background:#2a0000;border-color:#aa0000;color:#ff6666 !important;}
+.quiz-opt:disabled,.quiz-opt[data-locked]{cursor:default;}
+.quiz-score{font-family:'Orbitron',sans-serif;font-size:26px;color:#00f5ff;text-align:center;padding:20px 0;}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#8899bb;}
+.leg-dot{width:11px;height:11px;border-radius:2px;flex-shrink:0;}
+/* 모니터링 */
+.monitor-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.monitor-box{background:#060d18;border:1px solid #1a2744;border-radius:8px;padding:10px 14px;flex:1;min-width:110px;}
+.monitor-label{font-size:10px;color:#556677;margin-bottom:4px;}
+.monitor-val{font-family:'Orbitron',sans-serif;font-size:14px;color:#00ff88;}
+.monitor-val.warn{color:#ff9900;}
+.monitor-val.alert{color:#ff4444;}
+/* 트렌드 캔버스 */
+.trend-canvas{display:block;width:100%;height:110px;background:#060d18;border:1px solid #1a2744;border-radius:8px;}
+/* step tabs */
+.step-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.step-tab{padding:7px 13px;border:1px solid #1a2744;border-radius:6px;background:#0a1420;cursor:pointer;font-size:12px;color:#7788aa;transition:all .2s;}
+.step-tab:hover{color:#aabbcc;}
+.step-tab.active{background:#0d2030;border-color:rgba(0,245,255,0.4);color:#00f5ff;}
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.svg-wrap{width:100%;overflow-x:auto;}
+svg text{font-family:'Noto Sans KR',sans-serif;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:#080c14;}
+::-webkit-scrollbar-thumb{background:#1e3050;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🔬</div>
+  <div>
+    <div class="header-title">RGA SIMULATOR</div>
+    <div class="header-sub">Residual Gas Analyzer — 잔류 가스 분석기 교육 시뮬레이터</div>
+  </div>
+  <div class="status-bar">
+    <div class="status-item"><div class="status-val" id="hdrPressure">—</div><div class="status-lbl">Total (Torr)</div></div>
+    <div class="status-item"><div class="status-val" id="hdrMode" style="color:#ff9900">STANDBY</div><div class="status-lbl">RGA Status</div></div>
+    <div class="status-item"><div class="status-val" id="hdrScan">—</div><div class="status-lbl">Scan #</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)"><span class="tab-num">01</span>개념 학습</div>
+  <div class="tab" onclick="showTab(1)"><span class="tab-num">02</span>가상 실험</div>
+  <div class="tab" onclick="showTab(2)"><span class="tab-num">03</span>진단 훈련</div>
+  <div class="tab" onclick="showTab(3)"><span class="tab-num">04</span>퀴즈</div>
+</div>
+
+<!-- ===== TAB 01 개념학습 ===== -->
+<div class="panel active" id="tab0">
+  <div class="step-tabs">
+    <div class="step-tab active" onclick="showStep(0)">① RGA 개요</div>
+    <div class="step-tab" onclick="showStep(1)">② 내부 구조</div>
+    <div class="step-tab" onclick="showStep(2)">③ 작동 원리</div>
+    <div class="step-tab" onclick="showStep(3)">④ 스펙트럼 해석</div>
+    <div class="step-tab" onclick="showStep(4)">⑤ Leak vs Outgassing</div>
+  </div>
+
+  <!-- STEP 0 -->
+  <div class="step-panel active" id="step0">
+    <div class="card">
+      <div class="card-title">RGA 개요 — 왜 필요한가?</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;">
+          <rect width="720" height="190" fill="#060d18" rx="8"/>
+          <rect x="30" y="40" width="150" height="110" rx="8" fill="#0d2030" stroke="#1e4060" stroke-width="1.5"/>
+          <text x="105" y="65" text-anchor="middle" fill="#7799bb" font-size="11">진공 게이지</text>
+          <text x="105" y="83" text-anchor="middle" fill="#00f5ff" font-size="13" font-weight="bold">Pressure Only</text>
+          <text x="105" y="100" text-anchor="middle" fill="#aabbcc" font-size="11">1×10⁻⁸ Torr</text>
+          <text x="105" y="120" text-anchor="middle" fill="#ff6b00" font-size="11">양적 정보만</text>
+          <text x="105" y="138" text-anchor="middle" fill="#556677" font-size="10">(어떤 가스인지 모름)</text>
+          <line x1="185" y1="95" x2="230" y2="95" stroke="#334455" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="207" y="88" text-anchor="middle" fill="#556677" font-size="10">vs</text>
+          <rect x="235" y="25" width="200" height="140" rx="8" fill="#0d2a10" stroke="#00aa55" stroke-width="1.5"/>
+          <text x="335" y="48" text-anchor="middle" fill="#00cc88" font-size="12" font-weight="bold">RGA</text>
+          <text x="335" y="64" text-anchor="middle" fill="#7799bb" font-size="10">질적 + 양적 정보</text>
+          <rect x="248" y="72" width="174" height="15" rx="3" fill="#001a10"/>
+          <rect x="248" y="72" width="140" height="15" rx="3" fill="#003322"/>
+          <text x="335" y="83" text-anchor="middle" fill="#00f5ff" font-size="10">H₂ ████████ 80%</text>
+          <rect x="248" y="91" width="174" height="15" rx="3" fill="#001a10"/>
+          <rect x="248" y="91" width="55" height="15" rx="3" fill="#002244"/>
+          <text x="335" y="102" text-anchor="middle" fill="#0088ff" font-size="10">H₂O ██ 15%</text>
+          <rect x="248" y="110" width="174" height="15" rx="3" fill="#001a10"/>
+          <rect x="248" y="110" width="26" height="15" rx="3" fill="#221100"/>
+          <text x="335" y="121" text-anchor="middle" fill="#ff9900" font-size="10">N₂ █ 5%</text>
+          <text x="335" y="150" text-anchor="middle" fill="#aabbcc" font-size="10">가스 조성 정보 제공</text>
+          <defs><marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#00aa55"/></marker></defs>
+          <line x1="437" y1="95" x2="455" y2="95" stroke="#00aa55" stroke-width="1.5" marker-end="url(#arr)"/>
+          <rect x="458" y="30" width="235" height="130" rx="8" fill="#0d1b2a" stroke="#1a2744" stroke-width="1.2"/>
+          <text x="575" y="52" text-anchor="middle" fill="#ff9900" font-size="12" font-weight="bold">RGA로 알 수 있는 것</text>
+          <text x="575" y="70" text-anchor="middle" fill="#aabbcc" font-size="11">✓ 수분 오염 유무</text>
+          <text x="575" y="87" text-anchor="middle" fill="#aabbcc" font-size="11">✓ 공기 누출(Leak) 진단</text>
+          <text x="575" y="104" text-anchor="middle" fill="#aabbcc" font-size="11">✓ 오일 역류 감지</text>
+          <text x="575" y="121" text-anchor="middle" fill="#aabbcc" font-size="11">✓ 공정 가스 조성 확인</text>
+          <text x="575" y="138" text-anchor="middle" fill="#aabbcc" font-size="11">✓ 이상 조기 진단</text>
+        </svg>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="cb" style="border-radius:8px;"><h4>압력 게이지와의 차이</h4><p>진공 게이지는 <span class="hl">총압력(양적)</span>만 알려줍니다. RGA는 어떤 가스가 어느 비율로 있는지 <span class="hl">조성(질적) 정보</span>까지 제공합니다. 같은 압력이라도 H₂O가 많으면 공정 결과는 완전히 달라집니다.</p></div>
+      <div class="cb" style="border-left-color:#00f5ff;border-radius:8px;"><h4>동작 압력 범위</h4><p>RGA는 이온이 필드만 받으며 자유롭게 이동하려면 <span class="hl">고진공(10⁻⁴ Torr 이하)</span>이 필수입니다. 최적 동작 범위는 <span class="hl">10⁻⁶ ~ 10⁻⁸ Torr</span>이며, 고압에서는 필라멘트 손상 위험이 있습니다.</p></div>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel" id="step1">
+    <div class="card">
+      <div class="card-title">RGA 내부 구조 상세도</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 740 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;">
+          <rect width="740" height="300" fill="#060d18" rx="8"/>
+          <defs>
+            <marker id="g1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#00ff88"/></marker>
+          </defs>
+          <rect x="30" y="110" width="620" height="80" rx="6" fill="#0a1828" stroke="#1e3050" stroke-width="1.5"/>
+          <text x="340" y="104" text-anchor="middle" fill="#556677" font-size="11">— RGA 프로브 (Probe) 단면 —</text>
+          <!-- 이온화부 -->
+          <rect x="40" y="118" width="128" height="64" rx="5" fill="#0d2a10" stroke="#00aa55" stroke-width="1.5"/>
+          <text x="104" y="138" text-anchor="middle" fill="#00cc88" font-size="11" font-weight="bold">이온화부</text>
+          <text x="104" y="153" text-anchor="middle" fill="#88bbaa" font-size="9">(Ionizer)</text>
+          <path d="M58,172 Q74,162 90,172 Q106,182 122,172 Q138,162 154,172" stroke="#ffcc00" stroke-width="2" fill="none"/>
+          <text x="104" y="186" text-anchor="middle" fill="#ffcc00" font-size="8">Filament</text>
+          <!-- 이온 렌즈 -->
+          <rect x="178" y="118" width="66" height="64" rx="5" fill="#0d1a30" stroke="#0066aa" stroke-width="1.5"/>
+          <text x="211" y="142" text-anchor="middle" fill="#4499cc" font-size="10" font-weight="bold">이온</text>
+          <text x="211" y="156" text-anchor="middle" fill="#4499cc" font-size="10" font-weight="bold">렌즈</text>
+          <text x="211" y="170" text-anchor="middle" fill="#7799aa" font-size="8">Ion Lens</text>
+          <!-- 사중극자 -->
+          <rect x="254" y="108" width="226" height="84" rx="5" fill="#1a1000" stroke="#ff9900" stroke-width="1.5"/>
+          <text x="367" y="128" text-anchor="middle" fill="#ff9900" font-size="11" font-weight="bold">사중극자 질량 필터</text>
+          <text x="367" y="143" text-anchor="middle" fill="#aa7700" font-size="9">(Quadrupole Mass Filter)</text>
+          <ellipse cx="305" cy="168" rx="11" ry="6" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <ellipse cx="367" cy="161" rx="11" ry="6" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <ellipse cx="430" cy="168" rx="11" ry="6" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <ellipse cx="367" cy="175" rx="11" ry="6" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <text x="367" y="188" text-anchor="middle" fill="#886600" font-size="8">RF+DC 전압 인가</text>
+          <!-- 검출기 -->
+          <rect x="490" y="118" width="110" height="64" rx="5" fill="#1a0a1a" stroke="#aa44ff" stroke-width="1.5"/>
+          <text x="545" y="140" text-anchor="middle" fill="#cc88ff" font-size="11" font-weight="bold">검출기</text>
+          <text x="545" y="155" text-anchor="middle" fill="#9966cc" font-size="9">(Detector)</text>
+          <text x="545" y="168" text-anchor="middle" fill="#7755aa" font-size="8">Faraday Cup / SEM</text>
+          <!-- 화살표 -->
+          <line x1="170" y1="150" x2="176" y2="150" stroke="#00ff88" stroke-width="1.5" marker-end="url(#g1)"/>
+          <line x1="246" y1="150" x2="252" y2="150" stroke="#00ff88" stroke-width="1.5" marker-end="url(#g1)"/>
+          <line x1="482" y1="150" x2="488" y2="150" stroke="#00ff88" stroke-width="1.5" marker-end="url(#g1)"/>
+          <line x1="15" y1="150" x2="38" y2="150" stroke="#00f5ff" stroke-width="2" marker-end="url(#g1)"/>
+          <text x="8" y="145" fill="#00f5ff" font-size="9" text-anchor="middle">가스</text>
+          <text x="8" y="157" fill="#00f5ff" font-size="9" text-anchor="middle">유입</text>
+          <!-- ECU -->
+          <rect x="610" y="85" width="118" height="130" rx="6" fill="#0a1428" stroke="#334466" stroke-width="1.2"/>
+          <text x="669" y="105" text-anchor="middle" fill="#7799bb" font-size="11" font-weight="bold">ECU</text>
+          <text x="669" y="120" text-anchor="middle" fill="#556677" font-size="9">전자 제어부</text>
+          <rect x="620" y="128" width="98" height="13" rx="3" fill="#0d2030"/>
+          <text x="669" y="138" text-anchor="middle" fill="#00f5ff" font-size="8">RF/DC Generator</text>
+          <rect x="620" y="145" width="98" height="13" rx="3" fill="#0d2030"/>
+          <text x="669" y="155" text-anchor="middle" fill="#00f5ff" font-size="8">Ion Current Amp</text>
+          <rect x="620" y="162" width="98" height="13" rx="3" fill="#0d2030"/>
+          <text x="669" y="172" text-anchor="middle" fill="#00f5ff" font-size="8">Data Processing</text>
+          <rect x="624" y="230" width="90" height="42" rx="5" fill="#080c14" stroke="#223344" stroke-width="1"/>
+          <rect x="632" y="237" width="74" height="27" rx="2" fill="#0d1e30"/>
+          <text x="669" y="254" text-anchor="middle" fill="#00f5ff" font-size="9">PC / Software</text>
+          <line x1="669" y1="215" x2="669" y2="230" stroke="#334466" stroke-width="1" stroke-dasharray="3,2"/>
+          <!-- 번호 -->
+          <circle cx="104" cy="210" r="10" fill="#00aa55"/><text x="104" y="214" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">1</text>
+          <circle cx="211" cy="210" r="10" fill="#0066aa"/><text x="211" y="214" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">2</text>
+          <circle cx="367" cy="210" r="10" fill="#cc7700"/><text x="367" y="214" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">3</text>
+          <circle cx="545" cy="210" r="10" fill="#8833cc"/><text x="545" y="214" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">4</text>
+          <text x="40" y="240" fill="#00aa55" font-size="10">① 이온화부</text>
+          <text x="148" y="240" fill="#4499cc" font-size="10">② 이온 렌즈</text>
+          <text x="260" y="240" fill="#ff9900" font-size="10">③ 사중극자 필터</text>
+          <text x="430" y="240" fill="#cc88ff" font-size="10">④ 검출기</text>
+          <text x="40" y="258" fill="#ffcc00" font-size="9">노란선: 필라멘트(e⁻ 방출)</text>
+          <text x="40" y="272" fill="#00ff88" font-size="9">녹색 화살표: 이온 이동 방향</text>
+          <text x="40" y="286" fill="#556677" font-size="9">* 이온이 자유롭게 이동하려면 내부 고진공(10⁻⁶ Torr 이하) 필수</text>
+        </svg>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="cb" style="border-radius:8px;"><h4>① 이온화부 (Ionizer)</h4><p>가열된 <span class="hl">텅스텐/이리듐 필라멘트</span>에서 방출된 전자(70 eV)가 가스 분자와 충돌하여 양이온을 생성합니다. 고압에서는 필라멘트 손상이 발생합니다.</p></div>
+      <div class="cb" style="border-left-color:#0066aa;border-radius:8px;"><h4>② 이온 렌즈 (Ion Lens)</h4><p>생성된 이온을 <span class="hl">전기장으로 가속·집속</span>하여 사중극자 필터로 보냅니다. 이온 빔의 효율적인 전달을 담당합니다.</p></div>
+      <div class="cb" style="border-left-color:#ff9900;border-radius:8px;"><h4>③ 사중극자 필터 (Quadrupole)</h4><p>4개의 금속 로드에 <span class="hl">RF+DC 전압</span>을 인가합니다. 특정 m/z의 이온만 통과하고 나머지는 로드에 충돌·소멸됩니다. <span class="wn">이온이 충돌 없이 통과하려면 고진공이 필수입니다.</span></p></div>
+      <div class="cb" style="border-left-color:#aa44ff;border-radius:8px;"><h4>④ 검출기 (Detector)</h4><p><span class="hl">Faraday Cup</span>(내구성↑) 또는 <span class="hl">SEM(이차전자증배관)</span>(고감도)으로 이온 전류를 측정합니다. 전류 크기가 해당 m/z의 분압에 비례합니다.</p></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="step2">
+    <div class="card">
+      <div class="card-title">작동 원리 — 이온화 → 분리 → 검출 / 왜 진공이 필요한가?</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 740 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;">
+          <rect width="740" height="270" fill="#060d18" rx="8"/>
+          <defs>
+            <marker id="h1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#00f5ff"/></marker>
+          </defs>
+          <!-- Step 1 -->
+          <rect x="15" y="20" width="130" height="210" rx="8" fill="#0d1b2a" stroke="#1e3050" stroke-width="1.2"/>
+          <text x="80" y="42" text-anchor="middle" fill="#7799bb" font-size="10" font-weight="bold">STEP 1</text>
+          <text x="80" y="56" text-anchor="middle" fill="#aabbcc" font-size="9">가스 분자 유입</text>
+          <circle cx="55" cy="95" r="10" fill="#003344" stroke="#00f5ff" stroke-width="1.5"/>
+          <text x="55" y="99" text-anchor="middle" fill="#00f5ff" font-size="8">H₂</text>
+          <circle cx="88" cy="112" r="11" fill="#002244" stroke="#0088ff" stroke-width="1.5"/>
+          <text x="88" y="116" text-anchor="middle" fill="#0088ff" font-size="8">H₂O</text>
+          <circle cx="58" cy="142" r="10" fill="#221100" stroke="#ff9900" stroke-width="1.5"/>
+          <text x="58" y="146" text-anchor="middle" fill="#ff9900" font-size="8">N₂</text>
+          <circle cx="95" cy="158" r="9" fill="#1a0022" stroke="#aa44ff" stroke-width="1.5"/>
+          <text x="95" y="162" text-anchor="middle" fill="#aa44ff" font-size="8">Ar</text>
+          <text x="80" y="210" text-anchor="middle" fill="#556677" font-size="8">중성 분자</text>
+          <text x="80" y="222" text-anchor="middle" fill="#556677" font-size="8">무작위 운동</text>
+          <line x1="147" y1="130" x2="162" y2="130" stroke="#334455" stroke-width="1.5" marker-end="url(#h1)"/>
+          <!-- Step 2 -->
+          <rect x="165" y="20" width="136" height="210" rx="8" fill="#0d1b2a" stroke="#ffcc00" stroke-width="1.2"/>
+          <text x="233" y="42" text-anchor="middle" fill="#ffcc00" font-size="10" font-weight="bold">STEP 2</text>
+          <text x="233" y="56" text-anchor="middle" fill="#aabbcc" font-size="9">전자 충돌 이온화</text>
+          <path d="M182,82 Q197,72 212,82 Q227,92 242,82 Q257,72 272,82 Q287,92 298,82" stroke="#ffcc00" stroke-width="2" fill="none"/>
+          <text x="233" y="70" text-anchor="middle" fill="#ffcc00" font-size="8">Filament (e⁻, 70eV)</text>
+          <circle cx="210" cy="120" r="4" fill="#ffcc00" opacity="0.8"/>
+          <circle cx="233" cy="135" r="4" fill="#ffcc00" opacity="0.8"/>
+          <circle cx="258" cy="120" r="4" fill="#ffcc00" opacity="0.8"/>
+          <circle cx="210" cy="148" r="9" fill="#003344" stroke="#00f5ff" stroke-width="1.5"/>
+          <text x="210" y="152" text-anchor="middle" fill="#00f5ff" font-size="8">H₂⁺</text>
+          <circle cx="245" cy="162" r="10" fill="#002244" stroke="#0088ff" stroke-width="1.5"/>
+          <text x="245" y="166" text-anchor="middle" fill="#0088ff" font-size="8">H₂O⁺</text>
+          <circle cx="228" cy="186" r="8" fill="#1a0022" stroke="#aa44ff" stroke-width="1.5"/>
+          <text x="228" y="190" text-anchor="middle" fill="#aa44ff" font-size="8">Ar⁺</text>
+          <text x="233" y="215" text-anchor="middle" fill="#556677" font-size="8">M → M⁺ + e⁻</text>
+          <line x1="303" y1="130" x2="318" y2="130" stroke="#334455" stroke-width="1.5" marker-end="url(#h1)"/>
+          <!-- Step 3 -->
+          <rect x="321" y="20" width="165" height="210" rx="8" fill="#0d1b2a" stroke="#ff9900" stroke-width="1.2"/>
+          <text x="403" y="42" text-anchor="middle" fill="#ff9900" font-size="10" font-weight="bold">STEP 3</text>
+          <text x="403" y="56" text-anchor="middle" fill="#aabbcc" font-size="9">사중극자 m/z 분리</text>
+          <rect x="350" y="70" width="106" height="15" rx="3" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <text x="403" y="81" text-anchor="middle" fill="#ff9900" font-size="8">+RF/DC Rod</text>
+          <rect x="350" y="165" width="106" height="15" rx="3" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <text x="403" y="176" text-anchor="middle" fill="#ff9900" font-size="8">−RF/DC Rod</text>
+          <rect x="330" y="87" width="16" height="76" rx="3" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <rect x="460" y="87" width="16" height="76" rx="3" fill="#3a2000" stroke="#ff9900" stroke-width="1.2"/>
+          <path d="M338,130 Q370,120 403,130 Q436,140 476,130" stroke="#00f5ff" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/>
+          <circle cx="476" cy="130" r="5" fill="#003344" stroke="#00f5ff" stroke-width="1.5"/>
+          <text x="480" y="123" fill="#00f5ff" font-size="8">통과</text>
+          <path d="M338,112 Q358,102 375,88" stroke="#ff4455" stroke-width="1.2" fill="none" stroke-dasharray="3,2"/>
+          <text x="365" y="98" fill="#ff4455" font-size="8">소멸</text>
+          <path d="M338,150 Q358,160 375,165" stroke="#ff4455" stroke-width="1.2" fill="none" stroke-dasharray="3,2"/>
+          <text x="360" y="168" fill="#ff4455" font-size="8">소멸</text>
+          <text x="403" y="205" text-anchor="middle" fill="#556677" font-size="8">특정 m/z만 선택 통과</text>
+          <text x="403" y="218" text-anchor="middle" fill="#556677" font-size="8">전압 변화로 m/z 스캔</text>
+          <line x1="488" y1="130" x2="503" y2="130" stroke="#334455" stroke-width="1.5" marker-end="url(#h1)"/>
+          <!-- Step 4 -->
+          <rect x="506" y="20" width="218" height="210" rx="8" fill="#0d1b2a" stroke="#aa44ff" stroke-width="1.2"/>
+          <text x="615" y="42" text-anchor="middle" fill="#aa44ff" font-size="10" font-weight="bold">STEP 4</text>
+          <text x="615" y="56" text-anchor="middle" fill="#aabbcc" font-size="9">검출 → 스펙트럼</text>
+          <path d="M520,100 L520,160 L572,160 L572,100" stroke="#8833cc" stroke-width="2" fill="#1a0a1a"/>
+          <text x="546" y="137" text-anchor="middle" fill="#aa44ff" font-size="8">Faraday</text>
+          <text x="546" y="149" text-anchor="middle" fill="#aa44ff" font-size="8">Cup</text>
+          <rect x="582" y="80" width="130" height="95" rx="3" fill="#060d18" stroke="#223344" stroke-width="1"/>
+          <line x1="590" y1="168" x2="706" y2="168" stroke="#334455" stroke-width="1"/>
+          <line x1="590" y1="90" x2="590" y2="168" stroke="#334455" stroke-width="1"/>
+          <rect x="596" y="128" width="7" height="40" fill="#00f5ff" opacity="0.8"/>
+          <rect x="613" y="143" width="7" height="25" fill="#0088ff" opacity="0.8"/>
+          <rect x="630" y="152" width="7" height="16" fill="#ff9900" opacity="0.8"/>
+          <rect x="647" y="158" width="7" height="10" fill="#aa44ff" opacity="0.8"/>
+          <text x="648" y="178" text-anchor="middle" fill="#556677" font-size="7">m/z →</text>
+          <text x="590" y="84" fill="#556677" font-size="7">I↑</text>
+          <text x="615" y="200" text-anchor="middle" fill="#556677" font-size="8">이온 전류 → 분압</text>
+          <text x="615" y="212" text-anchor="middle" fill="#aabbcc" font-size="8">분압 ∝ 이온 전류</text>
+          <!-- 핵심 메시지 -->
+          <rect x="15" y="240" width="710" height="24" rx="5" fill="#1a0a00" stroke="#ff6b00" stroke-width="1"/>
+          <text x="370" y="256" text-anchor="middle" fill="#ff9944" font-size="11">⚠ 이온이 다른 분자와 충돌하지 않으려면 사중극자 내부 진공(10⁻⁶ Torr 이하)이 필수 — 평균 자유 경로(Mean Free Path)가 장비 크기보다 길어야 함</text>
+        </svg>
+      </div>
+    </div>
+    <div class="cb" style="border-left-color:#00f5ff;border-radius:8px;">
+      <h4>왜 RGA 내부에 고진공이 필요한가? — 평균 자유 경로(Mean Free Path)</h4>
+      <p>이온이 사중극자를 통과하는 동안 <span class="hl">다른 가스 분자와 충돌하면 궤도가 틀어져</span> 검출기에 도달하지 못합니다. 10⁻⁶ Torr 이하에서 평균 자유 경로는 수십 cm 이상이 되어 이온이 안전하게 통과할 수 있습니다. 이것이 RGA 프로브 자체가 고진공 환경에 있어야 하는 이유입니다.</p>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="step3">
+    <div class="card">
+      <div class="card-title">스펙트럼 해석 방법</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 740 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;">
+          <rect width="740" height="250" fill="#060d18" rx="8"/>
+          <rect x="25" y="15" width="440" height="200" rx="6" fill="#080f18" stroke="#1a2744" stroke-width="1.2"/>
+          <text x="245" y="10" text-anchor="middle" fill="#7799bb" font-size="10">RGA Mass Spectrum (정상 진공 예시)</text>
+          <line x1="50" y1="195" x2="450" y2="195" stroke="#1e3050" stroke-width="1.5"/>
+          <line x1="50" y1="25" x2="50" y2="195" stroke="#1e3050" stroke-width="1.5"/>
+          <text x="245" y="213" text-anchor="middle" fill="#556677" font-size="10">m/z</text>
+          <text x="50" y="209" text-anchor="middle" fill="#556677" font-size="8">0</text>
+          <text x="130" y="209" text-anchor="middle" fill="#556677" font-size="8">10</text>
+          <text x="210" y="209" text-anchor="middle" fill="#556677" font-size="8">20</text>
+          <text x="290" y="209" text-anchor="middle" fill="#556677" font-size="8">30</text>
+          <text x="370" y="209" text-anchor="middle" fill="#556677" font-size="8">40</text>
+          <text x="450" y="209" text-anchor="middle" fill="#556677" font-size="8">50</text>
+          <line x1="50" y1="145" x2="450" y2="145" stroke="#0f1e30" stroke-width="0.8"/>
+          <line x1="50" y1="95" x2="450" y2="95" stroke="#0f1e30" stroke-width="0.8"/>
+          <text x="45" y="198" text-anchor="end" fill="#556677" font-size="8">0</text>
+          <text x="45" y="148" text-anchor="end" fill="#556677" font-size="8">50</text>
+          <text x="45" y="98" text-anchor="end" fill="#556677" font-size="8">100</text>
+          <!-- H2 m/z=2 -->
+          <rect x="64" y="55" width="10" height="140" fill="#00f5ff" opacity="0.85"/>
+          <text x="69" y="50" text-anchor="middle" fill="#00f5ff" font-size="8">2 H₂</text>
+          <!-- H2O m/z=18 -->
+          <rect x="192" y="148" width="10" height="47" fill="#0088ff" opacity="0.85"/>
+          <text x="197" y="143" text-anchor="middle" fill="#0088ff" font-size="8">18 H₂O</text>
+          <!-- OH m/z=17 -->
+          <rect x="178" y="167" width="8" height="28" fill="#44aaff" opacity="0.7"/>
+          <text x="182" y="162" text-anchor="middle" fill="#44aaff" font-size="7">17</text>
+          <!-- N2 m/z=28 -->
+          <rect x="274" y="170" width="10" height="25" fill="#ff9900" opacity="0.8"/>
+          <text x="279" y="165" text-anchor="middle" fill="#ff9900" font-size="8">28</text>
+          <!-- CO2 m/z=44 -->
+          <rect x="402" y="183" width="10" height="12" fill="#ffcc00" opacity="0.8"/>
+          <text x="407" y="178" text-anchor="middle" fill="#ffcc00" font-size="8">44</text>
+          <!-- 해석 가이드 -->
+          <rect x="475" y="15" width="255" height="220" rx="6" fill="#0d1b2a" stroke="#1a2744" stroke-width="1.2"/>
+          <text x="602" y="36" text-anchor="middle" fill="#00f5ff" font-size="11" font-weight="bold">피크 해석 가이드</text>
+          <line x1="485" y1="45" x2="722" y2="45" stroke="#1a2744" stroke-width="1"/>
+          <rect x="485" y="52" width="11" height="11" rx="2" fill="#00f5ff"/>
+          <text x="503" y="62" fill="#00f5ff" font-size="10" font-weight="bold">m/z 2 — H₂</text>
+          <text x="503" y="76" fill="#8899aa" font-size="9">정상 진공의 대표 피크.</text>
+          <text x="503" y="88" fill="#8899aa" font-size="9">챔버 벽에서 방출됨.</text>
+          <rect x="485" y="100" width="11" height="11" rx="2" fill="#0088ff"/>
+          <text x="503" y="110" fill="#0088ff" font-size="10" font-weight="bold">m/z 18 — H₂O</text>
+          <text x="503" y="124" fill="#8899aa" font-size="9">수분 오염 지표. 17(OH⁺)과</text>
+          <text x="503" y="136" fill="#8899aa" font-size="9">함께 증가 시 수분 오염 확정.</text>
+          <rect x="485" y="148" width="11" height="11" rx="2" fill="#ff9900"/>
+          <text x="503" y="158" fill="#ff9900" font-size="10" font-weight="bold">m/z 28 — N₂ / CO</text>
+          <text x="503" y="172" fill="#8899aa" font-size="9">⚠ N₂ 또는 CO. 32(O₂)도</text>
+          <text x="503" y="184" fill="#8899aa" font-size="9">함께 증가하면 Air Leak.</text>
+          <rect x="485" y="196" width="11" height="11" rx="2" fill="#ffcc00"/>
+          <text x="503" y="206" fill="#ffcc00" font-size="10" font-weight="bold">m/z 44 — CO₂</text>
+          <text x="503" y="220" fill="#8899aa" font-size="9">유기 오염 또는 반응 부산물.</text>
+        </svg>
+      </div>
+    </div>
+    <div class="cb" style="border-left-color:#ff4444;border-radius:8px;"><h4>⚠ Fragment Ion 주의</h4><p>CO₂(m/z=44)는 이온화 과정에서 CO⁺(28), O⁺(16), C⁺(12) 등 <span class="wn">조각 이온(fragment ion)</span>도 만듭니다. m/z=28 피크 하나만 보고 N₂라고 단정하면 안 됩니다. <span class="hl">전체 스펙트럼 패턴과 상대 강도 비율</span>을 함께 분석해야 합니다.</p></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="step4">
+    <div class="card">
+      <div class="card-title">Leak vs Outgassing — 스펙트럼 패턴 비교</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 740 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;">
+          <rect width="740" height="270" fill="#060d18" rx="8"/>
+          <!-- Air Leak -->
+          <rect x="15" y="15" width="345" height="245" rx="8" fill="#1a0000" stroke="#660000" stroke-width="1.5"/>
+          <text x="187" y="38" text-anchor="middle" fill="#ff4455" font-size="12" font-weight="bold">🔴 Air Leak</text>
+          <text x="187" y="53" text-anchor="middle" fill="#aa5555" font-size="9">외부 공기가 챔버로 유입</text>
+          <rect x="25" y="60" width="325" height="130" rx="4" fill="#080808" stroke="#330000" stroke-width="1"/>
+          <line x1="42" y1="182" x2="340" y2="182" stroke="#221111" stroke-width="1"/>
+          <line x1="42" y1="70" x2="42" y2="182" stroke="#221111" stroke-width="1"/>
+          <rect x="62" y="158" width="8" height="24" fill="#00f5ff" opacity="0.5"/>
+          <text x="66" y="155" text-anchor="middle" fill="#335555" font-size="7">2</text>
+          <rect x="173" y="102" width="11" height="80" fill="#ff4455" opacity="0.9"/>
+          <text x="178" y="97" text-anchor="middle" fill="#ff4455" font-size="8" font-weight="bold">28↑↑</text>
+          <rect x="205" y="136" width="11" height="46" fill="#ff6655" opacity="0.85"/>
+          <text x="210" y="131" text-anchor="middle" fill="#ff6655" font-size="8">32↑</text>
+          <rect x="253" y="157" width="11" height="25" fill="#ff9900" opacity="0.8"/>
+          <text x="258" y="152" text-anchor="middle" fill="#ff9900" font-size="8">40</text>
+          <rect x="119" y="168" width="8" height="14" fill="#0088ff" opacity="0.5"/>
+          <text x="62" y="191" text-anchor="middle" fill="#665555" font-size="7">2</text>
+          <text x="119" y="191" text-anchor="middle" fill="#665555" font-size="7">18</text>
+          <text x="178" y="191" text-anchor="middle" fill="#ff4455" font-size="7">28</text>
+          <text x="210" y="191" text-anchor="middle" fill="#ff6655" font-size="7">32</text>
+          <text x="258" y="191" text-anchor="middle" fill="#886600" font-size="7">40</text>
+          <text x="187" y="203" text-anchor="middle" fill="#665555" font-size="7">m/z →</text>
+          <text x="187" y="220" text-anchor="middle" fill="#ff6655" font-size="10" font-weight="bold">N₂(28) + O₂(32) + Ar(40) 동시 증가</text>
+          <text x="187" y="234" text-anchor="middle" fill="#aa4444" font-size="9">공기 조성비(N₂:O₂:Ar≈78:21:1) 패턴</text>
+          <text x="187" y="248" text-anchor="middle" fill="#aa4444" font-size="9">→ 연결부·플랜지·밸브·씰 점검</text>
+          <!-- Outgassing -->
+          <rect x="378" y="15" width="350" height="245" rx="8" fill="#00001a" stroke="#000066" stroke-width="1.5"/>
+          <text x="553" y="38" text-anchor="middle" fill="#4499ff" font-size="12" font-weight="bold">💧 Outgassing</text>
+          <text x="553" y="53" text-anchor="middle" fill="#445588" font-size="9">내부 재료에서 가스 방출</text>
+          <rect x="388" y="60" width="330" height="130" rx="4" fill="#080808" stroke="#000033" stroke-width="1"/>
+          <line x1="406" y1="182" x2="710" y2="182" stroke="#111122" stroke-width="1"/>
+          <line x1="406" y1="70" x2="406" y2="182" stroke="#111122" stroke-width="1"/>
+          <rect x="426" y="132" width="8" height="50" fill="#00f5ff" opacity="0.6"/>
+          <text x="430" y="128" text-anchor="middle" fill="#335566" font-size="7">2</text>
+          <rect x="480" y="92" width="11" height="90" fill="#0088ff" opacity="0.9"/>
+          <text x="485" y="87" text-anchor="middle" fill="#0088ff" font-size="8" font-weight="bold">18↑↑</text>
+          <rect x="466" y="122" width="9" height="60" fill="#44aaff" opacity="0.8"/>
+          <text x="470" y="117" text-anchor="middle" fill="#44aaff" font-size="8">17↑</text>
+          <rect x="536" y="165" width="8" height="17" fill="#ff9900" opacity="0.5"/>
+          <text x="540" y="160" text-anchor="middle" fill="#886600" font-size="7">28</text>
+          <rect x="608" y="169" width="8" height="13" fill="#ffcc00" opacity="0.6"/>
+          <text x="612" y="164" text-anchor="middle" fill="#886600" font-size="7">44</text>
+          <text x="430" y="191" text-anchor="middle" fill="#445566" font-size="7">2</text>
+          <text x="470" y="191" text-anchor="middle" fill="#4499ff" font-size="7">17</text>
+          <text x="485" y="191" text-anchor="middle" fill="#0088ff" font-size="7">18</text>
+          <text x="540" y="191" text-anchor="middle" fill="#665544" font-size="7">28</text>
+          <text x="612" y="191" text-anchor="middle" fill="#665544" font-size="7">44</text>
+          <text x="553" y="203" text-anchor="middle" fill="#445566" font-size="7">m/z →</text>
+          <text x="553" y="220" text-anchor="middle" fill="#4499ff" font-size="10" font-weight="bold">H₂O(18) + OH⁺(17) 동시 증가</text>
+          <text x="553" y="234" text-anchor="middle" fill="#3366aa" font-size="9">챔버 벽·O-ring·유기물 수분 방출</text>
+          <text x="553" y="248" text-anchor="middle" fill="#3366aa" font-size="9">→ 베이킹(Baking) + 세정</text>
+        </svg>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="cb" style="border-left-color:#ff4455;border-radius:8px;"><h4>🔴 Air Leak 진단법</h4><p>공기 조성(N₂ 78%, O₂ 21%, Ar 1%)에 해당하는 m/z 28, 32, 40이 <span class="wn">동시에 같은 비율로</span> 증가할 때 Air Leak를 의심합니다. He leak detector로 누설 부위를 찾습니다.</p></div>
+      <div class="cb" style="border-left-color:#0088ff;border-radius:8px;"><h4>💧 Outgassing 진단법</h4><p>m/z 18(H₂O)와 m/z 17(OH⁺)이 함께 증가하면 <span class="hl">수분 outgassing</span>입니다. 챔버 베이킹(100~200°C)으로 수분을 제거합니다. 시간이 지나면 자연 감소하는 특징이 있습니다.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 02 가상실험 ===== -->
+<div class="panel" id="tab1">
+
+  <!-- 설치 위치 다이어그램 (수정된 정확한 버전) -->
+  <div class="card">
+    <div class="card-title">RGA 설치 위치 & 진공 시스템 구성도</div>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;">
+        <rect width="760" height="320" fill="#060d18" rx="8"/>
+        <defs>
+          <marker id="e1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#00f5ff"/></marker>
+          <marker id="e2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff9900"/></marker>
+          <marker id="e3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#00aa55"/></marker>
+        </defs>
+
+        <!-- 공정 챔버 (중앙) -->
+        <rect x="270" y="55" width="200" height="160" rx="10" fill="#0d2030" stroke="#1e5070" stroke-width="2"/>
+        <text x="370" y="82" text-anchor="middle" fill="#7799bb" font-size="12" font-weight="bold">공정 챔버</text>
+        <text x="370" y="97" text-anchor="middle" fill="#556677" font-size="9">(Process Chamber)</text>
+        <ellipse cx="370" cy="155" rx="55" ry="10" fill="#1a3040" stroke="#2a5070" stroke-width="1.2"/>
+        <text x="370" y="159" text-anchor="middle" fill="#4499bb" font-size="9">Wafer / Sample</text>
+        <ellipse cx="370" cy="118" rx="40" ry="14" fill="none" stroke="#aa44ff" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+        <text x="370" y="122" text-anchor="middle" fill="#7733aa" font-size="8">Plasma</text>
+
+        <!-- 압력 게이지 -->
+        <circle cx="370" cy="38" r="16" fill="#0a1828" stroke="#334455" stroke-width="1.2"/>
+        <text x="370" y="35" text-anchor="middle" fill="#7799bb" font-size="8">P</text>
+        <text x="370" y="46" text-anchor="middle" fill="#556677" font-size="7">Gauge</text>
+        <line x1="370" y1="54" x2="370" y2="56" stroke="#334455" stroke-width="1"/>
+
+        <!-- ① Gate Valve (챔버-TMP 사이) -->
+        <rect x="205" y="115" width="60" height="40" rx="4" fill="#0a1828" stroke="#334455" stroke-width="1.5"/>
+        <line x1="235" y1="115" x2="235" y2="155" stroke="#4488aa" stroke-width="2" opacity="0.7"/>
+        <text x="235" y="168" text-anchor="middle" fill="#556677" font-size="8">Gate Valve</text>
+
+        <!-- ② TMP (좌측) -->
+        <rect x="65" y="95" width="120" height="80" rx="8" fill="#0a1020" stroke="#223344" stroke-width="1.5"/>
+        <text x="125" y="122" text-anchor="middle" fill="#7799bb" font-size="11" font-weight="bold">TMP</text>
+        <text x="125" y="137" text-anchor="middle" fill="#556677" font-size="9">터보분자펌프</text>
+        <text x="125" y="152" text-anchor="middle" fill="#334455" font-size="8">10⁻³~10⁻⁹ Torr</text>
+        <!-- TMP → Gate Valve -->
+        <line x1="185" y1="135" x2="203" y2="135" stroke="#00f5ff" stroke-width="1.5" marker-end="url(#e1)"/>
+
+        <!-- Dry Pump (TMP backing) -->
+        <rect x="25" y="210" width="90" height="46" rx="6" fill="#080c14" stroke="#223344" stroke-width="1.2"/>
+        <text x="70" y="230" text-anchor="middle" fill="#7799bb" font-size="9" font-weight="bold">Dry Pump</text>
+        <text x="70" y="244" text-anchor="middle" fill="#556677" font-size="8">(Backing)</text>
+        <line x1="100" y1="175" x2="85" y2="210" stroke="#334455" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+        <!-- 가스 공급 MFC -->
+        <rect x="460" y="55" width="80" height="46" rx="6" fill="#0a1020" stroke="#223344" stroke-width="1.2"/>
+        <text x="500" y="75" text-anchor="middle" fill="#7799bb" font-size="9">MFC</text>
+        <text x="500" y="89" text-anchor="middle" fill="#556677" font-size="8">가스 공급</text>
+        <line x1="460" y1="78" x2="472" y2="78" stroke="#00aa55" stroke-width="1.5"/>
+        <line x1="472" y1="78" x2="472" y2="105" stroke="#00aa55" stroke-width="1.5" marker-end="url(#e3)"/>
+
+        <!-- ★ RGA 설치 방법 A: 직접 연결 (고진공 챔버) -->
+        <rect x="460" y="155" width="145" height="75" rx="8" fill="#1a1000" stroke="#ff9900" stroke-width="2"/>
+        <text x="532" y="174" text-anchor="middle" fill="#ff9900" font-size="11" font-weight="bold">★ RGA 프로브</text>
+        <text x="532" y="189" text-anchor="middle" fill="#aa7700" font-size="8">2¾" CF 플랜지 직접 장착</text>
+        <text x="532" y="202" text-anchor="middle" fill="#886600" font-size="8">챔버 측면 포트에 연결</text>
+        <text x="532" y="215" text-anchor="middle" fill="#664400" font-size="8">동작 조건: 10⁻⁴ Torr 이하</text>
+        <!-- RGA → 챔버 연결 (측면 포트) -->
+        <line x1="460" y1="192" x2="472" y2="192" stroke="#ff9900" stroke-width="2"/>
+        <line x1="472" y1="192" x2="472" y2="185" stroke="#ff9900" stroke-width="2"/>
+        <line x1="472" y1="185" x2="470" y2="185" stroke="#ff9900" stroke-width="2" marker-end="url(#e2)"/>
+
+        <!-- Isolation Valve (RGA 앞) -->
+        <rect x="449" y="178" width="14" height="28" rx="3" fill="#0a1828" stroke="#ff9900" stroke-width="1.2"/>
+        <text x="435" y="196" text-anchor="end" fill="#666" font-size="7">Isolation</text>
+        <text x="435" y="206" text-anchor="end" fill="#666" font-size="7">Valve</text>
+
+        <!-- ECU + PC -->
+        <rect x="615" y="105" width="128" height="90" rx="6" fill="#0a1020" stroke="#334455" stroke-width="1.2"/>
+        <text x="679" y="128" text-anchor="middle" fill="#7799bb" font-size="10" font-weight="bold">ECU + PC</text>
+        <text x="679" y="143" text-anchor="middle" fill="#556677" font-size="8">USB / RS-232</text>
+        <text x="679" y="157" text-anchor="middle" fill="#556677" font-size="8">RGASoft</text>
+        <text x="679" y="170" text-anchor="middle" fill="#00f5ff" font-size="8">실시간 스펙트럼</text>
+        <text x="679" y="184" text-anchor="middle" fill="#00f5ff" font-size="8">경보 / 트렌드 로깅</text>
+        <line x1="607" y1="192" x2="615" y2="160" stroke="#334455" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+        <!-- 설명 박스 (하단) -->
+        <rect x="15" y="268" width="730" height="44" rx="6" fill="#0d1b2a" stroke="#1a2744" stroke-width="1"/>
+        <text x="25" y="284" fill="#ff9900" font-size="10" font-weight="bold">★ RGA 설치 핵심:</text>
+        <text x="25" y="298" fill="#7799bb" font-size="9">① RGA 프로브는 공정 챔버 측면 CF 플랜지에 직접 장착 (고진공 챔버용)</text>
+        <text x="25" y="310" fill="#7799bb" font-size="9">② 챔버가 중진공~대기압이면 RGA 앞에 전용 TMP + Leak Valve 구성 필요 (Differential Pumping)</text>
+        <text x="420" y="284" fill="#556677" font-size="9">③ Isolation Valve: 챔버 벤팅 시 RGA 보호</text>
+        <text x="420" y="298" fill="#556677" font-size="9">④ RGA 내부는 항상 10⁻⁶ Torr 이하 유지 필요</text>
+        <text x="420" y="310" fill="#556677" font-size="9">⑤ ECU는 대기 측에 위치, 케이블로 프로브와 연결</text>
+      </svg>
+    </div>
+    <!-- 고압 챔버용 Differential Pumping 설명 -->
+    <div class="cb" style="border-left-color:#ff9900;border-radius:8px;margin-top:10px;">
+      <h4>⚠ 고압 챔버에서는 별도 펌핑 시스템 필요 (Differential Pumping)</h4>
+      <p>챔버 압력이 10⁻⁴ Torr를 넘는 경우 RGA를 챔버에 직접 연결하면 <span class="wn">필라멘트·사중극자가 손상</span>됩니다. 이때는 RGA 앞에 <span class="hl">전용 소형 TMP + 가변 리크 밸브(Variable Leak Valve)</span>를 설치하여 RGA 내부는 항상 고진공 상태로 유지하면서 챔버 가스를 소량 샘플링합니다. 이 구성을 <span class="hl">차동 펌핑(Differential Pumping)</span>이라고 합니다.</p>
+    </div>
+  </div>
+
+  <!-- 실시간 모니터링 패널 -->
+  <div class="card">
+    <div class="card-title">실시간 모니터링</div>
+    <div class="monitor-row">
+      <div class="monitor-box"><div class="monitor-label">Total Pressure</div><div class="monitor-val" id="monPressure">—</div></div>
+      <div class="monitor-box"><div class="monitor-label">H₂ (m/z 2)</div><div class="monitor-val" id="monH2">—</div></div>
+      <div class="monitor-box"><div class="monitor-label">H₂O (m/z 18)</div><div class="monitor-val" id="monH2O">—</div></div>
+      <div class="monitor-box"><div class="monitor-label">N₂/CO (m/z 28)</div><div class="monitor-val" id="monN2">—</div></div>
+      <div class="monitor-box"><div class="monitor-label">O₂ (m/z 32)</div><div class="monitor-val" id="monO2">—</div></div>
+      <div class="monitor-box"><div class="monitor-label">Ar (m/z 40)</div><div class="monitor-val" id="monAr">—</div></div>
+    </div>
+    <div style="margin-bottom:6px;">
+      <span style="font-size:11px;color:#7788aa;">트렌드 모니터 (최근 30 스캔)</span>
+      <span id="alarmBox" style="margin-left:12px;font-size:11px;display:none;padding:2px 10px;background:#330000;border:1px solid #aa0000;border-radius:4px;color:#ff4444;">⚠ 이상 감지</span>
+    </div>
+    <canvas id="trendCanvas" class="trend-canvas"></canvas>
+  </div>
+
+  <!-- 실험 조건 -->
+  <div class="card">
+    <div class="card-title">실험 조건 설정</div>
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <div class="ctrl-label">시나리오</div>
+        <select id="scenario" onchange="applyScenario()">
+          <option value="clean">정상 (Clean Vacuum)</option>
+          <option value="moisture">수분 오염 (Moisture)</option>
+          <option value="leak">공기 누출 (Air Leak)</option>
+          <option value="oil">오일 오염 (Hydrocarbon)</option>
+          <option value="process_ar">공정 중 (Ar 스퍼터링)</option>
+          <option value="custom">사용자 정의</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">표시 범위 (m/z)</div>
+        <select id="massRange">
+          <option value="50">1–50</option>
+          <option value="100" selected>1–100</option>
+          <option value="200">1–200</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Y축 스케일</div>
+        <select id="yScale">
+          <option value="linear">Linear</option>
+          <option value="log">Log</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">노이즈: <span id="noiseVal">1</span></div>
+        <input type="range" id="noiseLevel" min="0" max="5" step="1" value="1">
+      </div>
+      <button class="btn btn-cyan" onclick="startScan()">▶ 스캔 시작</button>
+      <button class="btn btn-orange" onclick="resetScan()">↺ 초기화</button>
+    </div>
+    <div id="customControls" style="display:none;">
+      <div class="ctrl-label" style="margin-bottom:8px;color:#ff9900;">▸ 가스별 분압 조절</div>
+      <div class="grid3">
+        <div class="ctrl-group"><div class="ctrl-label">H₂ (m/z 2)</div><input type="range" id="g2" min="0" max="100" value="40"></div>
+        <div class="ctrl-group"><div class="ctrl-label">H₂O (m/z 18)</div><input type="range" id="g18" min="0" max="100" value="10"></div>
+        <div class="ctrl-group"><div class="ctrl-label">N₂ (m/z 28)</div><input type="range" id="g28" min="0" max="100" value="5"></div>
+        <div class="ctrl-group"><div class="ctrl-label">O₂ (m/z 32)</div><input type="range" id="g32" min="0" max="100" value="2"></div>
+        <div class="ctrl-group"><div class="ctrl-label">Ar (m/z 40)</div><input type="range" id="g40" min="0" max="100" value="0"></div>
+        <div class="ctrl-group"><div class="ctrl-label">CO₂ (m/z 44)</div><input type="range" id="g44" min="0" max="100" value="2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">RGA 스펙트럼 &nbsp;<span id="scanStatus" style="color:#ff9900;font-size:11px;">STANDBY</span></div>
+    <canvas id="specCanvas" class="spec-canvas"></canvas>
+    <div class="legend" id="specLegend"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">피크 데이터 테이블</div>
+    <div style="overflow-x:auto;">
+      <table><thead><tr><th>m/z</th><th>가스 (추정)</th><th>상대 강도 (%)</th><th>추정 분압 (Torr)</th><th>상태</th></tr></thead>
+      <tbody id="peakTbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 03 진단훈련 ===== -->
+<div class="panel" id="tab2">
+  <div class="card">
+    <div class="card-title">진단 시나리오 선택</div>
+    <div class="scen-grid" id="diagScenGrid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">현재 스펙트럼 &nbsp;<span id="diagScenLabel" style="color:#667788;font-size:11px;"></span></div>
+    <canvas id="diagCanvas" class="spec-canvas" style="height:230px;"></canvas>
+  </div>
+  <div class="card">
+    <div class="card-title">진단 정보</div>
+    <div id="diagResult"><p style="color:#556677;font-size:13px;">시나리오를 선택하면 진단 정보가 표시됩니다.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-title">나의 진단 입력</div>
+    <div class="ctrl-row">
+      <select id="diagAnswer" style="flex:1;padding:9px;">
+        <option value="">-- 원인을 선택하세요 --</option>
+        <option value="clean">정상 상태</option>
+        <option value="moisture">수분 오염</option>
+        <option value="leak">공기 누출 (Air Leak)</option>
+        <option value="oil">오일/탄화수소 오염</option>
+        <option value="process_ar">공정 가스 잔류 (Ar)</option>
+      </select>
+      <button class="btn btn-cyan" onclick="checkDiag()">진단 확인</button>
+    </div>
+    <div id="diagFeedback" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- ===== TAB 04 퀴즈 ===== -->
+<div class="panel" id="tab3">
+  <div class="card">
+    <div class="card-title">RGA 이해도 평가</div>
+    <div id="quizBody"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn btn-cyan" onclick="gradeQuiz()">채점하기</button>
+      <button class="btn btn-orange" onclick="resetQuiz()">다시 풀기</button>
+    </div>
+    <div id="quizScore"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+const SCENARIOS = {
+  clean:      {label:'정상 (Clean Vacuum)',   answer:'clean',      peaks:{2:80,16:4,18:15,28:8,44:3}},
+  moisture:   {label:'수분 오염',             answer:'moisture',   peaks:{2:60,17:40,18:85,16:12,28:6,44:5}},
+  leak:       {label:'공기 누출 (Air Leak)',  answer:'leak',       peaks:{2:30,18:20,28:90,32:24,40:12,44:8}},
+  oil:        {label:'오일 오염 (HC)',        answer:'oil',        peaks:{2:40,18:15,28:15,41:35,43:28,55:20,57:18,69:8}},
+  process_ar: {label:'Ar 스퍼터링 공정',      answer:'process_ar', peaks:{2:20,18:8,36:18,38:6,40:95,28:5}},
+};
+const GAS_INFO = {
+  2:{name:'H₂',color:'#00f5ff'},16:{name:'O⁺/CH₄',color:'#88aaff'},
+  17:{name:'OH⁺',color:'#aaddff'},18:{name:'H₂O',color:'#0088ff'},
+  28:{name:'N₂/CO',color:'#ff9900'},32:{name:'O₂',color:'#ff4455'},
+  36:{name:'³⁶Ar²⁺',color:'#dd88ff'},38:{name:'³⁸Ar²⁺',color:'#cc77ee'},
+  40:{name:'Ar',color:'#aa44ff'},41:{name:'HC⁺',color:'#ff7722'},
+  43:{name:'HC⁺',color:'#ff6600'},44:{name:'CO₂',color:'#ffcc00'},
+  55:{name:'HC⁺',color:'#ff5500'},57:{name:'HC⁺',color:'#ff4400'},69:{name:'HC⁺',color:'#ff3300'},
+};
+const DIAG_CASES = [
+  {id:'d1',label:'케이스 A',hint:'m/z 28, 32 급증',key:'leak'},
+  {id:'d2',label:'케이스 B',hint:'m/z 18, 17 급증',key:'moisture'},
+  {id:'d3',label:'케이스 C',hint:'m/z 40 강한 피크',key:'process_ar'},
+  {id:'d4',label:'케이스 D',hint:'m/z 41~70 복수',key:'oil'},
+  {id:'d5',label:'케이스 E',hint:'m/z 2 dominant',key:'clean'},
+];
+const DIAG_INFO = {
+  clean:      {cls:'di-ok',ic:'✅',title:'정상 상태',       desc:'H₂ 우세, H₂O 소량. 진공 시스템 정상.'},
+  moisture:   {cls:'di-w', ic:'💧',title:'수분 오염',       desc:'m/z 18(H₂O)+17(OH⁺) 동시 증가. 베이킹 권장.'},
+  leak:       {cls:'di-a', ic:'🔴',title:'Air Leak 의심',   desc:'m/z 28(N₂),32(O₂),40(Ar) 공기비율 패턴. 연결부 점검.'},
+  oil:        {cls:'di-w', ic:'🛢',title:'오일/HC 오염',    desc:'m/z 41~70 복수 HC 피크. 펌프 역류 or 유기 오염.'},
+  process_ar: {cls:'di-ok',ic:'⚛',title:'Ar 공정 잔류',    desc:'m/z 40 강세, 36/38 동위원소 피크. 정상 스퍼터링 패턴.'},
+};
+const QUIZ = [
+  {q:'RGA와 진공 게이지의 가장 큰 차이는?',opts:['측정 속도 차이','가스 조성 정보 제공 가능','가격 차이','설치 위치 차이'],ans:1},
+  {q:'m/z = 18에서 강한 피크 → 가장 먼저 의심해야 할 것은?',opts:['공기 누출','수분 오염','오일 역류','플라즈마 방전'],ans:1},
+  {q:'RGA 내부에 고진공(10⁻⁶ Torr 이하)이 필요한 이유는?',opts:['필라멘트 냉각을 위해','이온이 다른 분자와 충돌 없이 통과하기 위해(평균 자유 경로)','사중극자 전압이 높아서','검출기 보호를 위해'],ans:1},
+  {q:'Air Leak 시 동시에 증가하는 피크 조합은?',opts:['m/z 2, 18','m/z 28, 32, 40','m/z 44, 55, 69','m/z 18, 17'],ans:1},
+  {q:'고압 챔버(10⁻² Torr)에서 RGA를 사용하려면?',opts:['직접 연결해도 무방','RGA 앞에 TMP + 리크 밸브(차동 펌핑) 구성 필요','챔버 압력을 높이면 됨','Faraday Cup을 SEM으로 교체'],ans:1},
+  {q:'m/z = 28을 단독으로 N₂라고 단정하면 안 되는 이유는?',opts:['N₂는 RGA로 측정 불가','CO도 m/z=28이기 때문','28은 Ar 피크','피크가 낮기 때문'],ans:1},
+];
+
+// ── STATE ─────────────────────────────────────────────
+let scanCount=0, isScanning=false, scanTimer=null;
+let activeDiagKey='leak', quizAnswers={};
+// trend data: 각 가스별 최근 30포인트
+const TREND_KEYS=[2,18,28,32,40];
+const TREND_COLORS={2:'#00f5ff',18:'#0088ff',28:'#ff9900',32:'#ff4455',40:'#aa44ff'};
+let trendData={};
+TREND_KEYS.forEach(k=>trendData[k]=[]);
+
+// ── TABS / STEPS ──────────────────────────────────────
+function showTab(i){
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  if(i===1) requestAnimationFrame(()=>drawSpectrum('specCanvas'));
+  if(i===2){initDiag();requestAnimationFrame(()=>drawDiagCanvas());}
+}
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+  document.querySelectorAll('.step-tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+}
+
+// ── CANVAS SPECTRUM ───────────────────────────────────
+function drawCanvas(id, peaks, maxRange, yLog, noise){
+  const canvas=document.getElementById(id);
+  if(!canvas) return [];
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const W=rect.width||600, H=rect.height||260;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const pad={l:56,r:16,t:22,b:36};
+  const gW=W-pad.l-pad.r, gH=H-pad.t-pad.b;
+
+  ctx.fillStyle='#060d18'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#0f1e30'; ctx.lineWidth=1;
+  for(let i=0;i<=10;i++){
+    const y=pad.t+gH*i/10;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const x=pad.l+gW*i/10;
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+gH);ctx.stroke();
+  }
+  ctx.strokeStyle='#1e3050'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+gH);ctx.lineTo(W-pad.r,pad.t+gH);ctx.stroke();
+
+  ctx.fillStyle='#556677'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+  const xStep=maxRange<=50?5:maxRange<=100?10:20;
+  for(let x=0;x<=maxRange;x+=xStep) ctx.fillText(x, pad.l+gW*x/maxRange, pad.t+gH+15);
+  ctx.save();ctx.translate(12,pad.t+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText(yLog?'log Intensity':'Intensity',0,0);ctx.restore();
+  ctx.fillText('m/z',pad.l+gW/2,H-2);
+
+  const maxI=Math.max(...Object.values(peaks),1);
+  const rows=[];
+
+  if(noise>0){
+    ctx.fillStyle='#1a3040';
+    for(let m=1;m<=maxRange;m++){
+      const n=noise*Math.random()*0.01;
+      const px=pad.l+gW*m/maxRange;
+      const py=yLog?pad.t+gH*(1-Math.log10(1+n*99)/2):pad.t+gH*(1-n);
+      ctx.fillRect(px-0.5,Math.max(py,pad.t),1,pad.t+gH-Math.max(py,pad.t));
+    }
+  }
+
+  Object.entries(peaks).forEach(([mzStr,intensity])=>{
+    const mz=parseInt(mzStr,10);
+    if(mz>maxRange||mz<1) return;
+    const nd=noise>0?intensity*(1+(Math.random()-0.5)*0.06*noise):intensity;
+    const frac=Math.min(nd/maxI,1);
+    const px=pad.l+gW*mz/maxRange;
+    const py=yLog?pad.t+gH*(1-Math.log10(1+frac*99)/Math.log10(100)):pad.t+gH*(1-frac);
+    const bH=pad.t+gH-py;
+    if(bH<1) return;
+    const info=GAS_INFO[mz]||{name:`m/z${mz}`,color:'#8899aa'};
+    const g=ctx.createLinearGradient(0,py,0,pad.t+gH);
+    g.addColorStop(0,info.color); g.addColorStop(1,info.color+'22');
+    ctx.fillStyle=g;
+    ctx.fillRect(px-3,py,6,bH);
+    if(frac>0.07){
+      ctx.fillStyle=info.color; ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(mz,px,py-14);
+      ctx.font='10px sans-serif'; ctx.fillText(info.name,px,py-4);
+    }
+    rows.push({mz,name:info.name,rel:Math.round(frac*100),torr:(frac*2.4e-8),color:info.color});
+  });
+  return rows;
+}
+
+function getPeaks(){
+  const scen=document.getElementById('scenario').value;
+  if(scen==='custom') return {
+    2:+document.getElementById('g2').value,18:+document.getElementById('g18').value,
+    28:+document.getElementById('g28').value,32:+document.getElementById('g32').value,
+    40:+document.getElementById('g40').value,44:+document.getElementById('g44').value,
+  };
+  return SCENARIOS[scen]?{...SCENARIOS[scen].peaks}:{};
+}
+
+function drawSpectrum(cid){
+  const noise=parseInt(document.getElementById('noiseLevel').value,10);
+  const maxRange=parseInt(document.getElementById('massRange').value,10);
+  const yLog=document.getElementById('yScale').value==='log';
+  const peaks=getPeaks();
+  const rows=drawCanvas(cid||'specCanvas',peaks,maxRange,yLog,noise);
+
+  if(!cid||cid==='specCanvas'){
+    // 모니터링 업데이트
+    const maxI=Math.max(...Object.values(peaks),1);
+    updateMonitor(peaks,maxI);
+
+    const tb=document.getElementById('peakTbody'); tb.innerHTML='';
+    rows.sort((a,b)=>b.rel-a.rel).forEach(r=>{
+      const badge=r.rel>60?`<span class="badge badge-alert">HIGH</span>`:r.rel>20?`<span class="badge badge-warn">주의</span>`:`<span class="badge badge-ok">정상</span>`;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="color:${r.color}">${r.mz}</td><td>${r.name}</td><td>${r.rel}%</td><td>${r.torr.toExponential(1)}</td><td>${badge}</td>`;
+      tb.appendChild(tr);
+    });
+    const leg=document.getElementById('specLegend'); leg.innerHTML='';
+    rows.forEach(r=>leg.innerHTML+=`<div class="leg-item"><div class="leg-dot" style="background:${r.color}"></div>m/z ${r.mz}: ${r.name}</div>`);
+  }
+}
+function drawDiagCanvas(){
+  const scen=SCENARIOS[activeDiagKey];
+  if(scen) drawCanvas('diagCanvas',{...scen.peaks},100,false,1);
+}
+
+// ── MONITORING ────────────────────────────────────────
+function updateMonitor(peaks, maxI){
+  const basePressure=2.4e-8;
+  const tot=Object.values(peaks).reduce((a,b)=>a+b,0);
+  const totalP=(tot/maxI*basePressure).toExponential(2);
+  document.getElementById('hdrPressure').textContent=totalP.replace('e-','×10⁻');
+  document.getElementById('monPressure').textContent=totalP;
+
+  const monMap={2:'monH2',18:'monH2O',28:'monN2',32:'monO2',40:'monAr'};
+  let hasAlert=false;
+  Object.entries(monMap).forEach(([mz,elId])=>{
+    const el=document.getElementById(elId);
+    const v=peaks[mz]||0;
+    const frac=v/maxI;
+    const pTorr=(frac*basePressure).toExponential(1);
+    el.textContent=pTorr;
+    el.className='monitor-val';
+    if(frac>0.6){el.classList.add('alert');hasAlert=true;}
+    else if(frac>0.2){el.classList.add('warn');}
+  });
+  document.getElementById('alarmBox').style.display=hasAlert?'inline-block':'none';
+
+  // trend push
+  TREND_KEYS.forEach(k=>{
+    const frac=(peaks[k]||0)/maxI;
+    trendData[k].push(frac);
+    if(trendData[k].length>30) trendData[k].shift();
+  });
+  drawTrend();
+}
+
+function drawTrend(){
+  const canvas=document.getElementById('trendCanvas');
+  if(!canvas) return;
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const W=rect.width||600, H=rect.height||110;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const pad={l:48,r:12,t:10,b:24};
+  const gW=W-pad.l-pad.r, gH=H-pad.t-pad.b;
+
+  ctx.fillStyle='#060d18'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#0f1e30'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+gH*i/4;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  }
+  ctx.strokeStyle='#1e3050'; ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+gH);ctx.lineTo(W-pad.r,pad.t+gH);ctx.stroke();
+
+  ctx.font='9px sans-serif';
+  ctx.fillStyle='#556677'; ctx.textAlign='end';
+  ['1.0','0.75','0.5','0.25','0.0'].forEach((v,i)=>ctx.fillText(v,pad.l-3,pad.t+gH*i/4+3));
+  ctx.textAlign='center';
+  ctx.fillText('Scan →',pad.l+gW/2,H-2);
+
+  TREND_KEYS.forEach(k=>{
+    const data=trendData[k];
+    if(data.length<2) return;
+    ctx.strokeStyle=TREND_COLORS[k]; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    data.forEach((v,i)=>{
+      const x=pad.l+gW*(i/(29));
+      const y=pad.t+gH*(1-v);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // label at end
+    if(data.length>0){
+      const lastV=data[data.length-1];
+      const lx=pad.l+gW*(data.length-1)/29;
+      const ly=pad.t+gH*(1-lastV);
+      ctx.fillStyle=TREND_COLORS[k]; ctx.font='8px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(`m${k}`,lx+2,ly);
+    }
+  });
+}
+
+// ── SCENARIO ─────────────────────────────────────────
+function applyScenario(){
+  document.getElementById('customControls').style.display=document.getElementById('scenario').value==='custom'?'block':'none';
+  drawSpectrum('specCanvas');
+}
+
+// ── SCAN ─────────────────────────────────────────────
+function startScan(){
+  if(isScanning) return;
+  isScanning=true;
+  document.getElementById('hdrMode').textContent='SCANNING'; document.getElementById('hdrMode').style.color='#00ff88';
+  document.getElementById('scanStatus').textContent='SCANNING...'; document.getElementById('scanStatus').style.color='#00ff88';
+  let s=0;
+  scanTimer=setInterval(()=>{
+    s++; scanCount++;
+    document.getElementById('hdrScan').textContent=scanCount;
+    drawSpectrum('specCanvas');
+    if(s>=30){
+      clearInterval(scanTimer); isScanning=false;
+      document.getElementById('hdrMode').textContent='IDLE'; document.getElementById('hdrMode').style.color='#00f5ff';
+      document.getElementById('scanStatus').textContent='COMPLETE ✓'; document.getElementById('scanStatus').style.color='#00ff88';
+    }
+  },300);
+}
+function resetScan(){
+  if(scanTimer) clearInterval(scanTimer);
+  isScanning=false; scanCount=0;
+  TREND_KEYS.forEach(k=>trendData[k]=[]);
+  document.getElementById('hdrScan').textContent='—';
+  document.getElementById('hdrMode').textContent='STANDBY'; document.getElementById('hdrMode').style.color='#ff9900';
+  document.getElementById('hdrPressure').textContent='—';
+  document.getElementById('scanStatus').textContent='STANDBY'; document.getElementById('scanStatus').style.color='#ff9900';
+  document.getElementById('alarmBox').style.display='none';
+  document.getElementById('scenario').value='clean';
+  document.getElementById('customControls').style.display='none';
+  ['monH2','monH2O','monN2','monO2','monAr','monPressure'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.textContent='—'; el.className='monitor-val';}
+  });
+  drawTrend();
+  drawSpectrum('specCanvas');
+}
+
+// ── DIAG ─────────────────────────────────────────────
+function initDiag(){
+  const grid=document.getElementById('diagScenGrid');
+  if(grid.children.length>0) return;
+  DIAG_CASES.forEach(d=>{
+    const btn=document.createElement('div');
+    btn.className='scen-btn'+(d.key===activeDiagKey?' active':'');
+    btn.id='dbtn_'+d.id;
+    btn.innerHTML=`<h5>${d.label}</h5><p>${d.hint}</p>`;
+    btn.onclick=()=>selectDiagCase(d);
+    grid.appendChild(btn);
+  });
+  updateDiagInfo();
+}
+function selectDiagCase(d){
+  activeDiagKey=d.key;
+  document.querySelectorAll('.scen-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('dbtn_'+d.id); if(el) el.classList.add('active');
+  document.getElementById('diagAnswer').value='';
+  document.getElementById('diagFeedback').innerHTML='';
+  updateDiagInfo();
+  requestAnimationFrame(()=>drawDiagCanvas());
+}
+function updateDiagInfo(){
+  const scen=SCENARIOS[activeDiagKey];
+  document.getElementById('diagScenLabel').textContent=scen?`— ${scen.label}`:'';
+  const info=DIAG_INFO[activeDiagKey]; if(!info) return;
+  document.getElementById('diagResult').innerHTML=`<div class="di ${info.cls}"><div class="di-icon">${info.ic}</div><div class="di-text"><h4>${info.title}</h4><p>${info.desc}</p></div></div>`;
+}
+function checkDiag(){
+  const ans=document.getElementById('diagAnswer').value;
+  if(!ans){document.getElementById('diagFeedback').innerHTML='<p style="color:#ff9900;">원인을 선택하세요.</p>';return;}
+  const ok=ans===SCENARIOS[activeDiagKey].answer;
+  document.getElementById('diagFeedback').innerHTML=ok
+    ?`<div class="di di-ok"><div class="di-icon">🎯</div><div class="di-text"><h4>정답!</h4><p>${SCENARIOS[activeDiagKey].label} 패턴을 올바르게 진단했습니다.</p></div></div>`
+    :`<div class="di di-a"><div class="di-icon">❌</div><div class="di-text"><h4>오답</h4><p>정답은 <strong style="color:#ff9900">${SCENARIOS[activeDiagKey].label}</strong>입니다.</p></div></div>`;
+}
+
+// ── QUIZ ─────────────────────────────────────────────
+function initQuiz(){
+  quizAnswers={};
+  const body=document.getElementById('quizBody'); body.innerHTML='';
+  QUIZ.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='quiz-q';
+    d.innerHTML=`<p><strong style="color:#ff9900">Q${i+1}.</strong> ${q.q}</p>
+      <div class="quiz-opts">${q.opts.map((o,j)=>`<button class="quiz-opt" id="qo_${i}_${j}" onclick="selectOpt(${i},${j})">${j+1}. ${o}</button>`).join('')}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById('quizScore').innerHTML='';
+}
+function selectOpt(qi,oi){
+  if(quizAnswers[qi]!==undefined) return;
+  quizAnswers[qi]=oi;
+  QUIZ[qi].opts.forEach((_,j)=>{
+    const el=document.getElementById(`qo_${qi}_${j}`);
+    if(j!==oi) el.style.opacity='0.4';
+    el.style.cursor='default';
+  });
+  document.getElementById(`qo_${qi}_${oi}`).style.borderColor='rgba(0,245,255,0.5)';
+  document.getElementById(`qo_${qi}_${oi}`).style.background='#102540';
+}
+function gradeQuiz(){
+  let score=0;
+  QUIZ.forEach((q,i)=>{
+    const sel=quizAnswers[i];
+    q.opts.forEach((_,j)=>{
+      const el=document.getElementById(`qo_${i}_${j}`); if(!el) return;
+      if(j===q.ans) el.classList.add('correct');
+      else if(j===sel) el.classList.add('wrong');
+    });
+    if(sel===q.ans) score++;
+  });
+  const pct=Math.round(score/QUIZ.length*100);
+  const msg=pct>=80?'🎉 우수':pct>=60?'⭕ 보통':'❌ 재학습 필요';
+  document.getElementById('quizScore').innerHTML=`<div class="quiz-score">${score}/${QUIZ.length}<br><span style="font-size:15px;font-family:'Noto Sans KR'">(${pct}%) ${msg}</span></div>`;
+}
+function resetQuiz(){initQuiz();}
+
+// ── LISTENERS ────────────────────────────────────────
+document.getElementById('noiseLevel').addEventListener('input',function(){
+  document.getElementById('noiseVal').textContent=this.value;
+  if(document.getElementById('tab1').classList.contains('active')) drawSpectrum('specCanvas');
+});
+document.getElementById('massRange').addEventListener('change',()=>drawSpectrum('specCanvas'));
+document.getElementById('yScale').addEventListener('change',()=>drawSpectrum('specCanvas'));
+['g2','g18','g28','g32','g40','g44'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    if(document.getElementById('scenario').value==='custom') drawSpectrum('specCanvas');
+  });
+});
+window.addEventListener('resize',()=>{
+  if(document.getElementById('tab1').classList.contains('active')) drawSpectrum('specCanvas');
+  if(document.getElementById('tab2').classList.contains('active')) drawDiagCanvas();
+});
+
+// ── INIT ─────────────────────────────────────────────
+initQuiz();
+drawSpectrum('specCanvas');
+</script>
+</body>
+</html>
