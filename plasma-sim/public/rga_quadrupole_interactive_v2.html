@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RGA 사중극자 질량필터 인터랙티브 학습기 v2</title>
+<style>
+  :root{
+    --bg:#07111f;
+    --bg2:#0d1828;
+    --panel:#0d1b2a;
+    --panel2:#12253a;
+    --line:#294968;
+    --text:#e9f3ff;
+    --muted:#9cb7d3;
+    --accent:#64d2ff;
+    --good:#5ee27a;
+    --bad:#ff7a7a;
+    --warn:#ffd166;
+    --violet:#c3a6ff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 10% 10%, rgba(100,210,255,.08), transparent 25%),
+      radial-gradient(circle at 90% 20%, rgba(195,166,255,.06), transparent 22%),
+      linear-gradient(180deg,#06101d,#0b1624 50%,#091321);
+  }
+  .wrap{max-width:1440px; margin:0 auto; padding:18px;}
+  h1{margin:0 0 6px; font-size:32px;}
+  .sub{color:var(--muted); line-height:1.7; margin-bottom:16px}
+  .layout{
+    display:grid;
+    grid-template-columns: 360px 1fr 360px;
+    gap:16px;
+  }
+  .panel{
+    background:rgba(13,27,42,.9);
+    border:1px solid #17324b;
+    border-radius:18px;
+    padding:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,.24);
+  }
+  .panel h2{font-size:18px; margin:0 0 12px}
+  .control{margin-bottom:14px}
+  .control label{
+    display:flex; justify-content:space-between; gap:8px;
+    font-size:14px; margin-bottom:6px;
+  }
+  input[type="range"]{width:100%}
+  button{
+    background:#17324b; color:var(--text);
+    border:1px solid #2a5072; border-radius:10px;
+    padding:10px 12px; cursor:pointer; font-weight:700;
+  }
+  button.active{background:#1f4564; outline:2px solid var(--accent)}
+  .row{display:flex; gap:8px; flex-wrap:wrap}
+  .pill{
+    display:inline-block; padding:5px 10px; border-radius:999px;
+    font-size:12px; background:#10263a; color:var(--muted); border:1px solid #23425f;
+  }
+  .info{
+    background:#0c2133;
+    border:1px solid #1f415f;
+    border-radius:12px;
+    padding:12px;
+    line-height:1.7;
+    font-size:14px;
+  }
+  .info strong{color:#fff}
+  .kv{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px;
+  }
+  .box{
+    background:#0c2133;
+    border:1px solid #1f415f;
+    border-radius:12px;
+    padding:12px;
+  }
+  .k{font-size:12px; color:var(--muted)}
+  .v{font-size:24px; font-weight:800; margin-top:4px}
+  .small{font-size:13px; color:var(--muted)}
+  .step{
+    border-left:4px solid #2b567a;
+    padding:8px 10px;
+    margin:8px 0;
+    background:#0b2032;
+    border-radius:0 10px 10px 0;
+    font-size:14px;
+    line-height:1.6;
+  }
+  svg{
+    width:100%; height:auto; display:block;
+    border-radius:18px; border:1px solid #17324b;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(100,210,255,.05), transparent 25%),
+      linear-gradient(180deg,#091320,#0b1623);
+  }
+  canvas{
+    width:100%;
+    background:#0c2032;
+    border:1px solid #214564;
+    border-radius:14px;
+    display:block;
+  }
+  .legend{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+  .legend span{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted)}
+  .dot{width:10px; height:10px; border-radius:50%}
+  .question{
+    background:#0b2032; border:1px solid #214564; border-radius:12px;
+    padding:12px; line-height:1.65; font-size:14px;
+  }
+  .question strong{color:white}
+  .footerNote{
+    margin-top:12px; font-size:13px; line-height:1.7; color:var(--muted)
+  }
+  .hr{height:1px; background:#214564; margin:14px 0}
+  @media (max-width: 1280px){
+    .layout{grid-template-columns: 360px 1fr}
+    .rightCol{grid-column:1 / -1}
+  }
+  @media (max-width: 900px){
+    .layout{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>RGA 사중극자 질량필터: 구조 · 통과 원리 · Sweep 측정</h1>
+  <div class="sub">
+    이 버전은 단순 개략도에서 한 단계 더 나아가, <strong>왜 특정 m/z만 통과하는지</strong>,
+    <strong>왜 sweep을 해야 전체 가스 조성을 아는지</strong>, <strong>MID 모드가 언제 유리한지</strong>를 같이 보여줍니다.
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <h2>1. 운전 설정</h2>
+
+      <div class="control">
+        <label><span>운전 모드</span><span class="pill" id="modeLabel">SCAN</span></label>
+        <div class="row">
+          <button id="scanBtn" class="active">SCAN</button>
+          <button id="midBtn">FIXED / MID</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <label><span>중심 m/z</span><span id="mzValue">28 amu/e</span></label>
+        <input id="mzSlider" type="range" min="2" max="60" step="1" value="28" />
+      </div>
+
+      <div class="control">
+        <label><span>RF/DC 설정 강도</span><span id="fieldValue">46</span></label>
+        <input id="fieldSlider" type="range" min="10" max="100" step="1" value="46" />
+      </div>
+
+      <div class="control">
+        <label><span>통과창 폭</span><span id="windowValue">±1.5</span></label>
+        <input id="windowSlider" type="range" min="5" max="40" step="1" value="15" />
+      </div>
+
+      <div class="control">
+        <label><span>Scan 속도</span><span id="speedValue">1.0x</span></label>
+        <input id="speedSlider" type="range" min="5" max="25" step="1" value="10" />
+      </div>
+
+      <div class="control">
+        <label><span>대표 질량 바로가기</span><span class="pill">학습용</span></label>
+        <div class="row">
+          <button class="preset" data-mz="2">H₂</button>
+          <button class="preset" data-mz="18">H₂O</button>
+          <button class="preset" data-mz="28">N₂/CO</button>
+          <button class="preset" data-mz="32">O₂</button>
+          <button class="preset" data-mz="40">Ar</button>
+          <button class="preset" data-mz="44">CO₂</button>
+        </div>
+      </div>
+
+      <div class="info" id="explainBox">
+        <strong>현재 해석</strong><br>
+        사중극자는 지금 이 순간의 RF/DC 조건에서 <strong>안정 궤도를 유지하는 m/z만</strong> 검출기로 보냅니다.
+      </div>
+
+      <div class="kv">
+        <div class="box">
+          <div class="k">현재 중심 m/z</div>
+          <div class="v" id="metricTarget">28</div>
+        </div>
+        <div class="box">
+          <div class="k">통과 예상 종수</div>
+          <div class="v" id="metricPass">0</div>
+        </div>
+        <div class="box">
+          <div class="k">현재 검출 신호</div>
+          <div class="v" id="metricSignal">0.00</div>
+        </div>
+        <div class="box">
+          <div class="k">측정 해석</div>
+          <div class="v" id="metricModeText" style="font-size:18px">전체 스캔</div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>2. 실제 측정 흐름</h2>
+      <div class="step"><strong>① 샘플링:</strong> 챔버의 중성 가스가 오리피스/리크 경로로 RGA 쪽으로 들어옵니다.</div>
+      <div class="step"><strong>② 이온화:</strong> 전자충격(EI)으로 중성 분자를 양이온으로 만듭니다.</div>
+      <div class="step"><strong>③ 질량 필터링:</strong> 사중극자 로드의 RF/DC 전압 조합이 특정 m/z의 안정 궤도만 허용합니다.</div>
+      <div class="step"><strong>④ 검출:</strong> 통과한 이온 전류를 검출기로 읽고, m/z별로 쌓으면 스펙트럼이 됩니다.</div>
+
+      <div class="footerNote">
+        중요한 점: <strong>고정 질량만 계속 보면 빠르지만 전체 성분 변화는 놓칠 수 있습니다.</strong>
+        반대로 sweep은 전체 조성을 알 수 있지만 특정 종의 초고속 감시에는 불리합니다.
+      </div>
+    </div>
+
+    <div class="panel">
+      <svg id="scene" viewBox="0 0 980 610" aria-label="RGA quadrupole schematic">
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L9,3 L0,6 Z" fill="#7fcfff"></path>
+          </marker>
+        </defs>
+
+        <!-- zone blocks -->
+        <rect x="28" y="86" width="160" height="360" rx="18" fill="#0c2032" stroke="#214564"/>
+        <rect x="208" y="86" width="150" height="360" rx="18" fill="#0c2032" stroke="#214564"/>
+        <rect x="382" y="86" width="366" height="360" rx="18" fill="#0c2032" stroke="#214564"/>
+        <rect x="776" y="86" width="170" height="360" rx="18" fill="#0c2032" stroke="#214564"/>
+
+        <text x="56" y="120" fill="#dcebff" font-size="20" font-weight="700">1. 샘플 유입부</text>
+        <text x="238" y="120" fill="#dcebff" font-size="20" font-weight="700">2. 이온화부</text>
+        <text x="456" y="120" fill="#dcebff" font-size="20" font-weight="700">3. 사중극자 질량필터</text>
+        <text x="815" y="120" fill="#dcebff" font-size="20" font-weight="700">4. 검출부</text>
+
+        <circle cx="165" cy="264" r="14" fill="#1f4564" stroke="#7fcfff" stroke-width="2"/>
+        <text x="76" y="300" fill="#9ec7ea" font-size="15">orifice / leak inlet</text>
+
+        <!-- ionizer -->
+        <line x1="246" y1="185" x2="320" y2="185" stroke="#ffc857" stroke-width="4"/>
+        <line x1="246" y1="343" x2="320" y2="343" stroke="#ffc857" stroke-width="4"/>
+        <circle cx="284" cy="264" r="26" fill="none" stroke="#ffc857" stroke-width="3"/>
+        <text x="226" y="378" fill="#ffd98a" font-size="15">electron impact ionization</text>
+
+        <!-- rods -->
+        <circle cx="486" cy="194" r="30" fill="#17324b" stroke="#8ab7dc" stroke-width="3"/>
+        <circle cx="646" cy="194" r="30" fill="#17324b" stroke="#8ab7dc" stroke-width="3"/>
+        <circle cx="486" cy="334" r="30" fill="#17324b" stroke="#8ab7dc" stroke-width="3"/>
+        <circle cx="646" cy="334" r="30" fill="#17324b" stroke="#8ab7dc" stroke-width="3"/>
+
+        <text x="436" y="165" fill="#9ec7ea" font-size="14">+U + Vcosωt</text>
+        <text x="605" y="165" fill="#9ec7ea" font-size="14">-(U + Vcosωt)</text>
+        <text x="434" y="378" fill="#9ec7ea" font-size="14">-(U + Vcosωt)</text>
+        <text x="606" y="378" fill="#9ec7ea" font-size="14">+U + Vcosωt</text>
+
+        <!-- center axis -->
+        <line x1="40" y1="264" x2="932" y2="264" stroke="#294968" stroke-width="2" stroke-dasharray="7 6"/>
+        <path d="M188 264 L208 264" stroke="#7fcfff" stroke-width="3" marker-end="url(#arrow)"/>
+        <path d="M358 264 L382 264" stroke="#7fcfff" stroke-width="3" marker-end="url(#arrow)"/>
+        <path d="M748 264 L776 264" stroke="#7fcfff" stroke-width="3" marker-end="url(#arrow)"/>
+
+        <!-- detector -->
+        <rect x="842" y="215" width="38" height="96" rx="8" fill="#17324b" stroke="#7fcfff" stroke-width="2"/>
+        <path d="M880 230 L914 230 L914 296 L880 296" fill="none" stroke="#7fcfff" stroke-width="2"/>
+        <text x="801" y="337" fill="#9ec7ea" font-size="15">Faraday cup / EM</text>
+
+        <!-- stability mini inset -->
+        <rect x="60" y="470" width="250" height="110" rx="14" fill="#0c2032" stroke="#214564"/>
+        <text x="78" y="496" fill="#dcebff" font-size="17" font-weight="700">안정영역 개념</text>
+        <line x1="96" y1="560" x2="280" y2="560" stroke="#567a9a" />
+        <line x1="96" y1="560" x2="96" y2="520" stroke="#567a9a" />
+        <text x="285" y="565" fill="#9ec7ea" font-size="12">RF</text>
+        <text x="80" y="518" fill="#9ec7ea" font-size="12">DC</text>
+        <path d="M110 555 L145 525 L190 535 L220 520 L260 540" fill="rgba(94,226,122,.2)" stroke="#5ee27a" stroke-width="2"/>
+        <circle id="stabilityPoint" cx="190" cy="535" r="6" fill="#64d2ff" filter="url(#glow)"/>
+
+        <!-- mass spectrum -->
+        <rect x="334" y="470" width="612" height="110" rx="14" fill="#0c2032" stroke="#214564"/>
+        <text x="355" y="496" fill="#dcebff" font-size="17" font-weight="700">질량 스펙트럼 / MID 모니터링</text>
+
+        <g id="ions"></g>
+        <g id="spectrum"></g>
+        <g id="annotations"></g>
+      </svg>
+
+      <div class="legend">
+        <span><i class="dot" style="background:#64d2ff"></i>중성 가스</span>
+        <span><i class="dot" style="background:#ffd166"></i>이온화 직후</span>
+        <span><i class="dot" style="background:#5ee27a"></i>안정 궤도 → 통과</span>
+        <span><i class="dot" style="background:#ff7a7a"></i>불안정 궤도 → rod 충돌</span>
+      </div>
+    </div>
+
+    <div class="panel rightCol">
+      <h2>3. Sweep와 Fixed 측정 비교</h2>
+      <canvas id="trendCanvas" width="320" height="170"></canvas>
+
+      <div class="small" style="margin-top:8px">
+        위 그래프는 시간에 따라 현재 검출 신호가 어떻게 보이는지 개념적으로 나타냅니다.
+        SCAN에서는 커서가 질량축을 이동하며 전체 스펙트럼을 채우고, MID에서는 선택 질량 신호만 반복 감시합니다.
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="question" id="qaBox">
+        <strong>질문 1. 정해진 녀석만 통과시키면 다른 녀석 존재는 모르지 않나?</strong><br>
+        맞습니다. <strong>그 순간엔 모릅니다.</strong> 그래서 실제 RGA는 두 가지 운전이 있습니다.<br><br>
+        <strong>SCAN:</strong> 질량 범위를 쭉 훑어서 전체 조성을 봄<br>
+        <strong>MID:</strong> 특정 질량만 빠르게 반복 측정해 공정 모니터링에 사용
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>4. 실제 운전 해석</h2>
+      <div class="step"><strong>잔류가스 분석 초기:</strong> 보통 전체 스캔으로 챔버 상태를 확인합니다.</div>
+      <div class="step"><strong>공정 중 감시:</strong> 누설이나 수분, 아르곤, 부산물 등 특정 질량만 MID로 봅니다.</div>
+      <div class="step"><strong>이상 발생 시:</strong> 다시 전체 스캔으로 돌아가 새로운 종이 생겼는지 확인합니다.</div>
+
+      <div class="question" id="teacherBox">
+        <strong>강의 포인트</strong><br>
+        학생들이 가장 헷갈리는 부분은 “RGA는 에너지를 고르는가, 질량을 고르는가?”입니다.<br>
+        일반적인 진공용 RGA는 <strong>기본적으로 m/z를 고르는 질량 필터</strong>입니다.
+      </div>
+
+      <div class="footerNote">
+        수업에서는 이 화면을 보여주면서 “<strong>왜 sweep이 필요하지?</strong>”, “<strong>왜 공정 중에는 MID가 편하지?</strong>” 두 질문만 정확히 잡아주면 이해가 빨라집니다.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  mode: 'scan',
+  targetMz: 28,
+  field: 46,
+  window: 1.5,
+  speed: 1.0,
+  scanDirection: 1,
+  time: 0,
+  trace: [],
+  signalHistory: [],
+  scanSpectrum: Array.from({length:61}, ()=>0)
+};
+
+const gases = [
+  {name:'H₂',   mz:2,  color:'#9fe0ff', abundance:0.30},
+  {name:'H₂O',  mz:18, color:'#ffd166', abundance:0.95},
+  {name:'N₂/CO',mz:28, color:'#ff9f9f', abundance:1.15},
+  {name:'O₂',   mz:32, color:'#c3a6ff', abundance:0.62},
+  {name:'Ar',   mz:40, color:'#83f1b8', abundance:0.82},
+  {name:'CO₂',  mz:44, color:'#f7b267', abundance:0.56}
+];
+
+const svgNS = 'http://www.w3.org/2000/svg';
+const ionsGroup = document.getElementById('ions');
+const spectrumGroup = document.getElementById('spectrum');
+const annotations = document.getElementById('annotations');
+const trendCanvas = document.getElementById('trendCanvas');
+const ctx = trendCanvas.getContext('2d');
+
+const modeLabel = document.getElementById('modeLabel');
+const mzValue = document.getElementById('mzValue');
+const fieldValue = document.getElementById('fieldValue');
+const windowValue = document.getElementById('windowValue');
+const speedValue = document.getElementById('speedValue');
+const metricTarget = document.getElementById('metricTarget');
+const metricPass = document.getElementById('metricPass');
+const metricSignal = document.getElementById('metricSignal');
+const metricModeText = document.getElementById('metricModeText');
+const explainBox = document.getElementById('explainBox');
+const qaBox = document.getElementById('qaBox');
+const stabilityPoint = document.getElementById('stabilityPoint');
+
+const mzSlider = document.getElementById('mzSlider');
+const fieldSlider = document.getElementById('fieldSlider');
+const windowSlider = document.getElementById('windowSlider');
+const speedSlider = document.getElementById('speedSlider');
+const scanBtn = document.getElementById('scanBtn');
+const midBtn = document.getElementById('midBtn');
+
+function passProb(g){
+  const d = Math.abs(g.mz - state.targetMz);
+  const w = state.window;
+  const base = Math.max(0, 1 - d/(w + 0.001));
+  const fieldFactor = 0.82 + state.field/220;
+  return Math.max(0, Math.min(1, base * fieldFactor));
+}
+function passedSpecies(){
+  return gases.filter(g => passProb(g) > 0.18);
+}
+function conceptualSignal(){
+  return gases.reduce((acc,g)=>acc + g.abundance * passProb(g), 0);
+}
+function currentModeText(){
+  return state.mode === 'scan' ? '전체 스캔' : '특정 질량 감시';
+}
+function updateText(){
+  mzValue.textContent = `${Math.round(state.targetMz)} amu/e`;
+  fieldValue.textContent = `${state.field}`;
+  windowValue.textContent = `±${state.window.toFixed(1)}`;
+  speedValue.textContent = `${state.speed.toFixed(1)}x`;
+  modeLabel.textContent = state.mode === 'scan' ? 'SCAN' : 'FIXED / MID';
+  metricTarget.textContent = Math.round(state.targetMz);
+  metricPass.textContent = passedSpecies().length;
+  metricSignal.textContent = conceptualSignal().toFixed(2);
+  metricModeText.textContent = currentModeText();
+
+  if(state.mode === 'scan'){
+    explainBox.innerHTML = `<strong>SCAN 해석</strong><br>
+      지금 장비는 <strong>m/z ${Math.round(state.targetMz)}</strong> 부근을 읽고 있습니다.
+      다음 순간에는 RF/DC 조건을 바꿔 다른 m/z로 이동합니다.
+      이렇게 질량축을 훑으면서 각 질량의 이온 전류를 쌓아 <strong>전체 스펙트럼</strong>을 만듭니다.`;
+
+    qaBox.innerHTML = `<strong>질문 1. 정해진 녀석만 통과시키면 다른 녀석 존재는 모르지 않나?</strong><br>
+      맞습니다. 그래서 SCAN은 <strong>한 점만 보는 대신 그 조건을 빠르게 계속 바꿉니다.</strong>
+      즉, 한 순간엔 하나의 질량대만 선택하지만, 짧은 시간 동안 전체 범위를 훑어 결국 전체 조성을 얻습니다.`;
+  } else {
+    explainBox.innerHTML = `<strong>FIXED / MID 해석</strong><br>
+      지금은 <strong>m/z ${Math.round(state.targetMz)}</strong> 근처만 반복 측정합니다.
+      공정 중 특정 부산물, 누설 가스, 수분 등을 빠르게 감시할 때 유리하지만,
+      <strong>선택하지 않은 질량은 동시에 알 수 없습니다.</strong>`;
+
+    qaBox.innerHTML = `<strong>질문 2. 그럼 MID는 언제 쓰는가?</strong><br>
+      공정 중 이미 중요한 질량을 알고 있을 때 씁니다.
+      예를 들어 H₂O(18), N₂/CO(28), Ar(40), CO₂(44) 같은 질량을 정해두고
+      시간에 따른 증감만 빠르게 추적합니다.`;
+  }
+}
+function drawSpectrum(){
+  spectrumGroup.innerHTML = '';
+  const x0 = 370, y0 = 560, w = 545, h = 54;
+
+  const axis = document.createElementNS(svgNS,'line');
+  axis.setAttribute('x1',x0); axis.setAttribute('x2',x0+w);
+  axis.setAttribute('y1',y0); axis.setAttribute('y2',y0);
+  axis.setAttribute('stroke','#567a9a');
+  spectrumGroup.appendChild(axis);
+
+  for(let m=0;m<=60;m+=10){
+    const x = x0 + (m/60)*w;
+    const tick = document.createElementNS(svgNS,'line');
+    tick.setAttribute('x1',x); tick.setAttribute('x2',x);
+    tick.setAttribute('y1',y0); tick.setAttribute('y2',y0+6);
+    tick.setAttribute('stroke','#567a9a');
+    spectrumGroup.appendChild(tick);
+
+    const txt = document.createElementNS(svgNS,'text');
+    txt.setAttribute('x',x-7); txt.setAttribute('y',y0+22);
+    txt.setAttribute('fill','#9ec7ea'); txt.setAttribute('font-size','12');
+    txt.textContent = m;
+    spectrumGroup.appendChild(txt);
+  }
+
+  gases.forEach(g=>{
+    const x = x0 + (g.mz/60)*w;
+    const bh = g.abundance * 34;
+    const bar = document.createElementNS(svgNS,'rect');
+    bar.setAttribute('x',x-5); bar.setAttribute('y',y0-bh);
+    bar.setAttribute('width',10); bar.setAttribute('height',bh);
+    bar.setAttribute('fill',g.color);
+    bar.setAttribute('opacity','0.35');
+    spectrumGroup.appendChild(bar);
+  });
+
+  // scanned result overlay
+  for(let m=2;m<=60;m++){
+    const x = x0 + (m/60)*w;
+    const sig = state.scanSpectrum[m] || 0;
+    const bh = Math.min(h, sig*26);
+    const bar = document.createElementNS(svgNS,'rect');
+    bar.setAttribute('x',x-2.5); bar.setAttribute('y',y0-bh);
+    bar.setAttribute('width',5); bar.setAttribute('height',bh);
+    bar.setAttribute('fill', state.mode === 'scan' ? '#5ee27a' : '#64d2ff');
+    bar.setAttribute('opacity','0.85');
+    spectrumGroup.appendChild(bar);
+  }
+
+  const cursorX = x0 + (state.targetMz/60)*w;
+  const cursor = document.createElementNS(svgNS,'line');
+  cursor.setAttribute('x1',cursorX); cursor.setAttribute('x2',cursorX);
+  cursor.setAttribute('y1',y0-58); cursor.setAttribute('y2',y0+6);
+  cursor.setAttribute('stroke','#64d2ff');
+  cursor.setAttribute('stroke-width','2.5');
+  cursor.setAttribute('filter','url(#glow)');
+  spectrumGroup.appendChild(cursor);
+
+  const txt = document.createElementNS(svgNS,'text');
+  txt.setAttribute('x',cursorX-14); txt.setAttribute('y',y0-65);
+  txt.setAttribute('fill','#dcebff'); txt.setAttribute('font-size','12');
+  txt.textContent = Math.round(state.targetMz);
+  spectrumGroup.appendChild(txt);
+}
+function drawAnnotations(){
+  annotations.innerHTML = '';
+
+  const note = document.createElementNS(svgNS,'text');
+  note.setAttribute('x',64); note.setAttribute('y',160);
+  note.setAttribute('fill','#9ec7ea'); note.setAttribute('font-size','15');
+  note.textContent = '챔버에서 샘플링된 중성 가스';
+  annotations.appendChild(note);
+
+  const note2 = document.createElementNS(svgNS,'text');
+  note2.setAttribute('x',410); note2.setAttribute('y',420);
+  note2.setAttribute('fill','#9ec7ea'); note2.setAttribute('font-size','15');
+  note2.textContent = `현재 안정 궤도 중심: m/z ≈ ${Math.round(state.targetMz)} / 통과창 ±${state.window.toFixed(1)}`;
+  annotations.appendChild(note2);
+
+  const note3 = document.createElementNS(svgNS,'text');
+  note3.setAttribute('x',790); note3.setAttribute('y',185);
+  note3.setAttribute('fill','#9ec7ea'); note3.setAttribute('font-size','14');
+  note3.textContent = '통과 이온 전류 측정';
+  annotations.appendChild(note3);
+
+  const px = 125 + state.field*1.2;
+  const py = 552 - state.window*12;
+  stabilityPoint.setAttribute('cx', Math.max(110, Math.min(258, px)));
+  stabilityPoint.setAttribute('cy', Math.max(522, Math.min(556, py)));
+}
+function ionPath(pass, laneOffset){
+  const y = 264 + laneOffset;
+  if(pass){
+    return `M 66 ${y} C 112 ${y-6}, 154 ${y+4}, 190 ${y}
+            C 230 ${y-7}, 286 ${y+5}, 360 ${y}
+            C 420 ${y-4}, 548 ${y+4}, 748 ${y}
+            C 790 ${y-3}, 825 ${y+2}, 860 ${y}`;
+  } else {
+    const sign = laneOffset > 0 ? 1 : -1;
+    return `M 66 ${y} C 112 ${y-6}, 154 ${y+4}, 190 ${y}
+            C 230 ${y-7}, 286 ${y+5}, 360 ${y}
+            C 430 ${y}, 486 ${y+sign*32}, 550 ${y+sign*60}
+            C 600 ${y+sign*84}, 648 ${y+sign*100}, 688 ${y+sign*112}`;
+  }
+}
+function drawIons(){
+  ionsGroup.innerHTML = '';
+
+  gases.forEach((g,idx)=>{
+    const neutral = document.createElementNS(svgNS,'circle');
+    neutral.setAttribute('cx',76 + (idx%2)*18);
+    neutral.setAttribute('cy',188 + idx*32);
+    neutral.setAttribute('r',5);
+    neutral.setAttribute('fill','#64d2ff');
+    ionsGroup.appendChild(neutral);
+
+    const label = document.createElementNS(svgNS,'text');
+    label.setAttribute('x',95);
+    label.setAttribute('y',192 + idx*32);
+    label.setAttribute('font-size','11');
+    label.setAttribute('fill',g.color);
+    label.textContent = `${g.name} (${g.mz})`;
+    ionsGroup.appendChild(label);
+  });
+
+  gases.forEach((g, idx)=>{
+    const count = Math.max(1, Math.round(g.abundance*3));
+    for(let i=0;i<count;i++){
+      const lane = (idx-2.5)*14 + (i*6 - 4);
+      const ppass = passProb(g) > 0.18;
+      const path = document.createElementNS(svgNS,'path');
+      path.setAttribute('d', ionPath(ppass, lane));
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke', ppass ? '#5ee27a' : '#ff7a7a');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('opacity', ppass ? '0.82' : '0.48');
+      ionsGroup.appendChild(path);
+
+      const total = path.getTotalLength();
+      const phase = (state.time*1.4*state.speed + idx*0.8 + i*0.4) % 1;
+      const pt = path.getPointAtLength(total*phase);
+
+      const circle = document.createElementNS(svgNS,'circle');
+      circle.setAttribute('cx',pt.x);
+      circle.setAttribute('cy',pt.y);
+      circle.setAttribute('r', ppass ? 6 : 5);
+      circle.setAttribute('fill', ppass ? '#5ee27a' : '#ff7a7a');
+      circle.setAttribute('filter','url(#glow)');
+      ionsGroup.appendChild(circle);
+
+      if(phase < 0.05){
+        const t = document.createElementNS(svgNS,'text');
+        t.setAttribute('x',pt.x-12);
+        t.setAttribute('y',pt.y-10);
+        t.setAttribute('font-size','10');
+        t.setAttribute('fill',g.color);
+        t.textContent = g.name;
+        ionsGroup.appendChild(t);
+      }
+    }
+  });
+
+  // ionized particles near ionizer
+  for(let i=0;i<7;i++){
+    const c = document.createElementNS(svgNS,'circle');
+    c.setAttribute('cx', 284 + Math.cos(state.time*3+i)*18);
+    c.setAttribute('cy', 264 + Math.sin(state.time*3+i)*18);
+    c.setAttribute('r', 4);
+    c.setAttribute('fill', '#ffd166');
+    c.setAttribute('opacity', '0.85');
+    ionsGroup.appendChild(c);
+  }
+}
+function drawTrend(){
+  ctx.clearRect(0,0,trendCanvas.width,trendCanvas.height);
+  ctx.fillStyle = '#0c2032';
+  ctx.fillRect(0,0,trendCanvas.width,trendCanvas.height);
+
+  // axes
+  ctx.strokeStyle = '#567a9a';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(38,18);
+  ctx.lineTo(38,142);
+  ctx.lineTo(302,142);
+  ctx.stroke();
+
+  ctx.fillStyle = '#9ec7ea';
+  ctx.font = '12px Arial';
+  ctx.fillText('신호', 10, 18);
+  ctx.fillText('시간', 286, 160);
+
+  // line
+  if(state.signalHistory.length > 1){
+    ctx.beginPath();
+    state.signalHistory.forEach((v,i)=>{
+      const x = 42 + i*(254/119);
+      const y = 138 - v*38;
+      if(i===0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = state.mode === 'scan' ? '#5ee27a' : '#64d2ff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // mode hint
+  ctx.fillStyle = '#dcebff';
+  ctx.font = 'bold 13px Arial';
+  ctx.fillText(state.mode === 'scan' ? 'SCAN: 질량축 이동 중' : 'MID: 고정 질량 반복 감시', 44, 28);
+}
+function animate(){
+  state.time += 0.012;
+
+  if(state.mode === 'scan'){
+    state.targetMz += 0.12 * state.speed * state.scanDirection;
+    if(state.targetMz >= 58){ state.scanDirection = -1; }
+    if(state.targetMz <= 2){ state.scanDirection = 1; }
+    mzSlider.value = state.targetMz;
+  }
+
+  const sig = conceptualSignal();
+  state.signalHistory.push(sig);
+  if(state.signalHistory.length > 120) state.signalHistory.shift();
+
+  const roundedMz = Math.round(state.targetMz);
+  state.scanSpectrum[roundedMz] = Math.max(state.scanSpectrum[roundedMz]*0.96, sig);
+
+  updateText();
+  drawSpectrum();
+  drawAnnotations();
+  drawIons();
+  drawTrend();
+
+  requestAnimationFrame(animate);
+}
+
+mzSlider.addEventListener('input', e=>{
+  state.targetMz = Number(e.target.value);
+});
+fieldSlider.addEventListener('input', e=>{
+  state.field = Number(e.target.value);
+});
+windowSlider.addEventListener('input', e=>{
+  state.window = Number(e.target.value)/10;
+});
+speedSlider.addEventListener('input', e=>{
+  state.speed = Number(e.target.value)/10;
+});
+
+scanBtn.addEventListener('click', ()=>{
+  state.mode = 'scan';
+  scanBtn.classList.add('active');
+  midBtn.classList.remove('active');
+});
+midBtn.addEventListener('click', ()=>{
+  state.mode = 'mid';
+  scanBtn.classList.remove('active');
+  midBtn.classList.add('active');
+});
+
+document.querySelectorAll('.preset').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    state.targetMz = Number(btn.dataset.mz);
+    mzSlider.value = state.targetMz;
+    state.mode = 'mid';
+    scanBtn.classList.remove('active');
+    midBtn.classList.add('active');
+  });
+});
+
+updateText();
+drawSpectrum();
+drawAnnotations();
+drawIons();
+drawTrend();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
