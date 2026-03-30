@@ -3,6 +3,7 @@ import { useState } from 'react';
 const tabs = [
   { id: 'education', name: 'RGA 교육', icon: '📘' },
   { id: 'principle', name: '동작 원리', icon: '⚙️' },
+  { id: 'quadrupole', name: 'Quadrupole 인터랙티브', icon: '🔬' },
 ];
 
 export default function RGAEducation() {
@@ -11,6 +12,7 @@ export default function RGAEducation() {
   const srcMap = {
     education: '/rgaeducation.html',
     principle: '/rgaprinciple.html',
+    quadrupole: '/rga_quadrupole_interactive_v2.html',
   };
 
   return (
