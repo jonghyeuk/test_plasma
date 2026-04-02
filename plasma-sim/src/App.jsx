@@ -46,6 +46,14 @@ function App() {
       iframeSrc: '/rgasimulator.html'
     },
     {
+      id: 'rga-sim2',
+      name: 'RGA 시뮬레이터 II',
+      description: 'RGA Console GUI Simulator',
+      icon: '🧪',
+      color: 'from-cyan-500 to-blue-600',
+      iframeSrc: '/rga_console_gui_simulator.html'
+    },
+    {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
