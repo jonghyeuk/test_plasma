@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OES Monitor v3.2 | Plasma Process Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Courier New',monospace}
+:root{
+  --bg:#0a0c10;--panel:#0d1117;--panel2:#111820;--border:#1e3a4a;--border2:#2a5a70;
+  --cyan:#00d4ff;--cyan2:#0099bb;--green:#00ff88;--green2:#00cc66;
+  --orange:#ff8800;--red:#ff3355;--yellow:#ffcc00;--purple:#aa55ff;
+  --text:#c8e0ea;--text2:#7a9db0;--text3:#4a7a90;
+  --grid:#0d2030;--axis:#1a4060
+}
+body{background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:11px}
+
+/* TOP BAR */
+#topbar{background:linear-gradient(180deg,#0e1922,#090d12);border-bottom:2px solid var(--cyan2);height:44px;display:flex;align-items:center;padding:0 12px;gap:16px;flex-shrink:0;position:relative}
+#topbar .logo{color:var(--cyan);font-size:13px;font-weight:bold;letter-spacing:2px;text-shadow:0 0 10px var(--cyan)}
+#topbar .model{color:var(--text2);font-size:10px;margin-left:4px}
+.top-status{display:flex;gap:16px;margin-left:20px;align-items:center}
+.st-item{display:flex;flex-direction:column;align-items:center;gap:1px}
+.st-label{color:var(--text3);font-size:9px;letter-spacing:1px}
+.st-val{font-size:11px;font-weight:bold}
+.st-val.green{color:var(--green);text-shadow:0 0 6px var(--green)}
+.st-val.cyan{color:var(--cyan);text-shadow:0 0 6px var(--cyan)}
+.st-val.orange{color:var(--orange)}
+.st-val.red{color:var(--red);text-shadow:0 0 8px var(--red)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.btn{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:3px 10px;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:1px;transition:all 0.2s}
+.btn:hover{background:var(--border2);color:var(--cyan)}
+.btn.active{background:var(--cyan2);border-color:var(--cyan);color:#fff}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff}
+.blink{animation:blink 0.8s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.top-clock{color:var(--text2);font-size:10px;min-width:80px;text-align:right}
+.recording-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+
+/* MAIN LAYOUT */
+#main{display:flex;flex:1;overflow:hidden}
+
+/* LEFT PANEL */
+#left{width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+#left::-webkit-scrollbar{width:4px}
+#left::-webkit-scrollbar-track{background:var(--bg)}
+#left::-webkit-scrollbar-thumb{background:var(--border2)}
+
+.panel-section{border-bottom:1px solid var(--border);padding:8px}
+.sec-title{color:var(--cyan2);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.sec-title span{color:var(--text3)}
+
+/* Process selector */
+.proc-btn{width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);color:var(--text2);padding:5px 8px;margin-bottom:3px;cursor:pointer;font-family:inherit;font-size:10px;transition:all 0.2s;display:flex;justify-content:space-between}
+.proc-btn:hover{border-color:var(--cyan2);color:var(--cyan)}
+.proc-btn.selected{background:linear-gradient(90deg,#0d2535,#0a1820);border-color:var(--cyan);color:var(--cyan);border-left:3px solid var(--cyan)}
+.proc-tag{font-size:9px;color:var(--text3);background:var(--border);padding:1px 4px}
+
+/* Gas flows */
+.gas-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.gas-name{width:45px;color:var(--text3);font-size:10px}
+.gas-bar-bg{flex:1;height:6px;background:var(--bg);border:1px solid var(--border);position:relative}
+.gas-bar{height:100%;transition:width 0.3s}
+.gas-val{width:40px;text-align:right;font-size:10px;color:var(--text)}
+input[type=range]{width:100%;height:3px;accent-color:var(--cyan);background:var(--border)}
+
+/* Process phase */
+.phase-timeline{display:flex;gap:2px;margin-bottom:6px}
+.phase-item{flex:1;text-align:center;font-size:8px;padding:3px 2px;border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.phase-item.active{background:var(--cyan2);border-color:var(--cyan);color:#fff;box-shadow:0 0 6px var(--cyan2)}
+.phase-item.done{background:#0d2530;border-color:var(--border2);color:var(--text2)}
+.phase-item.alarm{background:#2a0010;border-color:var(--red);color:var(--red)}
+
+/* Channels */
+.ch-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px;border:1px solid transparent}
+.ch-row:hover{border-color:var(--border)}
+.ch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ch-name{flex:1;color:var(--text2);font-size:10px}
+.ch-val{width:55px;text-align:right;font-size:11px;font-weight:bold}
+.ch-ep{width:20px;font-size:9px;text-align:center}
+.ch-ep.ep{color:var(--red);font-weight:bold}
+input[type=checkbox]{accent-color:var(--cyan);width:11px;height:11px}
+
+/* Alarms */
+.alarm-item{padding:4px 6px;margin-bottom:3px;border-left:2px solid;font-size:10px;background:var(--bg)}
+.alarm-item.warn{border-color:var(--yellow);color:var(--yellow)}
+.alarm-item.crit{border-color:var(--red);color:var(--red)}
+.alarm-item.info{border-color:var(--cyan2);color:var(--text2)}
+.alarm-time{color:var(--text3);font-size:9px;margin-left:4px}
+
+/* CENTER */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.canvas-header{background:var(--panel2);border-bottom:1px solid var(--border);padding:4px 10px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.canvas-title{color:var(--cyan);font-size:10px;letter-spacing:2px}
+.canvas-sub{color:var(--text3);font-size:9px}
+.canvas-controls{margin-left:auto;display:flex;gap:6px}
+.cbtn{background:var(--bg);border:1px solid var(--border);color:var(--text2);padding:2px 7px;font-size:9px;cursor:pointer;font-family:inherit}
+.cbtn:hover{border-color:var(--cyan2);color:var(--cyan)}
+.cbtn.on{background:var(--border2);color:var(--cyan)}
+
+#spectrumCanvas{flex:1;display:block;cursor:crosshair}
+#trendCanvas{height:130px;display:block;flex-shrink:0;border-top:1px solid var(--border)}
+
+/* wavelength cursor readout */
+#wl-readout{position:absolute;pointer-events:none;background:rgba(0,20,30,0.9);border:1px solid var(--cyan2);padding:3px 7px;font-size:10px;color:var(--cyan);display:none;white-space:nowrap}
+
+/* RIGHT PANEL */
+#right{width:320px;min-width:320px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+#right::-webkit-scrollbar{width:4px}
+#right::-webkit-scrollbar-track{background:var(--bg)}
+#right::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* Peak table */
+.peak-table{width:100%;border-collapse:collapse;font-size:10px}
+.peak-table th{background:var(--bg);color:var(--text3);padding:3px 6px;text-align:left;border-bottom:1px solid var(--border);font-weight:normal;letter-spacing:1px}
+.peak-table td{padding:3px 6px;border-bottom:1px solid var(--border);color:var(--text)}
+.peak-table tr:hover td{background:var(--bg)}
+.peak-table td.species{color:var(--cyan);font-weight:bold}
+.peak-table td.intensity{color:var(--green)}
+.peak-table td.ep{color:var(--red)}
+.peak-badge{font-size:8px;padding:1px 3px;border:1px solid;border-radius:2px}
+.badge-ep{border-color:var(--red);color:var(--red)}
+.badge-ref{border-color:var(--text3);color:var(--text3)}
+.badge-mon{border-color:var(--cyan2);color:var(--cyan2)}
+
+/* Event log */
+.log-container{height:160px;overflow-y:auto;background:var(--bg);padding:4px}
+.log-container::-webkit-scrollbar{width:3px}
+.log-container::-webkit-scrollbar-thumb{background:var(--border)}
+.log-entry{font-size:9px;margin-bottom:2px;display:flex;gap:6px;line-height:1.4}
+.log-time{color:var(--text3);flex-shrink:0;width:45px}
+.log-tag{padding:0 3px;font-size:8px;flex-shrink:0;width:38px;text-align:center}
+.tag-info{background:#0a2030;color:var(--cyan2)}
+.tag-warn{background:#2a1800;color:var(--yellow)}
+.tag-alarm{background:#2a0010;color:var(--red)}
+.tag-ok{background:#0a2018;color:var(--green)}
+.log-msg{color:var(--text2)}
+
+/* Recipe / params */
+.param-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)}
+.param-key{color:var(--text3)}
+.param-val{color:var(--text);font-weight:bold}
+.param-val.hi{color:var(--orange)}
+.param-val.ok{color:var(--green)}
+
+/* EP indicator */
+#ep-indicator{background:var(--bg);border:1px solid var(--border2);padding:8px;margin:6px 8px}
+.ep-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ep-title{color:var(--cyan2);font-size:9px;letter-spacing:2px}
+.ep-state{font-size:10px;font-weight:bold}
+.ep-bar-bg{width:100%;height:10px;background:var(--bg);border:1px solid var(--border);margin-bottom:4px;position:relative;overflow:hidden}
+.ep-bar-fill{height:100%;transition:width 0.5s;position:relative}
+.ep-bar-fill::after{content:'';position:absolute;top:0;right:0;height:100%;width:3px;background:rgba(255,255,255,0.5)}
+.ep-metrics{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.ep-metric{background:var(--panel2);padding:4px;border:1px solid var(--border)}
+.ep-m-label{color:var(--text3);font-size:8px;letter-spacing:1px}
+.ep-m-val{font-size:12px;font-weight:bold;margin-top:1px}
+
+/* FOOTER */
+#footer{background:var(--panel);border-top:2px solid var(--border);height:26px;display:flex;align-items:center;padding:0 12px;gap:16px;flex-shrink:0}
+.foot-item{color:var(--text3);font-size:9px;letter-spacing:1px}
+.foot-item span{color:var(--text2);margin-left:4px}
+.foot-sep{width:1px;height:14px;background:var(--border)}
+.foot-right{margin-left:auto;color:var(--text3);font-size:9px}
+
+/* Free mode sliders */
+.free-slider{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.free-slider label{display:flex;justify-content:space-between;font-size:10px;color:var(--text2)}
+.free-slider label span{color:var(--cyan)}
+
+.progress-ring{width:14px;height:14px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">OES<span style="color:var(--text2)">monitor</span></div>
+  <div class="model" style="color:var(--text3)">PRO v3.2 | 2048ch | 200-950nm</div>
+  <div class="top-status">
+    <div class="st-item"><div class="st-label">STATUS</div><div class="st-val green" id="sys-status">RUNNING</div></div>
+    <div class="st-item"><div class="st-label">CHAMBER</div><div class="st-val cyan" id="sys-chamber">A1</div></div>
+    <div class="st-item"><div class="st-label">PRESSURE</div><div class="st-val cyan" id="sys-pressure">18.4 mT</div></div>
+    <div class="st-item"><div class="st-label">RF POWER</div><div class="st-val orange" id="sys-power">500 W</div></div>
+    <div class="st-item"><div class="st-label">TEMP</div><div class="st-val cyan" id="sys-temp">22.4°C</div></div>
+    <div class="st-item"><div class="st-label">ELAPSED</div><div class="st-val green" id="sys-elapsed">00:00:00</div></div>
+    <div class="st-item"><div class="st-label">WAFERS</div><div class="st-val cyan">24/25</div></div>
+  </div>
+  <div class="top-right">
+    <div class="recording-dot blink" id="rec-dot"></div>
+    <div style="color:var(--red);font-size:9px" id="rec-label">REC</div>
+    <button class="btn" onclick="toggleRun()" id="run-btn">■ STOP</button>
+    <button class="btn" onclick="resetSim()">↺ RESET</button>
+    <button class="btn danger" id="alarm-ack">✕ ACK ALARM</button>
+    <div class="top-clock" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT PANEL -->
+  <div id="left">
+    <!-- Process Select -->
+    <div class="panel-section">
+      <div class="sec-title">PROCESS RECIPE <span id="recipe-id">EP-001</span></div>
+      <button class="proc-btn selected" onclick="selectProc(0,this)" id="pb0">
+        <span>Si Etch (CF₄/O₂/Ar)</span><span class="proc-tag">EP</span>
+      </button>
+      <button class="proc-btn" onclick="selectProc(1,this)" id="pb1">
+        <span>SiO₂ Etch (C₄F₈/O₂/Ar)</span><span class="proc-tag">EP</span>
+      </button>
+      <button class="proc-btn" onclick="selectProc(2,this)" id="pb2">
+        <span>SiN PECVD (SiH₄/NH₃/N₂)</span><span class="proc-tag">DEP</span>
+      </button>
+      <button class="proc-btn" onclick="selectProc(3,this)" id="pb3">
+        <span>a-Si PECVD (SiH₄/H₂/Ar)</span><span class="proc-tag">DEP</span>
+      </button>
+      <button class="proc-btn" onclick="selectProc(4,this)" id="pb4">
+        <span>Free Mode</span><span class="proc-tag">USR</span>
+      </button>
+    </div>
+
+    <!-- Phase Timeline -->
+    <div class="panel-section">
+      <div class="sec-title">PROCESS PHASE <span id="phase-time">0.0s</span></div>
+      <div class="phase-timeline" id="phase-tl">
+        <div class="phase-item" id="ph0">IGN</div>
+        <div class="phase-item" id="ph1">STAB</div>
+        <div class="phase-item" id="ph2">MAIN</div>
+        <div class="phase-item" id="ph3">EP</div>
+        <div class="phase-item" id="ph4">O-ETCH</div>
+        <div class="phase-item" id="ph5">PURGE</div>
+      </div>
+      <div id="phase-desc" style="font-size:9px;color:var(--text3);line-height:1.5">Waiting for ignition...</div>
+    </div>
+
+    <!-- Gas Flows -->
+    <div class="panel-section">
+      <div class="sec-title">GAS FLOW <span>sccm</span></div>
+      <div id="gas-display"></div>
+      <!-- Free mode sliders -->
+      <div id="free-sliders" style="display:none"></div>
+    </div>
+
+    <!-- Monitoring Channels -->
+    <div class="panel-section">
+      <div class="sec-title">MONITOR CHANNELS <span id="ch-count">0 active</span></div>
+      <div id="channel-list"></div>
+    </div>
+
+    <!-- Alarms -->
+    <div class="panel-section">
+      <div class="sec-title">ACTIVE ALARMS <span id="alarm-count" style="color:var(--red)">0</span></div>
+      <div id="alarm-list">
+        <div class="alarm-item info">System ready — select recipe</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="center">
+    <div class="canvas-header">
+      <div class="canvas-title">SPECTRUM DISPLAY</div>
+      <div class="canvas-sub" id="spec-info">200 – 950 nm | 2048 pts | 100ms int.</div>
+      <div style="flex:1"></div>
+      <div style="font-size:9px;color:var(--text3);margin-right:8px">λ cursor: <span id="wl-display" style="color:var(--cyan)">---</span> nm</div>
+      <div class="canvas-controls">
+        <button class="cbtn on" id="btn-peaks" onclick="togglePeaks()">PEAKS</button>
+        <button class="cbtn on" id="btn-labels" onclick="toggleLabels()">LABELS</button>
+        <button class="cbtn on" id="btn-grid" onclick="toggleGrid()">GRID</button>
+        <button class="cbtn" id="btn-log" onclick="toggleLogScale()">LOG</button>
+        <button class="cbtn" onclick="autoScale()">AUTO</button>
+      </div>
+    </div>
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <canvas id="spectrumCanvas"></canvas>
+      <div id="wl-readout"></div>
+    </div>
+    <canvas id="trendCanvas"></canvas>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right">
+    <!-- Endpoint indicator -->
+    <div class="panel-section" style="padding:0">
+      <div class="sec-title" style="padding:6px 8px 4px">ENDPOINT DETECTION</div>
+      <div id="ep-indicator">
+        <div class="ep-header">
+          <div class="ep-title">EP CONFIDENCE</div>
+          <div class="ep-state" id="ep-state" style="color:var(--text3)">MONITORING</div>
+        </div>
+        <div class="ep-bar-bg"><div class="ep-bar-fill" id="ep-bar" style="width:0%;background:var(--cyan2)"></div></div>
+        <div class="ep-metrics">
+          <div class="ep-metric"><div class="ep-m-label">EP SIGNAL</div><div class="ep-m-val" id="ep-sig" style="color:var(--cyan)">--</div></div>
+          <div class="ep-metric"><div class="ep-m-label">THRESHOLD</div><div class="ep-m-val" id="ep-thr" style="color:var(--yellow)">--</div></div>
+          <div class="ep-metric"><div class="ep-m-label">CHANGE %</div><div class="ep-m-val" id="ep-chg" style="color:var(--green)">--</div></div>
+          <div class="ep-metric"><div class="ep-m-label">EP TIME</div><div class="ep-m-val" id="ep-time" style="color:var(--orange)">--</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peak Table -->
+    <div class="panel-section">
+      <div class="sec-title">PEAK TABLE <span id="peak-count">0 peaks</span></div>
+      <table class="peak-table" id="peak-table">
+        <thead><tr>
+          <th>λ(nm)</th><th>Species</th><th>Int.</th><th>Role</th>
+        </tr></thead>
+        <tbody id="peak-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Recipe params -->
+    <div class="panel-section">
+      <div class="sec-title">RECIPE PARAMETERS</div>
+      <div id="recipe-params"></div>
+    </div>
+
+    <!-- Event Log -->
+    <div class="panel-section">
+      <div class="sec-title">EVENT LOG <span id="log-count">0</span></div>
+      <div class="log-container" id="event-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div id="footer">
+  <div class="foot-item">INST<span>OES-2048C</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">SN<span>HM-4823-A</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">GRATING<span>300 l/mm</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">SLIT<span>25μm</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">DETECTOR<span>CCD 2048px</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">INT.TIME<span>100ms</span></div>
+  <div class="foot-sep"></div>
+  <div class="foot-item">TRIGGER<span>RF-SYNC</span></div>
+  <div class="foot-right" id="foot-msg">Ready</div>
+</div>
+
+<script>
+// ===== DATA DEFINITIONS =====
+const PROCESSES = [
+  {
+    name:'Si Etch', gases:[{n:'CF₄',c:'#00d4ff',base:50},{n:'O₂',c:'#ff8800',base:5},{n:'Ar',c:'#aa55ff',base:30}],
+    power:500, pressure:18, temp:22,
+    peaks:[
+      {wl:703.7,sp:'SiF*',role:'ep',col:'#ff3355',epDrop:true},
+      {wl:685.6,sp:'F*',col:'#00ff88',role:'mon',epRise:true},
+      {wl:750.4,sp:'Ar I',col:'#aa55ff',role:'ref'},
+      {wl:777.2,sp:'O I',col:'#ff8800',role:'mon'},
+      {wl:337.1,sp:'N₂*',col:'#ffcc00',role:'bg'},
+      {wl:656.3,sp:'Hα',col:'#ff4488',role:'bg'},
+    ],
+    epSignal:'SiF* (703.7nm)',
+    epDesc:'Endpoint: SiF* drop + F* rise when Si layer consumed',
+    phases:['IGN','STAB','MAIN','EP','O-ETCH','PURGE'],
+    phaseDur:[4,8,20,6,8,6],
+    params:{Power:'500 W',Pressure:'18 mT',Bias:'−120 V',Chuck:'20°C',ESC:'1200 V',Gap:'25 mm'}
+  },
+  {
+    name:'SiO₂ Etch', gases:[{n:'C₄F₈',c:'#00d4ff',base:40},{n:'O₂',c:'#ff8800',base:8},{n:'Ar',c:'#aa55ff',base:60}],
+    power:800, pressure:25, temp:20,
+    peaks:[
+      {wl:483.5,sp:'CO*',col:'#00d4ff',role:'ep',epDrop:true},
+      {wl:703.7,sp:'SiF*',col:'#ff3355',role:'mon'},
+      {wl:750.4,sp:'Ar I',col:'#aa55ff',role:'ref'},
+      {wl:519.0,sp:'CF₂*',col:'#ffcc00',role:'mon'},
+      {wl:777.2,sp:'O I',col:'#ff8800',role:'bg'},
+    ],
+    epSignal:'CO* (483.5nm)',
+    epDesc:'Endpoint: CO* drop when SiO₂ layer fully etched',
+    phases:['IGN','STAB','MAIN','EP','O-ETCH','PURGE'],
+    phaseDur:[4,10,25,6,10,5],
+    params:{Power:'800 W',Pressure:'25 mT',Bias:'−300 V',Chuck:'20°C',ESC:'1200 V',Gap:'22 mm'}
+  },
+  {
+    name:'SiN PECVD', gases:[{n:'SiH₄',c:'#ff8800',base:30},{n:'NH₃',c:'#00ff88',base:80},{n:'N₂',c:'#aa55ff',base:200}],
+    power:300, pressure:900, temp:350,
+    peaks:[
+      {wl:336.0,sp:'NH*',col:'#00ff88',role:'mon'},
+      {wl:414.0,sp:'SiH*',col:'#ff8800',role:'mon'},
+      {wl:337.1,sp:'N₂*',col:'#aa55ff',role:'ref'},
+      {wl:656.3,sp:'Hα',col:'#ff4488',role:'mon'},
+      {wl:777.2,sp:'O I',col:'#ff3355',role:'cont'},
+    ],
+    epSignal:'NH* (336nm)',
+    epDesc:'Deposition: Monitor NH* and SiH* for stability',
+    phases:['IGN','STAB','MAIN','MAIN','MAIN','PURGE'],
+    phaseDur:[5,15,40,40,40,8],
+    params:{Power:'300 W',Pressure:'900 mT',Freq:'13.56 MHz',Chuck:'350°C',SiH4:'30 sccm',N2:'200 sccm'}
+  },
+  {
+    name:'a-Si PECVD', gases:[{n:'SiH₄',c:'#ff8800',base:50},{n:'H₂',c:'#00d4ff',base:200},{n:'Ar',c:'#aa55ff',base:20}],
+    power:200, pressure:600, temp:250,
+    peaks:[
+      {wl:414.0,sp:'SiH*',col:'#ff8800',role:'mon'},
+      {wl:656.3,sp:'Hα',col:'#00d4ff',role:'mon'},
+      {wl:750.4,sp:'Ar I',col:'#aa55ff',role:'ref'},
+      {wl:486.1,sp:'Hβ',col:'#4488ff',role:'mon'},
+    ],
+    epSignal:'SiH* (414nm)',
+    epDesc:'Deposition: SiH* intensity monitors film quality',
+    phases:['IGN','STAB','MAIN','MAIN','MAIN','PURGE'],
+    phaseDur:[4,12,50,50,50,6],
+    params:{Power:'200 W',Pressure:'600 mT',Freq:'13.56 MHz',Chuck:'250°C',SiH4:'50 sccm',H2:'200 sccm'}
+  },
+  {
+    name:'Free Mode', gases:[{n:'Ar',c:'#aa55ff',base:50},{n:'O₂',c:'#ff8800',base:20},{n:'CF₄',c:'#00d4ff',base:10},{n:'N₂',c:'#ffcc00',base:0}],
+    power:400, pressure:30, temp:22,
+    peaks:[
+      {wl:750.4,sp:'Ar I',col:'#aa55ff',role:'ref'},
+      {wl:777.2,sp:'O I',col:'#ff8800',role:'mon'},
+      {wl:703.7,sp:'F*',col:'#00d4ff',role:'mon'},
+      {wl:337.1,sp:'N₂*',col:'#ffcc00',role:'mon'},
+    ],
+    epSignal:'User defined',
+    epDesc:'Free mode: User controlled gas mixture',
+    phases:['IGN','STAB','MAIN','MAIN','MAIN','PURGE'],
+    phaseDur:[4,8,999,999,999,6],
+    params:{Power:'400 W',Pressure:'30 mT',Freq:'13.56 MHz',Mode:'MANUAL',RF:'CW',Bias:'Auto'}
+  }
+];
+
+// ===== STATE =====
+let proc=0, running=true, tick=0, simTime=0, phase=0, phaseElapsed=0;
+let showPeaks=true, showLabels=true, showGrid=true, logScale=false;
+let epDetected=false, epTime=null;
+let trendData={}, maxTrendPts=200;
+let events=[], alarms=[];
+let freeGasVals=[50,20,10,0];
+let mouseWL=null;
+let animId=null;
+let lastTs=null;
+
+const PHASES=['IGN','STAB','MAIN','EP','O-ETCH','PURGE'];
+const PHASE_DESC=[
+  'Plasma ignition sequence — RF ramp up',
+  'Plasma stabilization — monitoring uniformity',
+  'Main etch/deposition in progress',
+  'Endpoint detected — transition to over-etch',
+  'Over-etch / endpoint hold',
+  'Purge cycle — chamber clean'
+];
+
+// ===== CANVAS SETUP =====
+const sc=document.getElementById('spectrumCanvas');
+const sctx=sc.getContext('2d');
+const tc=document.getElementById('trendCanvas');
+const tctx=tc.getContext('2d');
+
+function resizeCanvases(){
+  const c=document.getElementById('center');
+  const hdr=c.querySelector('.canvas-header');
+  const tH=130;
+  sc.width=c.clientWidth; sc.height=c.clientHeight-hdr.offsetHeight-tH;
+  tc.width=c.clientWidth; tc.height=tH;
+}
+
+// ===== SPECTRUM GENERATION =====
+function gaussPeak(x,center,amp,width){
+  return amp*Math.exp(-Math.pow(x-center,2)/(2*width*width));
+}
+
+function generateSpectrum(t){
+  const p=PROCESSES[proc];
+  const N=2048; const wls=[];
+  for(let i=0;i<N;i++) wls.push(200+750*i/(N-1));
+  const spec=new Float32Array(N);
+
+  // noise floor
+  for(let i=0;i<N;i++) spec[i]=0.005+Math.random()*0.003;
+
+  // Continuum background based on phase
+  const phaseF=Math.min(1,phaseElapsed/2);
+  const plasma=(phase>=1&&phase<=4)?1:0;
+  if(plasma){
+    for(let i=0;i<N;i++){
+      const wl=wls[i];
+      spec[i]+=0.02*plasma*phaseF*(1+0.1*Math.sin(wl*0.05+t*0.3));
+    }
+  }
+
+  // Add species peaks
+  p.peaks.forEach(pk=>{
+    let amp=0.1+Math.random()*0.008;
+    const ep=pk.epDrop||pk.epRise;
+
+    if(phase===0) amp*=0.05; // ignition: weak
+    else if(phase===1) amp*=(0.3+0.7*(phaseElapsed/p.phaseDur[1]));
+    else if(phase>=2){
+      // Main process peaks
+      if(pk.role==='ref') amp=0.7+Math.sin(t*0.8)*0.02;
+      else if(pk.role==='ep'||pk.role==='mon'){
+        amp=0.6+Math.sin(t*1.2+pk.wl)*0.04;
+      }
+      // Endpoint dynamics
+      if(phase>=3){
+        const epFrac=Math.min(1,phaseElapsed/(p.phaseDur[3]||6));
+        if(pk.epDrop) amp*=(1-epFrac*0.85);
+        if(pk.epRise) amp*=(1+epFrac*1.5);
+        if(phase>=4){ // over-etch
+          if(pk.epDrop) amp*=0.1;
+          if(pk.epRise) amp*=2.2;
+        }
+      }
+    }
+
+    // Gas influence for free mode
+    if(proc===4){
+      const gasBoost=freeGasVals.reduce((s,v,i)=>s+v/100,0);
+      amp*=(gasBoost*0.5+0.1);
+    }
+
+    const width=pk.wl<400?1.5:pk.wl<600?2.0:2.5;
+    const center=(pk.wl-200)/750*(N-1);
+    const hw=width/750*(N-1)*3;
+    for(let i=Math.max(0,Math.round(center-hw*3));i<Math.min(N,Math.round(center+hw*3));i++){
+      spec[i]+=gaussPeak(i,center,amp,hw);
+    }
+  });
+
+  // Clamp
+  for(let i=0;i<N;i++) spec[i]=Math.min(1,spec[i]);
+  return {wls,spec};
+}
+
+// ===== DRAW SPECTRUM =====
+function drawSpectrum(data){
+  const W=sc.width,H=sc.height;
+  sctx.clearRect(0,0,W,H);
+
+  // Background
+  sctx.fillStyle='#080e14';
+  sctx.fillRect(0,0,W,H);
+
+  const pad={l:52,r:20,t:20,b:36};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+
+  // Grid
+  if(showGrid){
+    sctx.strokeStyle='#0d2030';sctx.lineWidth=0.5;
+    // Vertical grid (wavelength)
+    for(let wl=200;wl<=950;wl+=50){
+      const x=pad.l+(wl-200)/750*pw;
+      sctx.beginPath();sctx.moveTo(x,pad.t);sctx.lineTo(x,pad.t+ph);sctx.stroke();
+    }
+    // Horizontal grid (intensity)
+    for(let i=0;i<=10;i++){
+      const y=pad.t+i/10*ph;
+      sctx.beginPath();sctx.moveTo(pad.l,y);sctx.lineTo(pad.l+pw,y);sctx.stroke();
+    }
+
+    // Major grid lines
+    sctx.strokeStyle='#1a4060';sctx.lineWidth=0.8;
+    for(let wl=200;wl<=950;wl+=100){
+      const x=pad.l+(wl-200)/750*pw;
+      sctx.beginPath();sctx.moveTo(x,pad.t);sctx.lineTo(x,pad.t+ph);sctx.stroke();
+    }
+    for(let i=0;i<=10;i+=5){
+      const y=pad.t+(10-i)/10*ph;
+      sctx.beginPath();sctx.moveTo(pad.l,y);sctx.lineTo(pad.l+pw,y);sctx.stroke();
+    }
+  }
+
+  // Axes border
+  sctx.strokeStyle='#2a5a70';sctx.lineWidth=1;
+  sctx.strokeRect(pad.l,pad.t,pw,ph);
+
+  // Axis labels
+  sctx.fillStyle='#4a7a90';sctx.font='9px Courier New';sctx.textAlign='center';
+  for(let wl=200;wl<=950;wl+=100){
+    const x=pad.l+(wl-200)/750*pw;
+    sctx.fillText(wl+'nm',x,pad.t+ph+14);
+  }
+  for(let wl=200;wl<=950;wl+=50){
+    if(wl%100===50){
+      const x=pad.l+(wl-200)/750*pw;
+      sctx.fillText(wl,x,pad.t+ph+14);
+    }
+  }
+  sctx.textAlign='right';
+  for(let i=0;i<=10;i+=2){
+    const y=pad.t+(10-i)/10*ph;
+    const v=logScale?Math.pow(10,i/10-1).toFixed(2):(i/10).toFixed(1);
+    sctx.fillText(v,pad.l-4,y+3);
+  }
+  sctx.save();sctx.translate(12,pad.t+ph/2);sctx.rotate(-Math.PI/2);
+  sctx.textAlign='center';sctx.fillText('INTENSITY (a.u.)',0,0);
+  sctx.restore();
+  sctx.textAlign='center';
+  sctx.fillStyle='#4a7a90';
+  sctx.fillText('WAVELENGTH',pad.l+pw/2,H-4);
+
+  // Phase-specific background tint
+  if(phase===3||phase===4){
+    sctx.fillStyle='rgba(255,51,85,0.03)';
+    sctx.fillRect(pad.l,pad.t,pw,ph);
+  }
+
+  // Species region highlights
+  if(showLabels){
+    sctx.fillStyle='rgba(0,212,255,0.03)';
+    const p=PROCESSES[proc];
+    p.peaks.forEach(pk=>{
+      if(pk.role==='ep'||pk.role==='mon'){
+        const cx=pad.l+(pk.wl-200)/750*pw;
+        sctx.fillRect(cx-8,pad.t,16,ph);
+      }
+    });
+  }
+
+  // Spectrum curve — rainbow color gradient
+  const {wls,spec}=data;
+  const N=spec.length;
+  sctx.lineWidth=1.2;
+
+  // Draw with color based on wavelength
+  sctx.save();
+  sctx.beginPath();
+  for(let i=0;i<N;i++){
+    const x=pad.l+i/(N-1)*pw;
+    let v=spec[i];
+    if(logScale) v=Math.log10(Math.max(v,1e-3)*10)/1;
+    const y=pad.t+(1-Math.min(1,v))*ph;
+    if(i===0) sctx.moveTo(x,y); else sctx.lineTo(x,y);
+  }
+  // Clip and fill area under curve
+  sctx.lineTo(pad.l+pw,pad.t+ph);sctx.lineTo(pad.l,pad.t+ph);sctx.closePath();
+  const grad=sctx.createLinearGradient(pad.l,0,pad.l+pw,0);
+  grad.addColorStop(0,'rgba(160,0,255,0.15)');
+  grad.addColorStop(0.15,'rgba(0,100,255,0.15)');
+  grad.addColorStop(0.35,'rgba(0,220,255,0.15)');
+  grad.addColorStop(0.5,'rgba(0,255,120,0.12)');
+  grad.addColorStop(0.65,'rgba(200,255,0,0.12)');
+  grad.addColorStop(0.8,'rgba(255,150,0,0.12)');
+  grad.addColorStop(1,'rgba(255,0,0,0.10)');
+  sctx.fillStyle=grad;sctx.fill();sctx.restore();
+
+  // Draw spectrum line
+  const lineGrad=sctx.createLinearGradient(pad.l,0,pad.l+pw,0);
+  lineGrad.addColorStop(0,'#aa55ff');
+  lineGrad.addColorStop(0.15,'#4488ff');
+  lineGrad.addColorStop(0.35,'#00ccff');
+  lineGrad.addColorStop(0.5,'#00ff88');
+  lineGrad.addColorStop(0.65,'#ccff00');
+  lineGrad.addColorStop(0.8,'#ff8800');
+  lineGrad.addColorStop(1,'#ff4400');
+  sctx.beginPath();sctx.strokeStyle=lineGrad;sctx.lineWidth=1.3;
+  for(let i=0;i<N;i++){
+    const x=pad.l+i/(N-1)*pw;
+    let v=spec[i];
+    if(logScale) v=Math.log10(Math.max(v,1e-3)*10)/1;
+    const y=pad.t+(1-Math.min(1,v))*ph;
+    if(i===0) sctx.moveTo(x,y); else sctx.lineTo(x,y);
+  }
+  sctx.stroke();
+
+  // Peak markers & labels
+  if(showPeaks||showLabels){
+    const p=PROCESSES[proc];
+    p.peaks.forEach(pk=>{
+      const cx=pad.l+(pk.wl-200)/750*pw;
+      const pidx=Math.round((pk.wl-200)/750*(N-1));
+      let v=spec[Math.min(N-1,Math.max(0,pidx))];
+      if(logScale) v=Math.log10(Math.max(v,1e-3)*10)/1;
+      const cy=pad.t+(1-Math.min(1,v))*ph;
+
+      if(showPeaks){
+        sctx.strokeStyle=pk.col;sctx.lineWidth=1;sctx.setLineDash([3,3]);
+        sctx.beginPath();sctx.moveTo(cx,cy-5);sctx.lineTo(cx,pad.t+ph);sctx.stroke();
+        sctx.setLineDash([]);
+        sctx.strokeStyle=pk.col;sctx.lineWidth=1.5;
+        sctx.beginPath();sctx.arc(cx,cy,3,0,Math.PI*2);sctx.stroke();
+        if(pk.role==='ep'){
+          sctx.strokeStyle=pk.col;sctx.lineWidth=2;
+          sctx.beginPath();sctx.arc(cx,cy,6,0,Math.PI*2);sctx.stroke();
+        }
+      }
+      if(showLabels){
+        sctx.fillStyle=pk.col;sctx.font='bold 9px Courier New';sctx.textAlign='center';
+        const lx=cx;const ly=cy-12;
+        sctx.fillText(pk.sp,lx,ly);
+        sctx.fillStyle='rgba(0,0,0,0.5)';
+        sctx.font='8px Courier New';sctx.fillStyle=pk.col+'99';
+        sctx.fillText(pk.wl+'nm',lx,ly+9);
+      }
+    });
+  }
+
+  // Wavelength cursor
+  if(mouseWL!==null){
+    const cx=pad.l+(mouseWL-200)/750*pw;
+    sctx.strokeStyle='rgba(0,212,255,0.6)';sctx.lineWidth=1;sctx.setLineDash([4,3]);
+    sctx.beginPath();sctx.moveTo(cx,pad.t);sctx.lineTo(cx,pad.t+ph);sctx.stroke();
+    sctx.setLineDash([]);
+  }
+
+  // EP detection overlay
+  if(phase===3||phase===4){
+    sctx.strokeStyle='rgba(255,51,85,0.4)';sctx.lineWidth=1.5;sctx.setLineDash([6,3]);
+    sctx.beginPath();sctx.strokeRect(pad.l,pad.t,pw,ph);
+    sctx.setLineDash([]);
+    sctx.fillStyle='rgba(255,51,85,0.8)';sctx.font='bold 10px Courier New';sctx.textAlign='right';
+    sctx.fillText('⚡ ENDPOINT DETECTED',pad.l+pw-6,pad.t+14);
+  }
+}
+
+// ===== DRAW TREND =====
+function drawTrend(){
+  const W=tc.width,H=tc.height;
+  tctx.clearRect(0,0,W,H);
+  tctx.fillStyle='#07100f';
+  tctx.fillRect(0,0,W,H);
+
+  const pad={l:52,r:20,t:10,b:22};
+  const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+
+  // Grid
+  tctx.strokeStyle='#0d2030';tctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+i/4*ph;
+    tctx.beginPath();tctx.moveTo(pad.l,y);tctx.lineTo(pad.l+pw,y);tctx.stroke();
+  }
+
+  // Border
+  tctx.strokeStyle='#1e3a4a';tctx.lineWidth=1;
+  tctx.strokeRect(pad.l,pad.t,pw,ph);
+
+  // Title
+  tctx.fillStyle='#4a7a90';tctx.font='9px Courier New';tctx.textAlign='left';
+  tctx.fillText('TREND | '+Object.keys(trendData).join(', '),pad.l+4,pad.t+9);
+
+  // Phase separators
+  const p=PROCESSES[proc];
+  let phX=0;
+  for(let i=0;i<phase&&i<p.phaseDur.length;i++) phX+=p.phaseDur[i];
+  // (simplified: just show phase boundary)
+
+  // Plot trend lines
+  const cols=['#ff3355','#00ff88','#aa55ff','#ff8800','#00d4ff','#ffcc00'];
+  Object.entries(trendData).forEach(([name,arr],ci)=>{
+    if(arr.length<2) return;
+    const maxV=Math.max(...arr,0.001);
+    tctx.strokeStyle=cols[ci%cols.length];tctx.lineWidth=1.3;
+    tctx.beginPath();
+    arr.forEach((v,i)=>{
+      const x=pad.l+(i/(maxTrendPts-1))*pw;
+      const y=pad.t+(1-v/maxV)*ph;
+      if(i===0) tctx.moveTo(x,y); else tctx.lineTo(x,y);
+    });
+    tctx.stroke();
+    // Label at right
+    if(arr.length>0){
+      const last=arr[arr.length-1];
+      const y=pad.t+(1-last/maxV)*ph;
+      tctx.fillStyle=cols[ci%cols.length];tctx.font='8px Courier New';tctx.textAlign='left';
+      tctx.fillText(name,pad.l+pw+2,Math.max(pad.t+8,Math.min(pad.t+ph,y+3)));
+    }
+  });
+
+  // Phase markers on trend
+  tctx.textAlign='center';tctx.fillStyle='#2a5a70';tctx.font='8px Courier New';
+  tctx.fillText('▼ PHASES', pad.l+30, H-6);
+  tctx.fillStyle='#4a7a90';
+  tctx.fillText('t →', W-30, H-6);
+  tctx.textAlign='left';
+}
+
+// ===== SIMULATION STEP =====
+let specData=null;
+
+function simStep(dt){
+  if(!running) return;
+  const p=PROCESSES[proc];
+  simTime+=dt;
+  phaseElapsed+=dt;
+
+  const phaseDur=phase<p.phaseDur.length?p.phaseDur[phase]:999;
+  if(phaseElapsed>=phaseDur&&phase<5){
+    phase++;phaseElapsed=0;
+    updatePhaseUI();
+    addLog(PHASES[Math.min(phase,5)],'info','Phase transition → '+PHASES[Math.min(phase,5)]);
+    if(phase===3){
+      epDetected=true;epTime=simTime;
+      addLog('EP','alarm','⚡ ENDPOINT DETECTED — '+p.epSignal);
+      addAlarm('ENDPOINT','crit');
+    }
+    if(phase===5){
+      addLog('PURGE','ok','Process complete — purge initiated');
+    }
+  }
+
+  // Update trend data
+  const specPeaks=p.peaks;
+  specPeaks.forEach(pk=>{
+    if(!trendData[pk.sp]) trendData[pk.sp]=[];
+    const arr=trendData[pk.sp];
+    let base=0.5+Math.sin(simTime*0.5+pk.wl*0.01)*0.05;
+    if(phase===0) base*=0.1;
+    else if(phase===1) base*=0.3+0.7*(phaseElapsed/p.phaseDur[1]);
+    if(phase>=3){
+      const f=Math.min(1,phaseElapsed/(phaseDur||6));
+      if(pk.epDrop) base*=(1-f*0.85);
+      if(pk.epRise) base*=(1+f*1.5);
+      if(phase===4){ if(pk.epDrop) base*=0.1; if(pk.epRise) base*=2.2; }
+    }
+    base+=Math.random()*0.02;
+    arr.push(base);
+    if(arr.length>maxTrendPts) arr.shift();
+  });
+
+  // EP metrics
+  const epPeak=specPeaks.find(pk=>pk.epDrop||pk.epRise);
+  if(epPeak){
+    const arr=trendData[epPeak.sp]||[];
+    const cur=arr.length>0?arr[arr.length-1]:0;
+    const ref=arr.length>20?arr[arr.length-20]:cur;
+    const chg=ref>0?((cur-ref)/ref*100):0;
+    const conf=Math.min(100,Math.abs(chg)*3);
+    document.getElementById('ep-sig').textContent=cur.toFixed(3);
+    document.getElementById('ep-thr').textContent='0.35';
+    document.getElementById('ep-chg').textContent=(chg>=0?'+':'')+chg.toFixed(1)+'%';
+    document.getElementById('ep-time').textContent=epTime?formatTime(simTime-epTime):'--';
+    const bar=document.getElementById('ep-bar');
+    bar.style.width=conf+'%';
+    const col=conf>70?'var(--red)':conf>40?'var(--orange)':'var(--cyan2)';
+    bar.style.background=col;
+    const st=document.getElementById('ep-state');
+    if(phase>=3){st.textContent='ENDPOINT';st.style.color='var(--red)';
+    }else if(conf>40){st.textContent='APPROACH';st.style.color='var(--orange)';
+    }else{st.textContent='MONITORING';st.style.color='var(--text3)';}
+  }
+
+  // Update status bar
+  const elapsed=document.getElementById('sys-elapsed');
+  elapsed.textContent=formatTime(simTime);
+
+  // Jitter pressure/temp readout
+  document.getElementById('sys-pressure').textContent=(p.pressure+Math.random()*0.3-0.15).toFixed(1)+' mT';
+  document.getElementById('sys-temp').textContent=(p.temp+Math.random()*0.4-0.2).toFixed(1)+'°C';
+
+  tick++;
+}
+
+// ===== ANIMATION LOOP =====
+function loop(ts){
+  if(!lastTs) lastTs=ts;
+  const dt=(ts-lastTs)/1000;
+  lastTs=ts;
+
+  if(running){
+    simStep(Math.min(dt,0.1));
+    specData=generateSpectrum(simTime);
+    drawSpectrum(specData);
+    drawTrend();
+    updateChannelValues();
+  }
+
+  animId=requestAnimationFrame(loop);
+}
+
+// ===== UI UPDATES =====
+function updatePhaseUI(){
+  const ph=Math.min(phase,5);
+  for(let i=0;i<=5;i++){
+    const el=document.getElementById('ph'+i);
+    el.className='phase-item';
+    if(i<ph) el.classList.add('done');
+    else if(i===ph) el.classList.add('active');
+    if(i===3&&phase===3) el.classList.add('alarm');
+  }
+  document.getElementById('phase-desc').textContent=PHASE_DESC[Math.min(phase,5)];
+}
+
+function updateChannelValues(){
+  const p=PROCESSES[proc];
+  p.peaks.forEach((pk,i)=>{
+    const arr=trendData[pk.sp]||[];
+    const val=arr.length>0?arr[arr.length-1]:0;
+    const el=document.getElementById('chval-'+i);
+    if(el) el.textContent=val.toFixed(4);
+    const ep=document.getElementById('chep-'+i);
+    if(ep){
+      if((pk.epDrop||pk.epRise)&&phase>=3){
+        ep.textContent='EP';ep.className='ch-ep ep';
+      }else{ep.textContent='';ep.className='ch-ep';}
+    }
+  });
+  // Update phase time
+  document.getElementById('phase-time').textContent=phaseElapsed.toFixed(1)+'s';
+}
+
+function updateGasDisplay(){
+  const p=PROCESSES[proc];
+  const el=document.getElementById('gas-display');
+  const fs=document.getElementById('free-sliders');
+  el.innerHTML='';
+  fs.innerHTML='';
+
+  if(proc===4){
+    fs.style.display='block';
+    p.gases.forEach((g,i)=>{
+      const val=freeGasVals[i]||0;
+      fs.innerHTML+=`<div class="free-slider">
+        <label>${g.n}<span id="fgv${i}">${val}</span> sccm</label>
+        <input type="range" min="0" max="200" value="${val}" oninput="freeGasVals[${i}]=+this.value;document.getElementById('fgv${i}').textContent=this.value;updateGasBar(${i})">
+        </div>`;
+    });
+    p.gases.forEach((g,i)=>{
+      const val=freeGasVals[i]||0;
+      el.innerHTML+=`<div class="gas-row"><div class="gas-name">${g.n}</div>
+        <div class="gas-bar-bg"><div class="gas-bar" id="gb${i}" style="width:${val/2}%;background:${g.c}"></div></div>
+        <div class="gas-val">${val}</div></div>`;
+    });
+  } else {
+    fs.style.display='none';
+    p.gases.forEach((g,i)=>{
+      const jitter=g.base*(0.95+Math.random()*0.1);
+      el.innerHTML+=`<div class="gas-row"><div class="gas-name">${g.n}</div>
+        <div class="gas-bar-bg"><div class="gas-bar" style="width:${Math.min(100,g.base/3)}%;background:${g.c}"></div></div>
+        <div class="gas-val">${g.base} sccm</div></div>`;
+    });
+  }
+}
+
+function updateGasBar(i){
+  const p=PROCESSES[proc];
+  const bar=document.getElementById('gb'+i);
+  if(bar) bar.style.width=Math.min(100,freeGasVals[i]/2)+'%';
+}
+
+function buildChannelList(){
+  const p=PROCESSES[proc];
+  const el=document.getElementById('channel-list');
+  el.innerHTML='';
+  document.getElementById('ch-count').textContent=p.peaks.length+' active';
+  p.peaks.forEach((pk,i)=>{
+    el.innerHTML+=`<div class="ch-row">
+      <input type="checkbox" checked>
+      <div class="ch-dot" style="background:${pk.col};box-shadow:0 0 4px ${pk.col}"></div>
+      <div class="ch-name">${pk.sp} <span style="color:var(--text3)">${pk.wl}nm</span></div>
+      <div class="ch-val" id="chval-${i}" style="color:${pk.col}">0.0000</div>
+      <div class="ch-ep" id="chep-${i}"></div>
+    </div>`;
+  });
+}
+
+function buildPeakTable(){
+  const p=PROCESSES[proc];
+  const tb=document.getElementById('peak-tbody');
+  tb.innerHTML='';
+  document.getElementById('peak-count').textContent=p.peaks.length+' peaks';
+  p.peaks.forEach(pk=>{
+    const badge=pk.role==='ep'?`<span class="peak-badge badge-ep">EP</span>`:
+                pk.role==='ref'?`<span class="peak-badge badge-ref">REF</span>`:
+                pk.role==='mon'?`<span class="peak-badge badge-mon">MON</span>`:``;
+    tb.innerHTML+=`<tr>
+      <td style="color:${pk.col}">${pk.wl}</td>
+      <td class="species">${pk.sp}</td>
+      <td class="intensity" id="pint-${pk.sp.replace(/[^a-z0-9]/gi,'')}">${(Math.random()*0.5+0.3).toFixed(3)}</td>
+      <td>${badge}</td>
+    </tr>`;
+  });
+}
+
+function buildRecipeParams(){
+  const p=PROCESSES[proc];
+  const el=document.getElementById('recipe-params');
+  el.innerHTML='';
+  Object.entries(p.params).forEach(([k,v])=>{
+    el.innerHTML+=`<div class="param-row"><div class="param-key">${k}</div><div class="param-val ok">${v}</div></div>`;
+  });
+}
+
+// ===== LOG / ALARMS =====
+function addLog(tag,type,msg){
+  const now=formatTime(simTime);
+  events.unshift({t:now,tag,type,msg});
+  if(events.length>100) events.pop();
+  renderLog();
+  document.getElementById('log-count').textContent=events.length;
+}
+
+function renderLog(){
+  const el=document.getElementById('event-log');
+  el.innerHTML=events.slice(0,30).map(e=>
+    `<div class="log-entry"><div class="log-time">${e.t}</div>
+    <div class="log-tag tag-${e.type}">${e.tag.toUpperCase().slice(0,6)}</div>
+    <div class="log-msg">${e.msg}</div></div>`
+  ).join('');
+}
+
+function addAlarm(msg,type){
+  alarms.unshift({msg,type});
+  if(alarms.length>10) alarms.pop();
+  renderAlarms();
+  document.getElementById('alarm-count').textContent=alarms.length;
+}
+
+function renderAlarms(){
+  const el=document.getElementById('alarm-list');
+  if(alarms.length===0){
+    el.innerHTML='<div class="alarm-item info">No active alarms</div>';return;
+  }
+  el.innerHTML=alarms.map(a=>
+    `<div class="alarm-item ${a.type}">${a.msg}<span class="alarm-time">${formatTime(simTime)}</span></div>`
+  ).join('');
+}
+
+// ===== CONTROLS =====
+function selectProc(idx,btn){
+  proc=idx;phase=0;phaseElapsed=0;simTime=0;epDetected=false;epTime=null;
+  trendData={};alarms=[];events=[];
+  document.querySelectorAll('.proc-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateGasDisplay();
+  buildChannelList();
+  buildPeakTable();
+  buildRecipeParams();
+  updatePhaseUI();
+  renderLog();renderAlarms();
+  addLog('SYS','info','Recipe loaded: '+PROCESSES[idx].name);
+  addLog('SYS','info','EP signal: '+PROCESSES[idx].epSignal);
+  document.getElementById('phase-desc').textContent=PROCESSES[idx].epDesc;
+  document.getElementById('sys-power').textContent=PROCESSES[idx].power+' W';
+  document.getElementById('recipe-id').textContent='EP-00'+(idx+1);
+}
+
+function toggleRun(){
+  running=!running;
+  const btn=document.getElementById('run-btn');
+  btn.textContent=running?'■ STOP':'▶ RUN';
+  document.getElementById('sys-status').textContent=running?'RUNNING':'PAUSED';
+  document.getElementById('sys-status').style.color=running?'var(--green)':'var(--yellow)';
+  document.getElementById('rec-dot').style.display=running?'block':'none';
+}
+
+function resetSim(){
+  phase=0;phaseElapsed=0;simTime=0;epDetected=false;epTime=null;
+  trendData={};alarms=[];events=[];
+  lastTs=null;
+  updatePhaseUI();
+  renderLog();renderAlarms();
+  addLog('SYS','info','Simulation reset');
+}
+
+function togglePeaks(){
+  showPeaks=!showPeaks;
+  document.getElementById('btn-peaks').classList.toggle('on',showPeaks);
+}
+function toggleLabels(){
+  showLabels=!showLabels;
+  document.getElementById('btn-labels').classList.toggle('on',showLabels);
+}
+function toggleGrid(){
+  showGrid=!showGrid;
+  document.getElementById('btn-grid').classList.toggle('on',showGrid);
+}
+function toggleLogScale(){
+  logScale=!logScale;
+  document.getElementById('btn-log').classList.toggle('on',logScale);
+}
+function autoScale(){
+  // Just reset view
+  addLog('VIEW','info','Auto-scale applied');
+}
+
+// ===== MOUSE on spectrum =====
+sc.addEventListener('mousemove',e=>{
+  const r=sc.getBoundingClientRect();
+  const mx=e.clientX-r.left;
+  const pad={l:52,r:20};
+  const pw=sc.width-pad.l-pad.r;
+  const wl=200+(mx-pad.l)/pw*750;
+  if(wl>=200&&wl<=950){
+    mouseWL=wl;
+    document.getElementById('wl-display').textContent=wl.toFixed(1);
+    const ro=document.getElementById('wl-readout');
+    ro.style.display='block';
+    ro.style.left=(e.clientX-r.left+12)+'px';
+    ro.style.top=(e.clientY-r.top-28)+'px';
+    // Find nearest peak
+    const p=PROCESSES[proc];
+    let nearest=null,minD=30;
+    p.peaks.forEach(pk=>{if(Math.abs(pk.wl-wl)<minD){minD=Math.abs(pk.wl-wl);nearest=pk;}});
+    ro.textContent=wl.toFixed(1)+'nm'+(nearest?` | ${nearest.sp} (${nearest.wl}nm)`:'');
+  } else {
+    mouseWL=null;
+    document.getElementById('wl-readout').style.display='none';
+  }
+});
+sc.addEventListener('mouseleave',()=>{
+  mouseWL=null;
+  document.getElementById('wl-readout').style.display='none';
+  document.getElementById('wl-display').textContent='---';
+});
+
+// ===== UTILS =====
+function formatTime(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+}
+setInterval(updateClock,1000);
+
+document.getElementById('alarm-ack').onclick=()=>{
+  alarms=[];renderAlarms();
+  document.getElementById('alarm-count').textContent='0';
+  addLog('ACK','ok','All alarms acknowledged');
+};
+
+// ===== FOOTER STATUS =====
+function updateFootMsg(){
+  const msgs=['CCD TEMP: −10.2°C','DARK CURRENT: 0.3 e⁻/px/s','SNR: 1240:1','PIXEL SIZE: 14μm'];
+  let mi=0;
+  setInterval(()=>{
+    document.getElementById('foot-msg').textContent=msgs[mi%msgs.length];
+    mi++;
+  },3000);
+}
+
+// ===== INIT =====
+window.addEventListener('resize',()=>{resizeCanvases();});
+resizeCanvases();
+updateGasDisplay();
+buildChannelList();
+buildPeakTable();
+buildRecipeParams();
+updatePhaseUI();
+addLog('SYS','info','OES Monitor v3.2 initialized');
+addLog('SYS','info','Instrument: HM-4823-A | 2048ch');
+addLog('PROC','info','Recipe loaded: Si Etch (CF₄/O₂/Ar)');
+updateFootMsg();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
