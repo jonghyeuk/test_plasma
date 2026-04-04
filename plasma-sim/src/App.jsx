@@ -22,6 +22,14 @@ function App() {
       component: OESSimulator
     },
     {
+      id: 'oes-sim',
+      name: 'OES 시뮬레이터',
+      description: 'OES Monitor · Plasma Process Control',
+      icon: '📊',
+      color: 'from-violet-500 to-indigo-600',
+      iframeSrc: '/OES_simulator.html'
+    },
+    {
       id: 'impedance',
       name: 'Impedance Probe',
       description: 'RF 임피던스 진단 · V, I, Phase',
