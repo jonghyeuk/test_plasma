@@ -40,9 +40,10 @@ button:hover{border-color:var(--acc);color:var(--acc)}
 .vt{font-size:11px;font-weight:800;letter-spacing:.1em;color:#7ab8d8}
 .vtools{display:flex;gap:4px}
 .vtb{padding:4px 8px;border-radius:5px;border:1px solid var(--line);background:var(--chip);color:#88aec4;font-size:10px;cursor:pointer}
-.cout{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(circle at center,#09131e,#040b12)}
-.cshell{position:relative;width:min(100%,680px);aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid #192e44;box-shadow:0 0 32px rgba(0,0,0,.8)}
+.cout{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(circle at center,#09131e,#040b12);min-height:0;overflow:hidden}
+.cshell{position:relative;width:min(100%,680px);aspect-ratio:1/1;max-height:100%;border-radius:10px;overflow:hidden;border:1px solid #192e44;box-shadow:0 0 32px rgba(0,0,0,.8)}
 canvas{width:100%;height:100%;display:block}
+.cshell{cursor:crosshair}
 .ov-tl{position:absolute;top:9px;left:9px;display:flex;flex-direction:column;gap:4px;pointer-events:none}
 .ov-tr{position:absolute;top:9px;right:9px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;pointer-events:none}
 .ov-bl{position:absolute;bottom:9px;left:9px;pointer-events:none}
@@ -302,8 +303,8 @@ canvas{width:100%;height:100%;display:block}
     </div>
   </div>
   <div class="mod">
-    <div class="mh"><h4>Measurement</h4><span>click 2pts</span></div>
-    <div class="mout" id="mout">이미지를 두 번 클릭하면 거리를 측정합니다.</div>
+    <div class="mh"><h4>Measurement</h4><span>drag to measure</span></div>
+    <div class="mout" id="mout">이미지를 클릭하고 드래그하여 거리를 측정합니다.</div>
   </div>
   <div class="mod">
     <div class="mh"><h4>Interpretation</h4></div>
@@ -512,16 +513,16 @@ function drawEtch(taper){
       shG2.addColorStop(0,'rgba(0,0,0,'+cl(-tiltDeg*0.022,0,0.55)+')'); shG2.addColorStop(1,'rgba(0,0,0,0)');
       CTX.fillStyle=shG2; CTX.fillRect(tR-shW2,pillarTop,shW2,depth);
     }
-    var fda=tone(det==='BSE'?48:32);
+    var fda=cl(svb-18,0,255);
     var fG=CTX.createLinearGradient(0,floorY-16,0,floorY+4);
     fG.addColorStop(0,'rgba(0,0,0,0)');
-    fG.addColorStop(0.6, rgba(fda,fda,fda,0.4));
-    fG.addColorStop(1,'rgba(0,0,0,.12)');
+    fG.addColorStop(0.6, rgba(fda,fda,fda,0.55));
+    fG.addColorStop(1,rgba(fda,fda,fda,0.3));
     CTX.fillStyle = det==='EDS' ? 'rgba(160,120,30,.18)' : fG;
     CTX.fillRect(tL+1,floorY-16,trenchW-2,22);
   }
   CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,Math.max(0,pillarTop));
-  if(floorY<H){ var fv=tone(46); CTX.fillStyle=rgb(fv,fv,fv); CTX.fillRect(0,floorY,W,H-floorY); }
+  if(floorY<H){ CTX.fillStyle=rgb(svb,svb,svb); CTX.fillRect(0,floorY,W,H-floorY); }
   if(det==='EDS'){ CTX.globalAlpha=0.4; CTX.fillStyle='rgba(30,90,210,.5)'; CTX.fillRect(0,pillarTop,W,H-pillarTop); CTX.globalAlpha=1; }
   for(var ig=0;ig<500;ig++){
     var gx=rn(ig*3.1)*W, gy=pillarTop+rn(ig*7.3)*(H-pillarTop), gv=22+rn(ig*4.5)*30;
@@ -836,11 +837,26 @@ function updateMeasure(){
   $('mLayer').appendChild(tx);
   $('mout').textContent='측정: '+lbl;
 }
-$('cshell').addEventListener('click',function(e){
+var measuring=false;
+$('cshell').addEventListener('mousedown',function(e){
+  if(e.button!==0) return;
+  e.preventDefault();
   var rc=$('cshell').getBoundingClientRect(), sx=680/rc.width, sy=680/rc.height;
   var px=(e.clientX-rc.left)*sx, py=(e.clientY-rc.top)*sy;
-  if(mpts.length>=2) mpts=[];
-  mpts.push([px,py]); updateMeasure();
+  mpts=[[px,py]];
+  measuring=true;
+  updateMeasure();
+});
+$('cshell').addEventListener('mousemove',function(e){
+  if(!measuring) return;
+  var rc=$('cshell').getBoundingClientRect(), sx=680/rc.width, sy=680/rc.height;
+  var px=(e.clientX-rc.left)*sx, py=(e.clientY-rc.top)*sy;
+  mpts[1]=[px,py];
+  updateMeasure();
+});
+document.addEventListener('mouseup',function(){
+  if(!measuring) return;
+  measuring=false;
 });
 
 /* ── TUTORIAL INIT ── */
@@ -870,7 +886,7 @@ var STEP_EXPLAINS=[
   /* 7 */
   '<h5>📌 Charging(대전) 이란?</h5><p>SEM에서 전자빔을 시료에 쏘면, 입사 전자가 시료 내부에 누적될 수 있습니다. <span class="kw">비전도성 시료</span>(SiO2, 폴리머, 세라믹 등)는 전자를 방출하지 못하고 표면에 <span class="warn-kw">음전하가 축적(charging)</span>됩니다.</p><h5>이미지에 어떻게 나타나는가?</h5><ul><li>표면 음전하 → 새로 입사하는 전자를 밀어냄 → 빔 방향 왜곡</li><li>이미지에 <span class="warn-kw">밝은 흰 줄무늬, 번짐(blooming)</span>이 나타남</li><li>심하면 이미지 전체가 흰색으로 날아가 버림</li></ul><h5>왜 저전압(1~3kV)이 도움이 되는가?</h5><p>전자빔 에너지가 낮으면 시료에서 <span class="kw">2차 전자 방출률(δ)</span>이 높아집니다. 입사 전자수 ≈ 방출 전자수가 되면 전하 균형이 맞아 충전이 억제됩니다. 이를 <span class="ok-kw">charge balance point</span>라 합니다.</p>',
   /* 8 */
-  '<h5>📌 SEM 측정 원리</h5><p>SEM 이미지에는 좌하단에 <span class="kw">Scale Bar</span>가 표시됩니다. 배율(MAG)과 이미지 너비를 알면 픽셀당 실제 거리를 계산할 수 있습니다.</p><ul><li>이미지 너비(픽셀) = 680px, 실제 시야폭 = 25,400 / MAG (µm)</li><li>클릭 두 점 사이 픽셀 거리 × (실제 시야폭 / 680) = 실제 물리 거리</li></ul><h5>무엇을 측정하는가?</h5><p><span class="kw">trench 폭</span>(좌측 edge → 우측 edge): 식각 패턴의 CD(Critical Dimension)로, 설계 치수와 일치하는지 확인합니다.<br><span class="kw">trench 깊이</span>(상단 → 바닥): 식각 깊이로, 공정 조건(RF 파워, 압력, 시간)에 따라 달라집니다.</p><h5>선명한 이미지가 필요한 이유</h5><p>edge가 흐릿하면 edge 위치를 정확히 특정할 수 없어 측정 오차가 커집니다. 모든 보정을 마친 후 측정해야 신뢰할 수 있는 CD 값을 얻을 수 있습니다.</p>'
+  '<h5>📌 SEM 측정 원리</h5><p>SEM 이미지에는 좌하단에 <span class="kw">Scale Bar</span>가 표시됩니다. 배율(MAG)과 이미지 너비를 알면 픽셀당 실제 거리를 계산할 수 있습니다.</p><ul><li>이미지 너비(픽셀) = 680px, 실제 시야폭 = 25,400 / MAG (µm)</li><li>드래그 시작점~끝점 픽셀 거리 × (실제 시야폭 / 680) = 실제 물리 거리</li></ul><h5>무엇을 측정하는가?</h5><p><span class="kw">trench 폭</span>(좌측 edge → 우측 edge): 식각 패턴의 CD(Critical Dimension)로, 설계 치수와 일치하는지 확인합니다.<br><span class="kw">trench 깊이</span>(상단 → 바닥): 식각 깊이로, 공정 조건(RF 파워, 압력, 시간)에 따라 달라집니다.</p><h5>선명한 이미지가 필요한 이유</h5><p>edge가 흐릿하면 edge 위치를 정확히 특정할 수 없어 측정 오차가 커집니다. 모든 보정을 마친 후 측정해야 신뢰할 수 있는 CD 값을 얻을 수 있습니다.</p>'
 ];
 
 var STEPS=[
@@ -910,10 +926,10 @@ var STEPS=[
    apply:function(){els.charging.value=0;},
    validate:function(){var r=[];if(+els.charging.value>6)r.push('Charging을 6 이하로 낮추십시오.');return{ok:r.length===0,r:r};}},
   {title:'[Step 8] 직접 측정',
-   desc:'모든 문제가 해결되었습니다! 선명한 이미지에서 trench 폭(좌 edge→우 edge)과 깊이(상단→바닥)를 직접 측정하십시오.',
-   task:'이미지를 두 번 클릭하여 trench 폭과 깊이를 측정하십시오.',check:'완료 조건: Sharpness 좋음 + 측정 완료',btnLabel:'최적 상태 적용',
+   desc:'모든 문제가 해결되었습니다! 선명한 이미지에서 마우스를 클릭한 채로 드래그하여 trench 폭(좌 edge→우 edge)과 깊이(상단→바닥)를 직접 측정하십시오.',
+   task:'이미지에서 마우스를 클릭·드래그하여 trench 폭과 깊이를 측정하십시오.',check:'완료 조건: Sharpness 좋음 + 측정 완료',btnLabel:'최적 상태 적용',
    apply:function(){els.wd.value=8.0;els.focus.value=0;els.astigX.value=0;els.astigY.value=0;els.vibration.value=0;els.drift.value=0;els.charging.value=0;els.kv.value=5;els.noise.value=2;els.brightness.value=50;els.contrast.value=56;els.mag.value=58;},
-   validate:function(m){var r=[];if(m.sharp<80)r.push('먼저 모든 문제를 해결하십시오.');if(mpts.length<2)r.push('이미지를 두 번 클릭하여 측정하십시오.');return{ok:r.length===0,r:r};}}
+   validate:function(m){var r=[];if(m.sharp<80)r.push('먼저 모든 문제를 해결하십시오.');if(mpts.length<2)r.push('이미지를 클릭·드래그하여 측정하십시오.');return{ok:r.length===0,r:r};}}
 ];
 
 function renderStep(){
@@ -994,9 +1010,9 @@ $('bHome').onclick=function(){ stage.x=0; stage.y=0; draw(); };
 $('bAF').onclick=function(){ els.focus.value=0; draw(); };
 $('bAS').onclick=function(){ els.astigX.value=0; els.astigY.value=0; draw(); };
 $('bStab').onclick=function(){ els.vibration.value=0; els.drift.value=0; draw(); };
-$('bReset').onclick=function(){ seen.fill(false); step=0; mpts=[]; $('mLayer').innerHTML=''; $('mout').textContent='이미지를 두 번 클릭하면 거리를 측정합니다.'; initAllProblems(); setMode('tutorial'); draw(); };
+$('bReset').onclick=function(){ seen.fill(false); step=0; mpts=[]; $('mLayer').innerHTML=''; $('mout').textContent='이미지를 클릭하고 드래그하여 거리를 측정합니다.'; initAllProblems(); setMode('tutorial'); draw(); };
 document.querySelectorAll('[data-p]').forEach(function(b){ b.addEventListener('click',function(){ applyP(b.dataset.p); }); });
-$('bTutReset').onclick=function(){ seen.fill(false); step=0; mpts=[]; $('mLayer').innerHTML=''; $('mout').textContent='이미지를 두 번 클릭하면 거리를 측정합니다.'; initAllProblems(); renderStep(); draw(); };
+$('bTutReset').onclick=function(){ seen.fill(false); step=0; mpts=[]; $('mLayer').innerHTML=''; $('mout').textContent='이미지를 클릭하고 드래그하여 거리를 측정합니다.'; initAllProblems(); renderStep(); draw(); };
 $('bFree').onclick=function(){ setMode('free'); };
 $('bPrev').onclick=function(){ step=Math.max(0,step-1); renderStep(); draw(); };
 $('bNext').onclick=function(){ step=Math.min(STEPS.length-1,step+1); renderStep(); draw(); };

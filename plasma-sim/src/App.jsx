@@ -62,6 +62,14 @@ function App() {
       iframeSrc: '/rga_console_gui_simulator.html'
     },
     {
+      id: 'sem',
+      name: 'SEM',
+      description: 'Scanning Electron Microscope Training',
+      icon: '🔬',
+      color: 'from-pink-500 to-rose-600',
+      iframeSrc: '/SEM.html'
+    },
+    {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
