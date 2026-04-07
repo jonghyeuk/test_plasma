@@ -464,9 +464,11 @@ function drawEtch(taper){
     var sc=mag>=50000?2.2:mag>=20000?0.8:0;
     CTX.fillStyle='#030508';
     if(taper){
+      var bow=trenchW*0.18, tpNarrow=trenchW*0.15;
       CTX.beginPath(); CTX.moveTo(tL,pillarTop); CTX.lineTo(tR,pillarTop);
-      CTX.quadraticCurveTo(tR+8,pillarTop+depth*0.55,tR-7,floorY);
-      CTX.lineTo(tL+7,floorY); CTX.quadraticCurveTo(tL-8,pillarTop+depth*0.55,tL,pillarTop);
+      CTX.quadraticCurveTo(tR+bow,pillarTop+depth*0.45,tR-tpNarrow,floorY);
+      CTX.lineTo(tL+tpNarrow,floorY);
+      CTX.quadraticCurveTo(tL-bow,pillarTop+depth*0.45,tL,pillarTop);
       CTX.fill();
     } else {
       CTX.beginPath(); CTX.moveTo(tL,pillarTop);
@@ -532,23 +534,28 @@ function drawEtch(taper){
 function drawFilm(multi){
   var mag=magV(+els.mag.value), det=els.detector.value, kv=+els.kv.value;
   CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,H);
+  /* [name, thickness_nm, SE_bright, BSE_bright, EDS_color, Z] */
   var layers = multi ? [
-    ['Pt cap',20,218,240,'rgba(190,80,230,.6)',78],
-    ['W',     16,205,228,'rgba(60,210,60,.6)', 74],
-    ['TiN',   13,158,172,'rgba(230,165,30,.6)',22],
-    ['SiO2',  60,112,82, 'rgba(30,165,230,.55)',10],
-    ['Si',   310,65, 96, 'rgba(30,85,210,.45)', 14]
+    ['Pt cap',100,218,240,'rgba(190,80,230,.6)',78],
+    ['W',      40,205,228,'rgba(60,210,60,.6)', 74],
+    ['TiN',    30,158,172,'rgba(230,165,30,.6)',22],
+    ['SiO2',  500,112,82, 'rgba(30,165,230,.55)',10],
+    ['Si',  10000,65, 96, 'rgba(30,85,210,.45)', 14]
   ] : [
-    ['Pt cap',18,215,230,'rgba(190,80,230,.5)',78],
-    ['SiO2',  70,108,80, 'rgba(30,165,230,.55)',10],
-    ['Si',   310,62, 94, 'rgba(30,85,210,.45)', 14]
+    ['Pt cap',100,215,230,'rgba(190,80,230,.5)',78],
+    ['SiO2',  500,108,80, 'rgba(30,165,230,.55)',10],
+    ['Si',  10000,62, 94, 'rgba(30,85,210,.45)', 14]
   ];
-  var total = layers.reduce(function(s,l){return s+l[1];},0);
-  var cy = H*0.1;
-  var lSharp = cl((Math.log10(mag)-3.3)*1.6, 0, 1);
+  var nmPerPx=25400000/mag/W;
+  var oyPx=(stage.y*50*1000)/nmPerPx;
+  var cy=H*0.08-oyPx*0.35;
+  var lSharp=cl((Math.log10(mag)-3.3)*1.6, 0, 1);
   layers.forEach(function(layer, li){
-    var nm=layer[0],th=layer[1],bSE=layer[2],bBSE=layer[3],ec=layer[4],Z=layer[5];
-    var ph=(th/total)*(H*0.76);
+    var nm=layer[0],thNm=layer[1],bSE=layer[2],bBSE=layer[3],ec=layer[4],Z=layer[5];
+    var ph=thNm/nmPerPx;
+    if(li===layers.length-1) ph=Math.max(ph, H-cy+10);
+    if(cy+ph<0){ cy+=ph; return; }
+    if(cy>H) return;
     var bv;
     if(det==='BSE'){ var bseBase=cl(28+(Z/82)*210,20,248); bv=cl(bseBase+(kv-5)*1.5,20,252); }
     else bv=bSE;
@@ -575,13 +582,12 @@ function drawFilm(multi){
     }
     if(ph>11 && Math.abs(+els.focus.value)<5 && lSharp>0.5){
       CTX.fillStyle='rgba(255,255,255,.72)'; CTX.font='bold 9px monospace';
-      var nmpp=25400000/mag/W, tnm=Math.round(th*(H*0.76/total)*nmpp);
-      CTX.fillText(nm+'  '+(tnm>999?(tnm/1000).toFixed(2)+'µm':tnm+'nm'), 8, cy+ph/2+4);
+      CTX.fillText(nm+'  '+(thNm>=1000?(thNm/1000).toFixed(2)+'µm':thNm+'nm'), 8, cl(cy+ph/2+4, cy+10, cy+ph-2));
       CTX.strokeStyle='rgba(78,207,255,.25)'; CTX.lineWidth=1; CTX.setLineDash([3,4]);
       CTX.beginPath(); CTX.moveTo(0,cy); CTX.lineTo(W,cy); CTX.stroke(); CTX.setLineDash([]);
     }
-    for(var ig3=0;ig3<160+Math.round(ph);ig3++){
-      var gx2=rn(ig3*3+li*80)*W, gy2=cy+rn(ig3*7+li*50)*ph, gv2=38+rn(ig3*4)*52;
+    for(var ig3=0;ig3<cl(160+Math.round(ph),160,500);ig3++){
+      var gx2=rn(ig3*3+li*80)*W, gy2=cy+rn(ig3*7+li*50)*cl(ph,1,H), gv2=38+rn(ig3*4)*52;
       CTX.fillStyle=rgba(gv2,gv2,gv2,0.03); CTX.fillRect(gx2,gy2,1.3,1.3);
     }
     cy+=ph;
