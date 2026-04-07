@@ -139,8 +139,6 @@ canvas{width:100%;height:100%;display:block}
       <option value="etch_v">식각 단면 — 수직 profile (cleave)</option>
       <option value="etch_taper">식각 단면 — taper/bowing</option>
       <option value="film_single">증착 단면 — 단층막</option>
-      <option value="film_multi">증착 단면 — 다층막</option>
-      <option value="surf_smooth">표면 — 매끈한 증착막 (top-down)</option>
       <option value="surf_grain">표면 — grain/island (top-down)</option>
       <option value="surf_particle">표면 — 파티클 오염 (top-down)</option>
     </select>
@@ -974,11 +972,11 @@ var P={
   normal:   {s:'etch_v',    det:'SE',mag:55,kv:5, wd:8.0,f:0, ax:0,  ay:0,  v:0, d:0,c:0, n:2,br:50,co:56,t:0},
   focusbad: {s:'etch_v',    det:'SE',mag:55,kv:5, wd:9,  f:24,ax:0,  ay:0,  v:0, d:0,c:0, n:3,br:50,co:55,t:0},
   astigbad: {s:'surf_grain',det:'SE',mag:50,kv:5, wd:8.5,f:2, ax:22, ay:-15,v:0, d:0,c:0, n:3,br:50,co:55,t:10},
-  shake:    {s:'surf_smooth',det:'SE',mag:48,kv:5,wd:8.5,f:1, ax:0,  ay:0,  v:22,d:15,c:0,n:5,br:50,co:55,t:0},
+  shake:    {s:'surf_grain',det:'SE',mag:48,kv:5,wd:8.5,f:1, ax:0,  ay:0,  v:22,d:15,c:0,n:5,br:50,co:55,t:0},
   chargebad:{s:'surf_grain',det:'SE',mag:44,kv:15,wd:8.5,f:2, ax:0,  ay:0,  v:2, d:1, c:22,n:6,br:50,co:55,t:10},
   hvhigh:   {s:'etch_v',    det:'SE',mag:55,kv:25,wd:8.5,f:0, ax:0,  ay:0,  v:0, d:0,c:0, n:2,br:50,co:55,t:0},
   etch_ok:  {s:'etch_v',    det:'SE',mag:55,kv:5, wd:8.0,f:0, ax:0,  ay:0,  v:0, d:0,c:0, n:1,br:50,co:58,t:0},
-  film_ok:  {s:'film_multi',det:'SE',mag:55,kv:5, wd:8.0,f:0, ax:0,  ay:0,  v:0, d:0,c:0, n:1,br:52,co:58,t:0}
+  film_ok:  {s:'film_single',det:'SE',mag:55,kv:5, wd:8.0,f:0, ax:0,  ay:0,  v:0, d:0,c:0, n:1,br:52,co:58,t:0}
 };
 function applyP(n){
   var p=P[n]; if(!p) return;
