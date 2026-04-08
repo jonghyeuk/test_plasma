@@ -447,6 +447,8 @@ function drawEtch(taper){
   var period=500/nmPerPx, trenchW=200/nmPerPx, pillarW=period-trenchW, depth=1500/nmPerPx;
   var oyPx=(stage.y*50*1000)/nmPerPx;
   CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,H);
+  /* cap layer thickness for taper mode */
+  var capH=taper?cl(80/nmPerPx,4,depth*0.18):0;
   var pillarTop=H*0.06-oyPx*0.35, floorY=pillarTop+depth;
   var subV=det==='BSE'?88:68, subHV=det==='BSE'?(kv-5)*1.2:-(kv-5)*0.8;
   var sv=cl(subV+subHV,20,200);
@@ -456,6 +458,21 @@ function drawEtch(taper){
   sG.addColorStop(0.35,rgb(svb,svb,svb));
   sG.addColorStop(1,   rgb(svc,svc,svc));
   CTX.fillStyle=sG; CTX.fillRect(0,pillarTop,W,H-pillarTop);
+  /* bright Pt cap layer on top of pillars for taper */
+  if(taper && capH>1){
+    var capV=det==='BSE'?tone(210):tone(185);
+    var capG=CTX.createLinearGradient(0,pillarTop,0,pillarTop+capH);
+    capG.addColorStop(0, rgb(cl(capV+12,0,255),cl(capV+12,0,255),cl(capV+12,0,255)));
+    capG.addColorStop(1, rgb(capV,capV,capV));
+    CTX.fillStyle=capG; CTX.fillRect(0,pillarTop,W,capH);
+    /* cap-substrate boundary edge */
+    var eS=cl((Math.log10(mag)-2.7)*1.4,0,1);
+    if(eS>0.15){
+      var bG=CTX.createLinearGradient(0,pillarTop+capH-3,0,pillarTop+capH+3);
+      bG.addColorStop(0,'rgba(255,255,255,0)'); bG.addColorStop(0.5,'rgba(255,255,255,'+cl(eS*0.55,0,0.7)+')'); bG.addColorStop(1,'rgba(255,255,255,0)');
+      CTX.fillStyle=bG; CTX.fillRect(0,pillarTop+capH-2,W,5);
+    }
+  }
   var stageOffsetX=(stage.x*50*1000/nmPerPx)%period;
   var centerX=W/2-stageOffsetX;
   var startX=centerX-Math.ceil(W/period+2)*period;
@@ -465,11 +482,19 @@ function drawEtch(taper){
     CTX.fillStyle='#030508';
     if(taper){
       var bow=trenchW*0.18, tpNarrow=trenchW*0.15;
-      CTX.beginPath(); CTX.moveTo(tL,pillarTop); CTX.lineTo(tR,pillarTop);
-      CTX.quadraticCurveTo(tR+bow,pillarTop+depth*0.45,tR-tpNarrow,floorY);
+      var etchTop=pillarTop+capH;
+      CTX.beginPath(); CTX.moveTo(tL,etchTop); CTX.lineTo(tR,etchTop);
+      CTX.quadraticCurveTo(tR+bow,etchTop+depth*0.4,tR-tpNarrow,floorY);
       CTX.lineTo(tL+tpNarrow,floorY);
-      CTX.quadraticCurveTo(tL-bow,pillarTop+depth*0.45,tL,pillarTop);
+      CTX.quadraticCurveTo(tL-bow,etchTop+depth*0.4,tL,etchTop);
       CTX.fill();
+      /* sidewall gradient inside trench — lighter near walls */
+      var swG=CTX.createLinearGradient(tL,0,tL+trenchW*0.3,0);
+      swG.addColorStop(0,rgba(svb,svb,svb,0.25)); swG.addColorStop(1,'rgba(0,0,0,0)');
+      CTX.fillStyle=swG; CTX.fillRect(tL,etchTop,trenchW*0.3,depth-capH);
+      var swG2=CTX.createLinearGradient(tR,0,tR-trenchW*0.3,0);
+      swG2.addColorStop(0,rgba(svb,svb,svb,0.2)); swG2.addColorStop(1,'rgba(0,0,0,0)');
+      CTX.fillStyle=swG2; CTX.fillRect(tR-trenchW*0.3,etchTop,trenchW*0.3,depth-capH);
     } else {
       CTX.beginPath(); CTX.moveTo(tL,pillarTop);
       for(var i=0;i<=20;i++){ var sy=pillarTop+(depth/20)*i; CTX.lineTo(tL-Math.sin(i*Math.PI*0.95)*sc,sy); }
@@ -628,11 +653,20 @@ function drawSurf(type){
       CTX.fillRect(x2,y2,5.2,5.2);
     }
   } else {
-    for(var y3=0;y3<H;y3+=7) for(var x3=0;x3<W;x3+=7){
-      var nx2=(x3+ox*0.1)/(62/Math.sqrt(zoom)), ny2=(y3+oy*0.1)/(66/Math.sqrt(zoom));
-      var h3=Math.sin(nx2)*4+Math.cos(ny2)*3+Math.sin((nx2+ny2)*0.5)*2.5;
-      var tv3=tone(78+h3*2.8*hvSurfSens);
-      CTX.fillStyle=rgb(tv3,tv3,tv3); CTX.fillRect(x3,y3,7.2,7.2);
+    /* rough textured surface background — like real SEM surface morphology */
+    var gd2=[];
+    for(var ig=0;ig<120;ig++) gd2.push({px:(rn(ig*4.3)*W+ox*0.08+W*3)%W, py:(rn(ig*7.9)*H+oy*0.08+H*3)%H, rx:6+rn(ig*9)*28/Math.sqrt(zoom), ry:5+rn(ig*12)*26/Math.sqrt(zoom), h:8+rn(ig*2.5)*35});
+    for(var y3=0;y3<H;y3+=4) for(var x3=0;x3<W;x3+=4){
+      var nx2=(x3+ox*0.08)/(48/Math.sqrt(zoom)), ny2=(y3+oy*0.08)/(52/Math.sqrt(zoom));
+      var h3=Math.sin(nx2*1.3)*5+Math.cos(ny2*1.1)*4+Math.sin((nx2+ny2)*0.7)*3.5+Math.sin(nx2*2.8)*2+Math.cos(ny2*3.1)*1.8+Math.sin((nx2-ny2)*1.9)*2.2;
+      var hg=0, dg1=1e9, dg2=1e9;
+      gd2.forEach(function(g){ var dx=x3-g.px, dy=y3-g.py; var d=Math.sqrt((dx*dx)/(g.rx*g.rx*6)+(dy*dy)/(g.ry*g.ry*6)); hg+=g.h*Math.exp(-d); if(d<dg1){dg2=dg1;dg1=d;}else if(d<dg2)dg2=d; });
+      var ef3=cl(1-Math.abs(dg1-dg2)*3.5,0,1);
+      var hvE4=cl(1+(kv-5)*0.035,0.7,1.8);
+      var v3=det==='BSE'?60+hg*0.6+h3*0.4:30+hg*relief*hvSurfSens*0.7+h3*3.5*relief*hvSurfSens+ef3*35*hvE4;
+      var tv3=tone(cl(v3,10,245));
+      CTX.fillStyle = det==='EDS' ? rgb(tone(v3*0.4),tone(v3*0.75),tv3) : rgb(tv3,tv3,tv3);
+      CTX.fillRect(x3,y3,4.2,4.2);
     }
     var pts=[
       {x:140,y:210,r:12,se:228,Z:26,t:'metal'},
