@@ -457,32 +457,22 @@ function drawEtch(taper){
     var stepX=W*0.42-oxPx2*0.35;
     var eSharp2=cl((Math.log10(mag)-2.7)*1.4,0,1);
     var hvEB=cl(1+(kv-5)*0.038,0.55,2.2);
-    /* Si material tone — same for step and substrate */
+    /* Si material tone — same everywhere */
     var siV=det==='BSE'?88:68, siHV=det==='BSE'?(kv-5)*1.2:-(kv-5)*0.8;
     var siBase=cl(siV+siHV,20,200);
-    var siA=tone(siBase+8), siB=tone(siBase), siC=tone(siBase-15);
-    /* substrate fills everything below step top */
-    var subG=CTX.createLinearGradient(0,stepTopY,0,H);
-    subG.addColorStop(0,rgb(siA,siA,siA));
-    subG.addColorStop(0.3,rgb(siB,siB,siB));
-    subG.addColorStop(1,rgb(siC,siC,siC));
-    CTX.fillStyle=subG; CTX.fillRect(0,stepTopY,W,H-stepTopY);
-    /* right side above floor = vacuum (dark) — etched away */
+    var siB=tone(siBase);
+    /* single uniform fill — no gradient, one color everywhere */
+    CTX.fillStyle=rgb(siB,siB,siB); CTX.fillRect(0,stepTopY,W,H-stepTopY);
+    /* carve out vacuum (dark) on right side above floor */
     CTX.fillStyle='#04080f'; CTX.fillRect(stepX,stepTopY,W-stepX,stepPx);
-    /* floor on right side — same Si material as substrate */
-    var flG=CTX.createLinearGradient(0,floorY2,0,H);
-    flG.addColorStop(0,rgb(siA,siA,siA));
-    flG.addColorStop(0.3,rgb(siB,siB,siB));
-    flG.addColorStop(1,rgb(siC,siC,siC));
-    CTX.fillStyle=flG; CTX.fillRect(stepX,floorY2,W-stepX,H-floorY2);
-    /* top surface subtle texture */
+    /* top surface subtle texture — same tone on both levels */
     for(var tx=0;tx<W;tx+=3){
-      var tyMax=tx<stepX?stepTopY:floorY2;
-      if(tyMax>H) continue;
-      var tv2=rn(tx*0.37)*6-3;
+      var tyS=tx<stepX?stepTopY:floorY2;
+      if(tyS>H) continue;
+      var tv2=rn(tx*0.37)*4-2;
       var tvc=cl(siB+tv2,0,255);
-      CTX.fillStyle=rgba(tvc,tvc,tvc,0.15);
-      CTX.fillRect(tx,tyMax,3.2,2);
+      CTX.fillStyle=rgba(tvc,tvc,tvc,0.1);
+      CTX.fillRect(tx,tyS,3.2,1.5);
     }
     /* sidewall edge brightening */
     if(det!=='EDS' && eSharp2>0.08){
