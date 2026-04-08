@@ -137,7 +137,7 @@ canvas{width:100%;height:100%;display:block}
     <div class="mh"><h4>Specimen</h4><span>sample · det</span></div>
     <select id="sample">
       <option value="etch_v">식각 단면 — 수직 profile (cleave)</option>
-      <option value="etch_taper">식각 단면 — taper/bowing</option>
+      <option value="etch_taper">식각 단면 — step 구조</option>
       <option value="film_single">증착 단면 — 단층막</option>
       <option value="surf_grain">표면 — grain/island (top-down)</option>
       <option value="surf_particle">표면 — 파티클 오염 (top-down)</option>
@@ -444,11 +444,101 @@ function drawEtch(taper){
   var mag=magV(+els.mag.value), det=els.detector.value, kv=+els.kv.value;
   var tiltDeg=stage.tilt;
   var nmPerPx=25400000/mag/W;
+
+  /* ── STEP (단계) 구조: taper mode ── */
+  if(taper){
+    CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,H);
+    var capNm=80, filmNm=60, etchNm=300;
+    var capPx=capNm/nmPerPx, filmPx=filmNm/nmPerPx, etchPx=etchNm/nmPerPx;
+    var oyPx2=(stage.y*50*1000)/nmPerPx, oxPx2=(stage.x*50*1000)/nmPerPx;
+    var topY=H*0.10-oyPx2*0.35;
+    var capBot=topY+capPx, filmBot=capBot+filmPx, stepBot=filmBot+etchPx;
+    var stepX=W*0.42-oxPx2*0.35;
+    var eSharp2=cl((Math.log10(mag)-2.7)*1.4,0,1);
+    var hvEB=cl(1+(kv-5)*0.038,0.55,2.2);
+    /* substrate base — fill everything below topY */
+    var subBase=det==='BSE'?tone(82):tone(62);
+    CTX.fillStyle=rgb(subBase,subBase,subBase); CTX.fillRect(0,topY,W,H-topY);
+    /* cap layer (bright Pt) — left side only */
+    var cV=det==='BSE'?tone(215):tone(192);
+    var cG2=CTX.createLinearGradient(0,topY,0,capBot);
+    cG2.addColorStop(0,rgb(cl(cV+10,0,255),cl(cV+10,0,255),cl(cV+10,0,255)));
+    cG2.addColorStop(1,rgb(cV,cV,cV));
+    CTX.fillStyle=cG2; CTX.fillRect(0,topY,stepX,capPx);
+    /* film layer under cap — left side */
+    var fV=det==='BSE'?tone(130):tone(105);
+    CTX.fillStyle=rgb(fV,fV,fV); CTX.fillRect(0,capBot,stepX,filmPx);
+    /* right side = etched away (vacuum/dark) above floor */
+    CTX.fillStyle='#04080f'; CTX.fillRect(stepX,topY,W-stepX,stepBot-topY);
+    /* floor on right side (substrate exposed at etch bottom) */
+    var flV=det==='BSE'?tone(78):tone(58);
+    CTX.fillStyle=rgb(flV,flV,flV); CTX.fillRect(stepX,stepBot,W-stepX,H-stepBot);
+    /* sidewall edge brightening */
+    if(det!=='EDS' && eSharp2>0.08){
+      var ew2=cl(6/nmPerPx,3,22);
+      /* vertical sidewall bright edge */
+      var swBr=cl(eSharp2*hvEB*0.7,0,0.95);
+      var gSW=CTX.createLinearGradient(stepX,0,stepX+ew2*2,0);
+      gSW.addColorStop(0,'rgba(255,255,255,'+swBr+')');
+      gSW.addColorStop(0.4,'rgba(220,230,240,'+cl(swBr*0.35,0,0.4)+')');
+      gSW.addColorStop(1,'rgba(0,0,0,0)');
+      CTX.fillStyle=gSW; CTX.fillRect(stepX,topY,ew2*2,stepBot-topY);
+      /* left side edge (inner wall) */
+      var gSW2=CTX.createLinearGradient(stepX,0,stepX-ew2*1.5,0);
+      gSW2.addColorStop(0,'rgba(255,255,255,'+cl(swBr*0.5,0,0.6)+')');
+      gSW2.addColorStop(1,'rgba(0,0,0,0)');
+      CTX.fillStyle=gSW2; CTX.fillRect(stepX-ew2*1.5,filmBot,ew2*1.5,stepBot-filmBot);
+      /* top corner glow */
+      if(eSharp2>0.3){
+        var cg2=cl(eSharp2*hvEB*0.55,0,0.9);
+        var rg2=CTX.createRadialGradient(stepX,topY,0,stepX,topY,ew2*3);
+        rg2.addColorStop(0,'rgba(255,255,255,'+cg2+')'); rg2.addColorStop(1,'rgba(255,255,255,0)');
+        CTX.fillStyle=rg2; CTX.fillRect(stepX-ew2*1.5,topY-ew2,ew2*5,ew2*4);
+        /* bottom corner glow */
+        var rg3=CTX.createRadialGradient(stepX,stepBot,0,stepX,stepBot,ew2*2.5);
+        rg3.addColorStop(0,'rgba(255,255,255,'+cl(cg2*0.6,0,0.6)+')'); rg3.addColorStop(1,'rgba(255,255,255,0)');
+        CTX.fillStyle=rg3; CTX.fillRect(stepX-ew2,stepBot-ew2,ew2*4,ew2*3);
+      }
+    }
+    /* layer boundary edges (cap-film, film-substrate) */
+    if(eSharp2>0.15){
+      [[capBot,'rgba(255,255,255,'+cl(eSharp2*0.5,0,0.65)+')'],[filmBot,'rgba(255,255,255,'+cl(eSharp2*0.4,0,0.5)+')']].forEach(function(b){
+        var bG3=CTX.createLinearGradient(0,b[0]-3,0,b[0]+3);
+        bG3.addColorStop(0,'rgba(255,255,255,0)'); bG3.addColorStop(0.5,b[1]); bG3.addColorStop(1,'rgba(255,255,255,0)');
+        CTX.fillStyle=bG3; CTX.fillRect(0,b[0]-2,stepX,5);
+      });
+    }
+    /* tilt shadow */
+    if(tiltDeg>2){
+      var shA=cl(tiltDeg*0.02,0,0.45);
+      var shD=cl(tiltDeg*3/nmPerPx,0,(stepBot-topY)*0.5);
+      var shG3=CTX.createLinearGradient(stepX,0,stepX+shD,0);
+      shG3.addColorStop(0,'rgba(0,0,0,'+shA+')'); shG3.addColorStop(1,'rgba(0,0,0,0)');
+      CTX.fillStyle=shG3; CTX.fillRect(stepX,stepBot,shD,H-stepBot);
+    }
+    /* EDS overlay */
+    if(det==='EDS'){
+      CTX.globalAlpha=0.4;
+      CTX.fillStyle='rgba(255,155,55,.6)'; CTX.fillRect(0,topY,stepX,capPx);
+      CTX.fillStyle='rgba(230,165,30,.5)'; CTX.fillRect(0,capBot,stepX,filmPx);
+      CTX.fillStyle='rgba(30,85,210,.45)'; CTX.fillRect(0,filmBot,W,H-filmBot);
+      CTX.fillStyle='rgba(30,85,210,.45)'; CTX.fillRect(stepX,stepBot,W-stepX,H-stepBot);
+      CTX.globalAlpha=1;
+    }
+    /* grain noise */
+    for(var ig2=0;ig2<600;ig2++){
+      var gx2=rn(ig2*3.1)*W, gy2=topY+rn(ig2*7.3)*(H-topY), gv2=22+rn(ig2*4.5)*30;
+      CTX.fillStyle=rgba(gv2,gv2,gv2,0.03); CTX.fillRect(gx2,gy2,1.3,1.3);
+    }
+    /* dark above structure */
+    CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,Math.max(0,topY));
+    return;
+  }
+
+  /* ── PERIODIC TRENCH 구조: etch_v mode ── */
   var period=500/nmPerPx, trenchW=200/nmPerPx, pillarW=period-trenchW, depth=1500/nmPerPx;
   var oyPx=(stage.y*50*1000)/nmPerPx;
   CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,H);
-  /* cap layer thickness for taper mode */
-  var capH=taper?cl(80/nmPerPx,4,depth*0.18):0;
   var pillarTop=H*0.06-oyPx*0.35, floorY=pillarTop+depth;
   var subV=det==='BSE'?88:68, subHV=det==='BSE'?(kv-5)*1.2:-(kv-5)*0.8;
   var sv=cl(subV+subHV,20,200);
@@ -458,21 +548,6 @@ function drawEtch(taper){
   sG.addColorStop(0.35,rgb(svb,svb,svb));
   sG.addColorStop(1,   rgb(svc,svc,svc));
   CTX.fillStyle=sG; CTX.fillRect(0,pillarTop,W,H-pillarTop);
-  /* bright Pt cap layer on top of pillars for taper */
-  if(taper && capH>1){
-    var capV=det==='BSE'?tone(210):tone(185);
-    var capG=CTX.createLinearGradient(0,pillarTop,0,pillarTop+capH);
-    capG.addColorStop(0, rgb(cl(capV+12,0,255),cl(capV+12,0,255),cl(capV+12,0,255)));
-    capG.addColorStop(1, rgb(capV,capV,capV));
-    CTX.fillStyle=capG; CTX.fillRect(0,pillarTop,W,capH);
-    /* cap-substrate boundary edge */
-    var eS=cl((Math.log10(mag)-2.7)*1.4,0,1);
-    if(eS>0.15){
-      var bG=CTX.createLinearGradient(0,pillarTop+capH-3,0,pillarTop+capH+3);
-      bG.addColorStop(0,'rgba(255,255,255,0)'); bG.addColorStop(0.5,'rgba(255,255,255,'+cl(eS*0.55,0,0.7)+')'); bG.addColorStop(1,'rgba(255,255,255,0)');
-      CTX.fillStyle=bG; CTX.fillRect(0,pillarTop+capH-2,W,5);
-    }
-  }
   var stageOffsetX=(stage.x*50*1000/nmPerPx)%period;
   var centerX=W/2-stageOffsetX;
   var startX=centerX-Math.ceil(W/period+2)*period;
@@ -480,22 +555,7 @@ function drawEtch(taper){
     var tL=x0+pillarW/2, tR=tL+trenchW;
     var sc=mag>=50000?2.2:mag>=20000?0.8:0;
     CTX.fillStyle='#030508';
-    if(taper){
-      var bow=trenchW*0.18, tpNarrow=trenchW*0.15;
-      var etchTop=pillarTop+capH;
-      CTX.beginPath(); CTX.moveTo(tL,etchTop); CTX.lineTo(tR,etchTop);
-      CTX.quadraticCurveTo(tR+bow,etchTop+depth*0.4,tR-tpNarrow,floorY);
-      CTX.lineTo(tL+tpNarrow,floorY);
-      CTX.quadraticCurveTo(tL-bow,etchTop+depth*0.4,tL,etchTop);
-      CTX.fill();
-      /* sidewall gradient inside trench — lighter near walls */
-      var swG=CTX.createLinearGradient(tL,0,tL+trenchW*0.3,0);
-      swG.addColorStop(0,rgba(svb,svb,svb,0.25)); swG.addColorStop(1,'rgba(0,0,0,0)');
-      CTX.fillStyle=swG; CTX.fillRect(tL,etchTop,trenchW*0.3,depth-capH);
-      var swG2=CTX.createLinearGradient(tR,0,tR-trenchW*0.3,0);
-      swG2.addColorStop(0,rgba(svb,svb,svb,0.2)); swG2.addColorStop(1,'rgba(0,0,0,0)');
-      CTX.fillStyle=swG2; CTX.fillRect(tR-trenchW*0.3,etchTop,trenchW*0.3,depth-capH);
-    } else {
+    {
       CTX.beginPath(); CTX.moveTo(tL,pillarTop);
       for(var i=0;i<=20;i++){ var sy=pillarTop+(depth/20)*i; CTX.lineTo(tL-Math.sin(i*Math.PI*0.95)*sc,sy); }
       CTX.lineTo(tL,floorY); CTX.lineTo(tR,floorY);
