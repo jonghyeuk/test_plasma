@@ -55,7 +55,7 @@ canvas{width:100%;height:100%;display:block}
 .cross::before,.cross::after{content:"";position:absolute;background:rgba(255,255,255,.45)}
 .cross::before{left:10px;top:0;width:2px;height:22px}
 .cross::after{left:0;top:10px;width:22px;height:2px}
-.sbar{width:70px;height:3px;background:#fff;border-radius:2px}
+.sbar{width:80px;height:3px;background:#fff;border-radius:2px;transition:width .2s ease}
 .slbl{font-size:10px;font-family:monospace;color:#cce8ff}
 .vbot{padding:9px 11px;background:rgba(0,0,0,.2);border-top:1px solid var(--line)}
 .hint{padding:8px 11px;border-radius:8px;background:rgba(255,184,77,.06);border:1px solid rgba(255,184,77,.18);font-size:11px;line-height:1.7;color:#ffe0a8;margin-bottom:7px}
@@ -340,10 +340,29 @@ function magV(raw){
   return t[Math.round((raw/100)*(t.length-1))];
 }
 function magLabel(mag){
-  var f = W/mag*25400, b = f*0.11;
-  if(b>=1000) return (b/1000).toFixed(1)+' mm';
-  if(b>=1)    return (b>=10 ? b.toFixed(0) : b.toFixed(2))+' µm';
-  return (b*1000).toFixed(0)+' nm';
+  var umPerPx = 25400/mag/W;
+  /* nice round numbers in µm */
+  var nice=[0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000,2000,5000];
+  /* pick the nice number whose bar width lands closest to 80 px */
+  var best=nice[0], bestPx=nice[0]/umPerPx;
+  for(var i=1;i<nice.length;i++){
+    var px=nice[i]/umPerPx;
+    if(px>=30 && px<=160){
+      if(Math.abs(px-80)<Math.abs(bestPx-80)){ best=nice[i]; bestPx=px; }
+    }
+  }
+  /* fallback: if nothing landed in range, pick closest anyway */
+  if(bestPx<30||bestPx>160){
+    for(var j=0;j<nice.length;j++){
+      var px2=nice[j]/umPerPx;
+      if(Math.abs(px2-80)<Math.abs(bestPx-80)){ best=nice[j]; bestPx=px2; }
+    }
+  }
+  var sbar=document.querySelector('.sbar');
+  if(sbar) sbar.style.width=cl(bestPx,20,180)+'px';
+  if(best>=1000) return (best/1000)+' mm';
+  if(best>=1) return best+' µm';
+  return (best*1000)+' nm';
 }
 function rgb(r,g,b){ return 'rgb('+fi(r)+','+fi(g)+','+fi(b)+')'; }
 function rgba(r,g,b,a){ return 'rgba('+fi(r)+','+fi(g)+','+fi(b)+','+a+')'; }
@@ -452,9 +471,9 @@ function drawEtch(taper){
     var stepNm=300;
     var stepPx=stepNm/nmPerPx;
     var oyPx2=(stage.y*50*1000)/nmPerPx, oxPx2=(stage.x*50*1000)/nmPerPx;
-    var stepTopY=H*0.18-oyPx2*0.35;
+    var stepTopY=H/2-stepPx/2-oyPx2*0.35;
     var floorY2=stepTopY+stepPx;
-    var stepX=W*0.42-oxPx2*0.35;
+    var stepX=W/2-oxPx2*0.35;
     var eSharp2=cl((Math.log10(mag)-2.7)*1.4,0,1);
     var hvEB=cl(1+(kv-5)*0.038,0.55,2.2);
     /* Si material tone — same everywhere */
@@ -514,7 +533,7 @@ function drawEtch(taper){
   var period=500/nmPerPx, trenchW=200/nmPerPx, pillarW=period-trenchW, depth=1500/nmPerPx;
   var oyPx=(stage.y*50*1000)/nmPerPx;
   CTX.fillStyle='#04080f'; CTX.fillRect(0,0,W,H);
-  var pillarTop=H*0.06-oyPx*0.35, floorY=pillarTop+depth;
+  var pillarTop=H/2-depth/2-oyPx*0.35, floorY=pillarTop+depth;
   var subV=det==='BSE'?88:68, subHV=det==='BSE'?(kv-5)*1.2:-(kv-5)*0.8;
   var sv=cl(subV+subHV,20,200);
   var sva=tone(sv+10), svb=tone(sv), svc=tone(sv-22);
@@ -608,7 +627,11 @@ function drawFilm(multi){
   ];
   var nmPerPx=25400000/mag/W;
   var oyPx=(stage.y*50*1000)/nmPerPx;
-  var cy=H*0.08-oyPx*0.35;
+  /* calculate total visible film thickness to center vertically */
+  var totalFilmPx=0;
+  layers.forEach(function(l){ totalFilmPx+=l[1]/nmPerPx; });
+  var visibleH=Math.min(totalFilmPx, H*0.9);
+  var cy=H/2-visibleH/2-oyPx*0.35;
   var lSharp=cl((Math.log10(mag)-3.3)*1.6, 0, 1);
   layers.forEach(function(layer, li){
     var nm=layer[0],thNm=layer[1],bSE=layer[2],bBSE=layer[3],ec=layer[4],Z=layer[5];
