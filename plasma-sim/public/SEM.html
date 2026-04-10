@@ -1130,7 +1130,21 @@ document.querySelectorAll('[data-m]').forEach(function(b){
   b.addEventListener('click',function(){
     var m=b.dataset.m;
     var mag=magV(+els.mag.value);
-    var moveStep=cl(3000/mag, 0.005, 1);
+    var s=els.sample.value;
+    /* moveStep is tuned so each click shifts the view by ~75 px regardless
+       of magnification or rendering mode. Each mode applies a different
+       effective multiplier to stage.x/y, so we branch here. */
+    var moveStep;
+    if(mag<=2000){
+      /* drawOverview: effective px = stage*mag*1.339 */
+      moveStep=cl(56/mag, 0.00011, 0.5);
+    } else if(s==='etch_v'||s==='etch_taper'||s.indexOf('film')===0){
+      /* drawEtch / drawFilm cross-section: effective px = stage*mag*0.469 */
+      moveStep=cl(160/mag, 0.00032, 0.08);
+    } else {
+      /* drawSurf: effective px = stage*mag*0.134 */
+      moveStep=cl(560/mag, 0.0011, 0.28);
+    }
     if(m==='up')    stage.y-=moveStep;
     if(m==='down')  stage.y+=moveStep;
     if(m==='left')  stage.x-=moveStep;
