@@ -70,6 +70,14 @@ function App() {
       iframeSrc: '/SEM.html'
     },
     {
+      id: 'xps',
+      name: 'XPS',
+      description: 'X-ray Photoelectron Spectroscopy',
+      icon: '⚛️',
+      color: 'from-yellow-500 to-orange-600',
+      iframeSrc: '/xps.html'
+    },
+    {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
