@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XPS Advanced Simulator</title>
+<style>
+:root{
+  --bg:#1a1d24; --bg2:#22262e; --panel:#2a2f38; --panel2:#323842;
+  --line:#3d4452; --line2:#4a5260;
+  --text:#e8ecf2; --muted:#9aa4b4; --muted2:#6b7484;
+  --accent:#4db8ff; --accent2:#5eddb8; --accent3:#ffb84d;
+  --warn:#ffc857; --danger:#ff6b6b; --good:#6bdb8f;
+  --btn:#3a414c; --btnHover:#454d5a;
+  --header:#1e2127;
+  --toolbar:#2d323c;
+  --tree:#252931;
+  --grid:#1a1d24;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  background:var(--bg);color:var(--text);
+  font-size:12px;user-select:none;
+}
+/* ========== TITLE BAR ========== */
+.titlebar{
+  height:28px;background:linear-gradient(180deg,#2d323c,#22262e);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 10px;gap:14px;
+  font-size:11px;
+}
+.titlebar .logo{font-weight:700;color:var(--accent);letter-spacing:.3px}
+.titlebar .sep{color:var(--muted2)}
+.titlebar .doc{color:var(--muted)}
+.titlebar .right{margin-left:auto;display:flex;gap:12px;color:var(--muted)}
+/* ========== MENU BAR ========== */
+.menubar{
+  height:26px;background:var(--header);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 4px;
+}
+.menu-item{
+  padding:4px 10px;cursor:pointer;border-radius:3px;
+  font-size:11.5px;color:#d0d6e0;
+}
+.menu-item:hover{background:var(--btnHover)}
+/* ========== TOOLBAR ========== */
+.toolbar{
+  height:42px;background:var(--toolbar);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 8px;gap:2px;
+}
+.tool-btn{
+  height:32px;min-width:38px;padding:0 8px;
+  background:transparent;border:1px solid transparent;border-radius:4px;
+  color:#d0d6e0;cursor:pointer;display:flex;align-items:center;gap:5px;
+  font-size:11px;
+}
+.tool-btn:hover{background:var(--btn);border-color:var(--line2)}
+.tool-btn.active{background:#3d5a7a;border-color:var(--accent)}
+.tool-btn:disabled{opacity:.4;cursor:not-allowed}
+.tool-btn .ico{
+  width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+.tool-sep{width:1px;height:24px;background:var(--line);margin:0 4px}
+.tool-mode{
+  margin-left:auto;display:flex;gap:4px;background:var(--bg2);
+  padding:2px;border-radius:4px;border:1px solid var(--line);
+}
+.tool-mode button{
+  padding:4px 12px;background:transparent;border:none;color:var(--muted);
+  cursor:pointer;font-size:11px;border-radius:3px;font-weight:600;
+}
+.tool-mode button.active{background:var(--accent);color:#fff}
+
+/* ========== MAIN LAYOUT ========== */
+.main{
+  display:grid;
+  grid-template-columns:240px 1fr 300px;
+  grid-template-rows:1fr 180px;
+  grid-template-areas:
+    "tree center right"
+    "tree bottom right";
+  height:calc(100vh - 96px);
+  gap:1px;background:var(--line);
+}
+.tree{grid-area:tree;background:var(--tree);overflow-y:auto}
+.center{grid-area:center;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+.right{grid-area:right;background:var(--panel);overflow-y:auto}
+.bottom{grid-area:bottom;background:var(--bg2);border-top:1px solid var(--line);display:flex;overflow:hidden}
+
+/* ========== TREE ========== */
+.tree-header{
+  padding:8px 10px;background:var(--header);
+  border-bottom:1px solid var(--line);
+  font-weight:600;font-size:11px;color:#b8c2d0;
+  text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tree-section{padding:4px 0;border-bottom:1px solid var(--line)}
+.tree-title{
+  padding:6px 10px;font-size:10.5px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;font-weight:600;
+}
+.tree-node{
+  padding:4px 10px 4px 22px;font-size:11.5px;
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  color:#d0d6e0;position:relative;
+}
+.tree-node::before{
+  content:'';position:absolute;left:10px;top:9px;
+  width:8px;height:8px;border-radius:50%;background:var(--muted2);
+}
+.tree-node.active{background:#2d4a6b;color:#fff}
+.tree-node.active::before{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.tree-node.done::before{background:var(--good)}
+.tree-node.pending::before{background:var(--muted2)}
+.tree-node:hover{background:var(--btn)}
+.tree-node .mini{margin-left:auto;font-size:10px;color:var(--muted2)}
+
+/* ========== CENTER: SPECTRUM AREA ========== */
+.spectrum-tabs{
+  display:flex;background:var(--header);border-bottom:1px solid var(--line);
+  padding:0 6px;gap:1px;height:30px;align-items:flex-end;
+}
+.spectrum-tab{
+  padding:6px 14px;background:var(--bg2);color:var(--muted);
+  cursor:pointer;border:1px solid var(--line);border-bottom:none;
+  border-radius:4px 4px 0 0;font-size:11px;
+  margin-right:2px;
+}
+.spectrum-tab.active{background:var(--bg);color:var(--text);border-bottom:1px solid var(--bg)}
+.spectrum-tab:hover{color:var(--text)}
+.spectrum-tab .close{margin-left:8px;color:var(--muted2);font-size:10px}
+
+.spectrum-body{
+  flex:1;display:flex;flex-direction:column;padding:8px;overflow:hidden;
+  position:relative;
+}
+.spectrum-toolbar{
+  display:flex;gap:6px;margin-bottom:6px;align-items:center;
+  padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:4px;
+}
+.spectrum-toolbar label{font-size:10.5px;color:var(--muted);margin-right:4px}
+.mini-btn{
+  padding:4px 8px;background:var(--btn);border:1px solid var(--line2);
+  color:#d0d6e0;border-radius:3px;cursor:pointer;font-size:10.5px;
+}
+.mini-btn:hover{background:var(--btnHover)}
+.mini-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mini-sel{
+  padding:3px 6px;background:var(--bg2);border:1px solid var(--line2);
+  color:#d0d6e0;border-radius:3px;font-size:10.5px;
+}
+
+.spectrum-canvas-wrap{
+  flex:1;background:#fafafa;border:1px solid var(--line);border-radius:4px;
+  position:relative;overflow:hidden;
+}
+#spectrumCanvas{width:100%;height:100%;display:block;cursor:crosshair}
+.crosshair-info{
+  position:absolute;top:8px;right:8px;background:rgba(255,255,255,.92);
+  border:1px solid #ccc;padding:4px 8px;font-size:10.5px;color:#333;
+  font-family:'Consolas',monospace;pointer-events:none;border-radius:3px;
+}
+.acquisition-overlay{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,0,.85);color:#fff;padding:20px 30px;
+  border-radius:8px;display:none;z-index:10;text-align:center;
+}
+.acquisition-overlay.show{display:block}
+.acq-title{font-size:14px;font-weight:600;margin-bottom:10px}
+.acq-bar{width:260px;height:6px;background:#333;border-radius:3px;overflow:hidden;margin:10px auto}
+.acq-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .1s}
+.acq-info{font-size:10.5px;color:#aaa;margin-top:6px}
+
+/* ========== RIGHT PANEL ========== */
+.right-section{border-bottom:1px solid var(--line)}
+.right-header{
+  padding:8px 10px;background:var(--header);
+  font-weight:600;font-size:11px;color:#b8c2d0;
+  text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+}
+.right-header .chev{font-size:9px;color:var(--muted2)}
+.right-body{padding:8px 10px}
+.param-row{
+  display:grid;grid-template-columns:110px 1fr;gap:6px;
+  align-items:center;margin-bottom:5px;font-size:11px;
+}
+.param-row label{color:var(--muted)}
+.param-row select,.param-row input{
+  width:100%;padding:3px 6px;background:var(--bg2);border:1px solid var(--line2);
+  color:var(--text);border-radius:3px;font-size:11px;
+}
+.param-row input[type=number]{width:100%}
+.param-row .readonly{
+  padding:3px 6px;background:var(--bg);border:1px solid var(--line);
+  border-radius:3px;color:var(--text);font-family:'Consolas',monospace;
+  font-size:11px;
+}
+.status-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 0;font-size:11px;border-bottom:1px dotted var(--line);
+}
+.status-row:last-child{border-bottom:none}
+.status-row .lbl{color:var(--muted)}
+.status-row .val{font-family:'Consolas',monospace;font-weight:600}
+.status-row .val.ok{color:var(--good)}
+.status-row .val.bad{color:var(--danger)}
+.status-row .val.mid{color:var(--warn)}
+.led{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:5px;background:var(--muted2);
+}
+.led.on{background:var(--good);box-shadow:0 0 6px var(--good)}
+.led.warn{background:var(--warn);box-shadow:0 0 6px var(--warn)}
+.led.off{background:var(--danger);box-shadow:0 0 4px var(--danger)}
+
+/* ========== STAGE NAV ========== */
+.stage-view{
+  background:#000;border:1px solid var(--line);border-radius:4px;
+  position:relative;height:140px;overflow:hidden;margin:4px 0;
+}
+.stage-camera{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 50% 50%, #3a3a3a 0%, #1a1a1a 60%, #0a0a0a 100%);
+}
+.stage-wafer{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,#8892a5 0%, #6b7588 80%, #4a5260 100%);
+  border:1px solid #9aa4b4;
+  box-shadow:inset 0 0 8px rgba(0,0,0,.5);
+}
+.stage-wafer::before{
+  content:'';position:absolute;inset:6px;border-radius:50%;
+  background:repeating-linear-gradient(45deg,
+    rgba(100,110,130,.3) 0 2px,
+    rgba(140,150,170,.3) 2px 6px);
+}
+.stage-crosshair{
+  position:absolute;width:30px;height:30px;
+  border:1px solid var(--accent);border-radius:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.stage-crosshair::before,.stage-crosshair::after{
+  content:'';position:absolute;background:var(--accent);
+}
+.stage-crosshair::before{left:50%;top:-4px;bottom:-4px;width:1px;transform:translateX(-50%)}
+.stage-crosshair::after{top:50%;left:-4px;right:-4px;height:1px;transform:translateY(-50%)}
+.stage-coords{
+  position:absolute;bottom:4px;left:4px;right:4px;
+  font-family:'Consolas',monospace;font-size:9.5px;color:#8cff8c;
+  background:rgba(0,0,0,.6);padding:3px 6px;border-radius:3px;
+  display:flex;justify-content:space-between;
+}
+.stage-label{
+  position:absolute;top:4px;left:6px;font-size:9px;color:#6bdb8f;
+  font-family:'Consolas',monospace;letter-spacing:.5px;
+}
+
+/* ========== BOTTOM PANEL ========== */
+.bottom-tabs{
+  display:flex;background:var(--header);border-bottom:1px solid var(--line);
+  padding:0 6px;
+}
+.bottom-tab{
+  padding:6px 14px;cursor:pointer;font-size:11px;color:var(--muted);
+  border-bottom:2px solid transparent;
+}
+.bottom-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.bottom-content{
+  flex:1;display:flex;flex-direction:column;
+}
+.bottom-panel{display:none;flex:1;overflow:auto;padding:6px 10px}
+.bottom-panel.active{display:block}
+
+.log-entry{
+  padding:2px 0;font-family:'Consolas',monospace;font-size:10.5px;
+  border-bottom:1px dotted rgba(255,255,255,.05);display:flex;gap:8px;
+}
+.log-time{color:var(--muted2);min-width:70px}
+.log-type{min-width:55px;font-weight:600}
+.log-type.info{color:var(--accent)}
+.log-type.ok{color:var(--good)}
+.log-type.warn{color:var(--warn)}
+.log-type.err{color:var(--danger)}
+.log-msg{color:var(--text);flex:1}
+
+/* Method Queue table */
+.queue-table{width:100%;font-size:10.5px;border-collapse:collapse}
+.queue-table th{
+  text-align:left;padding:4px 8px;background:var(--panel);
+  color:#b8c2d0;font-weight:600;font-size:10px;
+  text-transform:uppercase;border-bottom:1px solid var(--line);
+}
+.queue-table td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.queue-table tr.running td{background:rgba(77,184,255,.08)}
+.queue-table tr.done td{color:var(--muted)}
+.queue-table .status-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--muted2);margin-right:5px;
+}
+.queue-table .status-dot.done{background:var(--good)}
+.queue-table .status-dot.running{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+
+/* Peak table */
+.peak-table{width:100%;font-size:10.5px;border-collapse:collapse}
+.peak-table th{
+  text-align:left;padding:4px 8px;background:var(--panel);color:#b8c2d0;
+  font-weight:600;font-size:10px;text-transform:uppercase;
+  border-bottom:1px solid var(--line);
+}
+.peak-table td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'Consolas',monospace}
+.peak-table .elem{color:var(--accent);font-weight:600;font-family:'Segoe UI'}
+.peak-table .assign{font-family:'Segoe UI';color:var(--muted)}
+
+/* ========== TUTORIAL OVERLAY ========== */
+.tutorial-panel{
+  position:fixed;right:14px;bottom:14px;width:360px;z-index:100;
+  background:linear-gradient(180deg,#2d4a6b 0%, #1e3450 100%);
+  border:1px solid var(--accent);border-radius:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+  padding:14px;display:none;
+}
+.tutorial-panel.show{display:block}
+.tut-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tut-step{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.tut-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px}
+.tut-title{font-size:14px;font-weight:600;margin-bottom:6px;color:#fff}
+.tut-desc{font-size:11.5px;line-height:1.5;color:#d0d6e0;margin-bottom:8px;white-space:pre-line}
+.tut-action{
+  font-size:10.5px;padding:8px 10px;background:rgba(0,0,0,.3);
+  border-left:3px solid var(--accent2);border-radius:3px;
+  margin-bottom:8px;color:#e8ecf2;
+}
+.tut-action b{color:var(--accent2)}
+.tut-why{
+  font-size:10.5px;padding:6px 10px;background:rgba(255,200,87,.08);
+  border-left:3px solid var(--warn);border-radius:3px;
+  margin-bottom:8px;color:#e8ecf2;line-height:1.5;white-space:pre-line;
+  max-height:180px;overflow-y:auto;
+}
+.tut-why b{color:var(--warn)}
+.tut-progress{
+  display:flex;gap:3px;margin-bottom:8px;
+}
+.tut-dot{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:2px}
+.tut-dot.done{background:var(--accent2)}
+.tut-dot.current{background:var(--accent);box-shadow:0 0 4px var(--accent)}
+.tut-btns{display:flex;gap:6px;justify-content:flex-end}
+.tut-btn{
+  padding:5px 12px;background:var(--btn);border:1px solid var(--line2);
+  color:#d0d6e0;border-radius:4px;cursor:pointer;font-size:11px;
+}
+.tut-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.tut-btn:hover{filter:brightness(1.1)}
+
+.pulse-ring{
+  position:absolute;pointer-events:none;z-index:50;
+  border:2px solid var(--warn);border-radius:4px;
+  animation:pulsering 1.5s infinite;
+}
+@keyframes pulsering{
+  0%{box-shadow:0 0 0 0 rgba(255,200,87,.6)}
+  70%{box-shadow:0 0 0 10px rgba(255,200,87,0)}
+  100%{box-shadow:0 0 0 0 rgba(255,200,87,0)}
+}
+
+/* Toast */
+.toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:var(--panel);border:1px solid var(--line2);
+  padding:10px 16px;border-radius:6px;font-size:12px;
+  z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.5);
+  max-width:500px;
+}
+.toast.warn{border-color:var(--warn);background:rgba(255,200,87,.1)}
+.toast.err{border-color:var(--danger);background:rgba(255,107,107,.1)}
+.toast.ok{border-color:var(--good);background:rgba(107,219,143,.1)}
+.toast.hide{display:none}
+
+/* Quiz modal */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-backdrop.show{display:flex}
+.modal{
+  background:var(--panel);border:1px solid var(--line2);border-radius:8px;
+  padding:20px;width:480px;max-width:90vw;
+}
+.modal h3{margin-bottom:10px;color:var(--accent)}
+.modal p{margin-bottom:14px;line-height:1.5;font-size:12.5px;color:#d0d6e0}
+.modal .choices{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.modal .choice{
+  padding:8px 12px;background:var(--bg2);border:1px solid var(--line2);
+  border-radius:4px;cursor:pointer;font-size:11.5px;
+}
+.modal .choice:hover{background:var(--btn);border-color:var(--accent)}
+.modal .choice.correct{background:rgba(107,219,143,.2);border-color:var(--good)}
+.modal .choice.wrong{background:rgba(255,107,107,.2);border-color:var(--danger)}
+.modal .feedback{font-size:11.5px;padding:10px;background:var(--bg2);border-radius:4px;margin-bottom:10px;display:none;line-height:1.5}
+.modal .feedback.show{display:block}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+
+/* Context panels hidden in free mode */
+body[data-mode=tutorial] .free-only{display:none}
+body[data-mode=free] .tut-only{display:none}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted2)}
+</style>
+</head>
+<body data-mode="tutorial">
+
+<!-- TITLE BAR -->
+<div class="titlebar">
+  <span class="logo">● XPS Advanced Data System</span>
+  <span class="sep">│</span>
+  <span style="color:var(--warn);font-weight:600">🎓 교육용 인터랙티브 모듈</span>
+  <span class="sep">│</span>
+  <span class="doc">Experiment: Si_CF4_etched_20260419.vgd</span>
+  <span class="sep">│</span>
+  <span class="doc">User: operator</span>
+  <div class="right">
+    <span id="clockDisplay">--:--:--</span>
+    <span>Status: <span id="titleStatus" style="color:var(--good)">● Ready</span></span>
+    <span class="sep">│</span>
+    <button id="aboutBtn" style="background:none;border:1px solid var(--line2);color:var(--accent);padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10.5px">ℹ About</button>
+  </div>
+</div>
+
+<!-- MENU BAR -->
+<div class="menubar">
+  <span class="menu-item">File</span>
+  <span class="menu-item">Edit</span>
+  <span class="menu-item">View</span>
+  <span class="menu-item">Experiment</span>
+  <span class="menu-item">Acquisition</span>
+  <span class="menu-item">Processing</span>
+  <span class="menu-item">Quantification</span>
+  <span class="menu-item">Tools</span>
+  <span class="menu-item">Help</span>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button class="tool-btn" id="tbSample" title="Sample 선택"><span class="ico">◉</span>Sample</button>
+  <button class="tool-btn" id="tbLoadlock" title="Load Lock 삽입"><span class="ico">▣</span>Load Lock</button>
+  <button class="tool-btn" id="tbPump" title="Pump Down"><span class="ico">▼</span>Pump</button>
+  <button class="tool-btn" id="tbTransfer" title="Transfer to Stage"><span class="ico">→</span>Transfer</button>
+  <div class="tool-sep"></div>
+  <button class="tool-btn" id="tbVacuum" title="Vacuum Check"><span class="ico">⟲</span>Vacuum</button>
+  <button class="tool-btn" id="tbXray" title="X-ray Source"><span class="ico">✦</span>X-ray</button>
+  <button class="tool-btn" id="tbFlood" title="Flood Gun / Neutralizer"><span class="ico">❀</span>Flood Gun</button>
+  <button class="tool-btn" id="tbAutoZ" title="Auto-Z / Focus"><span class="ico">◎</span>Auto-Z</button>
+  <div class="tool-sep"></div>
+  <button class="tool-btn" id="tbSurvey" title="Survey Scan"><span class="ico">▬</span>Survey</button>
+  <button class="tool-btn" id="tbPeakID" title="Peak Identification"><span class="ico">⌕</span>Peak ID</button>
+  <button class="tool-btn" id="tbRegion" title="Region Scans"><span class="ico">▤</span>Region</button>
+  <button class="tool-btn" id="tbFit" title="Curve Fit / Quantify"><span class="ico">∿</span>Fit</button>
+  <button class="tool-btn" id="tbReport" title="Report"><span class="ico">▦</span>Report</button>
+  <div class="tool-mode">
+    <button id="modeTutorial" class="active">Tutorial</button>
+    <button id="modeFree">Free Mode</button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+
+  <!-- LEFT: EXPERIMENT TREE -->
+  <div class="tree">
+    <div class="tree-header">
+      <span>Experiment Tree</span>
+      <span style="color:var(--muted2)">▼</span>
+    </div>
+    <div class="tree-section">
+      <div class="tree-title">Sample Info</div>
+      <div class="tree-node" id="tnSample">Si wafer (CF₄ etched)<span class="mini" id="tnSampleS">—</span></div>
+    </div>
+    <div class="tree-section">
+      <div class="tree-title">Vacuum System</div>
+      <div class="tree-node" id="tnLoadlock">Load Lock<span class="mini" id="tnLoadlockS">Vent</span></div>
+      <div class="tree-node" id="tnAnalysis">Analysis Chamber<span class="mini" id="tnAnalysisS">1e-3 Torr</span></div>
+    </div>
+    <div class="tree-section">
+      <div class="tree-title">Instrument</div>
+      <div class="tree-node" id="tnSource">X-ray Source<span class="mini" id="tnSourceS">Off</span></div>
+      <div class="tree-node" id="tnFlood">Flood Gun<span class="mini" id="tnFloodS">Off</span></div>
+      <div class="tree-node" id="tnStage">Sample Stage<span class="mini" id="tnStageS">Loadlock</span></div>
+    </div>
+    <div class="tree-section">
+      <div class="tree-title">Acquisitions</div>
+      <div class="tree-node" id="tnSurvey">Survey Scan<span class="mini" id="tnSurveyS">—</span></div>
+      <div class="tree-node" id="tnRegionC">C 1s Region<span class="mini" id="tnRegionCS">—</span></div>
+      <div class="tree-node" id="tnRegionSi">Si 2p Region<span class="mini" id="tnRegionSiS">—</span></div>
+      <div class="tree-node" id="tnRegionF">F 1s Region<span class="mini" id="tnRegionFS">—</span></div>
+      <div class="tree-node" id="tnRegionO">O 1s Region<span class="mini" id="tnRegionOS">—</span></div>
+    </div>
+    <div class="tree-section">
+      <div class="tree-title">Processing</div>
+      <div class="tree-node" id="tnPeakID">Peak ID<span class="mini" id="tnPeakIDS">—</span></div>
+      <div class="tree-node" id="tnFit">Curve Fit<span class="mini" id="tnFitS">—</span></div>
+      <div class="tree-node" id="tnQuant">Quantification<span class="mini" id="tnQuantS">—</span></div>
+    </div>
+  </div>
+
+  <!-- CENTER: SPECTRUM VIEWER -->
+  <div class="center">
+    <div class="spectrum-tabs" id="specTabs">
+      <div class="spectrum-tab active" data-spec="survey">Survey</div>
+      <div class="spectrum-tab" data-spec="c1s">C 1s</div>
+      <div class="spectrum-tab" data-spec="si2p">Si 2p</div>
+      <div class="spectrum-tab" data-spec="f1s">F 1s</div>
+      <div class="spectrum-tab" data-spec="o1s">O 1s</div>
+    </div>
+
+    <div class="spectrum-body">
+      <div class="spectrum-toolbar">
+        <label>Display:</label>
+        <button class="mini-btn active" id="displayRaw">Raw</button>
+        <button class="mini-btn" id="displaySmooth">Smooth</button>
+        <span style="width:8px"></span>
+        <label>Background:</label>
+        <select class="mini-sel" id="bgType">
+          <option>None</option>
+          <option selected>Shirley</option>
+          <option>Linear</option>
+        </select>
+        <span style="width:8px"></span>
+        <label>Tool:</label>
+        <button class="mini-btn active" id="toolCrosshair" title="Crosshair readout">✛</button>
+        <button class="mini-btn" id="toolRegion" title="Drag to select BE region → integrate peak area">▭ Region</button>
+        <button class="mini-btn" id="toolCref" title="Click C 1s peak center → set as 284.8 eV reference">⊙ C-ref</button>
+        <span style="width:8px"></span>
+        <button class="mini-btn" id="toggleFit" disabled>Show Components</button>
+        <button class="mini-btn" id="quantifyAll" title="Auto-quantify all elements from acquired region scans">⚡ Quantify All</button>
+        <button class="mini-btn" id="clearRegions" title="Clear region selections & charge correction">Clear Regions</button>
+        <button class="mini-btn" id="resetView" title="Reset view / redraw">↻ Reset View</button>
+        <span style="margin-left:auto;font-size:10.5px;color:var(--muted)">
+          BE range: <span id="beRange">0–1200 eV</span>
+          <span id="chargeShiftDisp" style="margin-left:10px;color:var(--accent2)"></span>
+        </span>
+      </div>
+
+      <div class="spectrum-canvas-wrap">
+        <canvas id="spectrumCanvas"></canvas>
+        <div class="crosshair-info" id="crosshairInfo">BE: — eV  |  CPS: —</div>
+        <div class="acquisition-overlay" id="acqOverlay">
+          <div class="acq-title" id="acqTitle">Acquiring Survey Scan</div>
+          <div class="acq-bar"><div class="acq-bar-fill" id="acqBar"></div></div>
+          <div class="acq-info" id="acqInfo">Sweep 1 of 3  |  BE: 1200 eV  |  CPS: —</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PARAMETERS + STATUS -->
+  <div class="right">
+    <div class="right-section">
+      <div class="right-header">Vacuum Status</div>
+      <div class="right-body">
+        <div class="status-row"><span class="lbl"><span class="led off" id="ledLoadlock"></span>Load Lock</span><span class="val bad" id="statLoadlock">7.6e+2 Torr</span></div>
+        <div class="status-row"><span class="lbl"><span class="led off" id="ledAnalysis"></span>Analysis Chamber</span><span class="val bad" id="statAnalysis">1.0e-3 Torr</span></div>
+        <div class="status-row"><span class="lbl">Ion Pump Current</span><span class="val" id="statIonPump">— µA</span></div>
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="right-header">X-ray Source</div>
+      <div class="right-body">
+        <div class="status-row"><span class="lbl"><span class="led off" id="ledSource"></span>Monochromator</span><span class="val bad" id="statSource">Standby</span></div>
+        <div class="param-row"><label>Anode</label><select id="paramAnode"><option>Al Kα (1486.6 eV)</option><option>Mg Kα (1253.6 eV)</option></select></div>
+        <div class="param-row"><label>Power</label><select id="paramPower"><option>72 W (400 µm)</option><option>150 W (900 µm)</option><option>200 W (1.1 mm)</option></select></div>
+        <div class="status-row"><span class="lbl">Filament Current</span><span class="val" id="statFil">— A</span></div>
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="right-header">Charge Compensation</div>
+      <div class="right-body">
+        <div class="status-row"><span class="lbl"><span class="led off" id="ledFlood"></span>Flood Gun</span><span class="val bad" id="statFlood">Off</span></div>
+        <div class="param-row"><label>Energy</label><input type="number" id="paramFloodE" value="1.0" step="0.1" min="0.5" max="5"></div>
+        <div class="param-row"><label>Emission</label><input type="number" id="paramFloodI" value="100" step="10" min="50" max="400"></div>
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="right-header">Acquisition Parameters</div>
+      <div class="right-body">
+        <div class="param-row">
+          <label>Scan Type</label>
+          <select id="paramScanType">
+            <option value="survey">Survey</option>
+            <option value="region">Region (High Res)</option>
+          </select>
+        </div>
+        <div class="param-row">
+          <label>Pass Energy</label>
+          <select id="paramPE">
+            <option value="160">160 eV (survey)</option>
+            <option value="80" selected>80 eV (survey)</option>
+            <option value="40">40 eV (region)</option>
+            <option value="20">20 eV (high res)</option>
+            <option value="10">10 eV (highest res)</option>
+          </select>
+        </div>
+        <div class="param-row">
+          <label>Step Size</label>
+          <select id="paramStep">
+            <option value="1.0">1.0 eV</option>
+            <option value="0.5">0.5 eV</option>
+            <option value="0.1" selected>0.1 eV</option>
+            <option value="0.05">0.05 eV</option>
+          </select>
+        </div>
+        <div class="param-row">
+          <label>Dwell Time</label>
+          <select id="paramDwell">
+            <option value="10">10 ms</option>
+            <option value="50" selected>50 ms</option>
+            <option value="100">100 ms</option>
+            <option value="500">500 ms</option>
+          </select>
+        </div>
+        <div class="param-row">
+          <label>Number of Sweeps</label>
+          <input type="number" id="paramSweeps" value="3" min="1" max="50">
+        </div>
+        <div class="param-row">
+          <label>Lens Mode</label>
+          <select id="paramLens">
+            <option>FAT (Fixed Analyzer Transmission)</option>
+            <option>CAE</option>
+          </select>
+        </div>
+        <div class="param-row">
+          <label>Predicted FWHM</label>
+          <div class="readonly" id="paramFWHM">~1.0 eV</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="right-header">Stage Position</div>
+      <div class="right-body">
+        <div class="stage-view">
+          <div class="stage-camera"></div>
+          <div class="stage-wafer" id="stageWafer" style="display:none"></div>
+          <div class="stage-crosshair" id="stageCrosshair" style="left:50%;top:50%;display:none"></div>
+          <div class="stage-label">CCD NAV CAM</div>
+          <div class="stage-coords" id="stageCoords">
+            <span>X: 0.00  Y: 0.00  Z: 0.00</span>
+            <span>T: 0°  R: 0°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: METHOD QUEUE + LOG -->
+  <div class="bottom">
+    <div style="flex:1;display:flex;flex-direction:column">
+      <div class="bottom-tabs">
+        <div class="bottom-tab active" data-bot="queue">Method Queue</div>
+        <div class="bottom-tab" data-bot="peaks">Peak Table</div>
+        <div class="bottom-tab" data-bot="quant">Quantification</div>
+        <div class="bottom-tab" data-bot="log">System Log</div>
+      </div>
+      <div class="bottom-content">
+        <div class="bottom-panel active" data-bot="queue">
+          <table class="queue-table">
+            <thead>
+              <tr><th style="width:30px"></th><th>Task</th><th>Status</th><th>PE</th><th>Step</th><th>Dwell</th><th>Sweeps</th><th>BE Range</th></tr>
+            </thead>
+            <tbody id="queueBody">
+              <tr><td><span class="status-dot"></span></td><td>Survey scan</td><td>Pending</td><td>80 eV</td><td>1.0 eV</td><td>50 ms</td><td>3</td><td>0–1200 eV</td></tr>
+              <tr><td><span class="status-dot"></span></td><td>C 1s region</td><td>Pending</td><td>20 eV</td><td>0.1 eV</td><td>100 ms</td><td>5</td><td>278–298 eV</td></tr>
+              <tr><td><span class="status-dot"></span></td><td>Si 2p region</td><td>Pending</td><td>20 eV</td><td>0.1 eV</td><td>100 ms</td><td>5</td><td>95–110 eV</td></tr>
+              <tr><td><span class="status-dot"></span></td><td>F 1s region</td><td>Pending</td><td>20 eV</td><td>0.1 eV</td><td>100 ms</td><td>5</td><td>680–695 eV</td></tr>
+              <tr><td><span class="status-dot"></span></td><td>O 1s region</td><td>Pending</td><td>20 eV</td><td>0.1 eV</td><td>100 ms</td><td>5</td><td>525–540 eV</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bottom-panel" data-bot="peaks">
+          <table class="peak-table">
+            <thead>
+              <tr><th style="width:80px">Peak</th><th>BE (eV)</th><th>FWHM (eV)</th><th>Area (CPS·eV)</th><th>Area % (in region)</th><th>Assignment</th></tr>
+            </thead>
+            <tbody id="peakBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">
+                No peaks detected yet. Run Peak ID and Curve Fit.
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bottom-panel" data-bot="quant">
+          <table class="peak-table">
+            <thead>
+              <tr><th>Element</th><th>Peak</th><th>BE (eV)</th><th>Area</th><th>RSF</th><th>Atomic %</th><th>Atomic Ratio</th></tr>
+            </thead>
+            <tbody id="quantBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">
+                Run Quantification after Curve Fit.
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bottom-panel" data-bot="log">
+          <div id="logBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL PANEL -->
+<div class="tutorial-panel show" id="tutorialPanel">
+  <div class="tut-header">
+    <span class="tut-step" id="tutStep">Step 1 / 13</span>
+    <button class="tut-close" id="tutClose">×</button>
+  </div>
+  <div class="tut-progress" id="tutProgress"></div>
+  <div class="tut-title" id="tutTitle">Sample 준비</div>
+  <div class="tut-desc" id="tutDesc">분석할 시료는 CF₄ 플라즈마로 에칭된 Si wafer입니다. 먼저 실험 트리의 Sample Info 노드를 활성화합니다.</div>
+  <div class="tut-action" id="tutAction">→ 툴바에서 <b>Sample</b> 버튼을 클릭하세요.</div>
+  <div class="tut-why" id="tutWhy"><b>왜?</b> XPS 분석 전 시료의 전도성, 오염도, 처리 이력을 먼저 기록해야 합니다. CF₄ 에칭 처리 이력은 F와 C 잔류 가능성을 시사합니다.</div>
+  <div class="tut-btns">
+    <button class="tut-btn" id="tutSkip">Skip</button>
+    <button class="tut-btn primary" id="tutHint">Hint</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hide" id="toast"></div>
+
+<!-- QUIZ MODAL -->
+<div class="modal-backdrop" id="quizModal">
+  <div class="modal">
+    <h3 id="quizTitle">Checkpoint Quiz</h3>
+    <p id="quizQuestion"></p>
+    <div class="choices" id="quizChoices"></div>
+    <div class="feedback" id="quizFeedback"></div>
+    <div class="modal-btns">
+      <button class="tut-btn primary" id="quizContinue" style="display:none">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="modal-backdrop" id="aboutModal">
+  <div class="modal" style="width:560px;max-width:92vw">
+    <h3 style="color:var(--accent)">🎓 XPS Advanced Simulator — 교육용 인터랙티브 모듈</h3>
+    <div style="font-size:12px;line-height:1.65;color:#d0d6e0">
+      <p style="margin-bottom:10px">
+        이 프로그램은 XPS(X-ray Photoelectron Spectroscopy) 분석 절차와 개념을 익히기 위한
+        <b style="color:var(--accent2)">교육용 인터랙티브 시뮬레이터</b>입니다.
+        실제 상용 장비 소프트웨어(Thermo Avantage, Kratos ESCApe 등)의 워크플로우와 GUI 요소를 참고해
+        학습자가 전체 흐름을 체험할 수 있도록 재구성한 모듈입니다.
+      </p>
+      <p style="margin-bottom:10px;padding:8px 10px;background:rgba(255,200,87,0.1);border-left:3px solid var(--warn);border-radius:3px">
+        <b style="color:var(--warn)">⚠ 실제 샘플을 실시간으로 측정하는 기능은 아직 테스트 중입니다.</b>
+        본 모듈은 가상 시료(Si wafer, CF₄ plasma 처리)에 대한 물리 기반 시뮬레이션 스펙트럼을
+        생성하여 표시합니다. Pass Energy, Step size, Dwell time, Sweeps 등의 파라미터 변경은
+        스펙트럼의 FWHM, S/N 등에 실제 물리 법칙에 가깝게 반영되지만, 하드웨어 제어는 포함되지 않습니다.
+      </p>
+      <p style="margin-bottom:10px">
+        <b style="color:var(--accent)">Tutorial Mode</b>: 13단계의 순서화된 실습으로 진공→광원→측정→해석의
+        전 과정을 안내받으며 체험합니다. 핵심 단계에는 퀴즈가 포함됩니다.
+      </p>
+      <p style="margin-bottom:10px">
+        <b style="color:var(--accent)">Free Mode</b>: 튜토리얼에서 학습한 사항을
+        <b style="color:var(--accent2)">자유롭게 재현</b>해보는 연습 공간입니다. 파라미터를
+        바꿔가며 스펙트럼 변화를 관찰하고, ▭ Region 툴로 정량을, ⊙ C-ref 툴로 charge 보정을 직접 해볼 수 있습니다.
+        튜토리얼에서 다룬 범위를 벗어나는 새로운 기능은 없습니다.
+      </p>
+      <p style="color:var(--muted);font-size:11px">
+        Version 0.3 (Prototype) · 대학교 학부/대학원 초급 학생 대상
+      </p>
+    </div>
+    <div class="modal-btns" style="margin-top:16px">
+      <button class="tut-btn primary" id="aboutClose">시작하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   XPS Advanced Simulator
+   Physics-inspired spectrum generation with:
+   - Realistic BE positions, spin-orbit splitting, RSF-weighted quantification
+   - Pass-energy dependent FWHM
+   - Dwell × sqrt(sweeps) → S/N
+   - C 1s 6-component deconvolution
+   - Si 2p doublet + SiO2/SiF shoulders
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+
+/* ---------- STATE ---------- */
+const state = {
+  mode:'tutorial',
+  sampleLoaded:false,
+  loadlockInserted:false,
+  loadlockPumped:false,
+  transferred:false,
+  vacuumReady:false,
+  sourceOn:false,
+  floodOn:false,
+  autoZ:false,
+  surveyDone:false,
+  peakIDDone:false,
+  c1sDone:false, si2pDone:false, f1sDone:false, o1sDone:false,
+  fitDone:false,
+  quantDone:false,
+  acquiring:false,
+  currentSpec:'survey',
+  showFitComponents:false,
+  chargeCorrected:false,
+  bgType:'Shirley',
+  stageX:0, stageY:0, stageZ:0,
+  tutorialStep:0,
+  hintUsed:0,
+};
+
+/* ---------- LOG ---------- */
+function logMsg(type,msg){
+  const div=document.createElement('div');
+  div.className='log-entry';
+  const now=new Date();
+  const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  div.innerHTML=`<span class="log-time">${t}</span><span class="log-type ${type}">[${type.toUpperCase()}]</span><span class="log-msg">${msg}</span>`;
+  $('logBody').prepend(div);
+}
+function toast(msg,type='info',dur=3200){
+  const t=$('toast');
+  t.className='toast '+type;
+  t.textContent=msg;
+  t.classList.remove('hide');
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>t.classList.add('hide'),dur);
+}
+
+/* ---------- CLOCK ---------- */
+setInterval(()=>{
+  const n=new Date();
+  $('clockDisplay').textContent=
+    String(n.getHours()).padStart(2,'0')+':'+
+    String(n.getMinutes()).padStart(2,'0')+':'+
+    String(n.getSeconds()).padStart(2,'0');
+},1000);
+
+/* ============================================================
+   PHYSICS / SPECTRUM MODEL
+   ============================================================ */
+
+// Gaussian-Lorentzian pseudo-Voigt
+function gl(x,cen,fwhm,mix=0.3){
+  const g=Math.exp(-4*Math.log(2)*((x-cen)/fwhm)**2);
+  const l=1/(1+4*((x-cen)/fwhm)**2);
+  return mix*l+(1-mix)*g;
+}
+
+// FWHM prediction from pass energy
+// Al Kα monochromator ~0.26 eV, Mg Kα ~0.70 eV (non-monochromatic)
+function predictFWHM(pe){
+  const anode=$('paramAnode')?$('paramAnode').value:'Al';
+  const dE_src = anode.includes('Mg') ? 0.70 : 0.26;
+  const dE_ana=pe*0.012;
+  return Math.sqrt(dE_src*dE_src + dE_ana*dE_ana);
+}
+
+// Sample definition: CF4-plasma-etched Si wafer
+// Surface atomic composition assumption (educational)
+// Si (substrate, partly attenuated) 30%, SiO2 layer 6%, Si-F 4%,
+// C (adventitious) 25%: C-C 60%, C-O 15%, C=O 8%, C-F 7%, CF2 6%, CF3 4%
+// O 20%, F 15%
+const SAMPLE = {
+  name:'Si wafer (CF₄ etched)',
+  composition:[
+    // element, peak_name, BE, FWHM_intrinsic, RSF (Scofield), intensity_weight
+    {el:'Si', peak:'Si 2p', comps:[
+      {be:99.3, w:1.0, label:'Si⁰ 2p3/2', fwhm_intr:0.45},
+      {be:99.9, w:0.5, label:'Si⁰ 2p1/2', fwhm_intr:0.45}, // spin-orbit 0.6 eV, 2:1 ratio
+      {be:103.4,w:0.35, label:'SiO₂', fwhm_intr:1.3},
+      {be:104.5,w:0.18, label:'Si–F', fwhm_intr:1.2},
+    ], rsf:0.817, total_w:1.6},
+    {el:'Si', peak:'Si 2s', comps:[{be:150.5, w:0.55, label:'Si 2s', fwhm_intr:1.4}], rsf:0.955, total_w:0.85},
+    {el:'C',  peak:'C 1s', comps:[
+      {be:284.8, w:1.0, label:'C–C / C–H', fwhm_intr:0.85},
+      {be:286.4, w:0.28, label:'C–O',     fwhm_intr:1.1},
+      {be:288.0, w:0.15, label:'C=O / O-C=O', fwhm_intr:1.2},
+      {be:289.5, w:0.22, label:'C–F',     fwhm_intr:1.2},
+      {be:291.5, w:0.18, label:'CF₂',     fwhm_intr:1.3},
+      {be:293.5, w:0.12, label:'CF₃',     fwhm_intr:1.3},
+    ], rsf:1.0, total_w:1.35},
+    {el:'O',  peak:'O 1s', comps:[
+      {be:532.6, w:1.0, label:'SiO₂ / C=O', fwhm_intr:1.3},
+      {be:533.8, w:0.25, label:'C–O / H₂O', fwhm_intr:1.4},
+    ], rsf:2.93, total_w:1.1},
+    {el:'F',  peak:'F 1s', comps:[
+      {be:687.3, w:0.4, label:'Si–F', fwhm_intr:1.4},
+      {be:688.5, w:0.7, label:'C–F / CF_x', fwhm_intr:1.5},
+    ], rsf:4.43, total_w:0.95},
+    {el:'O',  peak:'O KLL', comps:[{be:742, w:0.5, label:'O KLL auger', fwhm_intr:4.0},{be:764, w:0.35, label:'O KLL auger', fwhm_intr:4.0}], rsf:0, total_w:0},
+    {el:'F',  peak:'F KLL', comps:[{be:832, w:0.3, label:'F KLL auger', fwhm_intr:4.0}], rsf:0, total_w:0},
+  ],
+};
+
+function getAcqParams(){
+  const pe=parseFloat($('paramPE').value);
+  const step=parseFloat($('paramStep').value);
+  const dwell=parseFloat($('paramDwell').value);
+  const sweeps=parseInt($('paramSweeps').value);
+  const power=$('paramPower').value;
+  const fwhmAna=predictFWHM(pe);
+  const powerFactor=power.includes('200')?1.6:(power.includes('150')?1.2:1.0);
+  // Count rate scaling: dwell * sweeps * power * (PE proxy via analyzer transmission)
+  const snFactor=Math.sqrt(dwell*sweeps/50/3)*powerFactor*Math.pow(pe/80,0.5);
+  return {pe,step,dwell,sweeps,fwhmAna,snFactor,powerFactor};
+}
+
+// Generate synthetic spectrum over BE range
+function generateSpectrum(beMin,beMax,which='survey'){
+  const p=getAcqParams();
+  const stepEff = which==='survey' ? Math.max(p.step,0.5) : p.step;
+  const n=Math.max(10,Math.round((beMax-beMin)/stepEff));
+  const xs=[],ys=[];
+  // Base intensity settings
+  const baseScale = which==='survey' ? 2500 : 8000;
+  const noiseAmp = baseScale*0.015/Math.max(p.snFactor,0.3);
+
+  // === CHARGING SIMULATION ===
+  // If Flood Gun is OFF, simulate surface charging: all peaks shift by +2~4 eV (positive charging)
+  // and broaden slightly. This only applies when Flood Gun state is explicitly false.
+  const chargingShift = state.floodOn ? 0 : 3.2; // eV to higher BE
+  const chargingBroaden = state.floodOn ? 0 : 0.4; // additional FWHM broadening
+
+  for(let i=0;i<=n;i++){
+    const be=beMin+(beMax-beMin)*i/n;
+    let I=0;
+    if(which==='survey'){
+      I += 350 + Math.max(0, (be-100))*0.3;
+    } else {
+      I += 200;
+    }
+    for(const grp of SAMPLE.composition){
+      for(const c of grp.comps){
+        const effBE = c.be + chargingShift; // shift peaks if charging
+        if(effBE<beMin-20 || effBE>beMax+20) continue;
+        const fwhm = Math.sqrt(c.fwhm_intr*c.fwhm_intr + p.fwhmAna*p.fwhmAna + chargingBroaden*chargingBroaden);
+        const ampBase = baseScale * c.w * (grp.rsf>0?grp.rsf:0.25);
+        const amp = ampBase * (which==='survey'?0.35:1.0);
+        I += amp * gl(be,effBE,fwhm,0.3);
+        if(which==='survey' && be>effBE){
+          I += ampBase*0.08 * Math.exp(-(be-effBE)/50);
+        }
+      }
+    }
+    if(which==='survey' && be>115+chargingShift && be<135+chargingShift){
+      I += baseScale*0.3*gl(be,120.5+chargingShift,2.5,0.3);
+    }
+    I += (Math.random()-0.5)*noiseAmp*2;
+    I += Math.sin(i*0.3)*noiseAmp*0.4;
+    xs.push(be);
+    ys.push(Math.max(0,I));
+  }
+  return {xs,ys,params:p,chargingShift};
+}
+
+/* ============================================================
+   CANVAS RENDERING
+   ============================================================ */
+const canvas=$('spectrumCanvas');
+const ctx=canvas.getContext('2d');
+
+function resizeCanvas(){
+  const wrap=canvas.parentElement;
+  const r=wrap.getBoundingClientRect();
+  canvas.width=r.width*devicePixelRatio;
+  canvas.height=r.height*devicePixelRatio;
+  canvas.style.width=r.width+'px';
+  canvas.style.height=r.height+'px';
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  drawCurrentSpectrum();
+}
+
+const SPEC_RANGES = {
+  survey:{min:0,max:1200,label:'Survey Spectrum'},
+  c1s:{min:278,max:298,label:'C 1s Region'},
+  si2p:{min:95,max:112,label:'Si 2p Region'},
+  f1s:{min:680,max:696,label:'F 1s Region'},
+  o1s:{min:525,max:540,label:'O 1s Region'},
+};
+
+let cachedSpectra={};
+
+function drawCurrentSpectrum(){
+  const spec=state.currentSpec;
+  const r=SPEC_RANGES[spec];
+  $('beRange').textContent=`${r.min}–${r.max} eV`;
+
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  ctx.fillStyle='#fafafa';
+  ctx.fillRect(0,0,w,h);
+
+  const pad={l:55,r:20,t:20,b:40};
+  const plotW=w-pad.l-pad.r;
+  const plotH=h-pad.t-pad.b;
+
+  // Check if this spectrum has been acquired
+  const acquired=
+    (spec==='survey' && state.surveyDone) ||
+    (spec==='c1s' && state.c1sDone) ||
+    (spec==='si2p' && state.si2pDone) ||
+    (spec==='f1s' && state.f1sDone) ||
+    (spec==='o1s' && state.o1sDone);
+
+  if(!acquired){
+    // Empty grid
+    drawAxes(pad,plotW,plotH,r.min,r.max,0,100,r.label);
+    ctx.fillStyle='#999';
+    ctx.font='13px Segoe UI';
+    ctx.textAlign='center';
+    ctx.fillText('No data acquired. Run acquisition to collect spectrum.',w/2,h/2);
+    ctx.textAlign='start';
+    return;
+  }
+
+  // Get or generate cached spectrum
+  if(!cachedSpectra[spec]){
+    cachedSpectra[spec]=generateSpectrum(r.min,r.max,spec==='survey'?'survey':'region');
+  }
+  const data=cachedSpectra[spec];
+  const {xs,ys}=data;
+
+  let yMin=Math.min(...ys), yMax=Math.max(...ys);
+  const pad1=(yMax-yMin)*0.08;
+  yMin-=pad1*0.3; yMax+=pad1*1.2;
+
+  drawAxes(pad,plotW,plotH,r.min,r.max,yMin,yMax,r.label);
+
+  const beToX = be => pad.l + plotW*(1-(be-r.min)/(r.max-r.min)); // XPS convention: high BE left
+  const yToY  = y  => pad.t + plotH*(1-(y-yMin)/(yMax-yMin));
+
+  // If fit is shown and this is a region spectrum with fit available, draw components
+  if(state.showFitComponents && state.fitDone && spec!=='survey'){
+    drawFitComponents(spec,r,beToX,yToY,pad,plotW,plotH);
+  }
+
+  // Draw background (Shirley)
+  if(state.bgType==='Shirley' && spec!=='survey'){
+    ctx.strokeStyle='#cc8844';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    // simple Shirley: integral from right endpoint
+    const total=ys.reduce((a,b)=>a+b,0);
+    let acc=0;
+    for(let i=ys.length-1;i>=0;i--){
+      acc+=ys[i]-ys[ys.length-1];
+      const bg = ys[ys.length-1] + (ys[0]-ys[ys.length-1])*(acc/(total*0.3));
+      const x=beToX(xs[i]);
+      const y=yToY(Math.min(ys[i],bg));
+      if(i===ys.length-1) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Main spectrum line
+  ctx.strokeStyle='#1a3a6b';
+  ctx.lineWidth=1.2;
+  ctx.beginPath();
+  for(let i=0;i<xs.length;i++){
+    const x=beToX(xs[i]);
+    const y=yToY(ys[i]);
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Peak labels (after Peak ID)
+  if(state.peakIDDone){
+    drawPeakLabels(spec,r,beToX,yToY,ys,xs,yMin,yMax);
+  }
+  // User-selected region overlays
+  drawRegionOverlays();
+}
+
+function drawAxes(pad,plotW,plotH,xmin,xmax,ymin,ymax,title){
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  // Plot area border
+  ctx.strokeStyle='#888';
+  ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,plotW,plotH);
+
+  // Title
+  ctx.fillStyle='#333';
+  ctx.font='bold 12px Segoe UI';
+  ctx.textAlign='left';
+  ctx.fillText(title,pad.l,pad.t-5);
+
+  // X axis (BE, high-to-low left-to-right)
+  ctx.font='10px Segoe UI';
+  ctx.fillStyle='#555';
+  ctx.textAlign='center';
+  const xTicks = xmax-xmin > 500 ? 6 : (xmax-xmin > 50 ? 6 : 8);
+  for(let i=0;i<=xTicks;i++){
+    const frac=i/xTicks;
+    const be = xmax - frac*(xmax-xmin);
+    const x = pad.l + frac*plotW;
+    ctx.strokeStyle='#ddd';
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+plotH);ctx.stroke();
+    ctx.strokeStyle='#888';
+    ctx.beginPath();ctx.moveTo(x,pad.t+plotH);ctx.lineTo(x,pad.t+plotH+4);ctx.stroke();
+    ctx.fillText(be.toFixed(xmax-xmin>100?0:1), x, pad.t+plotH+14);
+  }
+  // Y axis
+  ctx.textAlign='right';
+  for(let i=0;i<=5;i++){
+    const frac=i/5;
+    const y = pad.t + plotH - frac*plotH;
+    const val = ymin + frac*(ymax-ymin);
+    ctx.strokeStyle='#eee';
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+plotW,y);ctx.stroke();
+    ctx.strokeStyle='#888';
+    ctx.beginPath();ctx.moveTo(pad.l-4,y);ctx.lineTo(pad.l,y);ctx.stroke();
+    ctx.fillText(val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(0), pad.l-6, y+3);
+  }
+  // Axis labels
+  ctx.textAlign='center';
+  ctx.fillStyle='#333';
+  ctx.font='11px Segoe UI';
+  ctx.fillText('Binding Energy (eV)',pad.l+plotW/2,h-8);
+  ctx.save();
+  ctx.translate(12,pad.t+plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Intensity (CPS)',0,0);
+  ctx.restore();
+  ctx.textAlign='start';
+}
+
+function drawPeakLabels(spec,r,beToX,yToY,ys,xs,yMin,yMax){
+  const labels = {
+    survey:[
+      {be:99,  text:'Si 2p'},
+      {be:150, text:'Si 2s'},
+      {be:284.8,text:'C 1s'},
+      {be:532, text:'O 1s'},
+      {be:688, text:'F 1s'},
+      {be:744, text:'O KLL'},
+      {be:832, text:'F KLL'},
+    ],
+    c1s:[
+      {be:284.8,text:'C–C'},
+      {be:286.4,text:'C–O'},
+      {be:288.0,text:'C=O'},
+      {be:289.5,text:'C–F'},
+      {be:291.5,text:'CF₂'},
+      {be:293.5,text:'CF₃'},
+    ],
+    si2p:[
+      {be:99.3,text:'Si⁰ 2p3/2'},
+      {be:99.9,text:'Si⁰ 2p1/2'},
+      {be:103.4,text:'SiO₂'},
+      {be:104.5,text:'Si–F'},
+    ],
+    f1s:[
+      {be:687.3,text:'Si–F'},
+      {be:688.5,text:'C–F'},
+    ],
+    o1s:[
+      {be:532.6,text:'SiO₂ / C=O'},
+      {be:533.8,text:'C–O'},
+    ],
+  };
+  const list=labels[spec]||[];
+  ctx.font='10.5px Segoe UI';
+  ctx.fillStyle='#c0392b';
+  ctx.textAlign='center';
+  for(const lb of list){
+    if(lb.be<r.min||lb.be>r.max) continue;
+    // find nearest y
+    let yPeak=yMin;
+    for(let i=0;i<xs.length;i++){
+      if(Math.abs(xs[i]-lb.be)<2) yPeak=Math.max(yPeak,ys[i]);
+    }
+    const x=beToX(lb.be);
+    const y=yToY(yPeak)-8;
+    ctx.strokeStyle='rgba(192,57,43,.5)';
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(x,yToY(yPeak)-3);
+    ctx.lineTo(x,y-2);
+    ctx.stroke();
+    ctx.fillText(lb.text,x,y-4);
+  }
+  ctx.textAlign='start';
+}
+
+function drawFitComponents(spec,r,beToX,yToY,pad,plotW,plotH){
+  const specToComps={
+    c1s:SAMPLE.composition.find(c=>c.peak==='C 1s'),
+    si2p:SAMPLE.composition.find(c=>c.peak==='Si 2p'),
+    f1s:SAMPLE.composition.find(c=>c.peak==='F 1s'),
+    o1s:SAMPLE.composition.find(c=>c.peak==='O 1s'),
+  };
+  const group=specToComps[spec];
+  if(!group) return;
+  const p=getAcqParams();
+  const scale=8000;
+  const colors=['#e74c3c','#27ae60','#8e44ad','#f39c12','#16a085','#c0392b'];
+  group.comps.forEach((c,i)=>{
+    ctx.strokeStyle=colors[i%colors.length];
+    ctx.lineWidth=1.2;
+    ctx.setLineDash([4,2]);
+    ctx.beginPath();
+    const fwhm=Math.sqrt(c.fwhm_intr*c.fwhm_intr+p.fwhmAna*p.fwhmAna);
+    const amp=scale*c.w*(group.rsf>0?group.rsf:0.25);
+    for(let k=0;k<=200;k++){
+      const be=r.min+(r.max-r.min)*k/200;
+      const I=200+amp*gl(be,c.be,fwhm,0.3);
+      const x=beToX(be);
+      const y=yToY(I);
+      if(k===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // label
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.font='10px Segoe UI';
+    const x=beToX(c.be);
+    const yTop=yToY(200+amp*1.02);
+    ctx.fillText(c.label, x+4, yTop-2);
+  });
+}
+
+/* ============================================================
+   INTERACTIVE TOOLS: Crosshair / Region Select / C-ref
+   ============================================================ */
+let currentTool='crosshair'; // 'crosshair' | 'region' | 'cref'
+let regionSelections={}; // {specKey: [{beStart, beEnd, area, label}]}
+let dragStart=null;
+let chargeShift=0; // applied BE shift (eV)
+
+function setTool(t){
+  currentTool=t;
+  ['toolCrosshair','toolRegion','toolCref'].forEach(id=>$(id).classList.remove('active'));
+  $({crosshair:'toolCrosshair',region:'toolRegion',cref:'toolCref'}[t]).classList.add('active');
+  canvas.style.cursor = t==='crosshair' ? 'crosshair' : (t==='region' ? 'col-resize' : 'pointer');
+  // User feedback when switching tools
+  const toolMsg={
+    crosshair:'Crosshair 툴: 그래프 위로 마우스 움직이면 BE/CPS 값 표시',
+    region:'▭ Region 툴: 드래그해서 영역 선택 → 정량 계산',
+    cref:'⊙ C-ref 툴: C 1s 탭에서 C-C 메인 피크(~285 eV) 중심을 클릭하세요'
+  };
+  toast(toolMsg[t],'info',2500);
+}
+$('toolCrosshair').onclick=()=>setTool('crosshair');
+$('toolRegion').onclick=()=>setTool('region');
+$('toolCref').onclick=()=>setTool('cref');
+$('clearRegions').onclick=()=>{
+  regionSelections={};
+  chargeShift=0;
+  $('chargeShiftDisp').textContent='';
+  Object.keys(cachedSpectra).forEach(k=>cachedSpectra[k]=null);
+  logMsg('info','All region selections and charge correction cleared');
+  drawCurrentSpectrum();
+  recomputeQuantFromRegions();
+};
+$('resetView').onclick=()=>{
+  // Force-reset any stuck drag state and regenerate current spectrum
+  dragStart=null;
+  cachedSpectra[state.currentSpec]=null;
+  logMsg('info',`View reset for ${state.currentSpec}`);
+  drawCurrentSpectrum();
+};
+$('quantifyAll').onclick=()=>{
+  // Auto-quantify: integrate the main peak for each acquired region scan
+  const specs=[
+    {key:'si2p', done:state.si2pDone, beLo:97, beHi:107, el:'Si', peak:'Si 2p', rsf:0.817},
+    {key:'c1s',  done:state.c1sDone,  beLo:280,beHi:295, el:'C',  peak:'C 1s',  rsf:1.0},
+    {key:'o1s',  done:state.o1sDone,  beLo:528,beHi:538, el:'O',  peak:'O 1s',  rsf:2.93},
+    {key:'f1s',  done:state.f1sDone,  beLo:684,beHi:694, el:'F',  peak:'F 1s',  rsf:4.43},
+  ];
+  const acquired=specs.filter(s=>s.done);
+  if(acquired.length===0){
+    toast('Region scan이 없습니다. 먼저 Region 버튼을 눌러 측정하세요.','warn',3500);
+    return;
+  }
+  // For each acquired spec, integrate main peak area (Shirley-like)
+  regionSelections={};
+  acquired.forEach(s=>{
+    // Ensure cached spectrum exists
+    if(!cachedSpectra[s.key]){
+      cachedSpectra[s.key]=generateSpectrum(SPEC_RANGES[s.key].min,SPEC_RANGES[s.key].max,'region');
+    }
+    const data=cachedSpectra[s.key];
+    const {xs,ys}=data;
+    // Apply current charging shift conceptually (already in xs)
+    const idxs=[];
+    for(let i=0;i<xs.length;i++){ if(xs[i]>=s.beLo && xs[i]<=s.beHi) idxs.push(i); }
+    if(idxs.length<3) return;
+    const i0=idxs[0], i1=idxs[idxs.length-1];
+    const y0=ys[i0], y1=ys[i1];
+    let area=0;
+    for(let k=0;k<idxs.length-1;k++){
+      const i=idxs[k], j=idxs[k+1];
+      const frac=(k+0.5)/(idxs.length-1);
+      const bg = y1 + (y0-y1)*(1-frac);
+      const yi = (ys[i]+ys[j])/2 - bg;
+      const dx = Math.abs(xs[j]-xs[i]);
+      if(yi>0) area += yi*dx;
+    }
+    if(!regionSelections[s.key]) regionSelections[s.key]=[];
+    regionSelections[s.key].push({
+      beStart:s.beLo, beEnd:s.beHi, area, label:s.peak, el:s.el, peak:s.peak, rsf:s.rsf
+    });
+  });
+  recomputeQuantFromRegions();
+  // Auto-switch to Quantification tab
+  document.querySelectorAll('.bottom-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.bottom-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.bottom-tab[data-bot=quant]').classList.add('active');
+  document.querySelector('.bottom-panel[data-bot=quant]').classList.add('active');
+  logMsg('ok',`Auto-quantification complete: ${acquired.length} elements integrated and calculated`);
+  toast(`⚡ Quantify All 완료: ${acquired.length}개 원소. 하단 Quantification 탭에서 Atomic % 확인.`,'ok',4500);
+  drawCurrentSpectrum();
+};
+
+// Global safety: if user releases mouse outside canvas, clear drag state
+document.addEventListener('mouseup',()=>{
+  if(dragStart){
+    dragStart=null;
+    drawCurrentSpectrum();
+  }
+});
+// Prevent browser zoom from ctrl+scroll on canvas
+canvas.addEventListener('wheel',e=>{
+  if(e.ctrlKey) e.preventDefault();
+},{passive:false});
+
+function canvasToBE(xPx){
+  const r=SPEC_RANGES[state.currentSpec];
+  const pad={l:55,r:20};
+  const plotW=canvas.clientWidth-pad.l-pad.r;
+  return r.max - (xPx-pad.l)/plotW*(r.max-r.min);
+}
+
+canvas.addEventListener('mousedown',e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+  const pad={l:55,r:20,t:20,b:40};
+  if(x<pad.l||x>canvas.clientWidth-pad.r||y<pad.t||y>canvas.clientHeight-pad.b) return;
+  const be=canvasToBE(x);
+  logMsg('info',`Click at BE=${be.toFixed(2)} eV (tool: ${currentTool}, tab: ${state.currentSpec})`);
+  if(currentTool==='cref'){
+    applyCharRef(be);
+    return;
+  }
+  if(currentTool==='region'){
+    dragStart={x, be};
+  }
+});
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+  const pad={l:55,r:20,t:20,b:40};
+  const plotW=canvas.clientWidth-pad.l-pad.r;
+  const plotH=canvas.clientHeight-pad.t-pad.b;
+  // Crosshair readout always
+  const spec=state.currentSpec;
+  const sr=SPEC_RANGES[spec];
+  if(x<pad.l||x>pad.l+plotW||y<pad.t||y>pad.t+plotH){
+    $('crosshairInfo').textContent='BE: — eV  |  CPS: —';
+    return;
+  }
+  const be=sr.max-(x-pad.l)/plotW*(sr.max-sr.min);
+  const data=cachedSpectra[spec];
+  let cps='—';
+  if(data){
+    let idx=0, best=1e9;
+    for(let i=0;i<data.xs.length;i++){
+      const d=Math.abs(data.xs[i]-be);
+      if(d<best){best=d;idx=i}
+    }
+    cps=data.ys[idx].toFixed(0);
+  }
+  $('crosshairInfo').textContent=`BE: ${be.toFixed(2)} eV  |  CPS: ${cps}`;
+  // If dragging in region mode, redraw preview
+  if(dragStart && currentTool==='region'){
+    drawCurrentSpectrum();
+    const xStart=Math.min(dragStart.x,x);
+    const xEnd=Math.max(dragStart.x,x);
+    ctx.fillStyle='rgba(77,184,255,0.15)';
+    ctx.fillRect(xStart,pad.t,xEnd-xStart,plotH);
+    ctx.strokeStyle='rgba(77,184,255,0.8)';
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(xStart,pad.t,xEnd-xStart,plotH);
+    ctx.setLineDash([]);
+    const be1=canvasToBE(xStart), be2=canvasToBE(xEnd);
+    ctx.fillStyle='#1a3a6b';
+    ctx.font='bold 11px Segoe UI';
+    ctx.fillText(`${Math.max(be1,be2).toFixed(2)} — ${Math.min(be1,be2).toFixed(2)} eV`, xStart+4, pad.t+14);
+  }
+});
+canvas.addEventListener('mouseup',e=>{
+  if(!dragStart || currentTool!=='region'){ dragStart=null; return; }
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const beEnd=canvasToBE(x);
+  const beStart=dragStart.be;
+  const beHi=Math.max(beStart,beEnd);
+  const beLo=Math.min(beStart,beEnd);
+  if(Math.abs(beHi-beLo)<0.3){ dragStart=null; drawCurrentSpectrum(); return; }
+  // Integrate area under curve using Shirley BG subtraction
+  const spec=state.currentSpec;
+  const data=cachedSpectra[spec];
+  if(!data){ dragStart=null; return; }
+  const {xs,ys}=data;
+  // collect points inside [beLo, beHi]
+  const idxs=[];
+  for(let i=0;i<xs.length;i++){ if(xs[i]>=beLo && xs[i]<=beHi) idxs.push(i); }
+  if(idxs.length<3){ dragStart=null; drawCurrentSpectrum(); return; }
+  const i0=idxs[0], i1=idxs[idxs.length-1];
+  const y0=ys[i0], y1=ys[i1];
+  // Shirley: iterative, but simple approximation: linear BG subtraction then sum
+  let area=0;
+  for(let k=0;k<idxs.length-1;k++){
+    const i=idxs[k], j=idxs[k+1];
+    const frac=(k+0.5)/(idxs.length-1);
+    const bg = y1 + (y0-y1)*(1-frac); // linear for simplicity
+    const yi = (ys[i]+ys[j])/2 - bg;
+    const dx = Math.abs(xs[j]-xs[i]);
+    if(yi>0) area += yi*dx;
+  }
+  if(!regionSelections[spec]) regionSelections[spec]=[];
+  // Guess assignment based on BE position
+  const assign = guessAssignment(spec, (beHi+beLo)/2);
+  regionSelections[spec].push({
+    beStart:beLo, beEnd:beHi, area, label:assign.label, el:assign.el, peak:assign.peak, rsf:assign.rsf
+  });
+  logMsg('ok',`Region selected: ${beHi.toFixed(2)}–${beLo.toFixed(2)} eV, Area=${area.toFixed(0)} CPS·eV → ${assign.label}`);
+  toast(`Region selected: ${assign.label}, Area = ${area.toFixed(0)}`,'ok',3000);
+  dragStart=null;
+  drawCurrentSpectrum();
+  recomputeQuantFromRegions();
+});
+
+function guessAssignment(spec, beMid){
+  // If we're on a region-specific tab, use that element/peak directly
+  const specDefaults={
+    c1s: {el:'C', peak:'C 1s', rsf:1.0, label:'C 1s'},
+    si2p:{el:'Si',peak:'Si 2p',rsf:0.817,label:'Si 2p'},
+    f1s: {el:'F', peak:'F 1s', rsf:4.43, label:'F 1s'},
+    o1s: {el:'O', peak:'O 1s', rsf:2.93, label:'O 1s'},
+  };
+  if(specDefaults[spec]) return specDefaults[spec];
+  // Survey: look up by BE
+  const map = [
+    {be:99, tol:8, el:'Si', peak:'Si 2p', rsf:0.817, label:'Si 2p'},
+    {be:150, tol:8, el:'Si', peak:'Si 2s', rsf:0.955, label:'Si 2s'},
+    {be:284.8, tol:10, el:'C', peak:'C 1s', rsf:1.0, label:'C 1s'},
+    {be:532.6, tol:10, el:'O', peak:'O 1s', rsf:2.93, label:'O 1s'},
+    {be:688, tol:10, el:'F', peak:'F 1s', rsf:4.43, label:'F 1s'},
+    {be:744, tol:20, el:'O', peak:'O KLL', rsf:0, label:'O KLL (auger)'},
+    {be:832, tol:20, el:'F', peak:'F KLL', rsf:0, label:'F KLL (auger)'},
+  ];
+  for(const m of map){
+    if(Math.abs(beMid-m.be)<=m.tol) return m;
+  }
+  return {el:'?', peak:'?', rsf:0, label:`Unknown @ ${beMid.toFixed(1)} eV`};
+}
+
+function applyCharRef(beClicked){
+  // Safety: only work on C 1s tab
+  if(state.currentSpec!=='c1s'){
+    toast('⚠ C-ref는 C 1s 탭에서만 사용하세요. 상단 "C 1s" 탭을 먼저 클릭한 후, C-C 메인 피크 중심(약 285 eV)을 클릭하세요.','warn',5000);
+    return;
+  }
+  // Interpret clicked BE as the current apparent position of C 1s C-C component.
+  const shift = 284.8 - beClicked;
+  // Sanity check: only accept clicks near the main C-C peak
+  if(Math.abs(shift)>5){
+    toast(`⚠ 클릭 위치(${beClicked.toFixed(2)} eV)가 C-C 피크(~285 eV)에서 너무 멀리 떨어져 있습니다. 요청된 shift: ${shift.toFixed(2)} eV — 거부됨`,'err',5500);
+    return;
+  }
+  // Very small shift info
+  if(Math.abs(shift)<0.1){
+    toast(`✓ Charge correction 확인됨: ΔBE = ${shift.toFixed(2)} eV (이미 284.8 eV에 거의 정확히 있음, shift 거의 없음)`,'ok',4500);
+    logMsg('ok',`C-ref: clicked BE=${beClicked.toFixed(2)}, shift=${shift.toFixed(2)} eV (negligible, already well-calibrated)`);
+    chargeShift = shift;
+    $('chargeShiftDisp').textContent = `C-ref: ΔBE = ${shift>=0?'+':''}${shift.toFixed(2)} eV (OK)`;
+    return;
+  }
+  chargeShift = shift;
+  $('chargeShiftDisp').textContent = `C-ref: ΔBE = ${shift>=0?'+':''}${shift.toFixed(2)} eV`;
+  // Shift all cached spectra
+  Object.keys(cachedSpectra).forEach(k=>{
+    const d=cachedSpectra[k]; if(!d) return;
+    d.xs = d.xs.map(x=>x+shift);
+  });
+  // Shift region selections
+  Object.keys(regionSelections).forEach(k=>{
+    regionSelections[k].forEach(r=>{
+      r.beStart+=shift; r.beEnd+=shift;
+    });
+  });
+  logMsg('ok',`Charge correction applied: clicked=${beClicked.toFixed(2)} eV → shift ΔBE=${shift>=0?'+':''}${shift.toFixed(2)} eV (C 1s C-C → 284.8 eV)`);
+  toast(`✓ Charge correction applied: ΔBE = ${shift>=0?'+':''}${shift.toFixed(2)} eV. Spectrum shifted.`,'ok',4000);
+  drawCurrentSpectrum();
+}
+
+function recomputeQuantFromRegions(){
+  const byElPeak={};
+  Object.keys(regionSelections).forEach(spec=>{
+    regionSelections[spec].forEach(r=>{
+      if(r.rsf<=0) return;
+      const key=r.el+'|'+r.peak;
+      if(!byElPeak[key] || r.area>byElPeak[key].area){
+        byElPeak[key] = {el:r.el, peak:r.peak, area:r.area, rsf:r.rsf, be:(r.beStart+r.beEnd)/2};
+      }
+    });
+  });
+  const peaks=Object.values(byElPeak);
+  if(peaks.length===0){
+    $('quantBody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">⚡ Quantify All 버튼을 누르거나 ▭ Region 툴로 드래그해서 피크를 선택하세요.</td></tr>';
+    return;
+  }
+  let totalNorm=0;
+  peaks.forEach(p=>{p.norm=p.area/p.rsf; totalNorm+=p.norm});
+  peaks.forEach(p=>p.atomic=p.norm/totalNorm*100);
+  const siRef = peaks.find(p=>p.el==='Si');
+  // Sort by atomic % descending
+  peaks.sort((a,b)=>b.atomic-a.atomic);
+  const rows=peaks.map(p=>{
+    const barWidth=Math.round(p.atomic);
+    return `<tr>
+      <td class="elem" style="font-size:13px">${p.el}</td>
+      <td>${p.peak}</td>
+      <td>${p.be.toFixed(2)}</td>
+      <td>${p.area.toFixed(0)}</td>
+      <td>${p.rsf.toFixed(3)}</td>
+      <td style="font-weight:700;font-size:13px;color:var(--accent2)">${p.atomic.toFixed(1)}%</td>
+      <td>${siRef?(p.atomic/siRef.atomic).toFixed(2):'—'}</td>
+    </tr>`;
+  });
+  // Summary row
+  const total=peaks.reduce((a,p)=>a+p.atomic,0);
+  const summary=`<tr style="background:rgba(77,184,255,0.08);font-weight:600">
+    <td colspan="5" style="text-align:right;color:var(--muted)">Total:</td>
+    <td style="color:var(--accent)">${total.toFixed(1)}%</td>
+    <td></td>
+  </tr>`;
+  $('quantBody').innerHTML=rows.join('')+summary;
+
+  // Also populate a compact summary at the top of Peak Table
+  const summaryHTML = `
+    <tr style="background:rgba(94,221,184,0.1)">
+      <td colspan="6" style="padding:8px 12px">
+        <b style="color:var(--accent2)">📊 Quantification Summary:</b>
+        ${peaks.map(p=>`<span style="margin:0 8px"><b style="color:var(--accent)">${p.el}</b> ${p.atomic.toFixed(1)}%</span>`).join('')}
+        ${siRef?`<span style="margin-left:12px;color:var(--muted)">| Ratios (vs Si): ${peaks.filter(p=>p.el!=='Si').map(p=>`${p.el}/Si = ${(p.atomic/siRef.atomic).toFixed(2)}`).join(', ')}</span>`:''}
+      </td>
+    </tr>
+  `;
+  // If peak table has content, prepend summary; otherwise show only summary + hint
+  const currentPeakBody=$('peakBody').innerHTML;
+  if(currentPeakBody.includes('No peaks detected')){
+    $('peakBody').innerHTML=summaryHTML+`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:12px">개별 피크 deconvolution은 Curve Fit 버튼을 누르세요.</td></tr>`;
+  } else {
+    // Check if summary already present
+    if(!currentPeakBody.includes('Quantification Summary')){
+      $('peakBody').innerHTML=summaryHTML+currentPeakBody;
+    }
+  }
+}
+
+/* ============================================================
+   REGION SELECTION OVERLAY (on spectrum redraw)
+   ============================================================ */
+function drawRegionOverlays(){
+  const spec=state.currentSpec;
+  const regs=regionSelections[spec];
+  if(!regs||!regs.length) return;
+  const r=SPEC_RANGES[spec];
+  const pad={l:55,r:20,t:20,b:40};
+  const plotW=canvas.clientWidth-pad.l-pad.r;
+  const plotH=canvas.clientHeight-pad.t-pad.b;
+  const beToX = be => pad.l + plotW*(1-(be-r.min)/(r.max-r.min));
+  regs.forEach(reg=>{
+    const xHi=beToX(reg.beStart); // beStart = lower BE number? depends on assignment
+    const xLo=beToX(reg.beEnd);
+    const x1=Math.min(xHi,xLo), x2=Math.max(xHi,xLo);
+    ctx.fillStyle='rgba(94,221,184,0.12)';
+    ctx.fillRect(x1,pad.t,x2-x1,plotH);
+    ctx.strokeStyle='rgba(94,221,184,0.7)';
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(x1,pad.t,x2-x1,plotH);
+    ctx.setLineDash([]);
+    ctx.fillStyle='#16a085';
+    ctx.font='bold 10.5px Segoe UI';
+    ctx.fillText(`${reg.label}  A=${reg.area.toFixed(0)}`,x1+4,pad.t+28);
+  });
+}
+
+/* ============================================================
+   UI UPDATES
+   ============================================================ */
+function updateAllStatus(){
+  // Predicted FWHM display
+  const p=getAcqParams();
+  $('paramFWHM').textContent=`~${p.fwhmAna.toFixed(2)} eV`;
+
+  // Title bar
+  $('titleStatus').innerHTML = state.acquiring
+    ? '<span style="color:var(--warn)">● Acquiring</span>'
+    : (state.vacuumReady && state.sourceOn ? '<span style="color:var(--good)">● Ready</span>' : '<span style="color:var(--muted)">● Idle</span>');
+
+  // Vacuum
+  const llP = !state.loadlockInserted ? '7.6e+2 Torr' :
+              !state.loadlockPumped ? '5.0e+1 Torr' :
+              state.transferred ? '1.0e-7 Torr' : '5.0e-6 Torr';
+  const llLed = state.loadlockPumped ? 'on' : (state.loadlockInserted ? 'warn' : 'off');
+  $('statLoadlock').textContent=llP;
+  $('statLoadlock').className='val '+(state.loadlockPumped?'ok':state.loadlockInserted?'mid':'bad');
+  $('ledLoadlock').className='led '+llLed;
+
+  const acP = state.vacuumReady ? '3.2e-9 Torr' : (state.transferred ? '8.0e-8 Torr' : '1.0e-3 Torr');
+  $('statAnalysis').textContent=acP;
+  $('statAnalysis').className='val '+(state.vacuumReady?'ok':'bad');
+  $('ledAnalysis').className='led '+(state.vacuumReady?'on':'off');
+  $('statIonPump').textContent=state.vacuumReady?'2.3 µA':'— µA';
+
+  // Source
+  $('statSource').textContent = state.sourceOn ? 'Al Kα ON (1486.6 eV)' : 'Standby';
+  $('statSource').className='val '+(state.sourceOn?'ok':'bad');
+  $('ledSource').className='led '+(state.sourceOn?'on':'off');
+  $('statFil').textContent = state.sourceOn ? '2.1 A' : '— A';
+
+  // Flood gun
+  $('statFlood').textContent = state.floodOn ? 'ON' : 'Off';
+  $('statFlood').className='val '+(state.floodOn?'ok':'bad');
+  $('ledFlood').className='led '+(state.floodOn?'on':'off');
+
+  // Tree
+  $('tnSampleS').textContent = state.sampleLoaded ? '✓ Defined' : '—';
+  $('tnLoadlockS').textContent = state.loadlockPumped ? '✓ Pumped' : (state.loadlockInserted ? 'Pumping...' : 'Vent');
+  $('tnAnalysisS').textContent = state.vacuumReady ? '3.2e-9' : '—';
+  $('tnSourceS').textContent = state.sourceOn ? 'Al Kα' : 'Off';
+  $('tnFloodS').textContent = state.floodOn ? 'ON' : 'Off';
+  $('tnStageS').textContent = state.transferred ? 'Analysis' : 'Loadlock';
+  $('tnSurveyS').textContent = state.surveyDone ? '✓' : '—';
+  $('tnRegionCS').textContent = state.c1sDone ? '✓' : '—';
+  $('tnRegionSiS').textContent = state.si2pDone ? '✓' : '—';
+  $('tnRegionFS').textContent = state.f1sDone ? '✓' : '—';
+  $('tnRegionOS').textContent = state.o1sDone ? '✓' : '—';
+  $('tnPeakIDS').textContent = state.peakIDDone ? '✓' : '—';
+  $('tnFitS').textContent = state.fitDone ? '✓' : '—';
+  $('tnQuantS').textContent = state.quantDone ? '✓' : '—';
+
+  // Stage view
+  $('stageWafer').style.display = state.transferred ? 'block' : 'none';
+  $('stageCrosshair').style.display = state.transferred ? 'block' : 'none';
+  $('stageCoords').innerHTML = state.transferred
+    ? `<span>X: ${state.stageX.toFixed(2)}  Y: ${state.stageY.toFixed(2)}  Z: ${state.stageZ.toFixed(2)}</span><span>T: 0°  R: 0°</span>`
+    : `<span>X: 0.00  Y: 0.00  Z: 0.00</span><span>T: 0°  R: —</span>`;
+  // apply jitter when focusing
+  if(state.autoZ){
+    $('stageCrosshair').style.left='50%';
+    $('stageCrosshair').style.top='50%';
+  }
+
+  // Toolbar button states
+  setToolState('tbSample',true, state.sampleLoaded);
+  setToolState('tbLoadlock',state.sampleLoaded,state.loadlockInserted);
+  setToolState('tbPump',state.loadlockInserted && !state.loadlockPumped, state.loadlockPumped);
+  setToolState('tbTransfer',state.loadlockPumped && !state.transferred, state.transferred);
+  setToolState('tbVacuum',state.transferred && !state.vacuumReady, state.vacuumReady);
+  setToolState('tbXray',state.vacuumReady, state.sourceOn);
+  setToolState('tbFlood',state.sourceOn, state.floodOn);
+  setToolState('tbAutoZ',state.sourceOn, state.autoZ);
+  setToolState('tbSurvey',state.autoZ && !state.surveyDone, state.surveyDone);
+  setToolState('tbPeakID',state.surveyDone && !state.peakIDDone, state.peakIDDone);
+  setToolState('tbRegion',state.peakIDDone, state.c1sDone&&state.si2pDone&&state.f1sDone&&state.o1sDone);
+  setToolState('tbFit',state.c1sDone||state.si2pDone||state.f1sDone||state.o1sDone, state.fitDone);
+  setToolState('tbReport',state.fitDone, state.quantDone);
+
+  // Fit toggle — in Free Mode, enable as soon as any region scan exists.
+  // In Tutorial Mode, require explicit Curve Fit step.
+  const anyRegion = state.c1sDone||state.si2pDone||state.f1sDone||state.o1sDone;
+  if(state.mode==='free'){
+    $('toggleFit').disabled = !anyRegion;
+  } else {
+    $('toggleFit').disabled = !state.fitDone;
+  }
+  $('toggleFit').classList.toggle('active',state.showFitComponents);
+
+  updateQueue();
+}
+
+function setToolState(id,enabled,done){
+  const btn=$(id);
+  if(!btn) return;
+  // In tutorial mode, ALWAYS keep buttons clickable. The canProceed() gate
+  // handles whether the action actually runs. Disabling here caused the
+  // "can't click Load Lock in step 2" bug.
+  btn.disabled=false;
+  btn.classList.toggle('active', done);
+}
+
+function updateQueue(){
+  const rows=$('queueBody').rows;
+  const flags=[state.surveyDone,state.c1sDone,state.si2pDone,state.f1sDone,state.o1sDone];
+  for(let i=0;i<rows.length;i++){
+    const dot=rows[i].querySelector('.status-dot');
+    const statusCell=rows[i].cells[2];
+    rows[i].classList.toggle('done',flags[i]);
+    dot.className='status-dot'+(flags[i]?' done':'');
+    statusCell.textContent=flags[i]?'Completed':'Pending';
+  }
+}
+
+/* ============================================================
+   ACQUISITION ANIMATION
+   ============================================================ */
+function acquire(title,duration,onComplete){
+  state.acquiring=true;
+  updateAllStatus();
+  const overlay=$('acqOverlay');
+  overlay.classList.add('show');
+  $('acqTitle').textContent=title;
+  const bar=$('acqBar');
+  bar.style.width='0%';
+  const start=performance.now();
+  const p=getAcqParams();
+  const r=SPEC_RANGES[state.currentSpec];
+  function tick(t){
+    const elapsed=t-start;
+    const frac=Math.min(1,elapsed/duration);
+    bar.style.width=(frac*100)+'%';
+    const currentBE = r.max - frac*(r.max-r.min);
+    const fakeCPS = (1000+Math.random()*2000).toFixed(0);
+    const sweepNow=Math.min(p.sweeps,Math.ceil(frac*p.sweeps));
+    $('acqInfo').textContent=`Sweep ${sweepNow} of ${p.sweeps}  |  BE: ${currentBE.toFixed(1)} eV  |  CPS: ${fakeCPS}`;
+    if(frac<1) requestAnimationFrame(tick);
+    else {
+      overlay.classList.remove('show');
+      state.acquiring=false;
+      onComplete && onComplete();
+      updateAllStatus();
+      drawCurrentSpectrum();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   ACTIONS (GATED IN TUTORIAL MODE)
+   ============================================================ */
+function canProceed(action){
+  if(state.mode==='free') return {ok:true};
+  const step=TUTORIAL[state.tutorialStep];
+  if(!step) return {ok:false,reason:'튜토리얼이 완료되었습니다. Free Mode로 전환하세요.'};
+  if(step.action!==action){
+    return {ok:false,reason:`현재 튜토리얼 단계: "${step.title}". 먼저 강조된 버튼을 클릭하세요.`};
+  }
+  return {ok:true};
+}
+
+// In Free Mode, prerequisite checks only show warnings but don't block.
+// In Tutorial Mode, they block completely.
+function checkPrereq(cond, warnMsg){
+  if(cond) return true;
+  if(state.mode==='free'){
+    toast('⚠ '+warnMsg+' (Free Mode: 경고만 표시, 실행은 됩니다)','warn',3500);
+    return true; // allow execution
+  }
+  toast(warnMsg,'warn');
+  return false;
+}
+
+function resetAllState(){
+  state.sampleLoaded=false;
+  state.loadlockInserted=false;
+  state.loadlockPumped=false;
+  state.transferred=false;
+  state.vacuumReady=false;
+  state.sourceOn=false;
+  state.floodOn=false;
+  state.autoZ=false;
+  state.surveyDone=false;
+  state.peakIDDone=false;
+  state.c1sDone=false; state.si2pDone=false; state.f1sDone=false; state.o1sDone=false;
+  state.fitDone=false;
+  state.quantDone=false;
+  state.acquiring=false;
+  state.showFitComponents=false;
+  state.chargeCorrected=false;
+  state.stageX=0; state.stageY=0; state.stageZ=0;
+  cachedSpectra={};
+  regionSelections={};
+  chargeShift=0;
+  $('chargeShiftDisp') && ($('chargeShiftDisp').textContent='');
+  // Clear tree node active states
+  document.querySelectorAll('.tree-node').forEach(n=>n.classList.remove('done','active'));
+  // Reset peak/quant tables
+  $('peakBody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No peaks detected yet. Run Peak ID and Curve Fit.</td></tr>';
+  $('quantBody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Use the ▭ Region tool to drag-select peaks, then quantification will appear here.</td></tr>';
+  // Reset spectrum tab to survey
+  state.currentSpec='survey';
+  document.querySelectorAll('.spectrum-tab').forEach(t=>t.classList.toggle('active',t.dataset.spec==='survey'));
+  // Reset fit toggle
+  $('toggleFit') && $('toggleFit').classList.remove('active');
+}
+
+function doSample(){
+  const c=canProceed('sample');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.sampleLoaded=true;
+  $('tnSample').classList.add('done');
+  logMsg('info','Sample defined: Si wafer (CF₄ plasma etched, 30s exposure)');
+  advanceTutorial();
+  updateAllStatus();
+}
+function doLoadlock(){
+  if(!checkPrereq(state.sampleLoaded,'Sample을 먼저 정의하세요.')) return;
+  const c=canProceed('loadlock');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.loadlockInserted=true;
+  logMsg('info','Sample loaded into load lock chamber');
+  advanceTutorial();
+  updateAllStatus();
+}
+function doPump(){
+  if(!checkPrereq(state.loadlockInserted,'Load Lock에 시료를 넣어야 합니다.')) return;
+  const c=canProceed('pump');
+  if(!c.ok){toast(c.reason,'warn');return}
+  logMsg('info','Pump down initiated (turbo + rotary)...');
+  toast('Pumping down... (60s simulated in 2s)','info');
+  setTimeout(()=>{
+    state.loadlockPumped=true;
+    logMsg('ok','Load lock pressure: 5.0e-6 Torr (transfer threshold met)');
+    advanceTutorial();
+    updateAllStatus();
+  },2000);
+  updateAllStatus();
+}
+function doTransfer(){
+  if(!checkPrereq(state.loadlockPumped,'Pump down 후 transfer 가능합니다.')) return;
+  const c=canProceed('transfer');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.transferred=true;
+  logMsg('info','Transfer arm moving sample to analysis stage...');
+  advanceTutorial();
+  updateAllStatus();
+}
+function doVacuum(){
+  if(!checkPrereq(state.transferred,'시료가 분석 위치에 있어야 합니다.')) return;
+  const c=canProceed('vacuum');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.vacuumReady=true;
+  logMsg('ok','Analysis chamber pressure: 3.2e-9 Torr ✓ (XPS acquisition range)');
+  advanceTutorial();
+  updateAllStatus();
+}
+function doXray(){
+  if(!checkPrereq(state.vacuumReady,'분석실 진공을 먼저 확인하세요.')) return;
+  const c=canProceed('xray');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.sourceOn=true;
+  logMsg('ok',`Monochromated Al Kα source ON (${$('paramPower').value})`);
+  advanceTutorial();
+  updateAllStatus();
+}
+function doFlood(){
+  if(!checkPrereq(state.sourceOn,'광원을 먼저 켜야 합니다.')) return;
+  const c=canProceed('flood');
+  // In Tutorial, canProceed blocks toggle-off; only run if it's the right step
+  if(!c.ok && state.mode==='tutorial'){toast(c.reason,'warn');return}
+  // Toggle behavior: Free mode allows turning OFF to observe charging
+  if(state.floodOn && state.mode==='free'){
+    state.floodOn=false;
+    logMsg('warn','Flood gun turned OFF → surface charging will occur on next scan');
+    toast('Flood Gun OFF. 다음 측정에서 charging shift 관찰 가능. C-ref 툴로 보정 필요.','warn',4500);
+    // Invalidate cached spectra so next redraw shows charging
+    Object.keys(cachedSpectra).forEach(k=>cachedSpectra[k]=null);
+    updateAllStatus();
+    drawCurrentSpectrum();
+    return;
+  }
+  state.floodOn=true;
+  logMsg('info','Flood gun ON (1.0 eV, 100 µA) — charge neutralization active');
+  // Invalidate spectra so re-scan shows corrected positions
+  if(state.mode==='free'){
+    Object.keys(cachedSpectra).forEach(k=>cachedSpectra[k]=null);
+  }
+  advanceTutorial();
+  updateAllStatus();
+  drawCurrentSpectrum();
+}
+function doAutoZ(){
+  if(!checkPrereq(state.sourceOn,'광원 ON 후 Auto-Z가 가능합니다.')) return;
+  const c=canProceed('autoZ');
+  if(!c.ok){toast(c.reason,'warn');return}
+  logMsg('info','Auto-Z: optimizing height and count rate...');
+  toast('Optimizing Z-height for maximum count rate...','info');
+  setTimeout(()=>{
+    state.autoZ=true;
+    logMsg('ok','Optimal Z found: Z=12.34 mm, Max count rate at Si 2p ≈ 85 kCPS');
+    state.stageZ=12.34;
+    advanceTutorial();
+    updateAllStatus();
+  },1500);
+  updateAllStatus();
+}
+function doSurvey(){
+  if(!checkPrereq(state.autoZ,'Auto-Z 완료 후 Survey 가능합니다.')) return;
+  const c=canProceed('survey');
+  if(!c.ok){toast(c.reason,'warn');return}
+  // Check parameters
+  const pe=parseFloat($('paramPE').value);
+  if(pe<40){
+    toast(`Warning: Pass Energy ${pe} eV는 Survey에는 비효율적입니다 (저감도, 긴 측정시간). 일반적으로 80-160 eV 사용.`,'warn',5000);
+  }
+  // Charging warning
+  if(!state.floodOn){
+    toast('⚠ Flood Gun이 OFF입니다. 절연체 표면에서 charging shift (+3 eV 내외)가 발생할 수 있습니다. 측정 후 C-ref로 보정 필요.','warn',5500);
+    logMsg('warn','Flood Gun OFF → surface charging simulated (+3.2 eV shift expected)');
+  }
+  state.currentSpec='survey';
+  selectSpecTab('survey');
+  cachedSpectra.survey=null;
+  acquire('Acquiring Survey Scan (0–1200 eV)', 3000, ()=>{
+    state.surveyDone=true;
+    const peaks = state.floodOn
+      ? '~99, 150, 285, 532, 688 eV'
+      : '~102, 153, 288, 535, 691 eV (CHARGED — C-ref 보정 필요)';
+    logMsg('ok','Survey scan complete. Peaks at '+peaks);
+    advanceTutorial();
+  });
+  updateAllStatus();
+}
+function doPeakID(){
+  if(!checkPrereq(state.surveyDone,'Survey scan 필요.')) return;
+  const c=canProceed('peakID');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.peakIDDone=true;
+  logMsg('ok','Peak ID: Si 2p (99), Si 2s (150), C 1s (285), O 1s (532), F 1s (688), O KLL (744)');
+  advanceTutorial();
+  updateAllStatus();
+  drawCurrentSpectrum();
+}
+function doRegion(){
+  if(!checkPrereq(state.peakIDDone,'Peak ID 먼저 수행하세요.')) return;
+  const c=canProceed('region');
+  if(!c.ok){toast(c.reason,'warn');return}
+  // Auto-switch to high-res params if still at survey PE
+  const pe=parseFloat($('paramPE').value);
+  if(pe>40){
+    toast('Switching to Pass Energy = 20 eV for high resolution.','info');
+    $('paramPE').value='20';
+    $('paramStep').value='0.1';
+  }
+  // Run all 4 region scans sequentially
+  const scans=['c1s','si2p','f1s','o1s'];
+  const names={c1s:'C 1s',si2p:'Si 2p',f1s:'F 1s',o1s:'O 1s'};
+  let i=0;
+  function next(){
+    if(i>=scans.length){
+      advanceTutorial();
+      return;
+    }
+    const s=scans[i];
+    state.currentSpec=s;
+    selectSpecTab(s);
+    cachedSpectra[s]=null;
+    acquire(`Acquiring ${names[s]} Region (High Res, PE=20 eV)`, 1800, ()=>{
+      state[s+'Done']=true;
+      logMsg('ok',`${names[s]} region scan complete`);
+      i++;
+      setTimeout(next,200);
+    });
+  }
+  next();
+}
+function doFit(){
+  if(!checkPrereq(state.c1sDone||state.si2pDone||state.f1sDone||state.o1sDone,'Region scan 결과가 없습니다.')) return;
+  const c=canProceed('fit');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.fitDone=true;
+  state.showFitComponents=true;
+  populatePeakTable();
+  logMsg('ok','Curve fit applied: Gaussian-Lorentzian (30/70), Shirley BG. C 1s deconvolved into 6 components.');
+  $('toggleFit').disabled=false;
+  advanceTutorial();
+  updateAllStatus();
+  drawCurrentSpectrum();
+}
+function doReport(){
+  if(!checkPrereq(state.fitDone,'Curve fit을 먼저 수행하세요.')) return;
+  const c=canProceed('report');
+  if(!c.ok){toast(c.reason,'warn');return}
+  state.quantDone=true;
+  populateQuantTable();
+  logMsg('ok','Quantification complete. Atomic % computed using Scofield RSFs.');
+  document.querySelector('.bottom-tab[data-bot=quant]').click();
+  advanceTutorial();
+  updateAllStatus();
+}
+
+/* ---------- PEAK & QUANT TABLES ---------- */
+function populatePeakTable(){
+  const rows=[];
+  const c1s=SAMPLE.composition.find(c=>c.peak==='C 1s');
+  const si2p=SAMPLE.composition.find(c=>c.peak==='Si 2p');
+  const f1s=SAMPLE.composition.find(c=>c.peak==='F 1s');
+  const o1s=SAMPLE.composition.find(c=>c.peak==='O 1s');
+  function addGrp(grp){
+    const total=grp.comps.reduce((a,c)=>a+c.w,0);
+    grp.comps.forEach(c=>{
+      const pct=(c.w/total*100).toFixed(1);
+      const p=getAcqParams();
+      const fwhm=Math.sqrt(c.fwhm_intr*c.fwhm_intr+p.fwhmAna*p.fwhmAna);
+      rows.push(`<tr>
+        <td><span class="elem">${grp.peak}</span></td>
+        <td>${c.be.toFixed(2)}</td>
+        <td>${fwhm.toFixed(2)}</td>
+        <td>${(c.w*10000).toFixed(0)}</td>
+        <td>${pct}%</td>
+        <td class="assign">${c.label}</td>
+      </tr>`);
+    });
+  }
+  addGrp(c1s); addGrp(si2p); addGrp(f1s); addGrp(o1s);
+  $('peakBody').innerHTML=rows.join('');
+}
+
+function populateQuantTable(){
+  // Simplified quantification
+  const peaks=[
+    {el:'Si',peak:'Si 2p',be:100.0, area:42000, rsf:0.817},
+    {el:'C', peak:'C 1s', be:285.2, area:28500, rsf:1.0},
+    {el:'O', peak:'O 1s', be:532.8, area:31000, rsf:2.93},
+    {el:'F', peak:'F 1s', be:688.0, area:38000, rsf:4.43},
+  ];
+  let totalNorm=0;
+  peaks.forEach(p=>{p.norm=p.area/p.rsf; totalNorm+=p.norm});
+  peaks.forEach(p=>p.atomic=p.norm/totalNorm*100);
+  const siPct=peaks.find(p=>p.el==='Si').atomic;
+  const rows=peaks.map(p=>`<tr>
+    <td class="elem">${p.el}</td>
+    <td>${p.peak}</td>
+    <td>${p.be.toFixed(2)}</td>
+    <td>${p.area.toFixed(0)}</td>
+    <td>${p.rsf.toFixed(3)}</td>
+    <td><b>${p.atomic.toFixed(1)}%</b></td>
+    <td>${(p.atomic/siPct).toFixed(2)}</td>
+  </tr>`);
+  $('quantBody').innerHTML=rows.join('');
+}
+
+/* ============================================================
+   TUTORIAL
+   ============================================================ */
+const TUTORIAL=[
+  {action:'sample',title:'1. Sample 정의',targetId:'tbSample',
+   desc:'분석 대상 시료를 먼저 시스템에 등록합니다. 이 실습에서는 CF₄ 플라즈마로 30초 에칭한 Si(100) wafer를 사용합니다.',
+   why:'시료 이력 기록은 해석의 출발점입니다. CF₄ 에칭 이력 → F 잔류, 플루오로카본 폴리머, 표면 산화 가능성을 미리 예상해야 합니다.'},
+  {action:'loadlock',title:'2. Load Lock 삽입',targetId:'tbLoadlock',
+   desc:'시료를 load lock chamber에 로드합니다. Load lock은 분석실을 대기에 노출시키지 않기 위한 중간 진공 공간입니다.',
+   why:'분석실(UHV ~10⁻⁹ Torr)을 대기에 직접 노출시키면 복구에 수일이 걸립니다. Load lock에서 먼저 10⁻⁶ Torr까지 떨어뜨립니다.'},
+  {action:'pump',title:'3. Load Lock Pump Down',targetId:'tbPump',
+   desc:'Load lock을 rotary → turbo pump 시퀀스로 배기합니다. 목표: 5×10⁻⁶ Torr 이하.',
+   why:'Transfer threshold를 만족하지 못하면 게이트 밸브 인터락이 열리지 않습니다. 실제 장비에서도 물리적으로 차단됩니다.',
+   quiz:{q:'Load lock을 충분히 pump down 하지 않고 분석실로 transfer하면?',
+         choices:[
+           {t:'분석실 진공이 손상되어 필라멘트가 타거나 오염이 생김',ok:true,fb:'정답입니다. 실제로 turbo pump 트립, X-ray 필라멘트 손상이 발생할 수 있습니다.'},
+           {t:'아무 문제 없이 측정됨',ok:false,fb:'Load lock에 남은 가스(주로 수분, 탄화수소)가 분석실로 유입되어 오염됩니다.'},
+           {t:'피크 위치만 약간 이동함',ok:false,fb:'단순한 shift 문제가 아닙니다. 필라멘트 손상과 오염이 주 이슈입니다.'},
+         ]}},
+  {action:'transfer',title:'4. 분석 위치로 Transfer',targetId:'tbTransfer',
+   desc:'Transfer arm으로 시료를 analysis chamber의 sample stage로 이동시킵니다.',
+   why:'Stage 좌표 (X/Y/Z/Tilt)가 acquisition 좌표계와 연결됩니다. 올바른 위치에 놓이지 않으면 X-ray 조사 영역을 벗어납니다.'},
+  {action:'vacuum',title:'5. Analysis Chamber 진공 확인',targetId:'tbVacuum',
+   desc:'분석실 압력이 XPS 측정 가능 수준(< 5×10⁻⁸ Torr)인지 확인합니다. 이상적으로는 10⁻⁹ Torr.',
+   why:'압력이 높으면 광전자가 잔류 가스와 충돌하여 inelastic scattering이 증가하고, S/N이 떨어집니다.'},
+  {action:'xray',title:'6. X-ray Source ON',targetId:'tbXray',
+   desc:'Monochromated Al Kα (1486.6 eV) 광원을 켭니다. 우측 패널에서 Power를 선택할 수 있습니다 (72W/150W/200W).',
+   why:'Al Kα는 단색화(monochromator)를 거쳐 line width ~0.26 eV로 sharp한 여기선을 제공합니다. 전력이 클수록 spot size는 커지고 count rate는 높아지지만 시료 damage 위험도 증가합니다.',
+   quiz:{q:'Mg Kα 대신 Al Kα를 사용하는 주된 이유는?',
+         choices:[
+           {t:'더 높은 hν로 깊은 core level 접근 + monochromation 용이',ok:true,fb:'정답. Mg Kα(1253.6 eV)는 monochromation이 어렵고 Al Kα(1486.6 eV)가 표준입니다.'},
+           {t:'Mg이 Al보다 독성이 강함',ok:false,fb:'화학적 독성과는 무관합니다.'},
+           {t:'Al이 더 싸기 때문',ok:false,fb:'가격 이슈가 아닙니다. 물리적 특성 차이입니다.'},
+         ]}},
+  {action:'flood',title:'7. Flood Gun (Charge Neutralizer)',targetId:'tbFlood',
+   desc:'저에너지 전자를 시료 표면에 공급해 표면 양전하(charging)를 중화합니다. 본 시료는 표면 SiO₂/F 잔류층이 있어 부분적으로 절연성이 있다고 가정합니다.',
+   why:'Charging이 없으면 피크가 수 eV 고에너지 측으로 shift하고 broadening이 발생합니다. Flood gun을 켜면 charge correction 후 C 1s = 284.8 eV 기준으로 교정 가능합니다.'},
+  {action:'autoZ',title:'8. Auto-Z / Focus',targetId:'tbAutoZ',
+   desc:'Stage Z축을 미세 조정하여 X-ray focal point와 analyzer acceptance가 맞는 위치를 찾습니다. 보통 Si 2p 또는 C 1s의 count rate를 maximize 합니다.',
+   why:'Z가 어긋나면 count rate가 2~10배까지 낮아지고 긴 측정 시간이 필요합니다. 또한 stage tilt에 따라 분석 깊이(take-off angle)가 바뀝니다.'},
+  {action:'survey',title:'9. Survey Scan',targetId:'tbSurvey',
+   desc:'넓은 BE 범위 (0-1200 eV)를 PE 80 또는 160 eV로 측정하여 어떤 원소가 존재하는지 파악합니다. Step 1 eV, dwell 50 ms 내외가 일반적.',
+   why:'Survey 없이 region scan으로 직행하면 예상치 못한 원소(예: 오염 Na, K, Cl)를 놓칠 수 있습니다. 우측 패널에서 Pass Energy를 80 eV로 설정하세요.',
+   quiz:{q:'Survey scan에서 Pass Energy를 20 eV로 설정하면?',
+         choices:[
+           {t:'FWHM은 좋아지지만 count rate가 크게 줄어 측정 시간이 훨씬 길어짐',ok:true,fb:'정답. FAT 모드에서 transmission ~ PE이므로 신호가 1/4로 감소합니다.'},
+           {t:'더 많은 원소가 검출됨',ok:false,fb:'PE는 감지 원소 수와 무관합니다.'},
+           {t:'변화 없음',ok:false,fb:'Pass energy는 analyzer 분해능과 transmission에 직접 영향을 줍니다.'},
+         ]}},
+  {action:'peakID',title:'10. Peak Identification',targetId:'tbPeakID',
+   desc:'Survey spectrum의 피크를 원소에 매핑합니다. 자동 peak ID가 NIST XPS 데이터베이스 기준으로 제안합니다.',
+   why:'Si 2p(99 eV), C 1s(285 eV), O 1s(532 eV), F 1s(688 eV) 외에도 O KLL(~744 eV), F KLL auger 등 auger line을 구분해야 합니다.'},
+  {action:'region',title:'11. High Resolution Region Scans',targetId:'tbRegion',
+   desc:'핵심 원소(C 1s, Si 2p, F 1s, O 1s)를 Pass Energy 20 eV, Step 0.1 eV로 고해상도 측정합니다. Chemical shift를 관찰하기 위해 필수적입니다.',
+   why:'PE 20 eV → FWHM ~0.5 eV로 C 1s의 C–C, C–O, C=O, C–F, CF₂, CF₃ 성분을 분리(deconvolution)할 수 있습니다. Survey의 PE 80 eV FWHM ~1.2 eV로는 불가능합니다.'},
+  {action:'fit',title:'12. Curve Fit (피크 분해)',targetId:'tbFit',
+   desc:'Shirley background 차감 후 Gaussian-Lorentzian (30% Lorentzian) pseudo-Voigt 함수로 겹친 피크를 분리합니다. 예를 들어 C 1s는 한 덩어리처럼 보이지만 실제로는 C–C, C–O, C=O, C–F, CF₂, CF₃ 6개 성분이 겹쳐있는 것이며, fit을 통해 각 성분의 함량을 알아냅니다.',
+   why:'실제 상용 소프트웨어(Avantage, CasaXPS 등)에서는 fit을 두 가지 방법으로 수행합니다.\n\n① 수동(Manual) fit: 사용자가 각 성분의 초기 위치·FWHM·intensity를 직접 지정하고, 제약(constraint)을 걸어 최적화. 예를 들어 Si 2p는 spin-orbit doublet (2p3/2 : 2p1/2 = 2:1, ΔE=0.6 eV) 제약이 필수.\n\n② 자동(Auto) fit: 알고리즘이 피크 위치와 FWHM을 자동 탐색. 편하지만 물리적으로 타당하지 않은 해가 나올 수 있어 검증이 필요.\n\n본 교육 모듈에서는 Fit 버튼이 자동 fit을 수행하며, Show Components 버튼으로 분해된 성분을 시각화합니다.',
+   quiz:{q:'C 1s fit에서 C–F (289.5 eV) 성분의 FWHM을 C–C (284.8 eV)와 동일하게 묶는 이유는?',
+         choices:[
+           {t:'동일 원소(C)의 동일 core level이므로 intrinsic broadening이 유사하고, free fit은 parameter가 과다해져 수렴이 불안정하기 때문',ok:true,fb:'정답. Constraint는 overfit을 방지하고 물리적으로 의미있는 해를 강제합니다.'},
+           {t:'Software가 강제하는 규칙',ok:false,fb:'Software 제약이 아니라 물리적 타당성 때문입니다.'},
+           {t:'C–F가 C–C보다 강하기 때문',ok:false,fb:'결합 강도와 FWHM은 직접 연관이 없습니다.'},
+         ]}},
+  {action:'report',title:'13. Quantification & 탄소 기준 보정 (C-ref)',targetId:'tbReport',
+   desc:'정량 계산: Atomic % = (Area / RSF) / Σ(Area / RSF) × 100 공식으로 각 원소의 표면 조성을 구합니다. Scofield RSF는 원소·core level마다 정해진 값(예: C 1s=1.0, O 1s=2.93, F 1s=4.43)을 사용합니다.\n\n**탄소 기준 보정(C-ref)이란?** 거의 모든 시료 표면에는 대기 중에서 묻은 "우연 탄소(adventitious carbon)"의 C–C 결합이 존재하며, 이것은 교과서적으로 **항상 284.8 eV**에 있다고 약속되어 있습니다. 따라서 실제 측정된 C 1s C–C 피크가 285.5 eV에 나타났다면, "이 시료는 +0.7 eV만큼 charging으로 밀렸구나"라고 판단하고 **모든 피크를 -0.7 eV shift**시켜서 올바른 BE 값을 얻습니다.',
+   why:'구체적 사용법:\n① 상단 스펙트럼 탭에서 **C 1s 탭**을 클릭\n② 툴바의 **⊙ C-ref** 버튼 클릭 (파란색으로 활성화됨)\n③ 스펙트럼에서 **가장 큰 피크(C–C)의 꼭대기**를 마우스로 클릭\n④ 시스템이 자동으로 "클릭한 위치 - 284.8 eV" 만큼 전체 스펙트럼을 shift\n⑤ 상단에 적용된 ΔBE 값이 표시됨\n\n⚡ Quantify All 버튼은 측정된 모든 region을 자동으로 적분해 Atomic %를 한번에 계산합니다. 결과는 하단 **Quantification** 탭에서 확인.'},
+];
+
+function updateTutorial(){
+  const step=TUTORIAL[state.tutorialStep];
+  const panel=$('tutorialPanel');
+  if(!step){
+    $('tutTitle').textContent='🎉 튜토리얼 완료';
+    $('tutDesc').textContent='전체 XPS 분석 워크플로를 체험했습니다. 이제 Free Mode에서 지금 배운 절차를 자유롭게 재현해보세요. Free Mode는 튜토리얼 범위 내에서의 반복·연습 공간이며, 새로운 기능이 추가로 열리지는 않습니다.';
+    $('tutAction').innerHTML='→ <b>Free Mode</b> 버튼을 눌러 전환합니다.';
+    $('tutWhy').innerHTML='<b>Free Mode 추천 실습:</b>\n① Pass Energy를 10 eV로 낮추고 C 1s region 재측정 → 6개 성분 분리 확인\n② Flood Gun을 OFF로 토글 후 Survey/Region → charging shift 관찰\n③ ⊙ C-ref 툴로 C 1s 꼭대기 클릭 → 보정\n④ ⚡ Quantify All로 Atomic % 한 번에 계산';
+    $('tutStep').textContent='Complete';
+    document.querySelectorAll('.pulse-ring').forEach(e=>e.remove());
+    renderProgress();
+    return;
+  }
+  $('tutStep').textContent=`Step ${state.tutorialStep+1} / ${TUTORIAL.length}`;
+  $('tutTitle').textContent=step.title;
+  $('tutDesc').textContent=step.desc;
+  $('tutAction').innerHTML=`→ 툴바에서 <b>${step.targetId.replace('tb','')}</b> 버튼을 클릭하세요.`;
+  $('tutWhy').innerHTML=`<b>왜?</b> ${step.why}`;
+  renderProgress();
+  highlightTarget(step.targetId);
+}
+
+function renderProgress(){
+  const p=$('tutProgress');
+  p.innerHTML='';
+  for(let i=0;i<TUTORIAL.length;i++){
+    const d=document.createElement('div');
+    d.className='tut-dot'+(i<state.tutorialStep?' done':(i===state.tutorialStep?' current':''));
+    p.appendChild(d);
+  }
+}
+
+function highlightTarget(id){
+  document.querySelectorAll('.pulse-ring').forEach(e=>e.remove());
+  const el=$(id);
+  if(!el) return;
+  const rect=el.getBoundingClientRect();
+  const ring=document.createElement('div');
+  ring.className='pulse-ring';
+  ring.style.left=(rect.left-3)+'px';
+  ring.style.top=(rect.top-3)+'px';
+  ring.style.width=(rect.width+6)+'px';
+  ring.style.height=(rect.height+6)+'px';
+  document.body.appendChild(ring);
+}
+
+window.addEventListener('resize',()=>{
+  if(state.mode==='tutorial' && TUTORIAL[state.tutorialStep]){
+    highlightTarget(TUTORIAL[state.tutorialStep].targetId);
+  }
+  resizeCanvas();
+});
+
+function advanceTutorial(){
+  if(state.mode!=='tutorial') return;
+  const step=TUTORIAL[state.tutorialStep];
+  if(step && step.quiz){
+    showQuiz(step.quiz,()=>{
+      state.tutorialStep++;
+      updateTutorial();
+    });
+  } else {
+    state.tutorialStep++;
+    updateTutorial();
+  }
+}
+
+function showQuiz(q,onDone){
+  $('quizQuestion').textContent=q.q;
+  const cc=$('quizChoices');
+  cc.innerHTML='';
+  const fb=$('quizFeedback');
+  fb.classList.remove('show');
+  $('quizContinue').style.display='none';
+  q.choices.forEach((ch,i)=>{
+    const btn=document.createElement('div');
+    btn.className='choice';
+    btn.textContent=ch.t;
+    btn.onclick=()=>{
+      Array.from(cc.children).forEach(c=>c.style.pointerEvents='none');
+      if(ch.ok){btn.classList.add('correct')}
+      else{btn.classList.add('wrong')}
+      fb.textContent=ch.fb;
+      fb.classList.add('show');
+      $('quizContinue').style.display='inline-block';
+    };
+    cc.appendChild(btn);
+  });
+  $('quizContinue').onclick=()=>{
+    $('quizModal').classList.remove('show');
+    onDone();
+  };
+  $('quizModal').classList.add('show');
+}
+
+/* ============================================================
+   MODE SWITCH
+   ============================================================ */
+$('modeTutorial').onclick=()=>{
+  state.mode='tutorial';
+  document.body.dataset.mode='tutorial';
+  $('modeTutorial').classList.add('active');
+  $('modeFree').classList.remove('active');
+  $('tutorialPanel').classList.add('show');
+  // Reset state so tutorial starts clean from step 1
+  resetAllState();
+  state.tutorialStep=0;
+  logMsg('info','=== Tutorial Mode activated — starting from Step 1 ===');
+  updateTutorial();
+  updateAllStatus();
+  drawCurrentSpectrum();
+};
+$('modeFree').onclick=()=>{
+  state.mode='free';
+  document.body.dataset.mode='free';
+  $('modeFree').classList.add('active');
+  $('modeTutorial').classList.remove('active');
+  $('tutorialPanel').classList.remove('show');
+  document.querySelectorAll('.pulse-ring').forEach(e=>e.remove());
+  // Reset everything and pre-load the default Si sample
+  resetAllState();
+  state.sampleLoaded = true;
+  $('tnSample').classList.add('done');
+  logMsg('info','=== Free Mode activated ===');
+  logMsg('info','Default sample pre-loaded: Si wafer (CF₄ plasma etched)');
+  logMsg('info','💡 Tips: 우측 파라미터(PE/Step/Dwell/Power/Anode) 변경 시 스펙트럼 즉시 재생성. ▭ Region 툴로 드래그 선택 → 정량 자동. ⊙ C-ref 툴로 C 1s 클릭 → 284.8 eV 보정.');
+  toast('Free Mode: Si 샘플 로드됨. 파라미터 바꿔가며 실험, Region/C-ref 툴로 정량/교정 가능.','ok',5000);
+  updateAllStatus();
+  drawCurrentSpectrum();
+};
+$('tutClose').onclick=()=>$('tutorialPanel').classList.remove('show');
+$('tutHint').onclick=()=>{
+  const step=TUTORIAL[state.tutorialStep];
+  if(step) toast(`Hint: ${step.why}`,'info',6000);
+};
+$('tutSkip').onclick=()=>{
+  if(state.tutorialStep<TUTORIAL.length) state.tutorialStep++;
+  updateTutorial();
+};
+
+/* ============================================================
+   EVENT BINDINGS
+   ============================================================ */
+$('tbSample').onclick=doSample;
+$('tbLoadlock').onclick=doLoadlock;
+$('tbPump').onclick=doPump;
+$('tbTransfer').onclick=doTransfer;
+$('tbVacuum').onclick=doVacuum;
+$('tbXray').onclick=doXray;
+$('tbFlood').onclick=doFlood;
+$('tbAutoZ').onclick=doAutoZ;
+$('tbSurvey').onclick=doSurvey;
+$('tbPeakID').onclick=doPeakID;
+$('tbRegion').onclick=doRegion;
+$('tbFit').onclick=doFit;
+$('tbReport').onclick=doReport;
+
+// Params change → invalidate cache and redraw so user sees effect immediately
+['paramPE','paramStep','paramDwell','paramSweeps','paramPower','paramAnode','paramLens','paramFloodE','paramFloodI'].forEach(id=>{
+  const el=$(id);
+  if(el) el.addEventListener('change',()=>{
+    // If in free mode, changing acquisition-relevant params invalidates cached spectra
+    const acqParams=['paramPE','paramStep','paramDwell','paramSweeps','paramPower','paramAnode'];
+    if(state.mode==='free' && acqParams.includes(id)){
+      // Invalidate cache so next redraw regenerates with new params.
+      // But we only regenerate what's already been acquired.
+      Object.keys(cachedSpectra).forEach(k=>cachedSpectra[k]=null);
+      // Clear region selections because BE scale may shift
+      regionSelections={};
+      logMsg('info',`Parameter changed: ${id.replace('param','')} → cached spectra regenerated`);
+    }
+    updateAllStatus();
+    drawCurrentSpectrum();
+  });
+});
+
+// Spectrum tabs
+document.querySelectorAll('.spectrum-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    selectSpecTab(tab.dataset.spec);
+  });
+});
+function selectSpecTab(s){
+  document.querySelectorAll('.spectrum-tab').forEach(t=>t.classList.toggle('active',t.dataset.spec===s));
+  state.currentSpec=s;
+  drawCurrentSpectrum();
+}
+
+// Bottom tabs
+document.querySelectorAll('.bottom-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.bottom-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.bottom-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.bottom-panel[data-bot=${tab.dataset.bot}]`).classList.add('active');
+  });
+});
+
+// Spectrum toolbar
+$('toggleFit').onclick=()=>{
+  // In Free Mode, allow showing components as long as any region exists
+  const anyRegion = state.c1sDone||state.si2pDone||state.f1sDone||state.o1sDone;
+  if(state.mode==='free' && anyRegion){
+    state.fitDone=true; // enable component drawing
+  }
+  state.showFitComponents=!state.showFitComponents;
+  $('toggleFit').classList.toggle('active',state.showFitComponents);
+  if(state.showFitComponents){
+    logMsg('ok','Fit components displayed: C 1s deconvolved into 6 species (C–C, C–O, C=O, C–F, CF₂, CF₃)');
+  }
+  drawCurrentSpectrum();
+};
+$('bgType').onchange=e=>{state.bgType=e.target.value;drawCurrentSpectrum();};
+$('displayRaw').onclick=()=>{$('displayRaw').classList.add('active');$('displaySmooth').classList.remove('active');drawCurrentSpectrum();};
+$('displaySmooth').onclick=()=>{$('displaySmooth').classList.add('active');$('displayRaw').classList.remove('active');drawCurrentSpectrum();};
+
+/* Tree node direct click (free mode only navigation / highlight) */
+document.querySelectorAll('.tree-node').forEach(node=>{
+  node.addEventListener('click',()=>{
+    document.querySelectorAll('.tree-node').forEach(n=>n.classList.remove('active'));
+    node.classList.add('active');
+  });
+});
+
+/* ---------- INIT ---------- */
+function init(){
+  logMsg('info','XPS Data System initialized');
+  logMsg('info','🎓 Educational simulator — real sample acquisition is under test');
+  logMsg('info','System check: analyzer OK, X-ray source standby, vacuum nominal');
+  resizeCanvas();
+  updateAllStatus();
+  updateTutorial();
+  drawCurrentSpectrum();
+  // Show About modal on first load
+  $('aboutModal').classList.add('show');
+}
+$('aboutBtn').onclick=()=>$('aboutModal').classList.add('show');
+$('aboutClose').onclick=()=>$('aboutModal').classList.remove('show');
+init();
+</script>
+</body>
+</html>
