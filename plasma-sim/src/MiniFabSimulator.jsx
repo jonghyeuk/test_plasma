@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { listScenarios, getScenario } from './miniFab/definitions/scenarios.js';
-import { getEquipment } from './miniFab/definitions/equipment.js';
+import { listScenarios, getScenario, FREE_MODE_ID } from './miniFab/definitions/scenarios.js';
+import { getEquipment, listEquipment } from './miniFab/definitions/equipment.js';
 import { getTutorial } from './miniFab/definitions/tutorials.js';
 import { createInitialSample, summarizeSample } from './miniFab/core/sampleStateEngine.js';
 import { runProcess } from './miniFab/core/processRuleEngine.js';
@@ -68,6 +68,7 @@ function StateBadge({ label, value, ok }) {
 
 export default function MiniFabSimulator() {
   const scenarios = useMemo(() => listScenarios(), []);
+  const allEquipment = useMemo(() => listEquipment(), []);
   const [scenarioId, setScenarioId] = useState(scenarios[0]?.scenario_id || '');
   const [sample, setSample] = useState(() => createInitialSample());
   const [workflow, setWorkflow] = useState(() => initWorkflow(scenarios[0].scenario_id));
@@ -76,45 +77,93 @@ export default function MiniFabSimulator() {
   const [notesLog, setNotesLog] = useState([]);
   const [diagnosis, setDiagnosis] = useState(null);
 
-  const scenario = getScenario(scenarioId);
-  const tutorial = getTutorial(scenarioId);
-  const stepDef = getStepDef(scenarioId, activeStep);
-  const equipment = stepDef ? getEquipment(stepDef.equipment) : null;
-  const isMeasurement = equipment?.type === 'measurement';
-  const stepCompleted = workflow.completed.includes(activeStep);
-  const stepUnlocked = isStepUnlocked(workflow, activeStep);
+  // Free Mode 전용 상태
+  const [freeEquipmentId, setFreeEquipmentId] = useState(null);
+  const [freeParams, setFreeParams] = useState({});
+  const [freeMeasurements, setFreeMeasurements] = useState({}); // measurement_id → result
 
-  const currentParams = paramsByStep[activeStep] ?? defaultParams(equipment);
+  const isFreeMode = scenarioId === FREE_MODE_ID;
+  const scenario = isFreeMode ? null : getScenario(scenarioId);
+  const tutorial = isFreeMode ? [] : getTutorial(scenarioId);
+  const stepDef = scenario ? getStepDef(scenarioId, activeStep) : null;
+
+  // 현재 활성 장비: scenario 모드에서는 stepDef.equipment, free 모드에서는 freeEquipmentId
+  const equipmentId = isFreeMode ? freeEquipmentId : stepDef?.equipment;
+  const equipment = equipmentId ? getEquipment(equipmentId) : null;
+  const isMeasurement = equipment?.type === 'measurement';
+  const stepCompleted = !isFreeMode && workflow.completed.includes(activeStep);
+  const stepUnlocked = isFreeMode ? true : isStepUnlocked(workflow, activeStep);
+
+  const currentParams = isFreeMode
+    ? (freeParams[freeEquipmentId] ?? defaultParams(equipment))
+    : (paramsByStep[activeStep] ?? defaultParams(equipment));
 
   const setParam = (key, val) => {
-    setParamsByStep((prev) => ({
-      ...prev,
-      [activeStep]: { ...(prev[activeStep] ?? defaultParams(equipment)), [key]: val },
-    }));
+    if (isFreeMode) {
+      setFreeParams((prev) => ({
+        ...prev,
+        [freeEquipmentId]: { ...(prev[freeEquipmentId] ?? defaultParams(equipment)), [key]: val },
+      }));
+    } else {
+      setParamsByStep((prev) => ({
+        ...prev,
+        [activeStep]: { ...(prev[activeStep] ?? defaultParams(equipment)), [key]: val },
+      }));
+    }
   };
 
   const resetAll = () => {
     setSample(createInitialSample());
-    setWorkflow(initWorkflow(scenarioId));
+    if (!isFreeMode) setWorkflow(initWorkflow(scenarioId));
     setActiveStep(1);
     setParamsByStep({});
     setNotesLog([]);
     setDiagnosis(null);
+    setFreeMeasurements({});
+    setFreeParams({});
+    setFreeEquipmentId(null);
   };
 
   const switchScenario = (id) => {
     setScenarioId(id);
     setSample(createInitialSample());
-    setWorkflow(initWorkflow(id));
+    if (id !== FREE_MODE_ID) setWorkflow(initWorkflow(id));
     setActiveStep(1);
     setParamsByStep({});
     setNotesLog([]);
     setDiagnosis(null);
+    setFreeMeasurements({});
+    setFreeParams({});
+    setFreeEquipmentId(null);
   };
 
   const handleRun = () => {
-    if (!stepDef || !stepUnlocked || stepCompleted) return;
+    if (!equipment) return;
 
+    // ---- Free Mode ----
+    if (isFreeMode) {
+      if (isMeasurement) {
+        const result = runMeasurement(sample, equipmentId, currentParams);
+        setFreeMeasurements((prev) => ({ ...prev, [equipmentId]: result }));
+        setNotesLog((log) => [
+          { step: '·', equipment: equipment.name, kind: 'measure', detail: result },
+          ...log,
+        ]);
+      } else {
+        const processId = equipment.supported_processes?.[0];
+        if (!processId) return;
+        const { sample: next, notes } = runProcess(sample, processId, currentParams);
+        setSample(next);
+        setNotesLog((log) => [
+          { step: '·', equipment: equipment.name, kind: 'process', notes, params: currentParams },
+          ...log,
+        ]);
+      }
+      return;
+    }
+
+    // ---- Scenario Mode ----
+    if (!stepDef || !stepUnlocked || stepCompleted) return;
     if (isMeasurement) {
       const result = runMeasurement(sample, stepDef.equipment, currentParams);
       const wf = completeStep(workflow, activeStep, result);
@@ -123,13 +172,11 @@ export default function MiniFabSimulator() {
         { step: activeStep, equipment: equipment.name, kind: 'measure', detail: result },
         ...log,
       ]);
-      // 마지막 단계면 자동 진단
-      const nextStep = activeStep + 1;
       const total = scenario.steps.length;
       if (activeStep === total) {
         setDiagnosis(diagnose(sample, scenarioId, wf.results));
       } else {
-        setActiveStep(nextStep);
+        setActiveStep(activeStep + 1);
       }
     } else {
       const { sample: next, notes } = runProcess(sample, stepDef.process, currentParams);
@@ -145,7 +192,7 @@ export default function MiniFabSimulator() {
   };
 
   const summary = summarizeSample(sample);
-  const tutorialMsg = tutorial.find((t) => t.step === activeStep)?.message;
+  const tutorialMsg = isFreeMode ? null : tutorial.find((t) => t.step === activeStep)?.message;
 
   return (
     <div className="p-4 sm:p-6 text-gray-100 min-h-full">
@@ -171,6 +218,17 @@ export default function MiniFabSimulator() {
             </button>
           ))}
           <button
+            onClick={() => switchScenario(FREE_MODE_ID)}
+            className={`px-3 py-2 rounded-lg text-sm border transition ${
+              isFreeMode
+                ? 'bg-fuchsia-600/20 border-fuchsia-500/50 text-fuchsia-200'
+                : 'bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-gray-700/60'
+            }`}
+          >
+            🧪 Free Mode
+            <span className="ml-2 text-[10px] text-gray-500">no scenario</span>
+          </button>
+          <button
             onClick={resetAll}
             className="px-3 py-2 rounded-lg text-sm border bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-rose-900/40 ml-auto"
           >
@@ -180,11 +238,48 @@ export default function MiniFabSimulator() {
         {scenario && (
           <p className="mt-2 text-sm text-gray-400">{scenario.description}</p>
         )}
+        {isFreeMode && (
+          <p className="mt-2 text-sm text-gray-400">
+            장비를 자유롭게 선택해 시편 상태를 누적시킬 수 있습니다. Step lock / Golden Sample 기준은 적용되지 않습니다.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* 좌측: 공정 단계 목록 + Mini Lab */}
+        {/* 좌측: 공정 단계 목록 + Mini Lab (또는 Free Mode 장비 선택) */}
         <div className="lg:col-span-4 space-y-4">
+          {isFreeMode ? (
+            <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+              <div className="text-xs font-bold text-fuchsia-400 mb-3">Mini Process Lab — 장비 자유 선택</div>
+              <div className="grid grid-cols-3 gap-2">
+                {allEquipment.map((eq) => {
+                  const active = freeEquipmentId === eq.equipment_id;
+                  return (
+                    <button
+                      key={eq.equipment_id}
+                      onClick={() => setFreeEquipmentId(eq.equipment_id)}
+                      className={`aspect-square rounded-lg border flex flex-col items-center justify-center text-center p-1 transition ${
+                        active
+                          ? 'border-fuchsia-400 bg-fuchsia-500/10 shadow-md shadow-fuchsia-500/20'
+                          : 'border-gray-700 bg-gray-800/30 hover:bg-gray-800/60'
+                      }`}
+                    >
+                      <div className="text-2xl">{eq.icon}</div>
+                      <div className="text-[10px] mt-1 text-gray-300 leading-tight">{eq.name}</div>
+                      <div className={`text-[9px] mt-0.5 ${eq.type === 'measurement' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {eq.type}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-3 text-[11px] text-gray-500">
+                총 {allEquipment.length}개 장비 — process {allEquipment.filter(e => e.type === 'process').length}개,
+                measurement {allEquipment.filter(e => e.type === 'measurement').length}개
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
             <div className="text-xs font-bold text-cyan-400 mb-3">공정 단계</div>
             <ol className="space-y-2">
@@ -249,6 +344,8 @@ export default function MiniFabSimulator() {
               })}
             </div>
           </div>
+          </>
+          )}
         </div>
 
         {/* 중앙: 활성 장비 파라미터 패널 */}
@@ -299,7 +396,7 @@ export default function MiniFabSimulator() {
                         : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {stepCompleted
+                  {(!isFreeMode && stepCompleted)
                     ? '✓ 완료됨'
                     : isMeasurement
                       ? '📏 측정 실행'
@@ -307,7 +404,9 @@ export default function MiniFabSimulator() {
                 </button>
               </>
             ) : (
-              <div className="text-sm text-gray-500">시나리오를 선택하세요.</div>
+              <div className="text-sm text-gray-500">
+                {isFreeMode ? '좌측에서 장비를 선택하세요.' : '시나리오를 선택하세요.'}
+              </div>
             )}
           </div>
         </div>
@@ -391,7 +490,11 @@ export default function MiniFabSimulator() {
               <div className="flex justify-between items-center mb-3">
                 <div className="text-xs font-bold text-cyan-400">Diagnosis</div>
                 <button
-                  onClick={() => setDiagnosis(diagnose(sample, scenarioId, workflow.results))}
+                  onClick={() => setDiagnosis(diagnose(
+                    sample,
+                    isFreeMode ? null : scenarioId,
+                    isFreeMode ? freeMeasurements : workflow.results,
+                  ))}
                   className="text-[11px] px-2 py-1 rounded bg-indigo-700/50 hover:bg-indigo-600/60"
                 >
                   진단 실행
@@ -446,6 +549,11 @@ export default function MiniFabSimulator() {
                         <div key={f.id} className="bg-rose-900/20 border border-rose-700/40 rounded-lg p-2">
                           <div className="text-rose-300 text-xs font-bold mb-1">⚠ {f.name}</div>
                           <div className="text-[11px] text-gray-200 mb-1">{f.message}</div>
+                          {f.traced_cause && (
+                            <div className="text-[11px] text-amber-200 mb-1">
+                              🔎 추정 원인: <span className="font-mono">{f.traced_cause}</span>
+                            </div>
+                          )}
                           <ul className="list-disc list-inside text-[11px] text-emerald-200">
                             {f.fix.map((r, i) => <li key={i}>{r}</li>)}
                           </ul>

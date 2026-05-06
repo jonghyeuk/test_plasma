@@ -185,6 +185,138 @@ export const processDefinitions = {
       return notes;
     },
   },
+
+  // ---- Phase 3 신규 공정 ----
+  pr_coating: {
+    process_id: 'pr_coating',
+    title: 'PR Coating (Spin Coater)',
+    parameters: ['rpm', 'spin_time', 'pr_type', 'dispense_quality'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { rpm = 3000, spin_time = 30, pr_type = 'Positive', dispense_quality = 'good' } = params;
+      // 두께 ∝ 1/sqrt(rpm) (스핀 코팅 경험식)
+      const thickness = Math.round(1500 / Math.sqrt(rpm / 1000));
+      sample.photo.pr_status = 'coated';
+      sample.photo.pr_thickness_nm = thickness;
+      sample.photo.pr_type = pr_type;
+      sample.photo.adhesion = sample.surface.contamination === 'high' ? 'weak' :
+        sample.surface.hydrophilicity === 'high' || sample.surface.hydrophilicity === 'very_high' ? 'good' : 'good';
+      if (dispense_quality === 'poor') {
+        sample.photo.coating_defect = 'striation';
+        notes.push('Dispense 불량 → striation/기포 결함.');
+      }
+      if (spin_time < 20) notes.push('Spin time 부족: edge bead 가능.');
+      recordHistory(sample, 'pr_coating', params, notes);
+      return notes;
+    },
+  },
+
+  soft_bake: {
+    process_id: 'soft_bake',
+    title: 'Soft Bake (Hot Plate)',
+    parameters: ['temperature', 'time', 'mode'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { temperature = 110, time = 60, mode = 'soft_bake' } = params;
+      if (mode === 'dehydration_bake') {
+        sample.surface.hydrophilicity = stepLevel(sample.surface.hydrophilicity, -1);
+        sample.photo.adhesion = 'good';
+        if (time < 60) notes.push('Dehydration bake time 부족 — 수분 잔류 가능.');
+        notes.push('Dehydration bake로 표면 수분 제거, adhesion 개선.');
+      } else if (mode === 'hard_bake') {
+        sample.photo.pr_state = 'hardened';
+        if (temperature > 150) notes.push('Hard bake 과열로 develop 어려움 가능.');
+        if (time > 300) notes.push('Hard bake 과도 — develop 매우 느려질 수 있음.');
+      } else {
+        sample.photo.pr_state = 'soft_baked';
+        if (temperature < 90) notes.push('Soft bake 온도 부족 → 잔류 용매.');
+        if (temperature > 130) notes.push('Soft bake 과열 → PR sensitivity 저하.');
+        if (time < 30) notes.push('Soft bake time 부족 → solvent 잔류.');
+      }
+      recordHistory(sample, 'soft_bake', params, notes);
+      return notes;
+    },
+  },
+
+  o2_plasma: {
+    process_id: 'o2_plasma',
+    title: 'O₂ Plasma Surface Treatment',
+    parameters: ['rf_power', 'time', 'gas'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { rf_power = 100, time = 60, gas = 'O2' } = params;
+      if (gas === 'O2') {
+        sample.surface.contamination = stepLevel(sample.surface.contamination, -2);
+        sample.surface.hydrophilicity = stepLevel(sample.surface.hydrophilicity, +2);
+      } else {
+        sample.surface.contamination = stepLevel(sample.surface.contamination, -1);
+      }
+      const dose = (rf_power / 100) * (time / 60);
+      if (dose > 3) {
+        sample.surface.plasma_damage = stepLevel(sample.surface.plasma_damage, +2);
+        notes.push('과도한 dose로 plasma damage 누적.');
+      } else if (dose > 1.5) {
+        sample.surface.plasma_damage = stepLevel(sample.surface.plasma_damage, +1);
+      }
+      recordHistory(sample, 'o2_plasma', params, notes);
+      return notes;
+    },
+  },
+
+  pecvd_deposition: {
+    process_id: 'pecvd_deposition',
+    title: 'PECVD Deposition',
+    parameters: ['power', 'pressure', 'time', 'film'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { power = 200, pressure = 800, time = 300, film = 'SiO2' } = params;
+      const baseRate = film === 'SiN' ? 10 / 60 : 8 / 60; // nm/sec
+      const thickness = Math.round(baseRate * time * (power / 200));
+      let uniformity = 'good';
+      if (pressure < 200 || pressure > 1500) uniformity = 'moderate';
+      if (pressure < 100 || pressure > 1800) uniformity = 'poor';
+      sample.layers.push({ material: film, thickness_nm: thickness, uniformity, defect: 'low', refractive_index: film === 'SiN' ? 2.0 : 1.46 });
+      if (power > 400) {
+        sample.surface.plasma_damage = stepLevel(sample.surface.plasma_damage, +1);
+        notes.push('고전력으로 plasma damage 위험.');
+      }
+      recordHistory(sample, 'pecvd_deposition', params, notes);
+      return notes;
+    },
+  },
+
+  thermal_oxidation: {
+    process_id: 'thermal_oxidation',
+    title: 'Thermal Oxidation',
+    input_requirements: { substrate: 'Si' },
+    parameters: ['temperature', 'time', 'ambient'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { temperature = 950, time = 30, ambient = 'dry_O2' } = params;
+      if (sample.base.substrate !== 'Si') {
+        notes.push('Si 기판이 아닙니다 — thermal oxidation 미동작.');
+        recordHistory(sample, 'thermal_oxidation', params, notes);
+        return notes;
+      }
+      // 단순 Deal-Grove 풍 모델
+      const baseRate = ambient === 'wet_O2' ? 10 : 3; // nm/min at 950C
+      const tempFactor = Math.pow(2, (temperature - 950) / 50);
+      const grown = Math.round(baseRate * time * tempFactor);
+      // 기존 SiO2 layer가 있으면 두께 누적, 없으면 새로 추가 (기판 위 첫 layer)
+      const existing = sample.layers.find((l) => l.material === 'SiO2' && l.from === 'thermal');
+      if (existing) {
+        existing.thickness_nm += grown;
+      } else {
+        // 가장 아래(기판 위)에 추가
+        sample.layers.unshift({ material: 'SiO2', thickness_nm: grown, uniformity: 'excellent', defect: 'very_low', refractive_index: 1.46, from: 'thermal' });
+      }
+      if (temperature > 1050) {
+        notes.push('Thermal budget 과도 — 후속 doping 분포 영향.');
+      }
+      recordHistory(sample, 'thermal_oxidation', params, notes);
+      return notes;
+    },
+  },
 };
 
 export const getProcess = (id) => processDefinitions[id];
