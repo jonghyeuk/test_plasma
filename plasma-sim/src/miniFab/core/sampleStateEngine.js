@@ -38,5 +38,11 @@ export const summarizeSample = (sample) => {
     bridge: sample.defects.bridge,
     open: sample.defects.open,
     particle: sample.defects.particle,
+    implant: sample.implant
+      ? `${sample.implant.dopant} ${sample.implant.dose_cm2.toExponential(1)} /cm² @ ${sample.implant.energy_keV} keV (act ${sample.implant.activation_pct}%)`
+      : '없음',
+    junction: sample.junction
+      ? `${sample.junction.type} (act ${sample.junction.activation_pct ?? 0}%)`
+      : '없음',
   };
 };

@@ -317,6 +317,95 @@ export const processDefinitions = {
       return notes;
     },
   },
+
+  // ---- Phase 5: doping / anneal ----
+  ion_implantation: {
+    process_id: 'ion_implantation',
+    title: 'Ion Implantation',
+    parameters: ['dopant', 'dose_cm2', 'energy_keV', 'tilt'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { dopant = 'P', dose_cm2 = 1, energy_keV = 30 /* tilt unused for MVP */ } = params;
+      // Projected range Rp ~ energy/2 nm (단순화)
+      const Rp_nm = Math.max(5, Math.round(energy_keV / 2));
+      // 유효 dose (실제 dose * 1e15 /cm²)
+      const effective_dose = dose_cm2 * 1e15;
+      const carrier_type = ['P', 'As'].includes(dopant) ? 'n' : 'p';
+
+      // 식각으로 SiO2 윈도우가 열려 있으면 substrate에 직접 주입.
+      // SiO2가 두껍게 남아 있으면 implant가 차단됨.
+      const oxide = sample.layers.find((l) => l.material === 'SiO2');
+      const blocked = oxide && oxide.thickness_nm > Rp_nm * 1.2;
+
+      if (blocked) {
+        notes.push(`SiO2 ${oxide.thickness_nm}nm가 Rp(${Rp_nm}nm) 대비 두꺼워 implant가 차단되었습니다.`);
+      } else {
+        sample.implant = {
+          dopant,
+          carrier_type,
+          dose_cm2: effective_dose,
+          energy_keV,
+          projected_range_nm: Rp_nm,
+          activated: false,
+          activation_pct: 0,
+        };
+        if (sample.base.type === 'p-type' && carrier_type === 'n') {
+          sample.junction = {
+            type: 'pn',
+            n_depth_nm: Rp_nm * 1.5,
+            n_dose: effective_dose,
+            activation_pct: 0,
+          };
+        } else if (sample.base.type === 'n-type' && carrier_type === 'p') {
+          sample.junction = {
+            type: 'pn',
+            p_depth_nm: Rp_nm * 1.5,
+            p_dose: effective_dose,
+            activation_pct: 0,
+          };
+        }
+        // implant damage: 저에너지·고도즈에서 표면 손상 발생
+        if (effective_dose > 5e15) {
+          sample.surface.plasma_damage = stepLevel(sample.surface.plasma_damage, +1);
+          notes.push('고도즈 implant로 결정 손상 누적 — 활성화 어닐링 필요.');
+        }
+      }
+      recordHistory(sample, 'ion_implantation', params, notes);
+      return notes;
+    },
+  },
+
+  rapid_thermal_anneal: {
+    process_id: 'rapid_thermal_anneal',
+    title: 'Rapid Thermal Anneal',
+    parameters: ['temperature', 'time', 'ambient'],
+    apply: (sample, params) => {
+      const notes = [];
+      const { temperature = 950, time = 30, ambient = 'N2' } = params;
+      if (!sample.implant) {
+        notes.push('Implant이 수행되지 않아 어닐링 효과가 제한적입니다.');
+      } else {
+        // 활성화율: T,t에 의존. 950°C/30s ≈ 95%
+        const T_factor = Math.min(1.0, Math.max(0, (temperature - 700) / 300));
+        const t_factor = Math.min(1.0, time / 30);
+        const activation = Math.round(T_factor * t_factor * 100);
+        sample.implant.activated = activation >= 70;
+        sample.implant.activation_pct = activation;
+        if (sample.junction) sample.junction.activation_pct = activation;
+        if (activation < 50) notes.push(`활성화율 ${activation}% — 도펀트 활성화 부족.`);
+        else if (activation >= 90) notes.push(`활성화율 ${activation}% — 충분.`);
+        // 결정 손상 회복
+        sample.surface.plasma_damage = stepLevel(sample.surface.plasma_damage, -1);
+      }
+      if (temperature > 1050 && time > 60) {
+        notes.push('과도한 thermal budget — junction 깊이 과도 확산.');
+        if (sample.junction) sample.junction.diffusion_extra_nm = (temperature - 1000) * (time / 30);
+      }
+      if (ambient === 'forming_gas') notes.push('Forming gas anneal — 계면 trap 감소.');
+      recordHistory(sample, 'rapid_thermal_anneal', params, notes);
+      return notes;
+    },
+  },
 };
 
 export const getProcess = (id) => processDefinitions[id];

@@ -32,6 +32,25 @@ export const scenarioDefinitions = {
     ],
   },
 
+  pn_diode_flow: {
+    scenario_id: 'pn_diode_flow',
+    title: 'PN Diode Mini Flow',
+    description: 'p-Si 기판에 SiO₂ mask를 이용해 n-region 윈도우를 열고, P 도펀트를 implant한 뒤 RTA로 활성화. Al 컨택트를 증착하고 I-V로 다이오드 특성을 진단.',
+    difficulty: 'advanced',
+    target_structure: { substrate: 'Si', layers: ['SiO2 (mask)', 'Al contact'], junction: 'pn' },
+    steps: [
+      { step: 1, equipment: 'wet_bench', process: 'cleaning', required: true },
+      { step: 2, equipment: 'thermal_oxidation_furnace', process: 'thermal_oxidation', required: true },
+      { step: 3, equipment: 'mask_aligner', process: 'lithography', required: true },
+      { step: 4, equipment: 'rie', process: 'plasma_etch', required: true },
+      { step: 5, equipment: 'ion_implanter', process: 'ion_implantation', required: true },
+      { step: 6, equipment: 'rta_chamber', process: 'rapid_thermal_anneal', required: true },
+      { step: 7, equipment: 'sputter', process: 'metal_deposition', required: true },
+      { step: 8, equipment: 'sem', process: 'sem_inspection', required: true },
+      { step: 9, equipment: 'iv_analyzer', process: 'iv_measurement', required: true },
+    ],
+  },
+
   moscap_flow: {
     scenario_id: 'moscap_flow',
     title: 'MOS Capacitor Mini Flow',

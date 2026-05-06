@@ -51,6 +51,26 @@ const traceFailureCause = (failure, sample) => {
       if (dep && (dep.params?.power ?? 0) > 400) causes.push('Sputter power 과도');
       return causes.length ? causes.join(', ') : '누적된 RF 노출이 과도합니다.';
     }
+    case 'inactive_dopant': {
+      const rta = findLast('rapid_thermal_anneal');
+      if (!rta) return 'RTA가 수행되지 않았습니다.';
+      if ((rta.params?.temperature ?? 0) < 900) return `RTA 온도(${rta.params.temperature}°C)가 활성화에 부족합니다.`;
+      if ((rta.params?.time ?? 0) < 20) return `RTA time(${rta.params.time}s)이 짧습니다.`;
+      return 'RTA 조건이 활성화에 부족합니다.';
+    }
+    case 'implant_blocked': {
+      const etch = findLast('plasma_etch');
+      const ox = findLast('thermal_oxidation');
+      if (etch && ox) return `RIE 식각이 SiO₂ 마스크(${ox.params?.time}분 oxidation)를 충분히 제거하지 못했습니다.`;
+      return 'Oxide 윈도우 식각 또는 implant energy를 점검하세요.';
+    }
+    case 'high_leakage_diode': {
+      const etch = findLast('plasma_etch');
+      if (etch && (etch.params?.rf_power ?? 0) > 250) return `RIE RF power(${etch.params.rf_power}W) 과도로 junction damage.`;
+      const rta = findLast('rapid_thermal_anneal');
+      if (rta && rta.params?.ambient !== 'forming_gas') return 'Forming gas anneal 미수행 — 계면 trap 잔존.';
+      return 'Plasma damage 또는 contact contamination이 의심됩니다.';
+    }
     default:
       return null;
   }
@@ -134,6 +154,38 @@ export const diagnose = (sample, scenarioId, measurements = {}) => {
         actual: merged.leakage_indication,
         ok: merged.leakage_indication === golden.leakage_target,
       });
+    }
+
+    if (golden.junction_required) {
+      comparison.push({
+        item: 'PN Junction',
+        target: '존재',
+        actual: sample.junction ? `${sample.junction.type} (act ${sample.junction.activation_pct ?? 0}%)` : '없음',
+        ok: !!sample.junction && (sample.junction.activation_pct ?? 0) >= (golden.activation_pct_min ?? 0),
+      });
+    }
+    if (golden.diode_curve_target && merged.curve_type) {
+      comparison.push({
+        item: 'Diode Curve',
+        target: golden.diode_curve_target,
+        actual: merged.curve_type,
+        ok: merged.curve_type === golden.diode_curve_target,
+      });
+    }
+    if (golden.vf_at_1mA && merged.vf_at_1mA != null) {
+      const v = merged.vf_at_1mA;
+      const { min, max } = golden.vf_at_1mA;
+      comparison.push({ item: 'Vf @ 1 mA', target: `${min} ~ ${max} V`, actual: `${v} V`, ok: v >= min && v <= max });
+    }
+    if (golden.leakage_at_5V_nA && merged.leakage_at_5V_nA != null) {
+      const l = merged.leakage_at_5V_nA;
+      const { max } = golden.leakage_at_5V_nA;
+      comparison.push({ item: 'Reverse Leakage @ 5 V', target: `≤ ${max} nA`, actual: `${l} nA`, ok: l <= max });
+    }
+    if (golden.ideality_factor && merged.ideality_factor != null) {
+      const n = merged.ideality_factor;
+      const { min, max } = golden.ideality_factor;
+      comparison.push({ item: 'Ideality Factor n', target: `${min} ~ ${max}`, actual: `${n}`, ok: n >= min && n <= max });
     }
   }
 
