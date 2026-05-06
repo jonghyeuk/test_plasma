@@ -25,4 +25,17 @@ goldenSamples.moscap_flow = {
   leakage_target: 'normal',
 };
 
+goldenSamples.pn_diode_flow = {
+  oxide_thickness_nm: { target: 90, tolerance: 30 },
+  metal: 'Al',
+  metal_thickness_nm: { target: 100, tolerance: 20 },
+  junction_required: true,
+  activation_pct_min: 80,
+  diode_curve_target: 'good_diode',
+  vf_at_1mA: { min: 0.55, max: 0.75 },
+  leakage_at_5V_nA: { max: 200 },
+  ideality_factor: { min: 1.0, max: 1.5 },
+  plasma_damage_max: 'low',
+};
+
 export const getGolden = (id) => goldenSamples[id];

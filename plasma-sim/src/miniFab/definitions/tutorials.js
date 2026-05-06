@@ -27,4 +27,16 @@ tutorialDefinitions.moscap_flow = [
   { step: 6, message: 'LCR Meter로 capacitance 측정 — C = ε₀εr·A/d 관계 확인.', highlight: 'lcr_meter' },
 ];
 
+tutorialDefinitions.pn_diode_flow = [
+  { step: 1, message: 'p-Si 기판을 세정합니다.', highlight: 'wet_bench' },
+  { step: 2, message: 'Thermal Oxidation으로 SiO₂ 마스크 (~90 nm)를 성장.', highlight: 'thermal_oxidation_furnace' },
+  { step: 3, message: 'Mask Aligner로 n-region 윈도우 패턴 형성.', highlight: 'mask_aligner' },
+  { step: 4, message: 'RIE로 SiO₂ 윈도우 식각. 적정 선택비/시간 확인.', highlight: 'rie' },
+  { step: 5, message: 'Ion Implanter로 P 도펀트 주입. Dose 1×10¹⁵ /cm², Energy ~30 keV 권장.', highlight: 'ion_implanter' },
+  { step: 6, message: 'RTA로 활성화. 950°C / 30 sec / N₂ → 활성화율 ~95%.', highlight: 'rta_chamber' },
+  { step: 7, message: 'Sputter로 Al 컨택트 증착.', highlight: 'sputter' },
+  { step: 8, message: 'SEM (cross-section)으로 sidewall / fine defect 확인.', highlight: 'sem' },
+  { step: 9, message: 'I-V Analyzer로 다이오드 특성 측정. Vf ~0.6 V / leakage 낮음 / n ~1.0 목표.', highlight: 'iv_analyzer' },
+];
+
 export const getTutorial = (id) => tutorialDefinitions[id] || [];

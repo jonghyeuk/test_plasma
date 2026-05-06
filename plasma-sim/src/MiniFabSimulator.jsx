@@ -427,6 +427,8 @@ export default function MiniFabSimulator() {
               <StateBadge label="Particle" value={summary.particle} />
               <StateBadge label="Bridge Defect" value={summary.bridge ? 'YES' : 'no'} ok={!summary.bridge} />
               <StateBadge label="Open Defect" value={summary.open ? 'YES' : 'no'} ok={!summary.open} />
+              <StateBadge label="Implant" value={summary.implant} />
+              <StateBadge label="Junction" value={summary.junction} ok={summary.junction !== '없음' || undefined} />
             </div>
           </div>
 

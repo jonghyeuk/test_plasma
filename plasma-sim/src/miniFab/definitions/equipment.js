@@ -198,6 +198,77 @@ export const equipmentDefinitions = {
       { key: 'electrode_area_mm2', label: 'Electrode Area', unit: 'mm²', min: 0.1, max: 10, default: 1, type: 'number' },
     ],
   },
+
+  // ---- Phase 5 ----
+  ion_implanter: {
+    equipment_id: 'ion_implanter',
+    name: 'Ion Implanter',
+    type: 'process',
+    category: 'doping',
+    icon: '☄️',
+    color: 'from-purple-500 to-fuchsia-600',
+    supported_processes: ['ion_implantation'],
+    parameters: [
+      { key: 'dopant', label: 'Dopant', type: 'select', options: ['P', 'As', 'B', 'BF2'], default: 'P' },
+      { key: 'dose_cm2', label: 'Dose', unit: '×1e15 /cm²', min: 0.01, max: 10, default: 1, step: 0.01, type: 'number' },
+      { key: 'energy_keV', label: 'Energy', unit: 'keV', min: 5, max: 200, default: 30, type: 'number' },
+      { key: 'tilt', label: 'Tilt', unit: '°', min: 0, max: 30, default: 7, type: 'number' },
+    ],
+  },
+  rta_chamber: {
+    equipment_id: 'rta_chamber',
+    name: 'RTA Chamber',
+    type: 'process',
+    category: 'thermal',
+    icon: '🔆',
+    color: 'from-orange-500 to-yellow-600',
+    supported_processes: ['rapid_thermal_anneal'],
+    parameters: [
+      { key: 'temperature', label: 'Temperature', unit: '°C', min: 600, max: 1100, default: 950, type: 'number' },
+      { key: 'time', label: 'Time', unit: 'sec', min: 5, max: 120, default: 30, type: 'number' },
+      { key: 'ambient', label: 'Ambient', type: 'select', options: ['N2', 'Ar', 'forming_gas'], default: 'N2' },
+    ],
+  },
+  sem: {
+    equipment_id: 'sem',
+    name: 'SEM',
+    type: 'measurement',
+    category: 'inspection',
+    icon: '🔬',
+    color: 'from-slate-500 to-gray-700',
+    supported_processes: ['sem_inspection'],
+    parameters: [
+      { key: 'accelerating_voltage', label: 'Accel. Voltage', unit: 'kV', min: 1, max: 30, default: 10, type: 'number' },
+      { key: 'magnification', label: 'Magnification', type: 'select', options: ['1k', '10k', '50k', '100k'], default: '50k' },
+      { key: 'view', label: 'View', type: 'select', options: ['top_down', 'cross_section'], default: 'top_down' },
+    ],
+  },
+  ellipsometer: {
+    equipment_id: 'ellipsometer',
+    name: 'Ellipsometer',
+    type: 'measurement',
+    category: 'optical',
+    icon: '🌗',
+    color: 'from-violet-500 to-indigo-600',
+    supported_processes: ['ellipsometry'],
+    parameters: [
+      { key: 'wavelength_nm', label: 'Wavelength', unit: 'nm', min: 250, max: 1000, default: 633, type: 'number' },
+      { key: 'angle_deg', label: 'Incidence Angle', unit: '°', min: 50, max: 80, default: 70, type: 'number' },
+    ],
+  },
+  iv_analyzer: {
+    equipment_id: 'iv_analyzer',
+    name: 'I-V Analyzer',
+    type: 'measurement',
+    category: 'electrical',
+    icon: '📈',
+    color: 'from-rose-500 to-pink-600',
+    supported_processes: ['iv_measurement'],
+    parameters: [
+      { key: 'sweep_v_max', label: 'Sweep V', unit: 'V', min: 1, max: 10, default: 5, type: 'number' },
+      { key: 'compliance_uA', label: 'Compliance', unit: 'µA', min: 1, max: 1000, default: 100, type: 'number' },
+    ],
+  },
 };
 
 export const listEquipment = () => Object.values(equipmentDefinitions);

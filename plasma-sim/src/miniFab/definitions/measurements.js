@@ -174,6 +174,173 @@ export const measurementDefinitions = {
       };
     },
   },
+  // ---- Phase 5 ----
+  sem: {
+    measurement_id: 'sem',
+    reads: ['photo.line_width_error', 'defects', 'layers (top, sidewall)', 'surface.roughness'],
+    outputs: ['cd_precise_nm', 'sidewall_angle_deg', 'fine_defects', 'image_quality'],
+    measure: (sample, params) => {
+      const mag = params?.magnification || '50k';
+      const view = params?.view || 'top_down';
+      const kV = params?.accelerating_voltage || 10;
+      const detail = { '1k': 1, '10k': 2, '50k': 3, '100k': 4 }[mag] || 3;
+
+      const top = sample.layers[sample.layers.length - 1];
+      const baseCD = (sample.photo.mask_pattern === 'line_2um') ? 2000 : 5000;
+      const cdPrecise = top?.patterned
+        ? Math.round(noisy(baseCD - sample.photo.line_width_error, 0.005)) // 더 정확
+        : null;
+
+      // sidewall angle: anisotropy 척도. plasma damage / pressure 영향
+      let sidewall = 89;
+      if (sample.surface.plasma_damage === 'medium') sidewall -= 3;
+      if (sample.surface.plasma_damage === 'high') sidewall -= 8;
+      if (sample.surface.plasma_damage === 'very_high') sidewall -= 14;
+      if (sample.photo.line_width_error > 50) sidewall -= 4;
+      sidewall = Math.round(noisy(sidewall, 0.01));
+
+      const fine = [];
+      if (sample.defects.bridge) fine.push('Bridge: residual metal stringer 검출');
+      if (sample.defects.open) fine.push('Open: line discontinuity 검출');
+      if (detail >= 3 && sample.defects.particle && !['none', 'very_low'].includes(sample.defects.particle)) {
+        fine.push(`Sub-µm particle: ${sample.defects.particle}`);
+      }
+      if (detail >= 4 && sample.surface.plasma_damage !== 'none') {
+        fine.push(`Crystallographic damage: ${sample.surface.plasma_damage}`);
+      }
+      if (kV > 20 && sample.photo.pr_state === 'soft_baked') {
+        fine.push('주의: 고전압으로 PR charging artifact 가능');
+      }
+      if (fine.length === 0) fine.push('특이 결함 없음');
+
+      return {
+        title: `SEM (${view})`,
+        magnification: mag,
+        accelerating_voltage_kV: kV,
+        outputs: {
+          cd_precise_nm: cdPrecise,
+          sidewall_angle_deg: view === 'cross_section' ? sidewall : null,
+          fine_defects: fine,
+          image_quality: detail >= 3 ? 'high' : 'medium',
+        },
+        confidence: detail >= 3 ? 'very-high' : 'medium-high',
+      };
+    },
+  },
+
+  ellipsometer: {
+    measurement_id: 'ellipsometer',
+    reads: ['layers[transparent].thickness_nm', 'layers[transparent].refractive_index'],
+    outputs: ['film_thickness_nm', 'refractive_index', 'limitations'],
+    measure: (sample, params) => {
+      const wavelength = params?.wavelength_nm || 633;
+      const angle = params?.angle_deg || 70;
+      const transparentMaterials = ['SiO2', 'SiN', 'PR'];
+      // 가장 위에 있는 transparent film 선택
+      const idx = [...sample.layers].reverse().findIndex((l) => transparentMaterials.includes(l.material));
+      const film = idx >= 0 ? sample.layers[sample.layers.length - 1 - idx] : null;
+
+      if (!film) {
+        return {
+          title: 'Ellipsometer',
+          outputs: {
+            note: 'Transparent film이 없습니다 (SiO2/SiN/PR 필요). 측정 불가.',
+            limitations: ['요구: 투명 박막'],
+          },
+          confidence: 'low',
+        };
+      }
+      const limitations = [];
+      let conf = 'high';
+      if (sample.surface.roughness === 'rough') {
+        limitations.push('표면 거칠기로 신뢰도 저하');
+        conf = 'medium';
+      }
+      // 두께가 너무 얇거나 두꺼우면 fringe ambiguity
+      if (film.thickness_nm < 5) limitations.push('얇은 막 — fringe 부족');
+      if (film.thickness_nm > 1000) limitations.push('두꺼운 막 — multi-layer ambiguity');
+
+      return {
+        title: 'Ellipsometer',
+        wavelength_nm: wavelength,
+        angle_deg: angle,
+        outputs: {
+          film_material: film.material,
+          film_thickness_nm: Number(noisy(film.thickness_nm, 0.005).toFixed(2)),
+          refractive_index: film.refractive_index ? Number(noisy(film.refractive_index, 0.005).toFixed(3)) : null,
+          limitations: limitations.length ? limitations : ['해당 없음'],
+        },
+        confidence: conf,
+      };
+    },
+  },
+
+  iv_analyzer: {
+    measurement_id: 'iv_analyzer',
+    reads: ['junction', 'top metal contact', 'plasma_damage', 'defects'],
+    outputs: ['vf_at_1mA', 'leakage_at_5V_nA', 'ideality_factor', 'curve_type'],
+    measure: (sample, params) => {
+      const vMax = params?.sweep_v_max || 5;
+      const top = sample.layers[sample.layers.length - 1];
+      const hasContact = top && ['Al', 'Cu', 'Ti'].includes(top.material);
+      const j = sample.junction;
+
+      if (!j || !hasContact) {
+        return {
+          title: 'I-V Analyzer',
+          outputs: {
+            curve_type: !j ? 'no_junction' : 'no_contact',
+            note: !j ? 'Junction이 형성되지 않았습니다.' : '금속 컨택트가 없습니다.',
+          },
+          confidence: 'low',
+        };
+      }
+      if (sample.defects.open) {
+        return {
+          title: 'I-V Analyzer',
+          outputs: { curve_type: 'open_circuit', note: 'Open defect으로 인해 단선.' },
+          confidence: 'high',
+        };
+      }
+      if (sample.defects.bridge) {
+        return {
+          title: 'I-V Analyzer',
+          outputs: { curve_type: 'short_circuit', leakage_at_5V_nA: noisy(50000, 0.1) },
+          confidence: 'high',
+        };
+      }
+      // Activation에 따른 quality
+      const act = j.activation_pct || 0;
+      const damage = sample.surface.plasma_damage;
+      const damageOrder = { none: 0, very_low: 1, low: 2, medium: 3, high: 4, very_high: 5 };
+      const dmg = damageOrder[damage] ?? 0;
+
+      // Vf at 1mA: ideal Si pn ~0.6V, increases with non-ideality
+      const baseVf = 0.6 + (1 - act / 100) * 0.2 + dmg * 0.03;
+      // Reverse leakage: increases with damage, low activation
+      const baseLeakage_nA = 5 + dmg * dmg * 30 + (100 - act) * 1.0;
+      // Ideality factor: ~1.0 ideal, +0.1 per damage step, +0.02 per 10% activation deficit
+      const ideality = 1.0 + dmg * 0.1 + (100 - act) * 0.005;
+
+      const leakage = Math.round(noisy(baseLeakage_nA, 0.1));
+      const overflow = leakage > 5000 || baseVf > vMax;
+
+      return {
+        title: 'I-V Analyzer (Diode Sweep)',
+        sweep_v_max_V: vMax,
+        outputs: {
+          curve_type: ideality < 1.5 && leakage < 500 ? 'good_diode' :
+                      ideality < 2.5 ? 'leaky_diode' : 'poor_diode',
+          vf_at_1mA: Number(noisy(baseVf, 0.02).toFixed(3)),
+          leakage_at_5V_nA: leakage,
+          ideality_factor: Number(ideality.toFixed(2)),
+          activation_pct: act,
+          warning: overflow ? 'Compliance 또는 sweep 한계 초과' : null,
+        },
+        confidence: overflow ? 'medium' : 'high',
+      };
+    },
+  },
 };
 
 export const getMeasurement = (id) => measurementDefinitions[id];
@@ -185,4 +352,7 @@ export const measurementByEquipment = {
   profilometer: 'profilometer',
   contact_angle_meter: 'contact_angle_meter',
   lcr_meter: 'lcr_meter',
+  sem: 'sem',
+  ellipsometer: 'ellipsometer',
+  iv_analyzer: 'iv_analyzer',
 };

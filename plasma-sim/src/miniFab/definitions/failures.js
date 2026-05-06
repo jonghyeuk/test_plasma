@@ -53,4 +53,43 @@ export const failureDefinitions = {
   },
 };
 
+failureDefinitions.implant_blocked = {
+  failure_id: 'implant_blocked',
+  name: 'Implant Blocked by Oxide',
+  matches: (sample) => {
+    if (!sample.implant && sample.history.some((h) => h.process_id === 'ion_implantation')) return true;
+    return false;
+  },
+  visible_in: ['iv_analyzer', 'sem'],
+  effects: ['Junction 형성 실패'],
+  diagnosis_message: 'Implant 단계가 수행되었으나 dopant가 substrate에 도달하지 못했습니다 (oxide 두께 > Rp).',
+  recommended_fix: ['RIE 단계에서 SiO2 윈도우 충분히 식각', 'Implant energy 증가', 'Mask oxide 두께 감소'],
+};
+
+failureDefinitions.inactive_dopant = {
+  failure_id: 'inactive_dopant',
+  name: 'Inactive Dopant',
+  matches: (sample) => sample.implant && sample.implant.activated === false && sample.implant.activation_pct < 50,
+  visible_in: ['iv_analyzer'],
+  effects: ['Diode ideality factor 증가', 'leakage 증가'],
+  diagnosis_message: 'Implant은 수행되었으나 활성화율이 낮습니다. RTA 조건을 점검하세요.',
+  recommended_fix: ['RTA 온도 ≥ 900°C', 'RTA time ≥ 20 sec', 'Implant damage 회복을 위한 추가 anneal'],
+};
+
+failureDefinitions.high_leakage_diode = {
+  failure_id: 'high_leakage_diode',
+  name: 'High Leakage Diode',
+  matches: (sample, ctx) => {
+    if (sample.surface.plasma_damage === 'high' || sample.surface.plasma_damage === 'very_high') {
+      if (sample.junction) return true;
+    }
+    if (ctx?.golden?.leakage_at_5V_nA?.max && ctx?.measurements?.leakage_at_5V_nA > ctx.golden.leakage_at_5V_nA.max) return true;
+    return false;
+  },
+  visible_in: ['iv_analyzer'],
+  effects: ['Reverse leakage 비정상 증가', 'noise margin 저하'],
+  diagnosis_message: 'Plasma damage 또는 contamination으로 junction leakage가 증가했습니다.',
+  recommended_fix: ['RIE RF power 감소', 'Forming gas anneal로 trap 감소', '컨택트 형성 전 surface clean 강화'],
+};
+
 export const listFailures = () => Object.values(failureDefinitions);
