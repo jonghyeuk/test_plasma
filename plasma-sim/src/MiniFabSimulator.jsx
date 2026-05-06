@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { listScenarios, getScenario, FREE_MODE_ID } from './miniFab/definitions/scenarios.js';
 import { getEquipment, listEquipment } from './miniFab/definitions/equipment.js';
 import { getTutorial } from './miniFab/definitions/tutorials.js';
@@ -7,6 +7,8 @@ import { runProcess } from './miniFab/core/processRuleEngine.js';
 import { runMeasurement } from './miniFab/core/measurementEngine.js';
 import { initWorkflow, isStepUnlocked, completeStep, getStepDef } from './miniFab/core/workflowEngine.js';
 import { diagnose } from './miniFab/core/diagnosisEngine.js';
+import { buildRecipe, downloadRecipe, parseRecipeFile, replayRecipe } from './miniFab/core/recipeIO.js';
+import LayerStackView from './miniFab/LayerStackView.jsx';
 
 const defaultParams = (eq) => {
   const out = {};
@@ -81,6 +83,10 @@ export default function MiniFabSimulator() {
   const [freeEquipmentId, setFreeEquipmentId] = useState(null);
   const [freeParams, setFreeParams] = useState({});
   const [freeMeasurements, setFreeMeasurements] = useState({}); // measurement_id → result
+
+  // Recipe import용 file input ref
+  const fileInputRef = useRef(null);
+  const [recipeBanner, setRecipeBanner] = useState(null);
 
   const isFreeMode = scenarioId === FREE_MODE_ID;
   const scenario = isFreeMode ? null : getScenario(scenarioId);
@@ -191,6 +197,45 @@ export default function MiniFabSimulator() {
     }
   };
 
+  const handleExportRecipe = () => {
+    const recipe = buildRecipe(sample, isFreeMode ? null : scenarioId);
+    const fname = `${isFreeMode ? 'free' : scenarioId}-recipe-${Date.now()}.json`;
+    downloadRecipe(recipe, fname);
+    setRecipeBanner({ kind: 'ok', text: `📥 ${fname} 내보냈습니다 (${recipe.steps.length} steps).` });
+  };
+
+  const handleImportRecipe = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const recipe = await parseRecipeFile(file);
+      const { sample: replayed, replayNotes } = replayRecipe(recipe);
+      setSample(replayed);
+      setNotesLog(replayNotes.map((n, i) => ({
+        step: `R${i + 1}`,
+        equipment: n.process_id,
+        kind: 'process',
+        notes: n.notes || (n.error ? [`replay error: ${n.error}`] : []),
+        params: n.params || {},
+      })));
+      // 시나리오 진행 상태는 초기화 (Recipe는 시나리오와 독립적으로 동작 가능)
+      if (recipe.scenario_id && recipe.scenario_id !== FREE_MODE_ID && getScenario(recipe.scenario_id)) {
+        setScenarioId(recipe.scenario_id);
+        setWorkflow(initWorkflow(recipe.scenario_id));
+      } else {
+        setScenarioId(FREE_MODE_ID);
+      }
+      setActiveStep(1);
+      setParamsByStep({});
+      setDiagnosis(null);
+      setFreeMeasurements({});
+      setRecipeBanner({ kind: 'ok', text: `📂 ${file.name} 재실행 완료 (${recipe.steps.length} steps).` });
+    } catch (err) {
+      setRecipeBanner({ kind: 'err', text: `Import 실패: ${err.message}` });
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const summary = summarizeSample(sample);
   const tutorialMsg = isFreeMode ? null : tutorial.find((t) => t.step === activeStep)?.message;
 
@@ -229,12 +274,48 @@ export default function MiniFabSimulator() {
             <span className="ml-2 text-[10px] text-gray-500">no scenario</span>
           </button>
           <button
+            onClick={handleExportRecipe}
+            disabled={sample.history.length === 0}
+            className={`px-3 py-2 rounded-lg text-sm border ml-auto ${
+              sample.history.length === 0
+                ? 'bg-gray-900/40 border-gray-800 text-gray-600 cursor-not-allowed'
+                : 'bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-emerald-900/40'
+            }`}
+            title="현재까지의 process history를 JSON recipe로 내보냅니다."
+          >
+            📥 Export Recipe
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="px-3 py-2 rounded-lg text-sm border bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-indigo-900/40"
+            title="저장된 recipe JSON을 불러와 fresh sample에 재실행합니다."
+          >
+            📂 Import & Replay
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleImportRecipe}
+          />
+          <button
             onClick={resetAll}
-            className="px-3 py-2 rounded-lg text-sm border bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-rose-900/40 ml-auto"
+            className="px-3 py-2 rounded-lg text-sm border bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-rose-900/40"
           >
             ↺ Reset Sample
           </button>
         </div>
+        {recipeBanner && (
+          <div className={`mt-2 text-xs px-3 py-2 rounded border ${
+            recipeBanner.kind === 'err'
+              ? 'border-rose-700/40 bg-rose-900/20 text-rose-200'
+              : 'border-emerald-700/40 bg-emerald-900/20 text-emerald-200'
+          }`}>
+            {recipeBanner.text}
+            <button onClick={() => setRecipeBanner(null)} className="ml-2 text-gray-400 hover:text-gray-200">✕</button>
+          </div>
+        )}
         {scenario && (
           <p className="mt-2 text-sm text-gray-400">{scenario.description}</p>
         )}
@@ -411,8 +492,9 @@ export default function MiniFabSimulator() {
           </div>
         </div>
 
-        {/* 우측: Sample State */}
+        {/* 우측: Layer Stack + Sample State */}
         <div className="lg:col-span-4 space-y-4">
+          <LayerStackView sample={sample} />
           <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
             <div className="text-xs font-bold text-cyan-400 mb-3">Sample State (누적)</div>
             <div className="grid grid-cols-1 gap-1.5">
