@@ -8,12 +8,12 @@ const Knob = ({ p, value, onChange, disabled }) => {
   if (p.type === 'select') {
     return (
       <div className="border border-cyan-900/40 bg-[#0a0e14] p-2">
-        <div className="text-[9px] tracking-[1.5px] text-gray-500 uppercase mb-1">{p.label}</div>
+        <div className="text-[11px] tracking-[1.5px] text-gray-500 uppercase mb-1">{p.label}</div>
         <select
           disabled={disabled}
           value={value}
           onChange={(e) => onChange(p.key, e.target.value)}
-          className="w-full bg-[#050709] border border-cyan-900/40 text-cyan-200 text-[11px] font-mono p-1 disabled:opacity-50"
+          className="w-full bg-[#050709] border border-cyan-900/40 text-cyan-200 text-[13px] font-mono p-1 disabled:opacity-50"
         >
           {p.options.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -23,10 +23,10 @@ const Knob = ({ p, value, onChange, disabled }) => {
   return (
     <div className="border border-cyan-900/40 bg-[#0a0e14] p-2">
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-[9px] tracking-[1.5px] text-gray-500 uppercase">{p.label}</span>
-        <span className="text-[11px] font-bold text-cyan-300 font-mono"
+        <span className="text-[11px] tracking-[1.5px] text-gray-500 uppercase">{p.label}</span>
+        <span className="text-[13px] font-bold text-cyan-300 font-mono"
           style={{ textShadow: '0 0 6px #00d4ff' }}>
-          {value}<span className="text-gray-500 ml-1 text-[9px]">{p.unit}</span>
+          {value}<span className="text-gray-500 ml-1 text-[11px]">{p.unit}</span>
         </span>
       </div>
       <input
@@ -36,7 +36,7 @@ const Knob = ({ p, value, onChange, disabled }) => {
         onChange={(e) => onChange(p.key, Number(e.target.value))}
         className="w-full accent-cyan-400 disabled:opacity-50"
       />
-      <div className="flex justify-between text-[8px] text-gray-700 font-mono mt-0.5">
+      <div className="flex justify-between text-[11px] text-gray-700 font-mono mt-0.5">
         <span>{p.min}</span><span>{p.max}</span>
       </div>
     </div>
@@ -49,7 +49,7 @@ const LED = ({ on, color = 'cyan', label }) => {
     <div className="flex items-center gap-1.5">
       <span className="w-2 h-2 rounded-full"
         style={{ background: on ? colors[color] : '#1f2937', boxShadow: on ? `0 0 6px ${colors[color]}` : 'none' }} />
-      <span className={`text-[9px] tracking-[1px] uppercase ${on ? 'text-gray-200' : 'text-gray-600'}`}>{label}</span>
+      <span className={`text-[11px] tracking-[1px] uppercase ${on ? 'text-gray-200' : 'text-gray-600'}`}>{label}</span>
     </div>
   );
 };
@@ -84,10 +84,10 @@ export default function EquipmentInstrument({
       {/* Chassis header */}
       <div className="flex items-center gap-3 px-3 h-9 border-b border-cyan-900/40"
         style={{ background: 'linear-gradient(180deg,#0e1922,#0a0e14)' }}>
-        <span className={`text-[12px] font-bold tracking-[2px]`} style={{ color: accentColor, textShadow: `0 0 6px ${accentColor}` }}>
+        <span className={`text-[14px] font-bold tracking-[2px]`} style={{ color: accentColor, textShadow: `0 0 6px ${accentColor}` }}>
           {equipment.name.toUpperCase()}
         </span>
-        <span className="text-[9px] text-gray-600 font-mono">MODEL · {equipment.equipment_id.slice(0, 6).toUpperCase()}</span>
+        <span className="text-[11px] text-gray-600 font-mono">MODEL · {equipment.equipment_id.slice(0, 6).toUpperCase()}</span>
         <div className="ml-auto flex items-center gap-3">
           <LED on={ledReady} color="cyan" label="READY" />
           <LED on={ledLoaded} color="amber" label="LOADED" />
@@ -104,16 +104,16 @@ export default function EquipmentInstrument({
             <EquipmentIcon id={equipment.equipment_id} glow={ledRunning || ledLoaded} />
           </div>
           <div className="text-center mt-2">
-            <div className="text-[8px] tracking-[1.5px] text-gray-600 uppercase">CATEGORY</div>
-            <div className="text-[10px] text-gray-300 uppercase tracking-[1px]">{equipment.category}</div>
-            <div className="text-[8px] tracking-[1.5px] text-gray-600 uppercase mt-1">TYPE</div>
-            <div className={`text-[10px] uppercase tracking-[1px] ${isMeasure ? 'text-emerald-300' : 'text-amber-300'}`}>
+            <div className="text-[11px] tracking-[1.5px] text-gray-600 uppercase">CATEGORY</div>
+            <div className="text-[12px] text-gray-300 uppercase tracking-[1px]">{equipment.category}</div>
+            <div className="text-[11px] tracking-[1.5px] text-gray-600 uppercase mt-1">TYPE</div>
+            <div className={`text-[12px] uppercase tracking-[1px] ${isMeasure ? 'text-emerald-300' : 'text-amber-300'}`}>
               {equipment.type}
             </div>
           </div>
           <button
             onClick={() => setShowInfo((v) => !v)}
-            className="mt-2 text-[8px] tracking-[1.5px] text-gray-600 hover:text-cyan-300 uppercase border border-gray-800 px-2 py-0.5"
+            className="mt-2 text-[11px] tracking-[1.5px] text-gray-600 hover:text-cyan-300 uppercase border border-gray-800 px-2 py-0.5"
           >
             {showInfo ? 'hide spec' : 'spec ▾'}
           </button>
@@ -123,24 +123,24 @@ export default function EquipmentInstrument({
         <div className="p-3">
           {/* Display */}
           <div className="mb-3 border border-cyan-900/40 bg-[#040608] p-2 min-h-[58px]">
-            <div className="flex justify-between text-[9px] tracking-[1px] text-gray-500 uppercase mb-1">
+            <div className="flex justify-between text-[11px] tracking-[1px] text-gray-500 uppercase mb-1">
               <span>display</span>
               <span>{status}</span>
             </div>
             {tutorialHint ? (
-              <div className="text-[10px] text-cyan-200 leading-relaxed">💡 {tutorialHint}</div>
+              <div className="text-[12px] text-cyan-200 leading-relaxed">💡 {tutorialHint}</div>
             ) : !sampleLoaded ? (
-              <div className="text-[10px] text-gray-500 leading-relaxed">
+              <div className="text-[12px] text-gray-500 leading-relaxed">
                 Sample이 로드되지 않았습니다. <span className="text-cyan-400">[LOAD SAMPLE]</span> 버튼을 눌러 시편을 챔버로 옮기세요.
               </div>
             ) : status === 'RUNNING' ? (
-              <div className="text-[10px] text-amber-300 leading-relaxed">공정 진행 중...</div>
+              <div className="text-[12px] text-amber-300 leading-relaxed">공정 진행 중...</div>
             ) : status === 'COMPLETE' ? (
-              <div className="text-[10px] text-emerald-300 leading-relaxed">
+              <div className="text-[12px] text-emerald-300 leading-relaxed">
                 실행 완료. {isMeasure ? '결과는 하단 측정 패널에서 확인.' : 'Sample 상태가 갱신되었습니다.'}
               </div>
             ) : (
-              <div className="text-[10px] text-gray-300 leading-relaxed">
+              <div className="text-[12px] text-gray-300 leading-relaxed">
                 Sample이 로드되었습니다. 파라미터를 설정하고 <span className="text-cyan-400">[{isMeasure ? 'MEASURE' : 'RUN PROCESS'}]</span>를 누르세요.
               </div>
             )}
@@ -148,7 +148,7 @@ export default function EquipmentInstrument({
 
           {/* Spec popout */}
           {showInfo && (
-            <div className="mb-3 text-[9px] text-gray-500 leading-relaxed border border-gray-800 p-2 bg-[#0a0e14]">
+            <div className="mb-3 text-[11px] text-gray-500 leading-relaxed border border-gray-800 p-2 bg-[#0a0e14]">
               <div><span className="text-gray-600">SUPPORTED PROC </span><span className="text-cyan-300">{equipment.supported_processes.join(', ')}</span></div>
               <div><span className="text-gray-600">PARAMETERS </span><span className="text-cyan-300">{equipment.parameters.length}</span></div>
             </div>
@@ -156,7 +156,7 @@ export default function EquipmentInstrument({
 
           {/* Parameter knobs */}
           <div className="mb-3">
-            <div className="text-[9px] tracking-[2px] text-gray-500 uppercase mb-1.5 flex items-center gap-2">
+            <div className="text-[11px] tracking-[2px] text-gray-500 uppercase mb-1.5 flex items-center gap-2">
               <span>parameters</span>
               <div className="flex-1 h-px bg-gray-800" />
             </div>
@@ -174,7 +174,7 @@ export default function EquipmentInstrument({
               <button
                 onClick={onLoadSample}
                 disabled={!canLoad}
-                className={`flex-1 py-2 text-[11px] tracking-[2px] uppercase border transition ${
+                className={`flex-1 py-2 text-[13px] tracking-[2px] uppercase border transition ${
                   highlight === 'load'
                     ? 'border-cyan-300 bg-cyan-700/40 text-white animate-pulse'
                     : canLoad
@@ -190,7 +190,7 @@ export default function EquipmentInstrument({
                 <button
                   onClick={onRun}
                   disabled={ledRunning || ledComplete}
-                  className={`flex-1 py-2 text-[11px] tracking-[2px] uppercase border transition ${
+                  className={`flex-1 py-2 text-[13px] tracking-[2px] uppercase border transition ${
                     highlight === 'run'
                       ? 'border-cyan-300 bg-cyan-700/40 text-white animate-pulse'
                       : ledComplete
@@ -203,7 +203,7 @@ export default function EquipmentInstrument({
                 </button>
                 <button
                   onClick={onUnloadSample}
-                  className={`px-3 py-2 text-[11px] tracking-[2px] uppercase border transition ${
+                  className={`px-3 py-2 text-[13px] tracking-[2px] uppercase border transition ${
                     highlight === 'unload'
                       ? 'border-cyan-300 bg-cyan-700/40 text-white animate-pulse'
                       : 'border-gray-700 bg-gray-900/60 text-gray-300 hover:bg-rose-900/40'
@@ -218,10 +218,10 @@ export default function EquipmentInstrument({
           {/* Last result preview */}
           {lastResult && (
             <div className="mt-3 border border-emerald-900/40 bg-[#040608] p-2">
-              <div className="text-[9px] tracking-[1.5px] text-emerald-500 uppercase mb-1">
+              <div className="text-[11px] tracking-[1.5px] text-emerald-500 uppercase mb-1">
                 {lastResult.title || 'last reading'}
               </div>
-              <pre className="text-[10px] text-emerald-200 whitespace-pre-wrap break-words">
+              <pre className="text-[12px] text-emerald-200 whitespace-pre-wrap break-words">
 {JSON.stringify(lastResult.outputs ?? lastResult, null, 2).slice(0, 500)}
               </pre>
             </div>

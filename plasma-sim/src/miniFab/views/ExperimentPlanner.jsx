@@ -67,14 +67,14 @@ export default function ExperimentPlanner({
       <div className="flex items-center gap-3 px-4 h-11 border-b-2 border-fuchsia-700/60"
         style={{ background: 'linear-gradient(180deg,#1a0e22,#0a0612)' }}>
         <button onClick={onCancel}
-          className="text-[10px] tracking-[1.5px] text-gray-500 hover:text-fuchsia-300 uppercase">
+          className="text-[12px] tracking-[1.5px] text-gray-500 hover:text-fuchsia-300 uppercase">
           ◁ BACK TO LAB
         </button>
-        <div className="ml-2 text-[12px] font-bold tracking-[2px] text-fuchsia-300"
+        <div className="ml-2 text-[14px] font-bold tracking-[2px] text-fuchsia-300"
           style={{ textShadow: '0 0 8px #d946ef' }}>
           FREE MODE — EXPERIMENT PLANNER
         </div>
-        <div className="ml-auto flex items-center gap-3 text-[10px] text-gray-500">
+        <div className="ml-auto flex items-center gap-3 text-[12px] text-gray-500">
           <span>STEPS <span className="text-fuchsia-300 font-bold">{seq.length}</span></span>
           <span>WARNINGS <span className={issues.length ? 'text-amber-300 font-bold' : 'text-gray-600'}>{issues.length}</span></span>
         </div>
@@ -85,46 +85,46 @@ export default function ExperimentPlanner({
         <div className="space-y-4">
           {/* Plan form */}
           <div className="border border-fuchsia-900/40 bg-[#0d1117] p-4">
-            <div className="text-[9px] tracking-[2px] text-fuchsia-400 mb-2 uppercase">실험 계획서</div>
+            <div className="text-[11px] tracking-[2px] text-fuchsia-400 mb-2 uppercase">실험 계획서</div>
             <label className="block mb-2">
-              <span className="text-[9px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Title</span>
+              <span className="text-[11px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Title</span>
               <input
                 type="text"
                 value={plan.title || ''}
                 onChange={(e) => setField('title', e.target.value)}
                 placeholder="예: SiO₂ 위 Al 패턴 두께 영향 실험"
-                className="w-full bg-[#050709] border border-fuchsia-900/40 text-fuchsia-100 text-[11px] font-mono p-1.5 placeholder-gray-700"
+                className="w-full bg-[#050709] border border-fuchsia-900/40 text-fuchsia-100 text-[13px] font-mono p-1.5 placeholder-gray-700"
               />
             </label>
             <label className="block mb-2">
-              <span className="text-[9px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Purpose</span>
+              <span className="text-[11px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Purpose</span>
               <textarea
                 rows={2}
                 value={plan.purpose || ''}
                 onChange={(e) => setField('purpose', e.target.value)}
                 placeholder="이 실험의 목적과 학습 목표를 입력합니다."
-                className="w-full bg-[#050709] border border-fuchsia-900/40 text-gray-200 text-[11px] font-mono p-1.5 placeholder-gray-700 resize-none"
+                className="w-full bg-[#050709] border border-fuchsia-900/40 text-gray-200 text-[13px] font-mono p-1.5 placeholder-gray-700 resize-none"
               />
             </label>
             <label className="block">
-              <span className="text-[9px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Requires</span>
+              <span className="text-[11px] tracking-[1.5px] text-gray-500 uppercase block mb-1">Requires</span>
               <input
                 type="text"
                 value={plan.requires || ''}
                 onChange={(e) => setField('requires', e.target.value)}
                 placeholder="예: p-Si 100 mm wafer, Al target, mask line_5um"
-                className="w-full bg-[#050709] border border-fuchsia-900/40 text-gray-200 text-[11px] font-mono p-1.5 placeholder-gray-700"
+                className="w-full bg-[#050709] border border-fuchsia-900/40 text-gray-200 text-[13px] font-mono p-1.5 placeholder-gray-700"
               />
             </label>
           </div>
 
           {/* Equipment palette */}
           <div className="border border-fuchsia-900/40 bg-[#0d1117] p-4">
-            <div className="text-[9px] tracking-[2px] text-fuchsia-400 mb-2 uppercase">장비 풀 — 클릭하여 시퀀스에 추가</div>
+            <div className="text-[11px] tracking-[2px] text-fuchsia-400 mb-2 uppercase">장비 풀 — 클릭하여 시퀀스에 추가</div>
             <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
               {Object.entries(groups).filter(([, list]) => list.length).map(([name, list]) => (
                 <div key={name}>
-                  <div className="text-[8px] tracking-[2px] text-gray-500 uppercase mb-1">{name}</div>
+                  <div className="text-[11px] tracking-[2px] text-gray-500 uppercase mb-1">{name}</div>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {list.map((eq) => (
                       <button
@@ -137,7 +137,7 @@ export default function ExperimentPlanner({
                           bg-[#0a0e14]`}
                       >
                         <div className="w-8 h-8"><EquipmentIcon id={eq.equipment_id} /></div>
-                        <div className="text-[8px] tracking-[1px] uppercase text-gray-300 leading-tight text-center">
+                        <div className="text-[11px] tracking-[1px] uppercase text-gray-300 leading-tight text-center">
                           {eq.name}
                         </div>
                       </button>
@@ -153,18 +153,18 @@ export default function ExperimentPlanner({
         <div className="space-y-4">
           <div className="border border-fuchsia-900/40 bg-[#0d1117] p-4">
             <div className="flex items-center gap-2 mb-3">
-              <div className="text-[9px] tracking-[2px] text-fuchsia-400 uppercase">실험 시퀀스</div>
+              <div className="text-[11px] tracking-[2px] text-fuchsia-400 uppercase">실험 시퀀스</div>
               <div className="flex-1 h-px bg-fuchsia-900/30" />
               <button
                 onClick={() => onPlanChange({ ...plan, sequence: [] })}
                 disabled={!seq.length}
-                className="text-[9px] text-gray-500 hover:text-rose-300 disabled:text-gray-700 uppercase tracking-[1px]"
+                className="text-[11px] text-gray-500 hover:text-rose-300 disabled:text-gray-700 uppercase tracking-[1px]"
               >
                 ✕ clear
               </button>
             </div>
             {seq.length === 0 ? (
-              <div className="text-[10px] text-gray-500 leading-relaxed border border-dashed border-gray-800 p-4 text-center">
+              <div className="text-[12px] text-gray-500 leading-relaxed border border-dashed border-gray-800 p-4 text-center">
                 좌측 장비 풀에서 장비를 클릭해 시퀀스에 추가하세요.<br/>
                 <span className="text-gray-600">순서가 없으면 실행할 수 없습니다.</span>
               </div>
@@ -180,27 +180,27 @@ export default function ExperimentPlanner({
                       tone === 'amber' ? 'border-amber-700/60' : tone === 'cyan' ? 'border-cyan-800/40' : 'border-gray-800'
                     }`}>
                       <div className="flex items-center gap-2 p-2">
-                        <span className="text-[9px] tracking-[1px] text-gray-500 font-mono w-6">
+                        <span className="text-[11px] tracking-[1px] text-gray-500 font-mono w-6">
                           {String(i + 1).padStart(2, '0')}
                         </span>
                         <div className={`w-7 h-7 ${eq?.type === 'measurement' ? 'text-emerald-300' : 'text-amber-300'}`}>
                           <EquipmentIcon id={s.equipment_id} />
                         </div>
                         <div className="flex-1">
-                          <div className="text-[11px] text-gray-200 tracking-wide">{eq?.name}</div>
-                          <div className="text-[9px] text-gray-500 uppercase tracking-[1px]">{s.process_id.replace(/_/g, ' ')}</div>
+                          <div className="text-[13px] text-gray-200 tracking-wide">{eq?.name}</div>
+                          <div className="text-[11px] text-gray-500 uppercase tracking-[1px]">{s.process_id.replace(/_/g, ' ')}</div>
                         </div>
                         <button onClick={() => moveStep(i, -1)} disabled={i === 0}
-                          className="text-[10px] text-gray-500 hover:text-cyan-300 disabled:text-gray-800 px-1">▲</button>
+                          className="text-[12px] text-gray-500 hover:text-cyan-300 disabled:text-gray-800 px-1">▲</button>
                         <button onClick={() => moveStep(i, +1)} disabled={i === seq.length - 1}
-                          className="text-[10px] text-gray-500 hover:text-cyan-300 disabled:text-gray-800 px-1">▼</button>
+                          className="text-[12px] text-gray-500 hover:text-cyan-300 disabled:text-gray-800 px-1">▼</button>
                         <button onClick={() => removeStep(i)}
-                          className="text-[10px] text-gray-500 hover:text-rose-300 px-1">✕</button>
+                          className="text-[12px] text-gray-500 hover:text-rose-300 px-1">✕</button>
                       </div>
                       {myIssues.length > 0 && (
                         <div className="border-t border-gray-800 px-2 py-1.5 space-y-0.5 bg-[#080c12]">
                           {myIssues.map((iss, k) => (
-                            <div key={k} className={`text-[10px] flex gap-1.5 ${
+                            <div key={k} className={`text-[12px] flex gap-1.5 ${
                               iss.severity === 'warn' ? 'text-amber-300' : 'text-cyan-300'
                             }`}>
                               <span>{iss.severity === 'warn' ? '⚠' : 'ℹ'}</span>
@@ -218,22 +218,22 @@ export default function ExperimentPlanner({
 
           {/* Validation summary */}
           <div className="border border-fuchsia-900/40 bg-[#0d1117] p-4">
-            <div className="text-[9px] tracking-[2px] text-fuchsia-400 uppercase mb-2">시퀀스 검증</div>
+            <div className="text-[11px] tracking-[2px] text-fuchsia-400 uppercase mb-2">시퀀스 검증</div>
             {issues.length === 0 ? (
-              <div className="text-[10px] text-emerald-300">✓ 명백한 순서 오류 없음.</div>
+              <div className="text-[12px] text-emerald-300">✓ 명백한 순서 오류 없음.</div>
             ) : (
               <div className="space-y-1">
                 {issues.filter((x) => x.severity === 'warn').length > 0 && (
-                  <div className="text-[10px] text-amber-300">
+                  <div className="text-[12px] text-amber-300">
                     ⚠ {issues.filter((x) => x.severity === 'warn').length}건의 경고 — 패턴 손실 / 활성화 누락 / 차단 위험.
                   </div>
                 )}
                 {issues.filter((x) => x.severity === 'info').length > 0 && (
-                  <div className="text-[10px] text-cyan-300">
+                  <div className="text-[12px] text-cyan-300">
                     ℹ {issues.filter((x) => x.severity === 'info').length}건의 안내 — 권장 단계 누락 가능.
                   </div>
                 )}
-                <div className="text-[9px] text-gray-500 mt-1">경고가 있어도 실행은 가능합니다. 결과에서 영향을 확인하세요.</div>
+                <div className="text-[11px] text-gray-500 mt-1">경고가 있어도 실행은 가능합니다. 결과에서 영향을 확인하세요.</div>
               </div>
             )}
           </div>
@@ -242,7 +242,7 @@ export default function ExperimentPlanner({
           <button
             onClick={onRun}
             disabled={!canRun}
-            className={`w-full py-3 text-[12px] tracking-[3px] uppercase border transition ${
+            className={`w-full py-3 text-[14px] tracking-[3px] uppercase border transition ${
               canRun
                 ? 'border-fuchsia-400 bg-fuchsia-700/40 text-white hover:bg-fuchsia-600/60'
                 : 'border-gray-800 bg-gray-900/40 text-gray-600 cursor-not-allowed'
@@ -252,7 +252,7 @@ export default function ExperimentPlanner({
             ▶ ENTER LAB · 실험 시작
           </button>
           {!canRun && (
-            <div className="text-[9px] text-gray-500 text-center">
+            <div className="text-[11px] text-gray-500 text-center">
               실행하려면 제목과 1개 이상의 시퀀스가 필요합니다.
             </div>
           )}

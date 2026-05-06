@@ -7,8 +7,8 @@ import { EquipmentIcon } from '../icons/EquipmentIcons.jsx';
 
 const SectionTitle = ({ children, sub }) => (
   <div className="flex items-end gap-3 mb-3 border-b border-cyan-900/40 pb-1">
-    <span className="text-[10px] tracking-[2px] text-cyan-300/80 font-mono uppercase">{children}</span>
-    {sub && <span className="text-[9px] text-gray-500 font-mono">{sub}</span>}
+    <span className="text-[12px] tracking-[2px] text-cyan-300/80 font-mono uppercase">{children}</span>
+    {sub && <span className="text-[11px] text-gray-500 font-mono">{sub}</span>}
   </div>
 );
 
@@ -18,8 +18,8 @@ const StatusItem = ({ label, value, tone = 'cyan' }) => {
   };
   return (
     <div className="flex flex-col items-center gap-0.5 px-3 border-l border-cyan-900/40 first:border-l-0">
-      <span className="text-[9px] tracking-[1.5px] text-gray-500 font-mono uppercase">{label}</span>
-      <span className={`text-[11px] font-bold font-mono ${colorMap[tone]}`} style={{ textShadow: '0 0 6px currentColor' }}>{value}</span>
+      <span className="text-[11px] tracking-[1.5px] text-gray-500 font-mono uppercase">{label}</span>
+      <span className={`text-[13px] font-bold font-mono ${colorMap[tone]}`} style={{ textShadow: '0 0 6px currentColor' }}>{value}</span>
     </div>
   );
 };
@@ -42,10 +42,10 @@ const EquipmentTile = ({ eq, onClick }) => {
       <div className={`w-12 h-12 ${isMeasure ? 'text-emerald-300' : 'text-amber-300'} group-hover:text-white transition-colors`}>
         <EquipmentIcon id={eq.equipment_id} glow />
       </div>
-      <div className="text-[9px] tracking-[1px] text-gray-300 font-mono leading-tight text-center uppercase">
+      <div className="text-[11px] tracking-[1px] text-gray-300 font-mono leading-tight text-center uppercase">
         {eq.name}
       </div>
-      <div className="text-[8px] text-gray-500 font-mono tracking-[1px] uppercase">
+      <div className="text-[11px] text-gray-500 font-mono tracking-[1px] uppercase">
         {eq.category}
       </div>
     </button>
@@ -74,8 +74,8 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
       <div className="flex items-center gap-4 px-4 h-11 border-b-2 border-cyan-700/60"
         style={{ background: 'linear-gradient(180deg,#0e1922,#090d12)' }}>
         <div className="flex items-baseline gap-1">
-          <span className="text-[13px] font-bold tracking-[2px] text-cyan-300" style={{ textShadow: '0 0 10px #00d4ff' }}>SEMIFAB</span>
-          <span className="text-[10px] text-gray-500 ml-1">v1.0 | mini fab workflow</span>
+          <span className="text-[15px] font-bold tracking-[2px] text-cyan-300" style={{ textShadow: '0 0 10px #00d4ff' }}>SEMIFAB</span>
+          <span className="text-[12px] text-gray-500 ml-1">v1.0 | mini fab workflow</span>
         </div>
         <div className="flex items-center ml-auto gap-1">
           <StatusItem label="LAB" value="MINI-01" />
@@ -92,7 +92,7 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
           <div className="border border-cyan-900/40 bg-[#0d1117] p-5"
             style={{ background: 'linear-gradient(180deg,#0d1622,#0a1218)' }}>
-            <div className="text-[9px] tracking-[3px] text-cyan-500 mb-1">// SEMIFAB AI</div>
+            <div className="text-[11px] tracking-[3px] text-cyan-500 mb-1">// SEMIFAB AI</div>
             <h1 className="text-2xl text-cyan-300 font-bold tracking-wide mb-2"
               style={{ textShadow: '0 0 8px #00d4ff' }}>
               MINI FAB WORKFLOW
@@ -131,14 +131,14 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
                 <text x="22" y="36" fontSize="8" fill="#7dd3fc" fontFamily="monospace">p-Si</text>
                 <text x="20" y="46" fontSize="6" fill="#64748b" fontFamily="monospace">⟨100⟩</text>
               </svg>
-              <div className="text-[10px] text-gray-400 leading-relaxed font-mono">
+              <div className="text-[12px] text-gray-400 leading-relaxed font-mono">
                 <div><span className="text-gray-500">SUB </span><span className="text-cyan-300">Si p-type</span></div>
                 <div><span className="text-gray-500">ORI </span><span className="text-cyan-300">⟨100⟩</span></div>
                 <div><span className="text-gray-500">DIA </span><span className="text-cyan-300">100 mm</span></div>
                 <div><span className="text-gray-500">STAT</span> <span className="text-emerald-300">UNLOADED</span></div>
               </div>
             </div>
-            <div className="text-[9px] text-gray-500 mt-2 leading-relaxed">
+            <div className="text-[11px] text-gray-500 mt-2 leading-relaxed">
               실험을 시작하면 이 포트에서 시편을 꺼내 장비로 직접 옮깁니다.<br/>
               튜토리얼 또는 FREE MODE 진입 시 sample transport 메커니즘이 활성화됩니다.
             </div>
@@ -152,9 +152,9 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
             {Object.entries(groups).filter(([, list]) => list.length > 0).map(([name, list]) => (
               <div key={name}>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9px] tracking-[2px] text-gray-500 uppercase">{name}</span>
+                  <span className="text-[11px] tracking-[2px] text-gray-500 uppercase">{name}</span>
                   <div className="flex-1 h-px bg-gray-800" />
-                  <span className="text-[8px] tracking-[1px] text-gray-600 uppercase">{list.length} unit{list.length > 1 ? 's' : ''}</span>
+                  <span className="text-[11px] tracking-[1px] text-gray-600 uppercase">{list.length} unit{list.length > 1 ? 's' : ''}</span>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                   {list.map((eq) => (
@@ -179,11 +179,11 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
                   className="text-left border border-cyan-900/40 bg-[#0a0e14] p-3 hover:border-cyan-500/70 hover:bg-cyan-950/30 transition group"
                 >
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[11px] text-cyan-300 font-bold tracking-wide group-hover:text-white">{s.title}</span>
-                    <span className="text-[8px] tracking-[1px] uppercase border border-gray-700 px-1.5 text-gray-400">{s.difficulty}</span>
+                    <span className="text-[13px] text-cyan-300 font-bold tracking-wide group-hover:text-white">{s.title}</span>
+                    <span className="text-[11px] tracking-[1px] uppercase border border-gray-700 px-1.5 text-gray-400">{s.difficulty}</span>
                   </div>
-                  <div className="text-[10px] text-gray-500 leading-relaxed line-clamp-2">{s.description}</div>
-                  <div className="flex items-center gap-1 mt-2 text-[9px] text-gray-600">
+                  <div className="text-[12px] text-gray-500 leading-relaxed line-clamp-2">{s.description}</div>
+                  <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-600">
                     <span>STEPS</span>
                     <span className="text-cyan-400 font-mono">{s.steps.length}</span>
                     <span className="ml-2">EQUIP</span>
@@ -197,11 +197,11 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
           {/* Free Mode */}
           <div className="border border-fuchsia-900/40 bg-[#0d0a14] p-4">
             <SectionTitle sub="USR · 자유 실험 설계">FREE MODE</SectionTitle>
-            <div className="text-[10px] text-gray-400 leading-relaxed mb-3">
+            <div className="text-[12px] text-gray-400 leading-relaxed mb-3">
               실험 제목 / 목적 / 필요사항을 정의하고, 장비 시퀀스를 직접 배치합니다.
               순서가 합리적이지 않으면 시뮬레이터가 경고를 표시합니다 (예: 식각 후 곧바로 증착 시 패턴 소실).
             </div>
-            <ul className="text-[10px] text-gray-500 space-y-1 mb-3 leading-relaxed">
+            <ul className="text-[12px] text-gray-500 space-y-1 mb-3 leading-relaxed">
               <li>① 실험 계획서 작성 <span className="text-gray-700">(title · purpose · requires)</span></li>
               <li>② 장비/공정 GUI 배치 <span className="text-gray-700">(drag/click to add)</span></li>
               <li>③ 시퀀스 검증 <span className="text-gray-700">(warning / info)</span></li>
@@ -209,7 +209,7 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
             </ul>
             <button
               onClick={() => onStartFreeMode?.()}
-              className="w-full py-2 border border-fuchsia-500/60 bg-fuchsia-950/30 text-fuchsia-200 hover:bg-fuchsia-700/40 hover:text-white text-[11px] tracking-[2px] font-mono uppercase transition"
+              className="w-full py-2 border border-fuchsia-500/60 bg-fuchsia-950/30 text-fuchsia-200 hover:bg-fuchsia-700/40 hover:text-white text-[13px] tracking-[2px] font-mono uppercase transition"
             >
               ⚙ ENTER PLANNER
             </button>
@@ -217,7 +217,7 @@ export default function LabMap({ onStartTutorial, onStartFreeMode, onSelectEquip
         </div>
 
         {/* Footer */}
-        <div className="text-[9px] tracking-[1.5px] text-gray-600 font-mono uppercase border-t border-gray-800 pt-2 flex flex-wrap gap-4">
+        <div className="text-[11px] tracking-[1.5px] text-gray-600 font-mono uppercase border-t border-gray-800 pt-2 flex flex-wrap gap-4">
           <span>data-driven definitions · /miniFab/definitions</span>
           <span className="text-gray-700">|</span>
           <span>core engines · sample · process · measurement · workflow · diagnosis</span>

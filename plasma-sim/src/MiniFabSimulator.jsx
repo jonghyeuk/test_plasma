@@ -28,7 +28,7 @@ const StateBadge = ({ label, value, ok }) => {
       ? 'bg-rose-500/10 text-rose-300 border-rose-700/40'
       : 'bg-[#0a0e14] text-gray-300 border-gray-800';
   return (
-    <div className={`px-2 py-1 border ${tone} text-[10px] flex justify-between gap-2 font-mono`}>
+    <div className={`px-2 py-1 border ${tone} text-[12px] flex justify-between gap-2 font-mono`}>
       <span className="text-gray-500 tracking-[1px] uppercase">{label}</span>
       <span className="font-bold">{String(value)}</span>
     </div>
@@ -270,19 +270,19 @@ export default function MiniFabSimulator() {
       <div className="flex items-center gap-3 px-4 h-11 border-b-2 border-cyan-700/60"
         style={{ background: 'linear-gradient(180deg,#0e1922,#090d12)' }}>
         <button onClick={backToLanding}
-          className="text-[10px] tracking-[1.5px] text-gray-500 hover:text-cyan-300 uppercase">
+          className="text-[12px] tracking-[1.5px] text-gray-500 hover:text-cyan-300 uppercase">
           ◁ LAB
         </button>
-        <div className="text-[12px] font-bold tracking-[2px] text-cyan-300"
+        <div className="text-[14px] font-bold tracking-[2px] text-cyan-300"
           style={{ textShadow: '0 0 8px #00d4ff' }}>
           {isFree ? (freePlan.title || 'FREE EXPERIMENT') : scenario.title}
         </div>
-        <span className="text-[9px] text-gray-500 ml-2">
+        <span className="text-[11px] text-gray-500 ml-2">
           STEP <span className="text-cyan-400 font-bold">{activeStep}</span>/<span className="text-cyan-400 font-bold">{runSequence.length}</span>
         </span>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[9px] tracking-[1.5px] text-gray-500">SAMPLE</span>
-          <span className={`text-[10px] px-2 py-0.5 border ${
+          <span className="text-[11px] tracking-[1.5px] text-gray-500">SAMPLE</span>
+          <span className={`text-[12px] px-2 py-0.5 border ${
             sampleLocation
               ? 'border-amber-700/60 text-amber-300 bg-amber-950/30'
               : 'border-emerald-700/60 text-emerald-300 bg-emerald-950/20'
@@ -290,19 +290,19 @@ export default function MiniFabSimulator() {
             {sampleLocation ? `IN ${getEquipment(sampleLocation)?.name?.toUpperCase()}` : 'SHIPPING PORT'}
           </span>
           <button onClick={handleExportRecipe} disabled={sample.history.length === 0}
-            className="text-[9px] tracking-[1.5px] text-gray-500 hover:text-emerald-300 disabled:text-gray-700 uppercase ml-2">📥 EXPORT</button>
+            className="text-[11px] tracking-[1.5px] text-gray-500 hover:text-emerald-300 disabled:text-gray-700 uppercase ml-2">📥 EXPORT</button>
           <button onClick={() => fileInputRef.current?.click()}
-            className="text-[9px] tracking-[1.5px] text-gray-500 hover:text-cyan-300 uppercase">📂 IMPORT</button>
+            className="text-[11px] tracking-[1.5px] text-gray-500 hover:text-cyan-300 uppercase">📂 IMPORT</button>
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportRecipe} />
           <button onClick={() => setTutorialEnabled((v) => !v)}
-            className={`text-[9px] tracking-[1.5px] uppercase ml-2 ${tutorialEnabled ? 'text-cyan-300' : 'text-gray-600'}`}>
+            className={`text-[11px] tracking-[1.5px] uppercase ml-2 ${tutorialEnabled ? 'text-cyan-300' : 'text-gray-600'}`}>
             🎓 TUTORIAL {tutorialEnabled ? 'ON' : 'OFF'}
           </button>
         </div>
       </div>
 
       {recipeBanner && (
-        <div className={`px-4 py-1.5 text-[10px] border-b ${
+        <div className={`px-4 py-1.5 text-[12px] border-b ${
           recipeBanner.kind === 'err' ? 'bg-rose-950/40 text-rose-200 border-rose-800' : 'bg-emerald-950/40 text-emerald-200 border-emerald-800'
         }`}>
           {recipeBanner.text}
@@ -314,7 +314,7 @@ export default function MiniFabSimulator() {
         {/* ---- LEFT: Step list ---- */}
         <div className="lg:col-span-3 space-y-3">
           <div className="border border-cyan-900/40 bg-[#0d1117] p-3">
-            <div className="text-[9px] tracking-[2px] text-cyan-400 mb-2 uppercase">시퀀스</div>
+            <div className="text-[11px] tracking-[2px] text-cyan-400 mb-2 uppercase">시퀀스</div>
             <ol className="space-y-1">
               {runSequence.map((s) => {
                 const eq = getEquipment(s.equipment);
@@ -336,22 +336,22 @@ export default function MiniFabSimulator() {
                               : 'border-gray-800 bg-[#0a0e14] text-gray-300 hover:border-cyan-700/60'
                       }`}
                     >
-                      <span className="text-[9px] text-gray-600 font-mono w-5">{String(s.step).padStart(2, '0')}</span>
+                      <span className="text-[11px] text-gray-600 font-mono w-5">{String(s.step).padStart(2, '0')}</span>
                       <div className={`w-7 h-7 ${eq?.type === 'measurement' ? 'text-emerald-400' : 'text-amber-400'}`}>
                         <EquipmentIcon id={s.equipment} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] truncate uppercase tracking-[1px]">{eq?.name}</div>
-                        <div className="text-[9px] text-gray-500 truncate">{s.process}</div>
+                        <div className="text-[12px] truncate uppercase tracking-[1px]">{eq?.name}</div>
+                        <div className="text-[11px] text-gray-500 truncate">{s.process}</div>
                       </div>
-                      <span className="text-[9px]">{done ? '✓' : active ? '▶' : ''}</span>
+                      <span className="text-[11px]">{done ? '✓' : active ? '▶' : ''}</span>
                     </button>
                   </li>
                 );
               })}
             </ol>
             {sampleLocation && (
-              <div className="text-[9px] text-amber-300 mt-2 leading-relaxed">
+              <div className="text-[11px] text-amber-300 mt-2 leading-relaxed">
                 ⚠ Sample이 장비에 로드된 상태에서는 다른 단계로 이동할 수 없습니다. UNLOAD 후 이동하세요.
               </div>
             )}
@@ -376,18 +376,18 @@ export default function MiniFabSimulator() {
               highlight={highlight}
             />
           ) : (
-            <div className="border border-gray-800 p-4 text-[11px] text-gray-500">시퀀스 끝.</div>
+            <div className="border border-gray-800 p-4 text-[13px] text-gray-500">시퀀스 끝.</div>
           )}
 
           {/* Notes log */}
           <div className="border border-cyan-900/40 bg-[#0d1117] p-3">
-            <div className="text-[9px] tracking-[2px] text-cyan-400 mb-2 uppercase">실행 로그</div>
+            <div className="text-[11px] tracking-[2px] text-cyan-400 mb-2 uppercase">실행 로그</div>
             {notesLog.length === 0 ? (
-              <div className="text-[10px] text-gray-500">아직 기록이 없습니다.</div>
+              <div className="text-[12px] text-gray-500">아직 기록이 없습니다.</div>
             ) : (
               <ul className="space-y-1.5 max-h-56 overflow-auto">
                 {notesLog.map((n, i) => (
-                  <li key={i} className="text-[10px] border-l-2 border-cyan-900/40 pl-2">
+                  <li key={i} className="text-[12px] border-l-2 border-cyan-900/40 pl-2">
                     <span className="text-gray-500">[Step {n.step}]</span>{' '}
                     <span className="text-cyan-300">{n.equipment}</span>{' '}
                     <span className={n.kind === 'measure' ? 'text-emerald-400' : 'text-amber-400'}>· {n.kind}</span>
@@ -407,7 +407,7 @@ export default function MiniFabSimulator() {
         <div className="lg:col-span-4 space-y-3">
           <LayerStackView sample={sample} />
           <div className="border border-cyan-900/40 bg-[#0d1117] p-3">
-            <div className="text-[9px] tracking-[2px] text-cyan-400 mb-2 uppercase">SAMPLE STATE 누적</div>
+            <div className="text-[11px] tracking-[2px] text-cyan-400 mb-2 uppercase">SAMPLE STATE 누적</div>
             <div className="grid grid-cols-1 gap-1">
               <StateBadge label="Substrate" value={`${sample.base.substrate} ${sample.base.orientation}`} />
               <StateBadge label="Contamination" value={summary.contamination}
@@ -428,21 +428,21 @@ export default function MiniFabSimulator() {
           <div className="lg:col-span-12">
             <div className="border border-cyan-900/40 bg-[#0d1117] p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="text-[9px] tracking-[2px] text-cyan-400 uppercase">DIAGNOSIS</div>
+                <div className="text-[11px] tracking-[2px] text-cyan-400 uppercase">DIAGNOSIS</div>
                 <button
                   onClick={() => setDiagnosis(diagnose(sample, isFree ? null : scenarioId, workflow?.results || {}))}
-                  className="text-[9px] text-gray-500 hover:text-cyan-300 uppercase tracking-[1px] ml-auto"
+                  className="text-[11px] text-gray-500 hover:text-cyan-300 uppercase tracking-[1px] ml-auto"
                 >▶ run diagnosis</button>
               </div>
               {!diagnosis ? (
-                <div className="text-[10px] text-gray-500">시나리오 마지막 단계 완료 시 자동 실행되거나 수동 트리거하세요.</div>
+                <div className="text-[12px] text-gray-500">시나리오 마지막 단계 완료 시 자동 실행되거나 수동 트리거하세요.</div>
               ) : (
                 <div className="space-y-2">
-                  <div className={`text-[11px] font-bold ${diagnosis.overall === 'PASS' ? 'text-emerald-300' : 'text-rose-300'}`}>
+                  <div className={`text-[13px] font-bold ${diagnosis.overall === 'PASS' ? 'text-emerald-300' : 'text-rose-300'}`}>
                     {diagnosis.overall === 'PASS' ? '✓ PASS' : '⚠ NEEDS REVIEW'} — <span className="text-gray-300 font-normal">{diagnosis.summary}</span>
                   </div>
                   {diagnosis.comparison.length > 0 && (
-                    <table className="w-full text-[10px] font-mono">
+                    <table className="w-full text-[12px] font-mono">
                       <thead className="text-gray-500"><tr className="border-b border-gray-800">
                         <th className="text-left py-1 tracking-[1px] uppercase">item</th>
                         <th className="text-left py-1 tracking-[1px] uppercase">target</th>
@@ -465,10 +465,10 @@ export default function MiniFabSimulator() {
                     <div className="space-y-1.5">
                       {diagnosis.failures.map((f) => (
                         <div key={f.id} className="border border-rose-800/40 bg-rose-950/20 p-2">
-                          <div className="text-[10px] text-rose-300 font-bold mb-0.5">⚠ {f.name}</div>
-                          <div className="text-[10px] text-gray-200">{f.message}</div>
-                          {f.traced_cause && <div className="text-[10px] text-amber-200">🔎 {f.traced_cause}</div>}
-                          <ul className="text-[10px] text-emerald-200 list-disc list-inside mt-1">
+                          <div className="text-[12px] text-rose-300 font-bold mb-0.5">⚠ {f.name}</div>
+                          <div className="text-[12px] text-gray-200">{f.message}</div>
+                          {f.traced_cause && <div className="text-[12px] text-amber-200">🔎 {f.traced_cause}</div>}
+                          <ul className="text-[12px] text-emerald-200 list-disc list-inside mt-1">
                             {f.fix.map((r, i) => <li key={i}>{r}</li>)}
                           </ul>
                         </div>
