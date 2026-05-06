@@ -4,8 +4,60 @@
 import { listFailures } from '../definitions/failures.js';
 import { getGolden } from '../definitions/goldenSamples.js';
 
+// 실패 → history 후보 매칭 휴리스틱
+const traceFailureCause = (failure, sample) => {
+  const findLast = (id) => [...sample.history].reverse().find((h) => h.process_id === id);
+  switch (failure.failure_id) {
+    case 'bridge_defect': {
+      const etch = findLast('plasma_etch');
+      if (etch) {
+        if ((etch.params?.time ?? 0) < 60) return `RIE Step의 time(${etch.params.time}s)이 짧아 under-etch 가능성.`;
+        if ((etch.params?.rf_power ?? 0) < 100) return `RIE RF power(${etch.params.rf_power}W)가 낮아 식각이 부족합니다.`;
+      }
+      const litho = findLast('lithography');
+      if (litho && litho.params?.alignment_quality === 'poor') return 'Lithography alignment poor → PR 보호 실패 가능.';
+      return 'RIE 식각이 부족하거나 PR 패턴이 부정확합니다.';
+    }
+    case 'open_defect': {
+      const etch = findLast('plasma_etch');
+      if (etch) {
+        if ((etch.params?.time ?? 0) > 150) return `RIE time(${etch.params.time}s)이 길어 over-etch.`;
+        if ((etch.params?.rf_power ?? 0) > 300) return `RIE RF power(${etch.params.rf_power}W) 과도.`;
+      }
+      return 'RIE over-etch 또는 PR lifting이 의심됩니다.';
+    }
+    case 'thin_metal': {
+      const dep = findLast('metal_deposition');
+      if (dep) {
+        if ((dep.params?.time ?? 0) < 50) return `Sputter time(${dep.params.time}s)이 짧습니다.`;
+        if ((dep.params?.power ?? 0) < 150) return `Sputter power(${dep.params.power}W)가 낮습니다.`;
+        if ((dep.params?.pressure ?? 0) > 15) return `Pressure(${dep.params.pressure} mTorr)가 높아 deposition rate 저하.`;
+      }
+      return 'Sputter 조건이 목표 두께에 부족합니다.';
+    }
+    case 'pr_lifting': {
+      const clean = findLast('cleaning');
+      if (!clean) return '세정 step이 누락되었습니다.';
+      if ((clean.params?.time ?? 0) < 60) return `Cleaning time(${clean.params.time}s) 부족.`;
+      return '세정 강도 부족 또는 표면 친수성 부족.';
+    }
+    case 'plasma_damage': {
+      const causes = [];
+      const o2 = findLast('o2_plasma');
+      const etch = findLast('plasma_etch');
+      const dep = findLast('metal_deposition');
+      if (o2 && (o2.params?.rf_power ?? 0) * (o2.params?.time ?? 0) > 18000) causes.push('O₂ Plasma dose 과도');
+      if (etch && (etch.params?.rf_power ?? 0) > 300) causes.push('RIE RF power 과도');
+      if (dep && (dep.params?.power ?? 0) > 400) causes.push('Sputter power 과도');
+      return causes.length ? causes.join(', ') : '누적된 RF 노출이 과도합니다.';
+    }
+    default:
+      return null;
+  }
+};
+
 export const diagnose = (sample, scenarioId, measurements = {}) => {
-  const golden = getGolden(scenarioId);
+  const golden = scenarioId ? getGolden(scenarioId) : null;
   const ctx = { golden };
   const matched = [];
 
@@ -15,7 +67,7 @@ export const diagnose = (sample, scenarioId, measurements = {}) => {
     } catch { /* skip */ }
   }
 
-  // Golden sample 비교
+  // Golden Sample 비교
   const comparison = [];
   if (golden) {
     const top = sample.layers[sample.layers.length - 1];
@@ -27,6 +79,19 @@ export const diagnose = (sample, scenarioId, measurements = {}) => {
         ok: Math.abs(top.thickness_nm - golden.metal_thickness_nm.target) <= golden.metal_thickness_nm.tolerance,
       });
     }
+    if (golden.oxide_thickness_nm) {
+      const ox = sample.layers.find((l) => l.material === 'SiO2');
+      if (ox) {
+        comparison.push({
+          item: 'Oxide Thickness',
+          target: `${golden.oxide_thickness_nm.target} ± ${golden.oxide_thickness_nm.tolerance} nm`,
+          actual: `${ox.thickness_nm} nm`,
+          ok: Math.abs(ox.thickness_nm - golden.oxide_thickness_nm.target) <= golden.oxide_thickness_nm.tolerance,
+        });
+      } else {
+        comparison.push({ item: 'Oxide Layer', target: '존재', actual: '없음', ok: false });
+      }
+    }
     if (golden.pattern_quality) {
       comparison.push({
         item: 'Pattern Quality',
@@ -35,31 +100,39 @@ export const diagnose = (sample, scenarioId, measurements = {}) => {
         ok: sample.photo.pattern_quality === golden.pattern_quality,
       });
     }
-    comparison.push({
-      item: 'Bridge Defect',
-      target: 'none',
-      actual: sample.defects.bridge ? 'YES' : 'none',
-      ok: !sample.defects.bridge,
-    });
-    comparison.push({
-      item: 'Open Defect',
-      target: 'none',
-      actual: sample.defects.open ? 'YES' : 'none',
-      ok: !sample.defects.open,
-    });
+    comparison.push({ item: 'Bridge Defect', target: 'none', actual: sample.defects.bridge ? 'YES' : 'none', ok: !sample.defects.bridge });
+    comparison.push({ item: 'Open Defect', target: 'none', actual: sample.defects.open ? 'YES' : 'none', ok: !sample.defects.open });
 
-    // Rs 측정값이 있으면 비교
-    const rsResult = Object.values(measurements).find(
-      (m) => m && m.outputs && m.outputs.sheet_resistance_ohm_sq != null
-    );
-    if (rsResult && golden.sheet_resistance_ohm_sq) {
-      const rs = rsResult.outputs.sheet_resistance_ohm_sq;
+    if (golden.plasma_damage_max) {
+      const order = ['none', 'very_low', 'low', 'medium', 'high', 'very_high'];
+      const ok = order.indexOf(sample.surface.plasma_damage) <= order.indexOf(golden.plasma_damage_max);
+      comparison.push({ item: 'Plasma Damage', target: `≤ ${golden.plasma_damage_max}`, actual: sample.surface.plasma_damage, ok });
+    }
+
+    // 측정값 기반 비교
+    const flat = Object.values(measurements).map((m) => m?.outputs || {});
+    const merged = Object.assign({}, ...flat);
+    if (golden.sheet_resistance_ohm_sq && merged.sheet_resistance_ohm_sq != null) {
+      const rs = merged.sheet_resistance_ohm_sq;
       const { min, max } = golden.sheet_resistance_ohm_sq;
+      comparison.push({ item: 'Sheet Resistance', target: `${min} ~ ${max} Ω/□`, actual: `${rs} Ω/□`, ok: rs >= min && rs <= max });
+    }
+    if (golden.contact_angle_deg && merged.contact_angle_deg != null) {
+      const a = merged.contact_angle_deg;
+      const { min, max } = golden.contact_angle_deg;
+      comparison.push({ item: 'Contact Angle', target: `${min} ~ ${max}°`, actual: `${a}°`, ok: a >= min && a <= max });
+    }
+    if (golden.capacitance_pF && merged.capacitance_pF != null) {
+      const c = merged.capacitance_pF;
+      const { min, max } = golden.capacitance_pF;
+      comparison.push({ item: 'Capacitance', target: `${min} ~ ${max} pF`, actual: `${c} pF`, ok: c >= min && c <= max });
+    }
+    if (golden.leakage_target && merged.leakage_indication) {
       comparison.push({
-        item: 'Sheet Resistance',
-        target: `${min} ~ ${max} Ω/□`,
-        actual: `${rs} Ω/□`,
-        ok: rs >= min && rs <= max,
+        item: 'Leakage',
+        target: golden.leakage_target,
+        actual: merged.leakage_indication,
+        ok: merged.leakage_indication === golden.leakage_target,
       });
     }
   }
@@ -67,18 +140,21 @@ export const diagnose = (sample, scenarioId, measurements = {}) => {
   const allOk = comparison.length > 0 && comparison.every((c) => c.ok) && matched.length === 0;
 
   return {
-    overall: allOk ? 'PASS' : 'NEEDS_REVIEW',
+    overall: allOk ? 'PASS' : matched.length || comparison.some((c) => !c.ok) ? 'NEEDS_REVIEW' : 'INSUFFICIENT_DATA',
     comparison,
     failures: matched.map((f) => ({
       id: f.failure_id,
       name: f.name,
       message: f.diagnosis_message,
       fix: f.recommended_fix,
+      traced_cause: traceFailureCause(f, sample),
     })),
     summary: allOk
       ? '모든 항목이 Golden Sample 허용 범위 내입니다.'
       : matched.length > 0
-        ? `${matched.length}건의 결함 패턴이 검출되었습니다. 아래 진단을 확인하세요.`
-        : 'Golden Sample 대비 일부 항목이 허용 범위를 벗어났습니다.',
+        ? `${matched.length}건의 결함 패턴이 검출되었습니다.`
+        : comparison.length === 0
+          ? 'Golden Sample 기준이 없거나 측정 데이터가 부족합니다 (Free Mode).'
+          : 'Golden Sample 대비 일부 항목이 허용 범위를 벗어났습니다.',
   };
 };

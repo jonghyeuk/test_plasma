@@ -81,6 +81,108 @@ export const measurementDefinitions = {
       };
     },
   },
+
+  // ---- Phase 3 신규 측정 장비 ----
+  profilometer: {
+    measurement_id: 'profilometer',
+    reads: ['layers[top].thickness_nm', 'layers[top].uniformity', 'surface.roughness'],
+    outputs: ['center_thickness', 'edge_thickness', 'variation', 'roughness'],
+    measure: (sample, params) => {
+      const top = sample.layers[sample.layers.length - 1];
+      if (!top) {
+        return { title: 'Profilometer', outputs: { note: '측정 가능한 step이 없습니다.' }, confidence: 'low' };
+      }
+      const t = top.thickness_nm;
+      const variancePct = { excellent: 0.02, good: 0.04, moderate: 0.10, poor: 0.20 }[top.uniformity] ?? 0.05;
+      const center = Math.round(noisy(t, 0.02));
+      const edge = Math.round(noisy(t * (1 - variancePct), 0.02));
+      const roughnessLevel = sample.surface.roughness;
+      return {
+        title: 'Profilometer (Step Height Scan)',
+        scan_length_um: params?.scan_length || 500,
+        outputs: {
+          center_thickness_nm: center,
+          edge_thickness_nm: edge,
+          variation_pct: Math.round((1 - edge / center) * 100 * 10) / 10,
+          surface_roughness: roughnessLevel,
+        },
+        confidence: variancePct > 0.15 ? 'medium' : 'high',
+      };
+    },
+  },
+
+  contact_angle_meter: {
+    measurement_id: 'contact_angle_meter',
+    reads: ['surface.hydrophilicity'],
+    outputs: ['contact_angle_deg', 'surface_state'],
+    measure: (sample, params) => {
+      const map = { very_low: 105, low: 85, medium: 65, high: 35, very_high: 15, none: 95 };
+      const base = map[sample.surface.hydrophilicity] ?? 70;
+      const liquidOffset = params?.liquid === 'Glycerol' ? 10 : 0;
+      const angle = Math.round(noisy(base + liquidOffset, 0.04));
+      let state;
+      if (angle > 90) state = 'hydrophobic';
+      else if (angle > 60) state = 'mildly hydrophilic';
+      else if (angle > 30) state = 'hydrophilic';
+      else state = 'super-hydrophilic';
+      return {
+        title: 'Contact Angle Meter',
+        outputs: {
+          contact_angle_deg: angle,
+          surface_state: state,
+          liquid: params?.liquid || 'DI Water',
+        },
+        confidence: 'high',
+      };
+    },
+  },
+
+  lcr_meter: {
+    measurement_id: 'lcr_meter',
+    reads: ['layers (oxide)', 'top_metal (electrode)'],
+    outputs: ['capacitance_pF', 'leakage_indication'],
+    measure: (sample, params) => {
+      const area_mm2 = params?.electrode_area_mm2 || 1;
+      const A = area_mm2 * 1e-6; // m²
+      const oxide = sample.layers.find((l) => l.material === 'SiO2' || l.material === 'SiN');
+      const topMetal = sample.layers[sample.layers.length - 1];
+      const hasMetalElectrode = topMetal && ['Al', 'Cu', 'Ti'].includes(topMetal.material);
+      if (!oxide || !hasMetalElectrode) {
+        return {
+          title: 'LCR Meter',
+          outputs: { note: 'MOS 구조(절연막 + 금속 전극)가 형성되지 않아 측정 불가.' },
+          confidence: 'low',
+        };
+      }
+      const epsilon0 = 8.854e-12;
+      const epsR = oxide.material === 'SiN' ? 7.0 : 3.9;
+      const d = oxide.thickness_nm * 1e-9;
+      const C = epsilon0 * epsR * A / d; // F
+      const C_pF = C * 1e12;
+      const damage = sample.surface.plasma_damage;
+      const leakage = damage === 'high' ? 'elevated' : damage === 'very_high' ? 'severe' : 'normal';
+      return {
+        title: 'LCR Meter (MOS Capacitance)',
+        frequency_kHz: params?.frequency || 100,
+        outputs: {
+          capacitance_pF: Number(noisy(C_pF, 0.03).toFixed(2)),
+          oxide_thickness_nm: oxide.thickness_nm,
+          oxide_material: oxide.material,
+          leakage_indication: leakage,
+        },
+        confidence: leakage === 'severe' ? 'low' : 'high',
+      };
+    },
+  },
 };
 
 export const getMeasurement = (id) => measurementDefinitions[id];
+
+// equipment_id → measurement_id 매핑 (Free Mode에서 사용)
+export const measurementByEquipment = {
+  optical_microscope: 'optical_microscope',
+  four_point_probe: 'four_point_probe',
+  profilometer: 'profilometer',
+  contact_angle_meter: 'contact_angle_meter',
+  lcr_meter: 'lcr_meter',
+};
