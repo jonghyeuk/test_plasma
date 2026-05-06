@@ -6,6 +6,7 @@ import OESSimulator from './OESSimulator'
 import ImpedanceProbeSimulator from './ImpedanceProbeSimulator'
 import RGAEducation from './RGAEducation'
 import RGAViewer from './RGAViewer'
+import MiniFabSimulator from './MiniFabSimulator'
 import './App.css'
 
 function App() {
@@ -100,6 +101,14 @@ function App() {
       icon: '⚡',
       color: 'from-green-500 to-green-600',
       component: PlasmaSimulatorIII
+    },
+    {
+      id: 'mini-fab',
+      name: 'Mini Fab',
+      description: '시편 상태 누적 기반 Mini Fab Workflow Simulator',
+      icon: '🏭',
+      color: 'from-fuchsia-500 to-pink-600',
+      component: MiniFabSimulator
     }
   ];
 
