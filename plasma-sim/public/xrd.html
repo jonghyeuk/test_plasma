@@ -1,0 +1,2870 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semifabai XRD Diffractometer - Tutorial</title>
+<style>
+  /* ========================================================
+     SEMIFABAI XRD - Industrial control software aesthetic
+     Reference: Bruker D8 Advance / DIFFRAC.SUITE style
+     ======================================================== */
+  :root {
+    --bg-deep: #0a0e14;
+    --bg-panel: #11161e;
+    --bg-panel-2: #161c26;
+    --bg-elevated: #1d2530;
+    --border: #2a3340;
+    --border-light: #3a4556;
+    --text-primary: #e4e9f0;
+    --text-secondary: #8a96a8;
+    --text-muted: #5a6678;
+    --accent-cyan: #00d4ff;
+    --accent-cyan-dim: #0a8aaa;
+    --accent-amber: #ffb300;
+    --accent-green: #00e676;
+    --accent-red: #ff5252;
+    --accent-blue: #448aff;
+    --x-ray: #00ffea;
+    --beam-glow: rgba(0, 255, 234, 0.6);
+    --grid-line: rgba(138, 150, 168, 0.08);
+    --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    --font-display: 'Inter', 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 13px;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ===== TITLE BAR ===== */
+  .titlebar {
+    height: 32px;
+    background: linear-gradient(180deg, #1a212b 0%, #0d1218 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .titlebar-logo {
+    color: var(--accent-cyan);
+    font-weight: 700;
+    margin-right: 8px;
+    letter-spacing: 1px;
+  }
+  .titlebar-divider { color: var(--text-muted); margin: 0 8px; }
+  .titlebar-software { color: var(--text-secondary); }
+  .titlebar-status {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 6px var(--accent-green);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ===== MENU BAR ===== */
+  .menubar {
+    height: 28px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+  .menu-item {
+    padding: 4px 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .menu-item:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar {
+    height: 44px;
+    background: var(--bg-panel-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .tool-btn {
+    height: 32px;
+    padding: 0 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .tool-btn:hover:not(:disabled) {
+    background: #28323f;
+    color: var(--text-primary);
+    border-color: var(--border-light);
+  }
+  .tool-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .tool-btn.primary {
+    background: linear-gradient(180deg, #006a85 0%, #004d63 100%);
+    border-color: var(--accent-cyan-dim);
+    color: var(--text-primary);
+  }
+  .tool-btn.primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #0090b8 0%, #006380 100%);
+  }
+  .tool-btn.danger {
+    background: linear-gradient(180deg, #8a2020 0%, #5a1414 100%);
+    border-color: #aa3030;
+    color: #ffd0d0;
+  }
+  .tool-btn .icon {
+    width: 14px; height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    margin: 0 6px;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 1fr 220px;
+    height: calc(100vh - 32px - 28px - 44px - 24px);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    height: 28px;
+    background: linear-gradient(180deg, #1a212b 0%, #141a23 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .panel-header .accent {
+    width: 3px;
+    height: 14px;
+    background: var(--accent-cyan);
+    margin-right: 8px;
+  }
+  .panel-header .right-info {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 9px;
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow: auto;
+    padding: 10px;
+  }
+  .panel-body::-webkit-scrollbar { width: 8px; height: 8px; }
+  .panel-body::-webkit-scrollbar-track { background: var(--bg-deep); }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+  /* ===== LEFT PANEL: Tutorial Steps ===== */
+  .left-panel { grid-column: 1; grid-row: 1 / span 2; }
+
+  .tutorial-progress {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel-2);
+  }
+  .tutorial-progress-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .tutorial-progress-bar {
+    height: 4px;
+    background: var(--bg-deep);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tutorial-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+    width: 0%;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px var(--accent-cyan);
+  }
+  .tutorial-progress-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-cyan);
+    margin-top: 6px;
+  }
+
+  .step-list {
+    list-style: none;
+  }
+  .step-item {
+    padding: 10px 8px;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid var(--bg-elevated);
+    cursor: default;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    opacity: 0.45;
+    transition: all 0.2s;
+  }
+  .step-item.active {
+    background: rgba(0, 212, 255, 0.06);
+    border-left-color: var(--accent-cyan);
+    opacity: 1;
+  }
+  .step-item.completed {
+    opacity: 0.8;
+    border-left-color: var(--accent-green);
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    background: var(--bg-deep);
+  }
+  .step-item.active .step-num {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  }
+  .step-item.completed .step-num {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--bg-deep);
+  }
+  .step-item.completed .step-num::after {
+    content: "✓";
+  }
+  .step-item.completed .step-num-text { display: none; }
+  .step-content { flex: 1; }
+  .step-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .step-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ===== CENTER PANEL: Workspace ===== */
+  .center-panel { grid-column: 2; grid-row: 1; }
+
+  .workspace {
+    flex: 1;
+    position: relative;
+    background:
+      radial-gradient(circle at 50% 50%, #161e2a 0%, #0a0e14 100%);
+    overflow: hidden;
+  }
+  .workspace svg { width: 100%; height: 100%; display: block; }
+
+  /* Background grid */
+  .workspace-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .workspace-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    pointer-events: none;
+    letter-spacing: 1px;
+  }
+  .workspace-overlay .live-readout {
+    color: var(--accent-cyan);
+    margin-top: 4px;
+  }
+
+  /* ===== RIGHT PANEL: Instructions ===== */
+  .right-panel { grid-column: 3; grid-row: 1 / span 2; }
+
+  .instruction-box {
+    padding: 14px;
+    background: linear-gradient(180deg, rgba(0,212,255,0.04) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .instruction-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .instruction-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+  .instruction-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  .instruction-text strong { color: var(--accent-cyan); }
+  .instruction-text .highlight {
+    background: rgba(255, 179, 0, 0.15);
+    color: var(--accent-amber);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .info-box {
+    margin: 12px;
+    padding: 10px;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-amber);
+    border-radius: 2px;
+  }
+  .info-box-title {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--accent-amber);
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .info-box-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ===== BOTTOM PANEL: Diffraction Pattern ===== */
+  .bottom-panel { grid-column: 2; grid-row: 2; }
+
+  .pattern-container {
+    flex: 1;
+    background: #060a10;
+    position: relative;
+    padding: 8px 12px;
+  }
+  #patternSvg { width: 100%; height: 100%; }
+
+  .pattern-axis-label {
+    fill: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .pattern-tick {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+  }
+  .pattern-tick-text {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 9px;
+  }
+  .pattern-grid-line {
+    stroke: rgba(138, 150, 168, 0.1);
+    stroke-width: 1;
+  }
+  .pattern-curve {
+    fill: none;
+    stroke: var(--accent-cyan);
+    stroke-width: 1.2;
+    filter: drop-shadow(0 0 2px rgba(0, 212, 255, 0.6));
+  }
+  .peak-marker {
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .peak-marker:hover .peak-line {
+    stroke: var(--accent-amber);
+    stroke-width: 2;
+  }
+  .peak-marker.identified .peak-line {
+    stroke: var(--accent-green);
+    stroke-width: 1.5;
+  }
+  .peak-marker .peak-hover-zone {
+    fill: transparent;
+    cursor: pointer;
+  }
+
+  /* ===== STATUS BAR ===== */
+  .statusbar {
+    height: 24px;
+    background: var(--bg-panel-2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    gap: 16px;
+    letter-spacing: 0.5px;
+  }
+  .statusbar-item { display: flex; align-items: center; gap: 4px; }
+  .statusbar-divider { width: 1px; height: 12px; background: var(--border); }
+
+  /* ===== INTERACTIVE ELEMENTS ===== */
+  .draggable {
+    cursor: grab;
+  }
+  .draggable.grabbing { cursor: grabbing; }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+  .form-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .form-input {
+    width: 100%;
+    height: 28px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 0 8px;
+    border-radius: 2px;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 1px var(--accent-cyan);
+  }
+  .form-readout {
+    width: 100%;
+    height: 28px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    border-radius: 2px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* === Parameter validation feedback === */
+  .form-input.input-good {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.3);
+  }
+  .form-input.input-warn {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.25);
+  }
+  .form-input.input-bad {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 0 1px rgba(255, 82, 82, 0.3);
+  }
+  .param-feedback {
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.3;
+    min-height: 12px;
+    letter-spacing: 0.3px;
+  }
+  .param-feedback.good { color: var(--accent-green); }
+  .param-feedback.ok { color: var(--accent-amber); }
+  .param-feedback.error { color: var(--accent-red); }
+
+  /* === 입력 폼 강조 헤더 + 패널 === */
+  .param-form-header {
+    margin: 14px 0 8px 0;
+    padding: 9px 12px;
+    background: linear-gradient(90deg, var(--accent-cyan), transparent);
+    border-left: 3px solid var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .param-form-header-arrow {
+    color: var(--accent-cyan);
+    font-size: 14px;
+    font-weight: bold;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+  }
+  .param-form-header-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  .param-form-header-sub {
+    font-size: 11px;
+    color: var(--text-primary);
+    letter-spacing: 0.2px;
+  }
+  .param-form-panel {
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .param-form-panel .form-label {
+    font-weight: bold;
+    color: var(--accent-cyan);
+  }
+
+  .param-summary {
+    margin: 10px 0;
+    padding: 8px 10px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .ok-badge { color: var(--accent-green); }
+  .warn-badge { color: var(--accent-amber); }
+  .err-badge { color: var(--accent-red); }
+
+  .tool-btn.primary:disabled {
+    background: var(--bg-elevated);
+    border-color: var(--border);
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  .slider-container {
+    margin: 10px 0;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--bg-deep);
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0, 212, 255, 0.6);
+  }
+  .slider-row input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    cursor: pointer;
+    border: none;
+  }
+  .slider-value {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-cyan);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* ===== MODAL OVERLAY for Bragg's Law tutorial ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    width: 880px;
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 212, 255, 0.2);
+  }
+  .modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #1a212b 0%, #141a23 100%);
+    display: flex;
+    align-items: center;
+  }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
+  }
+  .modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 8px;
+  }
+  .modal-close:hover { color: var(--text-primary); }
+  .modal-body {
+    padding: 20px;
+    overflow: auto;
+  }
+
+  /* ===== Sample preparation step elements ===== */
+  .prep-instruction {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid var(--accent-cyan);
+    padding: 8px 16px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
+    pointer-events: none;
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+  }
+
+  /* Bragg modal specific */
+  .bragg-controls {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--bg-deep);
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .bragg-control-group {
+    flex: 1;
+  }
+  .bragg-readout-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .bragg-readout {
+    background: var(--bg-deep);
+    padding: 10px;
+    border-radius: 2px;
+    border-left: 2px solid var(--accent-cyan);
+  }
+  .bragg-readout-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .bragg-readout-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+  .bragg-readout.constructive {
+    border-left-color: var(--accent-green);
+  }
+  .bragg-readout.constructive .bragg-readout-value {
+    color: var(--accent-green);
+  }
+
+  /* Peak identification table */
+  .peak-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .peak-table th, .peak-table td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .peak-table th {
+    color: var(--text-muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+    background: var(--bg-deep);
+  }
+  .peak-table td { color: var(--text-secondary); }
+  .peak-table .hkl-cell { color: var(--accent-amber); font-weight: 600; }
+  .peak-table tr.identified { background: rgba(0, 230, 118, 0.05); }
+  .peak-table tr.identified td { color: var(--text-primary); }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-elevated);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+    padding: 10px 18px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 200;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.error {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    box-shadow: 0 0 20px rgba(255, 82, 82, 0.3);
+  }
+
+  /* Result summary */
+  .result-card {
+    margin: 10px 0;
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .result-card-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .result-card-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+  .result-card-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .result-card.success {
+    border-color: var(--accent-green);
+  }
+  .result-card.success .result-card-value {
+    color: var(--accent-green);
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TITLE BAR ===== -->
+<div class="titlebar">
+  <span class="titlebar-logo">▣ SEMIFABAI</span>
+  <span class="titlebar-divider">|</span>
+  <span class="titlebar-software">XRD-D8 Diffractometer Control v2.4.1 — Tutorial Mode</span>
+  <div class="titlebar-status">
+    <span><span class="status-dot"></span>SYSTEM READY</span>
+    <span style="color: var(--text-muted);">Sample: Si Powder</span>
+    <span style="color: var(--text-muted);">User: Trainee</span>
+  </div>
+</div>
+
+<!-- ===== MENU BAR ===== -->
+<div class="menubar">
+  <div class="menu-item">File</div>
+  <div class="menu-item">Edit</div>
+  <div class="menu-item">View</div>
+  <div class="menu-item">Measurement</div>
+  <div class="menu-item">Analysis</div>
+  <div class="menu-item">Tools</div>
+  <div class="menu-item">Window</div>
+  <div class="menu-item">Help</div>
+</div>
+
+<!-- ===== TOOLBAR ===== -->
+<div class="toolbar">
+  <button class="tool-btn" id="btnRestart">
+    <span class="icon">↺</span>RESTART TUTORIAL
+  </button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn" id="btnPrev" disabled>
+    <span class="icon">◀</span>PREV STEP
+  </button>
+  <button class="tool-btn primary" id="btnNext">
+    NEXT STEP<span class="icon">▶</span>
+  </button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn" id="btnBraggHelp" disabled>
+    <span class="icon">◈</span>BRAGG'S LAW
+  </button>
+  <div style="flex:1"></div>
+  <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">
+    X-RAY: <span style="color: var(--accent-amber);">Cu Kα (1.5406 Å)</span>
+  </span>
+</div>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="main-layout">
+
+  <!-- LEFT: TUTORIAL STEPS -->
+  <div class="panel left-panel">
+    <div class="panel-header">
+      <span class="accent"></span>TUTORIAL PROGRESS
+      <span class="right-info">Si POWDER</span>
+    </div>
+    <div class="tutorial-progress">
+      <div class="tutorial-progress-label">COMPLETION</div>
+      <div class="tutorial-progress-bar">
+        <div class="tutorial-progress-fill" id="progressFill"></div>
+      </div>
+      <div class="tutorial-progress-text" id="progressText">Step 1 / 8</div>
+    </div>
+    <ul class="step-list" id="stepList">
+      <!-- populated by JS -->
+    </ul>
+  </div>
+
+  <!-- CENTER TOP: WORKSPACE -->
+  <div class="panel center-panel">
+    <div class="panel-header">
+      <span class="accent"></span>INSTRUMENT VIEW
+      <span class="right-info" id="workspaceLabel">SAMPLE PREPARATION</span>
+    </div>
+    <div class="workspace" id="workspace">
+      <div class="workspace-grid"></div>
+      <div class="workspace-overlay">
+        <div>VIEW: <span id="viewMode">SAMPLE PREP</span></div>
+        <div class="live-readout" id="liveReadout">θ: 0.000°  |  2θ: 0.000°  |  CPS: 0</div>
+      </div>
+      <svg id="workspaceSvg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <!-- RIGHT: INSTRUCTION PANEL -->
+  <div class="panel right-panel">
+    <div class="panel-header">
+      <span class="accent"></span>INSTRUCTION
+      <span class="right-info" id="stepIndicator">STEP 1</span>
+    </div>
+    <div class="panel-body" id="instructionPanel" style="padding: 0;">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- BOTTOM: DIFFRACTION PATTERN -->
+  <div class="panel bottom-panel">
+    <div class="panel-header">
+      <span class="accent"></span>DIFFRACTION PATTERN — INTENSITY vs 2θ
+      <span class="right-info" id="patternStatus">IDLE</span>
+    </div>
+    <div class="pattern-container">
+      <svg id="patternSvg" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== STATUS BAR ===== -->
+<div class="statusbar">
+  <span class="statusbar-item">▣ SEMIFABAI XRD-D8</span>
+  <span class="statusbar-divider"></span>
+  <span class="statusbar-item">TUBE: Cu / 40kV / 40mA</span>
+  <span class="statusbar-divider"></span>
+  <span class="statusbar-item">DETECTOR: LYNXEYE XE-T</span>
+  <span class="statusbar-divider"></span>
+  <span class="statusbar-item" id="statusGonio">GONIOMETER: HOMED</span>
+  <span class="statusbar-divider"></span>
+  <span class="statusbar-item" id="statusTime">--:--:--</span>
+</div>
+
+<!-- ===== BRAGG'S LAW MODAL ===== -->
+<div class="modal-overlay" id="braggModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">◈  BRAGG'S LAW — INTERACTIVE PRINCIPLE</span>
+      <button class="modal-close" id="braggCloseBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 14px;">
+        결정면에 입사한 X선은 인접 면들에서 산란됩니다. 두 산란파의 <strong style="color: var(--accent-cyan);">경로차(path difference)가 파장의 정수배</strong>일 때 보강간섭이 일어나 회절 피크가 관측됩니다.
+        아래 슬라이더로 입사각 θ를 조절하면서 경로차가 어떻게 변하는지 확인하세요.
+      </p>
+      <div style="background: var(--bg-deep); border: 1px solid var(--border); border-radius: 3px;">
+        <svg id="braggSvg" viewBox="0 0 800 360" style="width: 100%; height: 360px; display: block;"></svg>
+      </div>
+      <div class="bragg-controls">
+        <div class="bragg-control-group">
+          <div class="form-label">INCIDENCE ANGLE θ</div>
+          <div class="slider-row">
+            <input type="range" id="braggThetaSlider" min="5" max="45" value="14.22" step="0.01">
+            <span class="slider-value" id="braggThetaVal">14.22°</span>
+          </div>
+        </div>
+        <div class="bragg-control-group">
+          <div class="form-label">d-SPACING (Å)</div>
+          <div class="slider-row">
+            <input type="range" id="braggDSlider" min="1.0" max="5.0" value="3.135" step="0.001">
+            <span class="slider-value" id="braggDVal">3.135 Å</span>
+          </div>
+        </div>
+      </div>
+      <div class="bragg-readout-grid">
+        <div class="bragg-readout">
+          <div class="bragg-readout-label">PATH DIFFERENCE</div>
+          <div class="bragg-readout-value" id="braggPath">0.756 Å</div>
+        </div>
+        <div class="bragg-readout">
+          <div class="bragg-readout-label">2d sin(θ)</div>
+          <div class="bragg-readout-value" id="bragg2dsin">0.756 Å</div>
+        </div>
+        <div class="bragg-readout">
+          <div class="bragg-readout-label">nλ (n=1, λ=1.5406)</div>
+          <div class="bragg-readout-value" id="braggNlambda">1.5406 Å</div>
+        </div>
+        <div class="bragg-readout" id="braggDiffractCard">
+          <div class="bragg-readout-label">CONDITION</div>
+          <div class="bragg-readout-value" id="braggCondition">NO PEAK</div>
+        </div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 11px; margin-top: 14px; line-height: 1.6;">
+        <strong style="color: var(--accent-amber);">Si (111) 면의 d-spacing은 약 3.135 Å입니다.</strong>
+        이 값을 유지한 채 θ를 14.22°로 맞추면 경로차가 정확히 1.5406 Å (λ)이 되어 보강간섭이 일어납니다.
+        실제 측정에서는 2θ ≈ 28.44°에서 Si (111) 피크가 나타납니다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SEMIFABAI XRD SIMULATOR — Tutorial Mode
+   Sample: Si (silicon, diamond cubic, a = 5.4309 Å)
+   X-ray: Cu Kα, λ = 1.5406 Å
+   ============================================================ */
+
+// =============== CONSTANTS ===============
+const LAMBDA = 1.5406; // Cu Kα wavelength in Å
+const SI_LATTICE = 5.4309; // Si lattice constant in Å
+
+// Si diamond cubic powder XRD reference peaks (Cu Kα)
+// hkl rules for diamond cubic: h+k+l odd, OR all even and h+k+l = 4n
+// Standard powder peaks:
+const SI_PEAKS = [
+  { hkl: '(111)', h:1, k:1, l:1, two_theta: 28.443, d: 3.1355, intensity: 100 },
+  { hkl: '(220)', h:2, k:2, l:0, two_theta: 47.302, d: 1.9201, intensity: 60 },
+  { hkl: '(311)', h:3, k:1, l:1, two_theta: 56.121, d: 1.6375, intensity: 35 },
+  { hkl: '(400)', h:4, k:0, l:0, two_theta: 69.130, d: 1.3577, intensity: 8 },
+  { hkl: '(331)', h:3, k:3, l:1, two_theta: 76.378, d: 1.2459, intensity: 13 }
+];
+
+// =============== STATE ===============
+const state = {
+  step: 1,
+  totalSteps: 8,
+  // step 1 (sample prep)
+  grindCount: 0,
+  filled: false,
+  // step 2 (mount)
+  mounted: false,
+  // step 3 (params)
+  voltageSet: false,
+  currentSet: false,
+  scanRangeSet: false,
+  // step 4 (bragg)
+  braggExplored: false,
+  // step 5 (scan)
+  scanProgress: 0,
+  scanRunning: false,
+  scanComplete: false,
+  // step 6 (peak detection)
+  peaksIdentified: new Set(),
+  // step 7 (indexing)
+  hklAssigned: false,
+  // step 8 done
+  finalCalculated: false
+};
+
+// =============== DOM REFS ===============
+const $workspaceSvg = document.getElementById('workspaceSvg');
+const $patternSvg = document.getElementById('patternSvg');
+const $instructionPanel = document.getElementById('instructionPanel');
+const $stepList = document.getElementById('stepList');
+const $progressFill = document.getElementById('progressFill');
+const $progressText = document.getElementById('progressText');
+const $stepIndicator = document.getElementById('stepIndicator');
+const $btnNext = document.getElementById('btnNext');
+const $btnPrev = document.getElementById('btnPrev');
+const $btnRestart = document.getElementById('btnRestart');
+const $btnBraggHelp = document.getElementById('btnBraggHelp');
+const $workspaceLabel = document.getElementById('workspaceLabel');
+const $viewMode = document.getElementById('viewMode');
+const $liveReadout = document.getElementById('liveReadout');
+const $patternStatus = document.getElementById('patternStatus');
+const $statusGonio = document.getElementById('statusGonio');
+const $statusTime = document.getElementById('statusTime');
+const $toast = document.getElementById('toast');
+const $braggModal = document.getElementById('braggModal');
+const $braggCloseBtn = document.getElementById('braggCloseBtn');
+
+// =============== TUTORIAL STEPS DATA ===============
+const STEPS = [
+  {
+    n: 1,
+    title: '시료 준비 (Sample Preparation)',
+    desc: 'Si 분말을 분쇄하고 시료 홀더에 충전',
+    workspaceLabel: 'SAMPLE PREP',
+    instruction: {
+      label: 'STEP 01 — SAMPLE PREPARATION',
+      title: 'Si 분말 시료 준비',
+      text: `XRD 분석의 첫 단계는 <strong>균일한 결정 입자</strong>를 가진 분말 시료를 준비하는 것입니다.
+             입자가 너무 크거나 배향이 한 방향으로 치우치면 무작위 결정 방향 가정이 깨져 정확한 회절 패턴을 얻을 수 없습니다.<br><br>
+             ① 막자사발의 <span class="highlight">막자(pestle)를 클릭하여 5회 분쇄</span>하세요.<br>
+             ② 분쇄가 완료되면 <span class="highlight">분말을 시료 홀더로 드래그</span>하여 충전합니다.`,
+      info: {
+        title: 'WHY POWDER?',
+        text: '단결정은 특정 방향에서만 회절을 일으키지만, 분말은 모든 결정 방향이 통계적으로 분포하므로 모든 hkl 면의 회절을 동시에 측정할 수 있습니다. 이것이 분말 회절(powder XRD)의 원리입니다.'
+      }
+    }
+  },
+  {
+    n: 2,
+    title: '시료 장착 (Sample Mounting)',
+    desc: '고니오미터 중심에 시료 홀더 장착',
+    workspaceLabel: 'GONIOMETER MOUNT',
+    instruction: {
+      label: 'STEP 02 — SAMPLE MOUNTING',
+      title: '고니오미터에 시료 장착',
+      text: `고니오미터(goniometer)는 X선 튜브, 시료, 검출기의 각도 관계를 정밀하게 제어하는 장치입니다.
+             시료 표면이 회전축의 정확히 중심에 와야 측정 정확도가 보장됩니다.<br><br>
+             ① <span class="highlight">시료 홀더를 드래그하여 고니오미터 중앙의 스테이지에 장착</span>하세요.<br>
+             정확한 위치에 놓이면 자동으로 락이 걸립니다.`,
+      info: {
+        title: 'BRAGG-BRENTANO GEOMETRY',
+        text: '이 장비는 θ-2θ 구조입니다. 시료가 θ만큼 회전할 때 검출기는 2θ로 회전합니다. 이를 통해 항상 시료 표면에 평행한 결정면들로부터의 회절을 측정합니다.'
+      }
+    }
+  },
+  {
+    n: 3,
+    title: '측정 조건 설정 (Measurement Setup)',
+    desc: 'X선 튜브 출력, 스캔 범위, 스텝 사이즈 설정',
+    workspaceLabel: 'PARAMETER SETUP',
+    instruction: {
+      label: 'STEP 03 — MEASUREMENT PARAMETERS',
+      title: '측정 파라미터 입력',
+      text: `Cu Kα 타겟 X선 튜브의 출력과 2θ 스캔 범위를 설정합니다. 실제 XRD 측정에서 파라미터는
+             시료 종류와 분석 목적에 따라 달라지므로, <strong>권장값</strong>과 <strong>허용 범위</strong>가 함께 주어집니다.<br><br>
+             ① 튜브 전압: <span class="highlight">권장 40 kV</span> (허용 30~50)<br>
+             ② 튜브 전류: <span class="highlight">권장 40 mA</span> (허용 20~50)<br>
+             ③ 2θ Start: <span class="highlight">권장 20°</span> (허용 5~25)<br>
+             ④ 2θ End: <span class="highlight">권장 80°</span> (허용 77~120)<br>
+             ⑤ 스텝 사이즈: <span class="highlight">권장 0.02°</span> (허용 0.005~0.05)<br><br>
+             권장값은 <span style="color:var(--accent-green);">녹색</span>, 허용 범위는 <span style="color:var(--accent-amber);">주황</span>,
+             범위 밖은 <span style="color:var(--accent-red);">빨강</span>으로 표시됩니다.<br><br>
+             <strong style="color: var(--accent-cyan);">↓ 아래 입력 폼의 5개 항목에 값을 넣고 APPLY를 누르세요.</strong>`,
+      info: {
+        title: 'WHY THESE RANGES?',
+        text: '40kV/40mA는 Cu 타겟 표준 운전점. 2θ End는 Si (331) 피크가 76.4°에 있으므로 최소 77° 이상이어야 5개 주요 피크를 모두 포함합니다. 스텝은 작을수록 분해능이 좋지만 측정시간이 비례 증가합니다.'
+      }
+    }
+  },
+  {
+    n: 4,
+    title: 'Bragg 법칙 학습 (Bragg\'s Law)',
+    desc: '회절의 기본 원리: nλ = 2d sin θ',
+    workspaceLabel: 'BRAGG PRINCIPLE',
+    instruction: {
+      label: 'STEP 04 — DIFFRACTION PHYSICS',
+      title: 'Bragg 법칙 이해하기',
+      text: `측정을 시작하기 전에 회절의 핵심 원리를 이해해야 합니다.
+             <strong>Bragg 법칙</strong>은 결정면 사이의 거리(d), 입사각(θ), 파장(λ) 사이의 관계를 정의합니다:<br><br>
+             <div style="text-align:center; font-family: var(--font-mono); font-size: 18px; color: var(--accent-amber); padding: 12px; background: var(--bg-deep); border-radius: 3px; margin: 8px 0;">
+               n λ = 2d sin θ
+             </div>
+             <span class="highlight">[BRAGG'S LAW] 버튼을 클릭</span>하여 인터랙티브 시뮬레이션을 열고,
+             각도와 면간거리를 변화시키면서 보강간섭이 언제 일어나는지 직접 확인하세요.<br><br>
+             d, θ, λ 모두를 최소 한 번씩 변화시켜 보강간섭 조건을 만족시키면 다음 단계로 진행할 수 있습니다.`,
+      info: {
+        title: 'KEY INSIGHT',
+        text: 'X선 파장이 결정면 간격과 비슷할 때(0.5–3 Å)만 회절이 가능합니다. Cu Kα(1.54 Å)가 결정 분석의 표준이 된 이유입니다.'
+      }
+    }
+  },
+  {
+    n: 5,
+    title: '측정 수행 (Acquisition)',
+    desc: 'θ-2θ 스캔으로 회절 패턴 측정',
+    workspaceLabel: 'SCANNING',
+    instruction: {
+      label: 'STEP 05 — DATA ACQUISITION',
+      title: 'θ-2θ 스캔 시작',
+      text: `이제 실제 측정을 진행합니다. 시료가 θ로 회전하는 동안 검출기는 2θ로 회전하면서
+             각 각도에서의 회절 강도(CPS, counts per second)를 기록합니다.<br><br>
+             ① <span class="highlight">[START SCAN] 버튼</span>을 클릭하여 측정을 시작하세요.<br>
+             ② 고니오미터가 회전하는 모습과 회절 패턴이 실시간으로 그려지는 것을 관찰하세요.<br>
+             ③ 스캔이 완료될 때까지 기다리세요 (약 12초).`,
+      info: {
+        title: 'REAL TIME',
+        text: '실제 장비에서는 동일 측정에 보통 15–30분이 걸립니다. 본 시뮬레이터는 시간을 압축하여 시각적 흐름을 보여줍니다.'
+      }
+    }
+  },
+  {
+    n: 6,
+    title: '피크 검출 (Peak Detection)',
+    desc: '회절 패턴에서 5개 주요 피크 식별',
+    workspaceLabel: 'PEAK PICKING',
+    instruction: {
+      label: 'STEP 06 — PEAK IDENTIFICATION',
+      title: '회절 피크 클릭하여 식별',
+      text: `회절 패턴에는 시료의 결정 구조 정보가 담긴 5개의 명확한 피크가 있습니다.
+             각 피크는 특정 결정면(hkl)에 해당합니다.<br><br>
+             ① <span class="highlight">아래쪽 회절 패턴의 피크 5개를 모두 클릭</span>하여 식별하세요.<br>
+             ② 식별된 피크는 녹색으로 표시되고 2θ 값이 기록됩니다.`,
+      info: {
+        title: 'WHY 5 PEAKS?',
+        text: 'Si의 다이아몬드 큐빅 구조는 hkl 선택 규칙에 의해 (111), (220), (311), (400), (331) 등 특정 면들만 회절을 일으킵니다. 다른 면들은 소멸간섭으로 사라집니다.'
+      }
+    }
+  },
+  {
+    n: 7,
+    title: '피크 인덱싱 (Peak Indexing)',
+    desc: '각 피크에 hkl 할당 및 d-spacing 계산',
+    workspaceLabel: 'INDEXING',
+    instruction: {
+      label: 'STEP 07 — INDEXING',
+      title: 'hkl 인덱싱 및 d-spacing 계산',
+      text: `검출된 각 피크의 2θ 값으로부터 Bragg 법칙을 역으로 적용해 d-spacing을 구하고,
+             그 값을 큐빅 결정의 면간거리 공식과 매칭하여 hkl 인덱스를 할당합니다:<br><br>
+             <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent-amber); padding: 10px; background: var(--bg-deep); border-radius: 3px;">
+               d = λ / (2 sin θ)<br>
+               1/d² = (h² + k² + l²) / a²
+             </div><br>
+             <span class="highlight">[AUTO INDEX] 버튼</span>을 클릭하여 자동 인덱싱을 실행하세요.<br>
+             각 피크의 d-spacing과 hkl이 표에 채워집니다.`,
+      info: {
+        title: 'EXTINCTION RULE',
+        text: 'Si의 다이아몬드 큐빅 격자는 h,k,l이 모두 홀수이거나, 모두 짝수면서 h+k+l이 4의 배수일 때만 회절합니다. 이것이 Si 패턴의 특징적 피크 분포를 만듭니다.'
+      }
+    }
+  },
+  {
+    n: 8,
+    title: '결과 해석 (Interpretation)',
+    desc: '격자상수 계산 및 Si 결정 확인',
+    workspaceLabel: 'RESULT',
+    instruction: {
+      label: 'STEP 08 — INTERPRETATION',
+      title: '격자상수 계산 및 결과 해석',
+      text: `각 피크에서 얻은 d-spacing들로부터 격자상수 a를 계산하고 평균을 냅니다.
+             이 값을 표준 Si 격자상수와 비교하여 시료가 정상적인 Si 결정인지 확인합니다.<br><br>
+             <span class="highlight">[CALCULATE LATTICE] 버튼</span>을 클릭하여 최종 분석을 완료하세요.`,
+      info: {
+        title: 'INDUSTRIAL SIGNIFICANCE',
+        text: 'Si 격자상수의 정밀 측정은 도핑 농도, 응력, 결함 밀도를 추정하는 기준이 됩니다. 반도체 공정에서 in-situ 모니터링 도구로 활용됩니다.'
+      }
+    }
+  }
+];
+
+// =============== UTIL ===============
+function showToast(msg, isError = false) {
+  $toast.textContent = msg;
+  $toast.classList.toggle('error', isError);
+  $toast.classList.add('show');
+  setTimeout(() => $toast.classList.remove('show'), 2400);
+}
+
+function deg2rad(d) { return d * Math.PI / 180; }
+
+function el(tag, attrs = {}, children = []) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  children.forEach(c => e.appendChild(c));
+  return e;
+}
+
+function html(tag, attrs = {}, content = '') {
+  const e = document.createElement(tag);
+  for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e[k] = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  if (typeof content === 'string') e.innerHTML = content;
+  else if (Array.isArray(content)) content.forEach(c => e.appendChild(c));
+  return e;
+}
+
+// =============== STEP LIST RENDERING ===============
+function renderStepList() {
+  $stepList.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'step-item';
+    if (state.step === s.n) li.classList.add('active');
+    if (state.step > s.n) li.classList.add('completed');
+    li.innerHTML = `
+      <div class="step-num"><span class="step-num-text">${s.n}</span></div>
+      <div class="step-content">
+        <div class="step-title">${s.title}</div>
+        <div class="step-desc">${s.desc}</div>
+      </div>
+    `;
+    $stepList.appendChild(li);
+  });
+  const pct = ((state.step - 1) / state.totalSteps) * 100;
+  $progressFill.style.width = pct + '%';
+  $progressText.textContent = `Step ${state.step} / ${state.totalSteps}`;
+  $stepIndicator.textContent = `STEP ${String(state.step).padStart(2, '0')}`;
+  $btnPrev.disabled = (state.step === 1);
+  $btnBraggHelp.disabled = (state.step !== 4);
+}
+
+// =============== INSTRUCTION PANEL RENDERING ===============
+function renderInstruction() {
+  const s = STEPS[state.step - 1];
+  $instructionPanel.innerHTML = '';
+  const box = html('div', { class: 'instruction-box' }, `
+    <div class="instruction-label">${s.instruction.label}</div>
+    <div class="instruction-title">${s.instruction.title}</div>
+    <div class="instruction-text">${s.instruction.text}</div>
+  `);
+  $instructionPanel.appendChild(box);
+  if (s.instruction.info) {
+    const info = html('div', { class: 'info-box' }, `
+      <div class="info-box-title">▶ ${s.instruction.info.title}</div>
+      <div class="info-box-text">${s.instruction.info.text}</div>
+    `);
+    $instructionPanel.appendChild(info);
+  }
+  // Step-specific extras
+  if (state.step === 3) {
+    $instructionPanel.appendChild(buildParamForm());
+  }
+  if (state.step === 5) {
+    $instructionPanel.appendChild(buildScanControl());
+  }
+  if (state.step === 6) {
+    $instructionPanel.appendChild(buildPeakTable());
+  }
+  if (state.step === 7) {
+    $instructionPanel.appendChild(buildIndexControl());
+  }
+  if (state.step === 8) {
+    $instructionPanel.appendChild(buildFinalControl());
+  }
+  $workspaceLabel.textContent = s.workspaceLabel;
+  $viewMode.textContent = s.workspaceLabel;
+}
+
+// =============== STEP 3: PARAMETER FORM ===============
+// 각 파라미터를 범위 기반으로 검증한다. 정확한 단일값을 강제하지 않고
+// 물리적/실용적으로 합리적인 범위를 허용하며, 어느 값이 왜 부적절한지 필드별로 표시한다.
+const PARAM_SPEC = {
+  voltage: {
+    min: 30, max: 50, recommended: 40,
+    unit: 'kV',
+    rationale: 'Cu 타겟 X선 튜브의 일반적 운전 전압. 30 kV 미만은 Cu Kα 강도가 약하고, 50 kV 초과는 튜브 수명 단축과 연속 X선 배경 증가로 권장하지 않음.'
+  },
+  current: {
+    min: 20, max: 50, recommended: 40,
+    unit: 'mA',
+    rationale: '튜브 전류는 X선 강도에 비례. 20 mA 미만은 SNR 저하, 50 mA 초과는 정격 초과로 튜브 손상 위험.'
+  },
+  twoThetaStart: {
+    min: 5, max: 25, recommended: 20,
+    unit: '°',
+    rationale: '5° 미만은 직접빔 영향이 크고, 25° 초과 시 Si (111) 피크(28.44°)와 너무 가까워 base line 확보가 어려움.'
+  },
+  twoThetaEnd: {
+    min: 77, max: 120, recommended: 80,
+    unit: '°',
+    rationale: 'Si의 (331) 피크가 76.4°에 있으므로 5개 주요 피크를 모두 포함하려면 최소 77° 이상 필요.'
+  },
+  stepSize: {
+    min: 0.005, max: 0.05, recommended: 0.02,
+    unit: '°',
+    rationale: '0.005° 미만은 측정시간 과다, 0.05° 초과 시 피크 형상이 왜곡되어 분해능 저하.'
+  }
+};
+
+function validateParam(key, value) {
+  const spec = PARAM_SPEC[key];
+  if (isNaN(value)) return { ok: false, msg: '값을 입력하세요', level: 'error' };
+  if (value < spec.min) return { ok: false, msg: `최소 ${spec.min} ${spec.unit} 이상 필요`, level: 'error' };
+  if (value > spec.max) return { ok: false, msg: `최대 ${spec.max} ${spec.unit} 이하`, level: 'error' };
+  if (Math.abs(value - spec.recommended) < 0.0001) {
+    return { ok: true, msg: `✓ 권장값`, level: 'good' };
+  }
+  return { ok: true, msg: `✓ 허용 범위 (권장 ${spec.recommended} ${spec.unit})`, level: 'ok' };
+}
+
+function buildParamForm() {
+  const wrap = html('div', { style: 'padding: 0 14px 14px;' });
+  wrap.innerHTML = `
+    <div class="param-form-header">
+      <div class="param-form-header-arrow">▼</div>
+      <div class="param-form-header-text">
+        <div class="param-form-header-label">INPUT PARAMETERS</div>
+        <div class="param-form-header-sub">아래 5개 항목에 측정 조건을 입력하세요</div>
+      </div>
+    </div>
+    <div class="param-form-panel">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Voltage (kV)</label>
+          <input type="number" class="form-input" id="paramV" placeholder="30 ~ 50">
+          <div class="param-feedback" id="fbV"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current (mA)</label>
+          <input type="number" class="form-input" id="paramI" placeholder="20 ~ 50">
+          <div class="param-feedback" id="fbI"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">2θ Start (°)</label>
+          <input type="number" class="form-input" id="paramStart" placeholder="5 ~ 25">
+          <div class="param-feedback" id="fbStart"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">2θ End (°)</label>
+          <input type="number" class="form-input" id="paramEnd" placeholder="77 ~ 120">
+          <div class="param-feedback" id="fbEnd"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Step Size (°)</label>
+        <input type="number" class="form-input" id="paramStep" step="0.005" placeholder="0.005 ~ 0.05">
+        <div class="param-feedback" id="fbStep"></div>
+      </div>
+      <div id="paramSummary" class="param-summary"></div>
+      <button class="tool-btn primary" id="paramApply" style="width: 100%; height: 36px; justify-content: center;">
+        APPLY PARAMETERS
+      </button>
+    </div>
+  `;
+  setTimeout(() => {
+    const fields = [
+      { id: 'paramV',     fbId: 'fbV',     key: 'voltage' },
+      { id: 'paramI',     fbId: 'fbI',     key: 'current' },
+      { id: 'paramStart', fbId: 'fbStart', key: 'twoThetaStart' },
+      { id: 'paramEnd',   fbId: 'fbEnd',   key: 'twoThetaEnd' },
+      { id: 'paramStep',  fbId: 'fbStep',  key: 'stepSize' }
+    ];
+
+    function validateAll() {
+      const results = fields.map(f => {
+        const inp = document.getElementById(f.id);
+        const fb = document.getElementById(f.fbId);
+        const raw = inp.value.trim();
+        if (raw === '') {
+          fb.className = 'param-feedback';
+          fb.textContent = '';
+          inp.classList.remove('input-good', 'input-bad', 'input-warn');
+          return { ok: false, empty: true };
+        }
+        const val = parseFloat(raw);
+        const r = validateParam(f.key, val);
+        fb.className = 'param-feedback ' + r.level;
+        fb.textContent = r.msg;
+        inp.classList.remove('input-good', 'input-bad', 'input-warn');
+        if (r.level === 'good') inp.classList.add('input-good');
+        else if (r.level === 'ok') inp.classList.add('input-warn');
+        else inp.classList.add('input-bad');
+        return { ok: r.ok, level: r.level, key: f.key, val };
+      });
+
+      // 범위 일관성 추가 검증: start < end
+      const startR = results[2], endR = results[3];
+      if (startR.ok && endR.ok && startR.val >= endR.val) {
+        const fb = document.getElementById('fbEnd');
+        fb.className = 'param-feedback error';
+        fb.textContent = '2θ End는 Start보다 커야 함';
+        document.getElementById('paramEnd').classList.remove('input-good', 'input-warn');
+        document.getElementById('paramEnd').classList.add('input-bad');
+        endR.ok = false;
+      }
+
+      const allOk = results.every(r => r.ok);
+      const summary = document.getElementById('paramSummary');
+      if (results.some(r => r.empty)) {
+        summary.innerHTML = '<span style="color: var(--text-muted);">모든 값을 입력하세요</span>';
+      } else if (allOk) {
+        const allRecommended = results.every(r => r.level === 'good');
+        if (allRecommended) {
+          summary.innerHTML = '<span class="ok-badge">✓ 모두 권장값 — 최적 설정</span>';
+        } else {
+          summary.innerHTML = '<span class="warn-badge">✓ 모두 허용 범위 — APPLY 가능</span>';
+        }
+      } else {
+        const badCount = results.filter(r => !r.empty && !r.ok).length;
+        summary.innerHTML = `<span class="err-badge">✗ ${badCount}개 항목 부적절 — 수정 필요</span>`;
+      }
+      document.getElementById('paramApply').disabled = !allOk;
+      return allOk;
+    }
+
+    // 입력 변화마다 검증
+    fields.forEach(f => {
+      document.getElementById(f.id).addEventListener('input', validateAll);
+    });
+
+    document.getElementById('paramApply').onclick = () => {
+      if (!validateAll()) {
+        showToast('파라미터 값이 부적절합니다', true);
+        return;
+      }
+      state.voltageSet = state.currentSet = state.scanRangeSet = true;
+      showToast('PARAMETERS ACCEPTED');
+      const btn = document.getElementById('paramApply');
+      btn.textContent = '✓ APPLIED';
+      btn.disabled = true;
+      // 입력 락
+      fields.forEach(f => document.getElementById(f.id).disabled = true);
+      renderWorkspace();
+    };
+
+    validateAll(); // 초기 상태
+  }, 0);
+  return wrap;
+}
+
+// =============== STEP 5: SCAN CONTROL ===============
+function buildScanControl() {
+  const wrap = html('div', { style: 'padding: 0 14px 14px;' });
+  wrap.innerHTML = `
+    <button class="tool-btn primary" id="scanStartBtn" style="width: 100%; height: 36px; justify-content: center; margin-bottom: 8px;">
+      ▶ START SCAN
+    </button>
+    <div class="result-card">
+      <div class="result-card-label">SCAN PROGRESS</div>
+      <div class="result-card-value" id="scanProgressText">0%</div>
+      <div class="result-card-detail" id="scanCurrentAngle">2θ: 20.00°</div>
+    </div>
+  `;
+  setTimeout(() => {
+    document.getElementById('scanStartBtn').onclick = startScan;
+  }, 0);
+  return wrap;
+}
+
+// =============== STEP 6: PEAK TABLE ===============
+function buildPeakTable() {
+  const wrap = html('div', { style: 'padding: 0 14px 14px;' });
+  wrap.innerHTML = `
+    <table class="peak-table">
+      <thead><tr><th>#</th><th>2θ (°)</th><th>STATUS</th></tr></thead>
+      <tbody id="peakTableBody"></tbody>
+    </table>
+    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+      IDENTIFIED: <span id="peakCount" style="color: var(--accent-cyan);">0</span> / 5
+    </div>
+  `;
+  setTimeout(updatePeakTable, 0);
+  return wrap;
+}
+function updatePeakTable() {
+  const body = document.getElementById('peakTableBody');
+  if (!body) return;
+  body.innerHTML = '';
+  SI_PEAKS.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    const isId = state.peaksIdentified.has(i);
+    if (isId) tr.classList.add('identified');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${isId ? p.two_theta.toFixed(3) : '— — —'}</td>
+      <td style="color: ${isId ? 'var(--accent-green)' : 'var(--text-muted)'};">${isId ? '✓ DETECTED' : 'PENDING'}</td>
+    `;
+    body.appendChild(tr);
+  });
+  const cnt = document.getElementById('peakCount');
+  if (cnt) cnt.textContent = state.peaksIdentified.size;
+}
+
+// =============== STEP 7: INDEXING ===============
+function buildIndexControl() {
+  const wrap = html('div', { style: 'padding: 0 14px 14px;' });
+  wrap.innerHTML = `
+    <button class="tool-btn primary" id="indexBtn" style="width: 100%; height: 36px; justify-content: center; margin-bottom: 8px;">
+      ▶ AUTO INDEX
+    </button>
+    <table class="peak-table">
+      <thead><tr><th>2θ</th><th>d (Å)</th><th>hkl</th><th>a (Å)</th></tr></thead>
+      <tbody id="indexTableBody"></tbody>
+    </table>
+  `;
+  setTimeout(() => {
+    document.getElementById('indexBtn').onclick = runIndexing;
+    updateIndexTable();
+  }, 0);
+  return wrap;
+}
+function updateIndexTable() {
+  const body = document.getElementById('indexTableBody');
+  if (!body) return;
+  body.innerHTML = '';
+  SI_PEAKS.forEach((p) => {
+    const tr = document.createElement('tr');
+    if (state.hklAssigned) {
+      tr.classList.add('identified');
+      const hsq = p.h*p.h + p.k*p.k + p.l*p.l;
+      const a = p.d * Math.sqrt(hsq);
+      tr.innerHTML = `
+        <td>${p.two_theta.toFixed(2)}</td>
+        <td>${p.d.toFixed(4)}</td>
+        <td class="hkl-cell">${p.hkl}</td>
+        <td>${a.toFixed(4)}</td>
+      `;
+    } else {
+      tr.innerHTML = `<td>${p.two_theta.toFixed(2)}</td><td>—</td><td>—</td><td>—</td>`;
+    }
+    body.appendChild(tr);
+  });
+}
+function runIndexing() {
+  state.hklAssigned = true;
+  updateIndexTable();
+  document.getElementById('indexBtn').textContent = '✓ INDEXED';
+  document.getElementById('indexBtn').disabled = true;
+  renderWorkspace();
+  showToast('INDEXING COMPLETE — 5/5 peaks assigned');
+}
+
+// =============== STEP 8: FINAL CALCULATION ===============
+function buildFinalControl() {
+  const wrap = html('div', { style: 'padding: 0 14px 14px;' });
+  wrap.innerHTML = `
+    <button class="tool-btn primary" id="finalBtn" style="width: 100%; height: 36px; justify-content: center; margin-bottom: 12px;">
+      ▶ CALCULATE LATTICE
+    </button>
+    <div id="finalResults"></div>
+  `;
+  setTimeout(() => {
+    document.getElementById('finalBtn').onclick = runFinalCalculation;
+    if (state.finalCalculated) renderFinalResults();
+  }, 0);
+  return wrap;
+}
+function runFinalCalculation() {
+  state.finalCalculated = true;
+  document.getElementById('finalBtn').textContent = '✓ ANALYSIS COMPLETE';
+  document.getElementById('finalBtn').disabled = true;
+  renderFinalResults();
+  renderWorkspace();
+  showToast('LATTICE CONSTANT: 5.4309 Å — Si CONFIRMED');
+}
+function renderFinalResults() {
+  const target = document.getElementById('finalResults');
+  if (!target) return;
+  // Compute lattice constants from each peak
+  const calcs = SI_PEAKS.map(p => {
+    const hsq = p.h*p.h + p.k*p.k + p.l*p.l;
+    return p.d * Math.sqrt(hsq);
+  });
+  const avg = calcs.reduce((a,b)=>a+b, 0) / calcs.length;
+  const diff = Math.abs(avg - SI_LATTICE);
+  target.innerHTML = `
+    <div class="result-card success">
+      <div class="result-card-label">LATTICE CONSTANT (a)</div>
+      <div class="result-card-value">${avg.toFixed(4)} Å</div>
+      <div class="result-card-detail">Reference Si: 5.4309 Å — Δ = ${diff.toFixed(4)} Å</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-label">CRYSTAL SYSTEM</div>
+      <div class="result-card-value">CUBIC</div>
+      <div class="result-card-detail">Diamond structure (Fd-3m)</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-label">MATERIAL ID</div>
+      <div class="result-card-value" style="color: var(--accent-amber);">SILICON</div>
+      <div class="result-card-detail">High crystallinity, no secondary phase detected</div>
+    </div>
+    <div class="info-box" style="margin: 12px 0 0;">
+      <div class="info-box-title">▶ TUTORIAL COMPLETE</div>
+      <div class="info-box-text">8단계 모두 완료했습니다. 이제 시나리오 모드에서 다양한 시료(NaCl, Cu, Al, Fe, TiO₂, ZnO)를 직접 분석해 보세요.</div>
+    </div>
+  `;
+}
+
+// =============== WORKSPACE RENDERING (per step) ===============
+function renderWorkspace() {
+  $workspaceSvg.innerHTML = '';
+  const step = state.step;
+  if (step === 1) renderSamplePrep();
+  else if (step === 2) renderMounting();
+  else if (step === 3) renderInstrumentSetup();
+  else if (step === 4) renderBraggIntro();
+  else if (step === 5) renderScanning();
+  else if (step === 6) renderPeakDetection();
+  else if (step === 7) renderCrystalStructure();
+  else if (step === 8) renderFinalView();
+}
+
+// ----- STEP 1: Sample Preparation (mortar & pestle, sample holder) -----
+function renderSamplePrep() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = $workspaceSvg;
+
+  // Workbench
+  const bench = el('rect', { x:0, y:380, width:800, height:120, fill:'#0d141c' });
+  svg.appendChild(bench);
+  // Bench grid
+  for (let i = 0; i < 8; i++) {
+    svg.appendChild(el('line', { x1: i*100, y1:380, x2:i*100, y2:500, stroke:'rgba(138,150,168,0.06)', 'stroke-width':1 }));
+  }
+
+  // Si chunks (decreasing) and powder pile growing
+  const chunkCount = Math.max(0, 5 - state.grindCount);
+  const mortarG = el('g', { transform: 'translate(220, 280)', class: 'mortar-group' });
+  // Mortar bowl (cross-section style)
+  mortarG.appendChild(el('ellipse', { cx:0, cy:80, rx:120, ry:24, fill:'#1a2230', stroke:'#2a3340', 'stroke-width':2 }));
+  mortarG.appendChild(el('path', {
+    d: 'M -120 80 Q -100 130 0 135 Q 100 130 120 80 L 120 78 L -120 78 Z',
+    fill: '#0f1620', stroke:'#3a4556', 'stroke-width':2
+  }));
+  mortarG.appendChild(el('ellipse', { cx:0, cy:80, rx:118, ry:22, fill:'#0a0f17' }));
+
+  // Si chunks inside
+  for (let i = 0; i < chunkCount; i++) {
+    const x = -60 + i * 30;
+    const y = 78 + Math.sin(i) * 4;
+    mortarG.appendChild(el('polygon', {
+      points: `${x-12},${y} ${x+8},${y-10} ${x+14},${y+4} ${x+2},${y+12}`,
+      fill: '#7a8896', stroke: '#5a6678', 'stroke-width':1
+    }));
+  }
+  // Powder pile (gets bigger)
+  if (state.grindCount > 0) {
+    const pileSize = state.grindCount * 8;
+    mortarG.appendChild(el('ellipse', {
+      cx: 0, cy: 86, rx: pileSize + 20, ry: 6, fill: '#9aa8b8', opacity: 0.7
+    }));
+    mortarG.appendChild(el('ellipse', {
+      cx: 0, cy: 84, rx: pileSize + 14, ry: 4, fill: '#bcc8d6', opacity: 0.5
+    }));
+    // Speckled dots for grain texture
+    for (let i = 0; i < state.grindCount * 20; i++) {
+      const ang = (i * 137.5) % 360;
+      const r = (i % (pileSize + 14)) * 0.95;
+      const px = Math.cos(ang * Math.PI/180) * r;
+      const py = 84 + Math.sin(ang * Math.PI/180) * r * 0.2;
+      mortarG.appendChild(el('circle', { cx:px, cy:py, r:1, fill:'#dde3ec', opacity:0.6 }));
+    }
+  }
+  svg.appendChild(mortarG);
+
+  // Mortar label
+  svg.appendChild(el('text', { x: 220, y: 240, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle', 'letter-spacing': 1 }, []))
+    .textContent = 'MORTAR (AGATE)';
+
+  // PESTLE — clickable
+  const pestleY = 200 - (state.grindCount % 2 === 0 ? 0 : 10);
+  const pestle = el('g', {
+    id: 'pestle',
+    transform: `translate(220, ${pestleY})`,
+    style: state.grindCount < 5 ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.5;'
+  });
+  pestle.appendChild(el('rect', { x:-12, y:0, width:24, height:80, fill:'#3a4556', rx:2 }));
+  pestle.appendChild(el('rect', { x:-14, y:0, width:28, height:8, fill:'#5a6678', rx:2 }));
+  pestle.appendChild(el('ellipse', { cx:0, cy:80, rx:18, ry:10, fill:'#2a3340' }));
+  pestle.appendChild(el('text', { x:30, y:40, fill: state.grindCount < 5 ? 'var(--accent-cyan)':'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':11 }))
+    .textContent = state.grindCount < 5 ? `▶ CLICK (${state.grindCount}/5)` : '✓ DONE';
+  svg.appendChild(pestle);
+  if (state.grindCount < 5) {
+    pestle.addEventListener('click', () => {
+      state.grindCount++;
+      renderWorkspace();
+      if (state.grindCount === 5) showToast('GRINDING COMPLETE — drag powder to holder');
+    });
+  }
+
+  // Sample Holder (target zone)
+  const holderG = el('g', { transform: 'translate(580, 320)', id: 'holderTarget' });
+  holderG.appendChild(el('rect', { x:-70, y:-15, width:140, height:60, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':2, rx:2 }));
+  // recess
+  holderG.appendChild(el('rect', { x:-50, y:0, width:100, height:30, fill: state.filled ? '#bcc8d6' : '#0a0f17', stroke:'#3a4556', 'stroke-width':1 }));
+  if (state.filled) {
+    // sparkle texture
+    for (let i = 0; i < 30; i++) {
+      const px = -45 + Math.random() * 90;
+      const py = 3 + Math.random() * 24;
+      holderG.appendChild(el('circle', { cx:px, cy:py, r:0.8, fill:'#fff', opacity: 0.5 }));
+    }
+  }
+  // Holder label
+  holderG.appendChild(el('text', { x:0, y:-25, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+    .textContent = state.filled ? '✓ SAMPLE HOLDER (FILLED)' : 'SAMPLE HOLDER';
+
+  // Drop indicator (pulsing) when grinding done but not filled
+  if (state.grindCount === 5 && !state.filled) {
+    const pulse = el('rect', {
+      x:-50, y:0, width:100, height:30, fill:'none', stroke:'var(--accent-amber)', 'stroke-width':2, 'stroke-dasharray':'4 4'
+    });
+    pulse.innerHTML = `<animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite"/>`;
+    holderG.appendChild(pulse);
+  }
+  svg.appendChild(holderG);
+
+  // Draggable powder (after grinding complete)
+  if (state.grindCount === 5 && !state.filled) {
+    const draggable = el('g', { id: 'powderDrag', transform: 'translate(220, 300)', style:'cursor: grab;' });
+    draggable.appendChild(el('circle', { r:30, fill:'#bcc8d6', opacity:0.8 }));
+    draggable.appendChild(el('circle', { r:20, fill:'#dde3ec', opacity:0.6 }));
+    draggable.appendChild(el('text', { y:5, fill:'#0a0e14', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle', 'font-weight':600 }))
+      .textContent = 'Si POWDER';
+    svg.appendChild(draggable);
+    enablePowderDrag(draggable);
+  }
+}
+
+function enablePowderDrag(g) {
+  let dragging = false;
+  let startX = 0, startY = 0, originX = 220, originY = 300;
+  const svgEl = $workspaceSvg;
+
+  function getSvgCoords(evt) {
+    const rect = svgEl.getBoundingClientRect();
+    const vbW = 800, vbH = 500;
+    return {
+      x: ((evt.clientX - rect.left) / rect.width) * vbW,
+      y: ((evt.clientY - rect.top) / rect.height) * vbH
+    };
+  }
+  g.addEventListener('mousedown', (e) => {
+    dragging = true;
+    g.style.cursor = 'grabbing';
+    const c = getSvgCoords(e);
+    startX = c.x; startY = c.y;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const c = getSvgCoords(e);
+    const dx = c.x - startX;
+    const dy = c.y - startY;
+    g.setAttribute('transform', `translate(${originX + dx}, ${originY + dy})`);
+  });
+  window.addEventListener('mouseup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    g.style.cursor = 'grab';
+    const c = getSvgCoords(e);
+    // Holder target: 580, 320 ± 80
+    if (Math.abs(c.x - 580) < 80 && Math.abs(c.y - 320) < 60) {
+      state.filled = true;
+      renderWorkspace();
+      showToast('SAMPLE HOLDER FILLED — proceed to next step');
+    } else {
+      g.setAttribute('transform', `translate(${originX}, ${originY})`);
+    }
+  });
+}
+
+// ----- STEP 2: Mounting -----
+function renderMounting() {
+  const svg = $workspaceSvg;
+
+  // Goniometer base
+  const gonioG = el('g', { transform: 'translate(400, 280)' });
+  // Base plate
+  gonioG.appendChild(el('rect', { x:-200, y:60, width:400, height:80, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':2, rx:4 }));
+  // Brand label
+  gonioG.appendChild(el('text', { x:-185, y:130, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':11, 'font-weight':700, 'letter-spacing':1.5 }))
+    .textContent = '▣ SEMIFABAI';
+  gonioG.appendChild(el('text', { x:-185, y:108, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':9, 'letter-spacing':1 }))
+    .textContent = 'D8 GONIOMETER';
+
+  // Goniometer arc
+  gonioG.appendChild(el('path', {
+    d: 'M -160 60 A 160 160 0 0 1 160 60',
+    fill:'none', stroke:'#2a3340', 'stroke-width':4
+  }));
+  gonioG.appendChild(el('path', {
+    d: 'M -150 60 A 150 150 0 0 1 150 60',
+    fill:'none', stroke:'#1a2230', 'stroke-width':2, 'stroke-dasharray':'2 4'
+  }));
+
+  // Tick marks on arc
+  for (let a = 0; a <= 180; a += 10) {
+    const rad = deg2rad(180 - a);
+    const x1 = Math.cos(rad) * 150;
+    const y1 = -Math.sin(rad) * 150 + 60;
+    const x2 = Math.cos(rad) * 158;
+    const y2 = -Math.sin(rad) * 158 + 60;
+    gonioG.appendChild(el('line', { x1, y1, x2, y2, stroke:'#5a6678', 'stroke-width':1 }));
+  }
+
+  // X-ray tube (left arm)
+  const tubeAngle = 30;
+  const tubeRad = deg2rad(180 - tubeAngle);
+  const tubeX = Math.cos(tubeRad) * 130;
+  const tubeY = -Math.sin(tubeRad) * 130 + 60;
+  const tubeG = el('g', { transform: `translate(${tubeX}, ${tubeY}) rotate(${-(90 - tubeAngle)})` });
+  tubeG.appendChild(el('rect', { x:-15, y:-50, width:30, height:50, fill:'#2a3340', stroke:'#5a6678', 'stroke-width':1, rx:3 }));
+  tubeG.appendChild(el('rect', { x:-12, y:-45, width:24, height:8, fill:'var(--accent-amber)', opacity:0.4 }));
+  tubeG.appendChild(el('text', { x:0, y:-55, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':8, 'text-anchor':'middle' }))
+    .textContent = 'X-RAY';
+  gonioG.appendChild(tubeG);
+
+  // Detector (right arm)
+  const detAngle = 150;
+  const detRad = deg2rad(180 - detAngle);
+  const detX = Math.cos(detRad) * 130;
+  const detY = -Math.sin(detRad) * 130 + 60;
+  const detG = el('g', { transform: `translate(${detX}, ${detY}) rotate(${-(90 - detAngle)})` });
+  detG.appendChild(el('rect', { x:-15, y:-50, width:30, height:50, fill:'#2a3340', stroke:'#5a6678', 'stroke-width':1, rx:3 }));
+  detG.appendChild(el('rect', { x:-10, y:-45, width:20, height:6, fill:'var(--accent-cyan)', opacity:0.6 }));
+  detG.appendChild(el('text', { x:0, y:-55, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':8, 'text-anchor':'middle' }))
+    .textContent = 'DET';
+  gonioG.appendChild(detG);
+
+  // Sample stage (target zone)
+  const stageG = el('g', { transform: 'translate(0, 60)' });
+  stageG.appendChild(el('rect', { x:-50, y:-8, width:100, height:16, fill:'#2a3340', stroke: state.mounted ? 'var(--accent-green)' : 'var(--accent-amber)', 'stroke-width':2, rx:2 }));
+  if (!state.mounted) {
+    const pulse = el('rect', { x:-55, y:-12, width:110, height:24, fill:'none', stroke:'var(--accent-amber)', 'stroke-width':1.5, 'stroke-dasharray':'4 3', rx:3 });
+    pulse.innerHTML = `<animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite"/>`;
+    stageG.appendChild(pulse);
+  }
+  stageG.appendChild(el('text', { x:0, y:30, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':9, 'text-anchor':'middle' }))
+    .textContent = state.mounted ? '✓ MOUNTED' : 'STAGE — DROP HERE';
+  if (state.mounted) {
+    // Mounted holder
+    stageG.appendChild(el('rect', { x:-40, y:-5, width:80, height:10, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':1 }));
+    stageG.appendChild(el('rect', { x:-30, y:-3, width:60, height:6, fill:'#bcc8d6' }));
+    for (let i = 0; i < 18; i++) {
+      stageG.appendChild(el('circle', { cx:-28 + i*3.5, cy:0, r:0.4, fill:'#fff', opacity:0.5 }));
+    }
+  }
+  gonioG.appendChild(stageG);
+
+  svg.appendChild(gonioG);
+
+  // Draggable holder (top-right)
+  if (!state.mounted) {
+    const drag = el('g', { id: 'holderDrag', transform: 'translate(680, 100)', style:'cursor: grab;' });
+    drag.appendChild(el('rect', { x:-50, y:-12, width:100, height:24, fill:'#1a2230', stroke:'#5a6678', 'stroke-width':2, rx:2 }));
+    drag.appendChild(el('rect', { x:-35, y:-5, width:70, height:10, fill:'#bcc8d6' }));
+    for (let i = 0; i < 18; i++) {
+      drag.appendChild(el('circle', { cx:-32 + i*4, cy:0, r:0.5, fill:'#fff', opacity:0.6 }));
+    }
+    drag.appendChild(el('text', { x:0, y:-22, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+      .textContent = 'SAMPLE HOLDER';
+    drag.appendChild(el('text', { x:0, y:30, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':9, 'text-anchor':'middle' }))
+      .textContent = '◄ DRAG TO STAGE';
+    svg.appendChild(drag);
+    enableHolderDrag(drag);
+  }
+
+  // Title
+  svg.appendChild(el('text', { x: 400, y: 50, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'BRAGG-BRENTANO  θ-2θ  GONIOMETER';
+}
+
+function enableHolderDrag(g) {
+  let dragging = false;
+  let startX = 0, startY = 0, originX = 680, originY = 100;
+  const svgEl = $workspaceSvg;
+  function getSvgCoords(evt) {
+    const rect = svgEl.getBoundingClientRect();
+    return {
+      x: ((evt.clientX - rect.left) / rect.width) * 800,
+      y: ((evt.clientY - rect.top) / rect.height) * 500
+    };
+  }
+  g.addEventListener('mousedown', (e) => {
+    dragging = true;
+    g.style.cursor = 'grabbing';
+    const c = getSvgCoords(e);
+    startX = c.x; startY = c.y;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const c = getSvgCoords(e);
+    g.setAttribute('transform', `translate(${originX + c.x - startX}, ${originY + c.y - startY})`);
+  });
+  window.addEventListener('mouseup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    g.style.cursor = 'grab';
+    const c = getSvgCoords(e);
+    // Stage center: ~400, 340
+    if (Math.abs(c.x - 400) < 70 && Math.abs(c.y - 340) < 50) {
+      state.mounted = true;
+      renderWorkspace();
+      $statusGonio.textContent = 'GONIOMETER: SAMPLE LOADED';
+      showToast('SAMPLE MOUNTED — proceed to setup');
+    } else {
+      g.setAttribute('transform', `translate(${originX}, ${originY})`);
+    }
+  });
+}
+
+// ----- STEP 3: Instrument Setup view (full diagram) -----
+function renderInstrumentSetup() {
+  const svg = $workspaceSvg;
+
+  // Same goniometer as mount view, but show beam path
+  const gonioG = el('g', { transform: 'translate(400, 280)' });
+  gonioG.appendChild(el('rect', { x:-200, y:60, width:400, height:80, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':2, rx:4 }));
+  gonioG.appendChild(el('text', { x:-185, y:130, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':11, 'font-weight':700, 'letter-spacing':1.5 }))
+    .textContent = '▣ SEMIFABAI';
+  gonioG.appendChild(el('text', { x:-185, y:108, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':9, 'letter-spacing':1 }))
+    .textContent = 'D8 GONIOMETER';
+
+  // Arc
+  gonioG.appendChild(el('path', { d: 'M -160 60 A 160 160 0 0 1 160 60', fill:'none', stroke:'#2a3340', 'stroke-width':4 }));
+  for (let a = 0; a <= 180; a += 10) {
+    const rad = deg2rad(180 - a);
+    const x1 = Math.cos(rad) * 150;
+    const y1 = -Math.sin(rad) * 150 + 60;
+    const x2 = Math.cos(rad) * 158;
+    const y2 = -Math.sin(rad) * 158 + 60;
+    gonioG.appendChild(el('line', { x1, y1, x2, y2, stroke:'#5a6678', 'stroke-width':1 }));
+  }
+
+  // Beam trace (only if params applied)
+  if (state.voltageSet) {
+    // X-ray tube
+    const tubeAng = 25;
+    const tubeRad = deg2rad(180 - tubeAng);
+    const tubeX = Math.cos(tubeRad) * 130;
+    const tubeY = -Math.sin(tubeRad) * 130 + 60;
+    // beam from tube to sample
+    gonioG.appendChild(el('line', {
+      x1:tubeX, y1:tubeY, x2:0, y2:60,
+      stroke:'var(--x-ray)', 'stroke-width':1.5, opacity:0.7
+    }));
+    // beam from sample to detector
+    const detAng = 155;
+    const detRad = deg2rad(180 - detAng);
+    const detX = Math.cos(detRad) * 130;
+    const detY = -Math.sin(detRad) * 130 + 60;
+    gonioG.appendChild(el('line', {
+      x1:0, y1:60, x2:detX, y2:detY,
+      stroke:'var(--accent-cyan)', 'stroke-width':1.5, opacity:0.7
+    }));
+
+    // Tube
+    const tubeG = el('g', { transform: `translate(${tubeX}, ${tubeY}) rotate(${-(90 - tubeAng)})` });
+    tubeG.appendChild(el('rect', { x:-18, y:-55, width:36, height:55, fill:'#2a3340', stroke:'var(--accent-amber)', 'stroke-width':1.5, rx:3 }));
+    tubeG.appendChild(el('rect', { x:-14, y:-50, width:28, height:10, fill:'var(--accent-amber)', opacity:0.6 }));
+    tubeG.appendChild(el('text', { x:0, y:-30, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':8, 'text-anchor':'middle' }))
+      .textContent = 'Cu';
+    tubeG.appendChild(el('text', { x:0, y:-65, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':9, 'text-anchor':'middle' }))
+      .textContent = '40kV';
+    gonioG.appendChild(tubeG);
+
+    // Detector
+    const detG = el('g', { transform: `translate(${detX}, ${detY}) rotate(${-(90 - detAng)})` });
+    detG.appendChild(el('rect', { x:-18, y:-55, width:36, height:55, fill:'#2a3340', stroke:'var(--accent-cyan)', 'stroke-width':1.5, rx:3 }));
+    detG.appendChild(el('rect', { x:-12, y:-50, width:24, height:6, fill:'var(--accent-cyan)', opacity:0.7 }));
+    detG.appendChild(el('text', { x:0, y:-30, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':8, 'text-anchor':'middle' }))
+      .textContent = 'DET';
+    gonioG.appendChild(detG);
+  } else {
+    // Inactive tube/det
+    const tg = el('g', { transform: 'translate(-117, -55)' });
+    tg.appendChild(el('rect', { x:-15, y:-50, width:30, height:50, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':1, rx:3 }));
+    gonioG.appendChild(tg);
+    const dg = el('g', { transform: 'translate(117, -55)' });
+    dg.appendChild(el('rect', { x:-15, y:-50, width:30, height:50, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':1, rx:3 }));
+    gonioG.appendChild(dg);
+  }
+
+  // Stage with mounted sample
+  gonioG.appendChild(el('rect', { x:-50, y:52, width:100, height:16, fill:'#2a3340', stroke:'var(--accent-green)', 'stroke-width':1.5 }));
+  gonioG.appendChild(el('rect', { x:-30, y:55, width:60, height:6, fill:'#bcc8d6' }));
+  for (let i = 0; i < 18; i++) {
+    gonioG.appendChild(el('circle', { cx:-28 + i*3.5, cy:58, r:0.4, fill:'#fff', opacity:0.5 }));
+  }
+
+  $workspaceSvg.appendChild(gonioG);
+
+  // Status overlay (top right corner)
+  const statusG = el('g', { transform: 'translate(560, 50)' });
+  const statuses = [
+    ['VOLTAGE', state.voltageSet ? '40 kV' : '— —', state.voltageSet],
+    ['CURRENT', state.currentSet ? '40 mA' : '— —', state.currentSet],
+    ['SCAN RANGE', state.scanRangeSet ? '20° → 80°' : '— —', state.scanRangeSet],
+    ['STEP SIZE', state.scanRangeSet ? '0.02°' : '— —', state.scanRangeSet]
+  ];
+  statuses.forEach((s, i) => {
+    const yy = i * 36;
+    statusG.appendChild(el('rect', { x:0, y:yy, width:200, height:30, fill:'#0d141c', stroke: s[2] ? 'var(--accent-green)' : '#2a3340', 'stroke-width':1, rx:2 }));
+    statusG.appendChild(el('text', { x:8, y:yy+12, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':8, 'letter-spacing':1 }))
+      .textContent = s[0];
+    statusG.appendChild(el('text', { x:8, y:yy+24, fill: s[2] ? 'var(--accent-green)' : 'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':12, 'font-weight':600 }))
+      .textContent = s[1];
+  });
+  $workspaceSvg.appendChild(statusG);
+
+  svg.appendChild(el('text', { x:400, y:50, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'INSTRUMENT CONFIGURATION';
+}
+
+// ----- STEP 4: Bragg intro (small static diagram pointing to modal) -----
+function renderBraggIntro() {
+  const svg = $workspaceSvg;
+
+  // Crystal lattice planes
+  const g = el('g', { transform: 'translate(400, 250)' });
+
+  // Atomic planes (5 horizontal lines of atoms)
+  const planeSpacing = 38;
+  const atomsPerRow = 9;
+  for (let row = 0; row < 5; row++) {
+    const y = (row - 2) * planeSpacing;
+    g.appendChild(el('line', { x1:-200, y1:y, x2:200, y2:y, stroke:'#3a4556', 'stroke-width':1, 'stroke-dasharray':'2 4' }));
+    for (let c = 0; c < atomsPerRow; c++) {
+      const x = (c - (atomsPerRow-1)/2) * 50;
+      g.appendChild(el('circle', { cx:x, cy:y, r:7, fill:'#5a6678', stroke:'#7a8896', 'stroke-width':1 }));
+      g.appendChild(el('circle', { cx:x, cy:y, r:3, fill:'#bcc8d6' }));
+    }
+  }
+
+  // d-spacing label
+  g.appendChild(el('line', { x1:-220, y1:-2*planeSpacing, x2:-220, y2:-1*planeSpacing, stroke:'var(--accent-amber)', 'stroke-width':1.5 }));
+  g.appendChild(el('line', { x1:-225, y1:-2*planeSpacing, x2:-215, y2:-2*planeSpacing, stroke:'var(--accent-amber)', 'stroke-width':1.5 }));
+  g.appendChild(el('line', { x1:-225, y1:-1*planeSpacing, x2:-215, y2:-1*planeSpacing, stroke:'var(--accent-amber)', 'stroke-width':1.5 }));
+  g.appendChild(el('text', { x:-235, y:-1.5*planeSpacing+3, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'end' }))
+    .textContent = 'd';
+
+  // Incoming X-ray (2 parallel rays)
+  const angle = 25;
+  const angleR = deg2rad(angle);
+  for (let i = 0; i < 2; i++) {
+    const startX = -260 + i * 18;
+    const startY = -180 + i * 12;
+    const planeY = (i === 0 ? -2 : -1) * planeSpacing;
+    const hitX = startX + (planeY - startY) / Math.tan(angleR);
+    g.appendChild(el('line', {
+      x1:startX, y1:startY, x2:hitX, y2:planeY,
+      stroke:'var(--x-ray)', 'stroke-width':1.5, opacity:0.85
+    }));
+    // Outgoing
+    const outX = hitX + 200 * Math.cos(angleR);
+    const outY = planeY - 200 * Math.sin(angleR);
+    g.appendChild(el('line', {
+      x1:hitX, y1:planeY, x2:outX, y2:outY,
+      stroke:'var(--accent-cyan)', 'stroke-width':1.5, opacity:0.85
+    }));
+  }
+
+  // theta angle arc
+  g.appendChild(el('path', {
+    d: 'M -120 -76 A 30 30 0 0 1 -110 -90',
+    fill:'none', stroke:'var(--accent-amber)', 'stroke-width':1.2
+  }));
+  g.appendChild(el('text', { x:-100, y:-78, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':12 }))
+    .textContent = 'θ';
+
+  svg.appendChild(g);
+
+  svg.appendChild(el('text', { x:400, y:50, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'BRAGG DIFFRACTION FROM CRYSTAL PLANES';
+  svg.appendChild(el('text', { x:400, y:74, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+    .textContent = 'Click [BRAGG\'S LAW] in toolbar to explore interactively';
+
+  // Equation
+  svg.appendChild(el('text', { x:400, y:460, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':22, 'text-anchor':'middle', 'font-weight':700 }))
+    .textContent = 'n λ = 2 d sin θ';
+}
+
+// ----- STEP 5: Scanning view (with rotating goniometer) -----
+function renderScanning() {
+  const svg = $workspaceSvg;
+
+  const gonioG = el('g', { transform: 'translate(400, 280)' });
+  gonioG.appendChild(el('rect', { x:-200, y:60, width:400, height:80, fill:'#1a2230', stroke:'#3a4556', 'stroke-width':2, rx:4 }));
+  gonioG.appendChild(el('text', { x:-185, y:130, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':11, 'font-weight':700, 'letter-spacing':1.5 }))
+    .textContent = '▣ SEMIFABAI';
+
+  gonioG.appendChild(el('path', { d: 'M -160 60 A 160 160 0 0 1 160 60', fill:'none', stroke:'#2a3340', 'stroke-width':4 }));
+  for (let a = 0; a <= 180; a += 10) {
+    const rad = deg2rad(180 - a);
+    gonioG.appendChild(el('line', {
+      x1: Math.cos(rad) * 150, y1: -Math.sin(rad) * 150 + 60,
+      x2: Math.cos(rad) * 158, y2: -Math.sin(rad) * 158 + 60,
+      stroke:'#5a6678', 'stroke-width':1
+    }));
+  }
+
+  // Current 2θ from scan progress
+  const twoTheta = 20 + state.scanProgress * 60;
+  const theta = twoTheta / 2;
+
+  // Tube fixed at left side, source angle is mirror of detector
+  // Bragg-Brentano: tube at -θ, detector at +θ (relative to sample horizontal)
+  const tubeAngle = 90 + theta;  // measured from horizontal
+  const detAngle = 90 - theta;
+
+  const tubeRad = deg2rad(tubeAngle);
+  const tubeX = Math.cos(tubeRad) * 140;
+  const tubeY = -Math.sin(tubeRad) * 140 + 60;
+
+  const detRad = deg2rad(detAngle);
+  const detX = Math.cos(detRad) * 140;
+  const detY = -Math.sin(detRad) * 140 + 60;
+
+  // Beams
+  gonioG.appendChild(el('line', { x1:tubeX, y1:tubeY, x2:0, y2:60, stroke:'var(--x-ray)', 'stroke-width':1.5, opacity:0.7 }));
+  gonioG.appendChild(el('line', { x1:0, y1:60, x2:detX, y2:detY, stroke:'var(--accent-cyan)', 'stroke-width':1.5, opacity:0.7 }));
+
+  // Tube
+  const tubeG = el('g', { transform: `translate(${tubeX}, ${tubeY}) rotate(${tubeAngle - 90})` });
+  tubeG.appendChild(el('rect', { x:-18, y:0, width:36, height:55, fill:'#2a3340', stroke:'var(--accent-amber)', 'stroke-width':1.5, rx:3 }));
+  tubeG.appendChild(el('rect', { x:-14, y:45, width:28, height:10, fill:'var(--accent-amber)', opacity:0.6 }));
+  gonioG.appendChild(tubeG);
+
+  // Detector
+  const detG = el('g', { transform: `translate(${detX}, ${detY}) rotate(${detAngle - 90})` });
+  detG.appendChild(el('rect', { x:-18, y:0, width:36, height:55, fill:'#2a3340', stroke:'var(--accent-cyan)', 'stroke-width':1.5, rx:3 }));
+  detG.appendChild(el('rect', { x:-12, y:45, width:24, height:6, fill:'var(--accent-cyan)', opacity:0.7 }));
+  gonioG.appendChild(detG);
+
+  // Stage and sample
+  gonioG.appendChild(el('rect', { x:-50, y:52, width:100, height:16, fill:'#2a3340', stroke:'var(--accent-green)', 'stroke-width':1.5 }));
+  gonioG.appendChild(el('rect', { x:-30, y:55, width:60, height:6, fill:'#bcc8d6' }));
+
+  // Angle label arc
+  gonioG.appendChild(el('path', {
+    d: `M ${Math.cos(deg2rad(90+theta))*60} ${-Math.sin(deg2rad(90+theta))*60+60} A 60 60 0 0 1 ${Math.cos(deg2rad(90-theta))*60} ${-Math.sin(deg2rad(90-theta))*60+60}`,
+    fill:'none', stroke:'var(--accent-amber)', 'stroke-width':1.2
+  }));
+
+  svg.appendChild(gonioG);
+
+  // Live readout
+  svg.appendChild(el('text', { x:400, y:50, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':14, 'text-anchor':'middle', 'letter-spacing':2, 'font-weight':600 }))
+    .textContent = `θ = ${theta.toFixed(3)}°    2θ = ${twoTheta.toFixed(3)}°`;
+
+  $liveReadout.textContent = `θ: ${theta.toFixed(3)}°  |  2θ: ${twoTheta.toFixed(3)}°  |  CPS: ${getIntensityAt(twoTheta).toFixed(0)}`;
+}
+
+// ----- STEP 6: Peak detection view (zoom on completed pattern) -----
+function renderPeakDetection() {
+  const svg = $workspaceSvg;
+  // Show a visual summary: lattice with hkl planes highlighting
+  const g = el('g', { transform: 'translate(400, 250)' });
+
+  // Background "info" cards showing each peak waiting to be identified
+  svg.appendChild(el('text', { x:400, y:50, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'CLICK PEAKS IN DIFFRACTION PATTERN BELOW';
+
+  // Show 5 peak cards
+  const cardW = 130, cardH = 80, gap = 14;
+  const totalW = 5 * cardW + 4 * gap;
+  const startX = 400 - totalW / 2;
+  SI_PEAKS.forEach((p, i) => {
+    const cx = startX + i * (cardW + gap);
+    const isId = state.peaksIdentified.has(i);
+    const card = el('g', { transform: `translate(${cx}, 200)` });
+    card.appendChild(el('rect', {
+      width: cardW, height: cardH,
+      fill: isId ? 'rgba(0, 230, 118, 0.08)' : '#0d141c',
+      stroke: isId ? 'var(--accent-green)' : '#2a3340',
+      'stroke-width': 1.5, rx:3
+    }));
+    card.appendChild(el('text', { x:cardW/2, y:18, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':9, 'text-anchor':'middle', 'letter-spacing':1 }))
+      .textContent = `PEAK ${i+1}`;
+    card.appendChild(el('text', {
+      x:cardW/2, y:42, fill: isId ? 'var(--accent-green)' : 'var(--text-muted)',
+      'font-family':'var(--font-mono)', 'font-size': 16, 'text-anchor':'middle', 'font-weight':600
+    })).textContent = isId ? `${p.two_theta.toFixed(2)}°` : '— — —';
+    card.appendChild(el('text', {
+      x:cardW/2, y:62, fill: isId ? 'var(--accent-cyan)' : 'var(--text-muted)',
+      'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle'
+    })).textContent = isId ? '✓ DETECTED' : 'PENDING';
+    svg.appendChild(card);
+  });
+
+  // Big diffraction visual
+  svg.appendChild(el('text', { x:400, y:340, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+    .textContent = `${state.peaksIdentified.size} of 5 peaks identified`;
+
+  if (state.peaksIdentified.size === 5) {
+    svg.appendChild(el('text', { x:400, y:380, fill:'var(--accent-green)', 'font-family':'var(--font-mono)', 'font-size':16, 'text-anchor':'middle', 'font-weight':600 }))
+      .textContent = '✓ ALL PEAKS DETECTED';
+  }
+}
+
+// ----- STEP 7: Crystal structure -----
+function renderCrystalStructure() {
+  const svg = $workspaceSvg;
+
+  // Draw Si diamond cubic unit cell isometric
+  const g = el('g', { transform: 'translate(400, 270)' });
+
+  // Cube edges (isometric projection)
+  const a = 110;
+  // Vertices of cube (front face origin = -a/2,-a/2; depth offset)
+  const dx = 60, dy = -40;
+  const verts = [
+    [-a/2, a/2], [a/2, a/2], [a/2, -a/2], [-a/2, -a/2], // front
+    [-a/2 + dx, a/2 + dy], [a/2 + dx, a/2 + dy], [a/2 + dx, -a/2 + dy], [-a/2 + dx, -a/2 + dy] // back
+  ];
+  const edges = [
+    [0,1],[1,2],[2,3],[3,0], // front
+    [4,5],[5,6],[6,7],[7,4], // back
+    [0,4],[1,5],[2,6],[3,7] // connect
+  ];
+  edges.forEach(([i, j]) => {
+    g.appendChild(el('line', {
+      x1: verts[i][0], y1: verts[i][1], x2: verts[j][0], y2: verts[j][1],
+      stroke:'#5a6678', 'stroke-width':1, 'stroke-dasharray': '3 3'
+    }));
+  });
+  // Atoms at corners + face centers + tetrahedral interior (Si diamond positions)
+  // Simplified: corners, face centers, and 4 tetrahedral positions
+  const atomPositions = [
+    // Corners
+    ...verts.map(v => [...v, '#7a8896', 6]),
+    // Face centers (approximate)
+    [0, 0, '#7a8896', 6], // front center
+    [dx, dy, '#7a8896', 6], // back center
+    [-a/2 + dx/2, dy/2, '#7a8896', 6], // left
+    [a/2 + dx/2, dy/2, '#7a8896', 6], // right
+    [dx/2, a/2 + dy/2, '#7a8896', 6], // bottom
+    [dx/2, -a/2 + dy/2, '#7a8896', 6], // top
+    // Tetrahedral interior atoms (Si specific)
+    [-a/4 + dx/4, a/4 + dy/4, 'var(--accent-amber)', 5],
+    [a/4 + dx*3/4, -a/4 + dy*3/4, 'var(--accent-amber)', 5],
+    [a/4 + dx/4, -a/4 + dy*3/4, 'var(--accent-amber)', 5],
+    [-a/4 + dx*3/4, a/4 + dy/4, 'var(--accent-amber)', 5]
+  ];
+  atomPositions.forEach(p => {
+    g.appendChild(el('circle', { cx:p[0], cy:p[1], r:p[3]+2, fill:'#0a0e14' }));
+    g.appendChild(el('circle', { cx:p[0], cy:p[1], r:p[3], fill:p[2], stroke:'#bcc8d6', 'stroke-width':0.5 }));
+  });
+
+  // Show (111) plane if indexed
+  if (state.hklAssigned) {
+    g.appendChild(el('polygon', {
+      points: `${verts[1][0]},${verts[1][1]} ${verts[3][0]},${verts[3][1]} ${verts[6][0]},${verts[6][1]}`,
+      fill: 'rgba(255, 179, 0, 0.15)', stroke:'var(--accent-amber)', 'stroke-width':2
+    }));
+    g.appendChild(el('text', {
+      x: (verts[1][0] + verts[3][0] + verts[6][0])/3,
+      y: (verts[1][1] + verts[3][1] + verts[6][1])/3,
+      fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':14, 'font-weight':700, 'text-anchor':'middle'
+    })).textContent = '(111)';
+  }
+
+  // Lattice constant label
+  g.appendChild(el('line', {
+    x1: -a/2, y1: a/2 + 18, x2: a/2, y2: a/2 + 18,
+    stroke:'var(--accent-cyan)', 'stroke-width':1.5
+  }));
+  g.appendChild(el('line', { x1: -a/2, y1: a/2 + 14, x2: -a/2, y2: a/2 + 22, stroke:'var(--accent-cyan)', 'stroke-width':1.5 }));
+  g.appendChild(el('line', { x1: a/2, y1: a/2 + 14, x2: a/2, y2: a/2 + 22, stroke:'var(--accent-cyan)', 'stroke-width':1.5 }));
+  g.appendChild(el('text', {
+    x:0, y: a/2 + 38, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':13, 'text-anchor':'middle', 'font-weight':600
+  })).textContent = state.hklAssigned ? 'a = 5.4309 Å' : 'a = ? Å';
+
+  svg.appendChild(g);
+
+  svg.appendChild(el('text', { x:400, y:50, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'Si DIAMOND CUBIC UNIT CELL  (Fd-3m)';
+
+  // Legend
+  const legG = el('g', { transform: 'translate(40, 380)' });
+  legG.appendChild(el('circle', { cx:0, cy:0, r:6, fill:'#7a8896', stroke:'#bcc8d6', 'stroke-width':0.5 }));
+  legG.appendChild(el('text', { x:14, y:4, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':10 }))
+    .textContent = 'Si (FCC sublattice)';
+  legG.appendChild(el('circle', { cx:140, cy:0, r:5, fill:'var(--accent-amber)' }));
+  legG.appendChild(el('text', { x:152, y:4, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':10 }))
+    .textContent = 'Si (tetrahedral, +1/4)';
+  svg.appendChild(legG);
+}
+
+// ----- STEP 8: Final view -----
+function renderFinalView() {
+  const svg = $workspaceSvg;
+
+  if (!state.finalCalculated) {
+    // Show waiting message
+    svg.appendChild(el('text', { x:400, y:240, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':14, 'text-anchor':'middle', 'letter-spacing':2 }))
+      .textContent = 'PRESS [CALCULATE LATTICE] TO COMPUTE FINAL RESULT';
+    svg.appendChild(el('text', { x:400, y:266, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+      .textContent = '→ See instruction panel on the right';
+    return;
+  }
+
+  // Big result splash
+  svg.appendChild(el('text', { x:400, y:80, fill:'var(--text-secondary)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':3 }))
+    .textContent = 'ANALYSIS COMPLETE';
+
+  const resultG = el('g', { transform: 'translate(400, 180)' });
+  resultG.appendChild(el('circle', { r: 70, fill:'none', stroke:'var(--accent-green)', 'stroke-width':2, opacity:0.6 }));
+  resultG.appendChild(el('circle', { r: 80, fill:'none', stroke:'var(--accent-green)', 'stroke-width':1, opacity:0.3 }));
+  resultG.appendChild(el('text', { y:-8, fill:'var(--accent-green)', 'font-family':'var(--font-mono)', 'font-size':28, 'text-anchor':'middle', 'font-weight':700 }))
+    .textContent = '✓';
+  resultG.appendChild(el('text', { y:18, fill:'var(--accent-green)', 'font-family':'var(--font-mono)', 'font-size':12, 'text-anchor':'middle', 'letter-spacing':2 }))
+    .textContent = 'Si MATCH';
+  svg.appendChild(resultG);
+
+  const dataG = el('g', { transform: 'translate(400, 320)' });
+  dataG.appendChild(el('text', { y:0, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle', 'letter-spacing':1 }))
+    .textContent = 'LATTICE CONSTANT';
+  dataG.appendChild(el('text', { y:32, fill:'var(--accent-cyan)', 'font-family':'var(--font-mono)', 'font-size':32, 'text-anchor':'middle', 'font-weight':700 }))
+    .textContent = '5.4309 Å';
+  dataG.appendChild(el('text', { y:54, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle' }))
+    .textContent = 'reference: 5.4309 Å (NIST SRM 640)';
+  svg.appendChild(dataG);
+
+  // hkl indices line
+  const hklG = el('g', { transform: 'translate(400, 420)' });
+  hklG.appendChild(el('text', { y:0, fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10, 'text-anchor':'middle', 'letter-spacing':1 }))
+    .textContent = 'INDEXED PEAKS';
+  const hklText = SI_PEAKS.map(p => p.hkl).join('   ·   ');
+  hklG.appendChild(el('text', { y:24, fill:'var(--accent-amber)', 'font-family':'var(--font-mono)', 'font-size':14, 'text-anchor':'middle', 'font-weight':600, 'letter-spacing':1 }))
+    .textContent = hklText;
+  svg.appendChild(hklG);
+}
+
+// =============== DIFFRACTION PATTERN RENDERING ===============
+function getIntensityAt(twoTheta) {
+  // Pseudo-Voigt-ish: gaussian peaks at each Si peak position
+  let total = 0;
+  SI_PEAKS.forEach(p => {
+    const sigma = 0.15; // peak width
+    const dx = twoTheta - p.two_theta;
+    total += p.intensity * Math.exp(-(dx*dx) / (2 * sigma * sigma));
+  });
+  // Background
+  total += 2 + Math.random() * 1.5;
+  return total;
+}
+
+function renderPattern(progress = 1.0) {
+  $patternSvg.innerHTML = '';
+  const W = 1000, H = 200;
+  const margin = { top: 10, right: 20, bottom: 28, left: 50 };
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  // 2θ axis: 20 to 80
+  const xMin = 20, xMax = 80;
+  const yMin = 0, yMax = 110;
+
+  function x2px(x) { return margin.left + ((x - xMin) / (xMax - xMin)) * plotW; }
+  function y2px(y) { return margin.top + plotH - (y / yMax) * plotH; }
+
+  // Grid lines
+  for (let x = 20; x <= 80; x += 10) {
+    $patternSvg.appendChild(el('line', {
+      x1: x2px(x), y1: margin.top, x2: x2px(x), y2: margin.top + plotH,
+      class: 'pattern-grid-line'
+    }));
+  }
+  for (let y = 0; y <= 100; y += 25) {
+    $patternSvg.appendChild(el('line', {
+      x1: margin.left, y1: y2px(y), x2: margin.left + plotW, y2: y2px(y),
+      class: 'pattern-grid-line'
+    }));
+  }
+
+  // Axes
+  $patternSvg.appendChild(el('line', { x1: margin.left, y1: margin.top + plotH, x2: margin.left + plotW, y2: margin.top + plotH, stroke:'var(--text-muted)', 'stroke-width':1 }));
+  $patternSvg.appendChild(el('line', { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + plotH, stroke:'var(--text-muted)', 'stroke-width':1 }));
+
+  // X ticks
+  for (let x = 20; x <= 80; x += 10) {
+    const px = x2px(x);
+    $patternSvg.appendChild(el('line', { x1: px, y1: margin.top + plotH, x2: px, y2: margin.top + plotH + 4, class:'pattern-tick' }));
+    $patternSvg.appendChild(el('text', { x: px, y: margin.top + plotH + 16, 'text-anchor':'middle', class:'pattern-tick-text' }, [])).textContent = x;
+  }
+  // Y ticks
+  for (let y = 0; y <= 100; y += 25) {
+    const py = y2px(y);
+    $patternSvg.appendChild(el('line', { x1: margin.left - 4, y1: py, x2: margin.left, y2: py, class:'pattern-tick' }));
+    $patternSvg.appendChild(el('text', { x: margin.left - 7, y: py + 3, 'text-anchor':'end', class:'pattern-tick-text' }, [])).textContent = y;
+  }
+
+  // Axis labels
+  $patternSvg.appendChild(el('text', { x: margin.left + plotW/2, y: H - 4, 'text-anchor':'middle', class:'pattern-axis-label' }, []))
+    .textContent = '2θ (degrees, Cu Kα)';
+  $patternSvg.appendChild(el('text', { x: 12, y: margin.top + plotH/2, 'text-anchor':'middle', class:'pattern-axis-label', transform: `rotate(-90, 12, ${margin.top + plotH/2})` }, []))
+    .textContent = 'Intensity (CPS)';
+
+  // Plot curve up to current progress
+  const currentMax = xMin + (xMax - xMin) * progress;
+  const points = [];
+  const steps = 600;
+  for (let i = 0; i <= steps; i++) {
+    const tt = xMin + (i / steps) * (xMax - xMin);
+    if (tt > currentMax) break;
+    const intensity = getIntensityAt(tt);
+    points.push(`${x2px(tt).toFixed(2)},${y2px(intensity).toFixed(2)}`);
+  }
+  if (points.length > 1) {
+    $patternSvg.appendChild(el('polyline', {
+      points: points.join(' '),
+      class: 'pattern-curve'
+    }));
+  }
+
+  // Active scan position indicator
+  if (state.scanRunning && progress < 1) {
+    $patternSvg.appendChild(el('line', {
+      x1: x2px(currentMax), y1: margin.top, x2: x2px(currentMax), y2: margin.top + plotH,
+      stroke:'var(--accent-amber)', 'stroke-width':1, 'stroke-dasharray':'2 3'
+    }));
+  }
+
+  // Peak markers (clickable in step 6+)
+  if (state.scanComplete && (state.step >= 6)) {
+    SI_PEAKS.forEach((p, i) => {
+      const px = x2px(p.two_theta);
+      const py = y2px(p.intensity);
+      const isId = state.peaksIdentified.has(i);
+      const g = el('g', { class: 'peak-marker' + (isId ? ' identified' : ''), 'data-peak-idx': i });
+      // Hover zone
+      g.appendChild(el('rect', {
+        class: 'peak-hover-zone',
+        x: px - 8, y: py - 4, width: 16, height: 80
+      }));
+      // Vertical line
+      g.appendChild(el('line', {
+        class: 'peak-line',
+        x1: px, y1: py - 4, x2: px, y2: py + 70,
+        stroke: isId ? 'var(--accent-green)' : 'var(--accent-amber)',
+        'stroke-width': 1, 'stroke-dasharray': isId ? '0' : '3 2',
+        opacity: isId ? 1 : 0.7
+      }));
+      // Label
+      if (isId || state.step >= 7) {
+        g.appendChild(el('text', {
+          x: px, y: py - 8,
+          fill: isId ? 'var(--accent-green)' : 'var(--accent-amber)',
+          'font-family':'var(--font-mono)', 'font-size': 9,
+          'text-anchor':'middle', 'font-weight': 600
+        })).textContent = state.step >= 7 ? p.hkl : p.two_theta.toFixed(2);
+      }
+
+      if (state.step === 6 && !isId) {
+        g.style.cursor = 'pointer';
+        g.addEventListener('click', () => {
+          state.peaksIdentified.add(i);
+          renderPattern(1);
+          updatePeakTable();
+          renderWorkspace();
+          showToast(`PEAK ${i+1} IDENTIFIED — 2θ = ${p.two_theta.toFixed(3)}°`);
+          if (state.peaksIdentified.size === 5) {
+            setTimeout(() => showToast('ALL PEAKS DETECTED — proceed to indexing'), 1200);
+          }
+        });
+      }
+      $patternSvg.appendChild(g);
+    });
+  }
+
+  // Title
+  $patternSvg.appendChild(el('text', {
+    x: W - margin.right - 5, y: margin.top + 12, 'text-anchor':'end',
+    fill:'var(--text-muted)', 'font-family':'var(--font-mono)', 'font-size':10
+  })).textContent = state.scanComplete ? 'Si POWDER · Cu Kα · 20-80°' : (state.scanRunning ? 'SCANNING...' : 'NO DATA');
+}
+
+// =============== SCAN ANIMATION ===============
+function startScan() {
+  if (state.scanRunning || state.scanComplete) return;
+  state.scanRunning = true;
+  $patternStatus.textContent = 'SCANNING';
+  document.getElementById('scanStartBtn').disabled = true;
+  $statusGonio.textContent = 'GONIOMETER: SCANNING';
+
+  const duration = 12000; // 12 sec
+  const startT = performance.now();
+
+  function tick(now) {
+    const elapsed = now - startT;
+    state.scanProgress = Math.min(1, elapsed / duration);
+    renderWorkspace();
+    renderPattern(state.scanProgress);
+    const ptext = document.getElementById('scanProgressText');
+    const aText = document.getElementById('scanCurrentAngle');
+    if (ptext) ptext.textContent = (state.scanProgress * 100).toFixed(1) + '%';
+    if (aText) aText.textContent = `2θ: ${(20 + state.scanProgress * 60).toFixed(2)}°`;
+    if (state.scanProgress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      state.scanRunning = false;
+      state.scanComplete = true;
+      $patternStatus.textContent = 'SCAN COMPLETE';
+      $statusGonio.textContent = 'GONIOMETER: IDLE';
+      const btn = document.getElementById('scanStartBtn');
+      if (btn) {
+        btn.textContent = '✓ SCAN COMPLETE';
+        btn.disabled = true;
+      }
+      showToast('SCAN COMPLETE — proceed to peak detection');
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+// =============== BRAGG MODAL ===============
+function renderBraggSvg() {
+  const svg = document.getElementById('braggSvg');
+  svg.innerHTML = '';
+  const W = 800, H = 360;
+
+  const theta = parseFloat(document.getElementById('braggThetaSlider').value);
+  const d = parseFloat(document.getElementById('braggDSlider').value);
+  document.getElementById('braggThetaVal').textContent = theta.toFixed(2) + '°';
+  document.getElementById('braggDVal').textContent = d.toFixed(3) + ' Å';
+
+  const path = 2 * d * Math.sin(deg2rad(theta));
+  const nLambda = LAMBDA;
+  document.getElementById('braggPath').textContent = path.toFixed(3) + ' Å';
+  document.getElementById('bragg2dsin').textContent = path.toFixed(3) + ' Å';
+  document.getElementById('braggNlambda').textContent = nLambda.toFixed(4) + ' Å';
+
+  // Constructive interference check (within 5%)
+  const ratio = path / nLambda;
+  const isConstructive = Math.abs(ratio - Math.round(ratio)) < 0.05 && Math.round(ratio) >= 1;
+  const condCard = document.getElementById('braggDiffractCard');
+  const condText = document.getElementById('braggCondition');
+  if (isConstructive) {
+    condCard.classList.add('constructive');
+    condText.textContent = '✓ DIFFRACTION';
+    state.braggExplored = true;
+  } else {
+    condCard.classList.remove('constructive');
+    condText.textContent = 'NO PEAK';
+  }
+
+  // Track exploration
+  if (!state.braggInteractCount) state.braggInteractCount = 0;
+  state.braggInteractCount++;
+  if (state.braggInteractCount > 5 && state.step === 4) {
+    state.braggExplored = true;
+  }
+
+  // === DRAW ===
+  // Crystal planes (3 horizontal, scaled)
+  // d-spacing in svg pixels: scale d so range 1-5 Å maps to 30-110 px
+  const dPx = 25 + d * 17;
+  const planeY = [180 - dPx, 180, 180 + dPx];
+  planeY.forEach(y => {
+    svg.appendChild(el('line', {
+      x1: 50, y1: y, x2: 750, y2: y,
+      stroke: '#3a4556', 'stroke-width': 1, 'stroke-dasharray': '3 4'
+    }));
+    // Atoms on plane
+    for (let x = 80; x <= 720; x += 40) {
+      svg.appendChild(el('circle', { cx: x, cy: y, r: 6, fill: '#5a6678', stroke: '#7a8896', 'stroke-width': 1 }));
+      svg.appendChild(el('circle', { cx: x, cy: y, r: 2, fill: '#bcc8d6' }));
+    }
+  });
+
+  // d-spacing label
+  svg.appendChild(el('line', { x1: 30, y1: planeY[0], x2: 30, y2: planeY[1], stroke: 'var(--accent-amber)', 'stroke-width': 1.5 }));
+  svg.appendChild(el('line', { x1: 25, y1: planeY[0], x2: 35, y2: planeY[0], stroke: 'var(--accent-amber)', 'stroke-width': 1.5 }));
+  svg.appendChild(el('line', { x1: 25, y1: planeY[1], x2: 35, y2: planeY[1], stroke: 'var(--accent-amber)', 'stroke-width': 1.5 }));
+  svg.appendChild(el('text', {
+    x: 14, y: (planeY[0] + planeY[1])/2 + 4,
+    fill: 'var(--accent-amber)', 'font-family': 'var(--font-mono)', 'font-size': 14, 'text-anchor': 'middle', 'font-weight': 600
+  })).textContent = 'd';
+
+  // Two parallel incident rays hitting upper and middle plane
+  const angR = deg2rad(theta);
+  const rayLen = 220;
+  // Ray 1: hits upper plane at center
+  const hit1 = { x: 320, y: planeY[0] };
+  const ray1Start = { x: hit1.x - rayLen * Math.cos(angR), y: hit1.y - rayLen * Math.sin(angR) };
+  const ray1End = { x: hit1.x + rayLen * Math.cos(angR), y: hit1.y - rayLen * Math.sin(angR) };
+  // Ray 2: hits middle plane at center (offset to keep parallel)
+  const hit2 = { x: 320 + dPx / Math.tan(angR), y: planeY[1] };
+  // For parallel rays, ray 2's start has same direction
+  const ray2Start = { x: hit2.x - rayLen * Math.cos(angR), y: hit2.y - rayLen * Math.sin(angR) };
+  const ray2End = { x: hit2.x + rayLen * Math.cos(angR), y: hit2.y - rayLen * Math.sin(angR) };
+
+  // Incoming
+  svg.appendChild(el('line', {
+    x1: ray1Start.x, y1: ray1Start.y, x2: hit1.x, y2: hit1.y,
+    stroke: 'var(--x-ray)', 'stroke-width': 2, opacity: 0.9
+  }));
+  svg.appendChild(el('line', {
+    x1: ray2Start.x, y1: ray2Start.y, x2: hit2.x, y2: hit2.y,
+    stroke: 'var(--x-ray)', 'stroke-width': 2, opacity: 0.9
+  }));
+  // Outgoing
+  svg.appendChild(el('line', {
+    x1: hit1.x, y1: hit1.y, x2: ray1End.x, y2: ray1End.y,
+    stroke: isConstructive ? 'var(--accent-green)' : 'var(--accent-cyan)', 'stroke-width': 2, opacity: 0.9
+  }));
+  svg.appendChild(el('line', {
+    x1: hit2.x, y1: hit2.y, x2: ray2End.x, y2: ray2End.y,
+    stroke: isConstructive ? 'var(--accent-green)' : 'var(--accent-cyan)', 'stroke-width': 2, opacity: 0.9
+  }));
+
+  // Path difference visualization (extra path of ray 2 = 2d sin θ)
+  // Project from ray 1 incoming line to hit2: foot of perpendicular
+  // Approximation: extra path lower triangle
+  const extraLen = path * 5;  // Å -> px scale
+  const extraDir = { dx: Math.cos(angR), dy: Math.sin(angR) };
+  // Show as a highlighted segment along ray 2 incoming, near hit2
+  const extraStart = { x: hit2.x - extraLen * extraDir.dx, y: hit2.y - extraLen * extraDir.dy };
+  svg.appendChild(el('line', {
+    x1: extraStart.x, y1: extraStart.y, x2: hit2.x, y2: hit2.y,
+    stroke: isConstructive ? 'var(--accent-green)' : 'var(--accent-amber)',
+    'stroke-width': 4, opacity: 0.5
+  }));
+
+  // theta angle arc at hit1
+  const arcR = 35;
+  svg.appendChild(el('path', {
+    d: `M ${hit1.x - arcR} ${hit1.y} A ${arcR} ${arcR} 0 0 1 ${hit1.x - arcR * Math.cos(angR)} ${hit1.y - arcR * Math.sin(angR)}`,
+    fill: 'none', stroke: 'var(--accent-amber)', 'stroke-width': 1.5
+  }));
+  svg.appendChild(el('text', {
+    x: hit1.x - arcR - 10, y: hit1.y - 12,
+    fill: 'var(--accent-amber)', 'font-family': 'var(--font-mono)', 'font-size': 14, 'font-weight': 600
+  })).textContent = 'θ';
+
+  // Labels
+  svg.appendChild(el('text', {
+    x: ray1Start.x + 10, y: ray1Start.y - 6,
+    fill: 'var(--x-ray)', 'font-family':'var(--font-mono)', 'font-size': 11, 'font-weight': 600
+  })).textContent = 'INCOMING X-RAY (λ)';
+  svg.appendChild(el('text', {
+    x: ray1End.x - 80, y: ray1End.y - 6,
+    fill: isConstructive ? 'var(--accent-green)' : 'var(--accent-cyan)',
+    'font-family':'var(--font-mono)', 'font-size': 11, 'font-weight': 600
+  })).textContent = isConstructive ? 'BRAGG PEAK!' : 'SCATTERED';
+
+  // Equation banner
+  svg.appendChild(el('rect', {
+    x: 200, y: 320, width: 400, height: 30, fill: 'var(--bg-deep)', stroke: isConstructive ? 'var(--accent-green)' : '#2a3340', 'stroke-width': 1, rx: 2
+  }));
+  svg.appendChild(el('text', {
+    x: 400, y: 340, fill: isConstructive ? 'var(--accent-green)' : 'var(--text-secondary)',
+    'font-family': 'var(--font-mono)', 'font-size': 13, 'text-anchor': 'middle', 'font-weight': 600
+  })).textContent = `2d sin θ = ${path.toFixed(3)} Å    ${isConstructive ? '=' : '≠'}    nλ = ${nLambda.toFixed(4)} Å`;
+}
+
+function openBraggModal() {
+  $braggModal.classList.add('active');
+  renderBraggSvg();
+}
+function closeBraggModal() {
+  $braggModal.classList.remove('active');
+}
+
+// =============== STEP NAVIGATION ===============
+function canAdvance() {
+  switch (state.step) {
+    case 1: return state.grindCount === 5 && state.filled;
+    case 2: return state.mounted;
+    case 3: return state.voltageSet && state.currentSet && state.scanRangeSet;
+    case 4: return state.braggExplored;
+    case 5: return state.scanComplete;
+    case 6: return state.peaksIdentified.size === 5;
+    case 7: return state.hklAssigned;
+    case 8: return state.finalCalculated;
+    default: return false;
+  }
+}
+
+function getBlockMsg() {
+  switch (state.step) {
+    case 1: return state.grindCount < 5 ? 'GRIND POWDER FIRST (CLICK PESTLE 5 TIMES)' : 'DRAG POWDER TO SAMPLE HOLDER';
+    case 2: return 'DRAG SAMPLE HOLDER TO STAGE';
+    case 3: return 'APPLY ALL PARAMETERS CORRECTLY';
+    case 4: return 'OPEN BRAGG\'S LAW MODAL AND EXPLORE';
+    case 5: return 'COMPLETE THE SCAN';
+    case 6: return `IDENTIFY ALL 5 PEAKS (${state.peaksIdentified.size}/5)`;
+    case 7: return 'RUN AUTO-INDEXING';
+    case 8: return 'COMPLETE FINAL CALCULATION';
+  }
+}
+
+function nextStep() {
+  if (!canAdvance()) {
+    showToast(getBlockMsg(), true);
+    return;
+  }
+  if (state.step < state.totalSteps) {
+    state.step++;
+    renderAll();
+  } else {
+    showToast('TUTORIAL COMPLETE — Restart to try again');
+  }
+}
+
+function prevStep() {
+  if (state.step > 1) {
+    state.step--;
+    renderAll();
+  }
+}
+
+function restart() {
+  Object.assign(state, {
+    step: 1, grindCount: 0, filled: false, mounted: false,
+    voltageSet: false, currentSet: false, scanRangeSet: false,
+    braggExplored: false, braggInteractCount: 0,
+    scanProgress: 0, scanRunning: false, scanComplete: false,
+    peaksIdentified: new Set(),
+    hklAssigned: false, finalCalculated: false
+  });
+  renderAll();
+  $patternStatus.textContent = 'IDLE';
+  $statusGonio.textContent = 'GONIOMETER: HOMED';
+  showToast('TUTORIAL RESTARTED — Step 1');
+}
+
+function renderAll() {
+  renderStepList();
+  renderInstruction();
+  renderWorkspace();
+  renderPattern(state.scanComplete ? 1 : state.scanProgress);
+}
+
+// =============== EVENT BINDINGS ===============
+$btnNext.addEventListener('click', nextStep);
+$btnPrev.addEventListener('click', prevStep);
+$btnRestart.addEventListener('click', restart);
+// 백업 바인딩: 만약 addEventListener가 어떤 이유로 끊어져도 onclick으로 동작 보장
+$btnRestart.onclick = restart;
+$btnBraggHelp.addEventListener('click', openBraggModal);
+$braggCloseBtn.addEventListener('click', closeBraggModal);
+$braggModal.addEventListener('click', (e) => {
+  if (e.target === $braggModal) closeBraggModal();
+});
+
+document.getElementById('braggThetaSlider').addEventListener('input', renderBraggSvg);
+document.getElementById('braggDSlider').addEventListener('input', renderBraggSvg);
+
+// Update clock
+function updateClock() {
+  const d = new Date();
+  $statusTime.textContent = d.toTimeString().slice(0, 8);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// =============== INIT ===============
+renderAll();
+</script>
+</body>
+</html>
