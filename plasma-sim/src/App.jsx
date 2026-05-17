@@ -79,6 +79,14 @@ function App() {
       iframeSrc: '/xps.html'
     },
     {
+      id: 'xrd',
+      name: 'XRD',
+      description: 'X-ray Diffraction',
+      icon: '💎',
+      color: 'from-sky-500 to-blue-600',
+      iframeSrc: '/xrd.html'
+    },
+    {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
