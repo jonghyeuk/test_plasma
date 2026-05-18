@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AFM Training Console</title>
+<style>
+:root{
+  --bg:#07101a;--panel:#0c1825;--panel2:#0a1420;--line:#1b2e44;
+  --soft:#556b88;--text:#e4f0ff;--muted:#7e9bbd;
+  --acc:#4ecfff;--acc2:#a78bfa;--ok:#4fd494;--warn:#ffb84d;--bad:#ff6b6b;
+  --chip:#07111e;--orange:#ff8a3d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Noto Sans KR","Malgun Gothic",Arial,sans-serif;font-size:13px;overflow:hidden;height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;background:linear-gradient(180deg,#0d1e30,#08131f);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.lamp{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(79,212,148,.8);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.bname{font-size:15px;font-weight:900;letter-spacing:.1em;color:#cce8ff;font-family:"Orbitron",monospace}
+.bsub{font-size:10px;color:var(--soft)}
+.hud-row{display:flex;gap:5px;flex-wrap:wrap}
+.hud{padding:4px 9px;border-radius:5px;background:var(--chip);border:1px solid var(--line);font-size:11px;font-family:monospace;color:#9fd0f8}
+.hud b{color:var(--soft);margin-right:3px;font-weight:400}
+.hud.ok{color:var(--ok)}
+.hud.warn{color:var(--warn)}
+.hud.bad{color:var(--bad)}
+.mbtns{display:flex;gap:5px}
+.mbtn{padding:6px 13px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:#a0c0dc;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.mbtn:hover{border-color:var(--acc);color:#ddf5ff}
+.mbtn.on{background:rgba(78,207,255,.14);border-color:var(--acc);color:#ddf5ff;box-shadow:0 0 10px rgba(78,207,255,.3)}
+.layout{display:grid;grid-template-columns:270px 1fr 320px;height:calc(100vh - 47px)}
+.lp,.rp{background:var(--panel);overflow-y:auto;padding:9px}
+.lp{border-right:1px solid var(--line)}
+.rp{border-left:1px solid var(--line)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#1b2e44;border-radius:2px}
+.mod{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:9px;margin-bottom:8px;transition:box-shadow .3s}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.06)}
+.mt{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:#9bb5d0}
+.mhud{font-size:10px;color:var(--muted);font-family:monospace}
+.row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:6px}
+.row label{font-size:11px;color:#a8c4e0;flex:0 0 75px}
+.row input[type=range]{flex:1;height:4px;-webkit-appearance:none;background:#0a1825;border-radius:2px;outline:none}
+.row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer;border:2px solid #07101a}
+.row .val{font-size:11px;font-family:monospace;color:var(--acc);min-width:52px;text-align:right}
+.row select{flex:1;padding:4px 6px;background:var(--chip);border:1px solid var(--line);color:var(--text);border-radius:5px;font-size:11px}
+.btn{padding:7px 11px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:#bdd6f0;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn:hover{border-color:var(--acc);color:#ddf5ff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:rgba(78,207,255,.14);border-color:var(--acc);color:#ddf5ff}
+.btn.danger{background:rgba(255,107,107,.14);border-color:var(--bad);color:#ffbdbd}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap}
+.btn-row .btn{flex:1;min-width:0}
+
+.center{display:flex;flex-direction:column;background:#050b13;padding:9px;gap:8px;overflow:hidden;min-height:0}
+
+/* TABS */
+.tabs{display:flex;gap:3px;border-bottom:1px solid var(--line);padding:0 4px}
+.tab{padding:7px 14px;background:transparent;border:none;color:var(--muted);font-size:11.5px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;letter-spacing:.05em;transition:all .15s}
+.tab:hover{color:#bdd6f0}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.tab .badge{display:inline-block;background:var(--orange);color:#000;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;font-weight:800}
+
+.tab-content{flex:1;display:none;min-height:0;flex-direction:column;gap:8px}
+.tab-content.on{display:flex}
+
+/* SCAN TAB LAYOUT */
+.scan-layout{flex:1;display:grid;grid-template-columns:1fr 320px;gap:8px;min-height:0;min-width:0}
+.main-col{display:flex;align-items:center;justify-content:center;min-height:0;min-width:0;overflow:hidden;position:relative}
+.screen-square{position:relative;background:#000;border:1px solid #1a2a40;border-radius:8px;overflow:hidden;width:0;height:0}
+.screen-square canvas{display:block;width:100%;height:100%;image-rendering:pixelated;position:absolute;top:0;left:0}
+.screen-overlay{position:absolute;top:8px;left:10px;font-family:monospace;font-size:10px;color:#5fa9d8;text-shadow:0 0 4px rgba(0,0,0,.9);pointer-events:none;z-index:5}
+.screen-overlay div{margin-bottom:2px}
+.screen-bottom{position:absolute;bottom:8px;left:10px;right:10px;display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:#5fa9d8;text-shadow:0 0 4px rgba(0,0,0,.9);pointer-events:none;z-index:5}
+.scanbar{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4ecfff,transparent);box-shadow:0 0 8px #4ecfff;pointer-events:none;z-index:4;display:none}
+
+/* Progress bar - 탭 아래 전체 너비 */
+.scan-progress{background:rgba(8,20,32,0.95);padding:7px 14px;border:1px solid rgba(78,207,255,0.25);border-radius:7px;display:none}
+.scan-progress.on{display:block}
+.scan-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-family:monospace;font-size:10.5px;color:#9fd0f8}
+.scan-progress-header .pct{color:#4ecfff;font-weight:800;font-size:12px}
+.scan-progress-bar{height:5px;background:rgba(78,207,255,0.1);border-radius:3px;overflow:hidden;position:relative}
+.scan-progress-fill{height:100%;background:linear-gradient(90deg,#4ecfff,#a78bfa);transition:width .15s linear;box-shadow:0 0 6px rgba(78,207,255,0.6)}
+.scan-progress-eta{font-family:monospace;font-size:9.5px;color:#7fb4d8}
+.aux-stack{display:flex;flex-direction:column;gap:8px;min-height:0}
+.aux{background:#000;border:1px solid #1a2a40;border-radius:6px;padding:8px;display:flex;flex-direction:column;min-height:0}
+.aux-title{font-size:10px;color:#7fb4d8;letter-spacing:.1em;margin-bottom:5px;font-weight:700}
+.aux-canvas{flex:1;background:#040810;border:1px solid #142030;border-radius:4px;min-height:80px}
+
+/* RESULT TAB LAYOUT */
+.result-layout{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;min-height:0}
+.result-cell{background:#000;border:1px solid #1a2a40;border-radius:8px;padding:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.result-cell-title{font-size:11px;color:#7fb4d8;letter-spacing:.1em;margin-bottom:8px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.result-cell-title .rcaux{font-size:10px;color:var(--muted);font-family:monospace}
+.result-body{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
+.result-canvas-2d{background:#000;border:1px solid #142030;border-radius:4px;aspect-ratio:1/1;max-width:100%;max-height:100%;height:100%}
+.result-canvas-3d{background:#020812;border:1px solid #142030;border-radius:4px;width:100%;height:100%}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.stat-cell{background:rgba(78,207,255,0.04);border:1px solid rgba(78,207,255,0.15);border-radius:6px;padding:9px 10px}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:.08em;margin-bottom:3px;text-transform:uppercase}
+.stat-value{font-size:18px;font-family:monospace;font-weight:800;color:var(--acc)}
+.stat-unit{font-size:11px;color:var(--soft);margin-left:2px;font-weight:400}
+.stat-desc{font-size:10px;color:#7e9bbd;margin-top:3px;line-height:1.4}
+
+.histogram-canvas{width:100%;height:100%;background:#040810;border-radius:4px}
+
+.threed-controls{position:absolute;bottom:6px;left:6px;display:flex;gap:4px;z-index:10}
+.threed-btn{padding:3px 7px;background:rgba(0,0,0,0.7);border:1px solid var(--line);color:#bdd6f0;border-radius:4px;font-size:10px;cursor:pointer;font-family:monospace}
+.threed-btn:hover{border-color:var(--acc);color:#ddf5ff}
+
+/* BOTTOM BAR */
+.botbar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#0a1420;border:1px solid var(--line);border-radius:7px;font-family:monospace;font-size:10.5px;gap:14px;flex-wrap:wrap}
+.botbar .pill{padding:3px 8px;background:rgba(255,255,255,.04);border-radius:4px;color:#bcd5ec}
+.botbar .pill b{color:var(--soft);margin-right:4px;font-weight:400}
+
+/* TUTORIAL */
+.tut{background:linear-gradient(180deg,rgba(78,207,255,.06),rgba(167,139,250,.04));border:1px solid rgba(78,207,255,.25);border-radius:10px;padding:10px;margin-bottom:10px}
+.tut-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.tut-step{font-size:10px;color:var(--acc);font-weight:800;letter-spacing:.1em}
+.tut-progress{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:2px;margin:0 8px;overflow:hidden}
+.tut-progress-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.tut-title{font-size:13px;font-weight:800;color:#dff0ff;margin-bottom:6px}
+.tut-desc{font-size:11.5px;line-height:1.55;color:#c4daef;margin-bottom:8px;white-space:pre-line}
+.tut-action{font-size:11px;color:var(--orange);padding:5px 8px;background:rgba(255,138,61,.08);border-radius:5px;border-left:2px solid var(--orange);margin-bottom:7px}
+.tut-why{font-size:10.5px;line-height:1.5;color:#9bb8d6;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:5px;white-space:pre-line}
+.tut-why b{color:var(--acc2)}
+.tut-nav{display:flex;gap:5px;margin-top:8px}
+.tut-nav .btn{flex:1}
+.highlight{box-shadow:0 0 0 2px var(--orange) !important;animation:hlpulse 1.4s infinite}
+@keyframes hlpulse{0%,100%{box-shadow:0 0 0 2px rgba(255,138,61,.9)}50%{box-shadow:0 0 0 4px rgba(255,138,61,.4)}}
+
+.sample-cards{display:grid;grid-template-columns:1fr;gap:5px;margin-bottom:6px}
+.scard{padding:7px 9px;border:1px solid var(--line);background:var(--chip);border-radius:6px;cursor:pointer;transition:all .15s}
+.scard:hover{border-color:var(--acc)}
+.scard.on{border-color:var(--acc);background:rgba(78,207,255,.1)}
+.scard .sn{font-size:11.5px;font-weight:700;color:#dff0ff;margin-bottom:2px}
+.scard .ss{font-size:10px;color:var(--muted)}
+.scard .rms{font-size:10px;color:var(--orange);font-family:monospace;margin-top:3px}
+
+.modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-bd.show{display:flex}
+.modal{background:linear-gradient(180deg,#0e1f33,#0a1525);border:1px solid var(--acc);border-radius:12px;padding:22px;max-width:540px;width:90%;box-shadow:0 0 40px rgba(78,207,255,.3)}
+.modal h3{color:var(--acc);font-size:18px;margin-bottom:12px;font-family:"Orbitron",monospace}
+.modal p{font-size:12.5px;line-height:1.65;margin-bottom:9px;color:#c4daef}
+.modal p b{color:var(--acc2)}
+.modal .mbtns2{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="lamp"></span>
+    <div>
+      <div class="bname">AFM CONSOLE</div>
+      <div class="bsub">Atomic Force Microscopy · Training Edition v1.0</div>
+    </div>
+  </div>
+  <div class="hud-row">
+    <div class="hud" id="hudSample"><b>SAMPLE</b><span>—</span></div>
+    <div class="hud" id="hudMode"><b>MODE</b><span>Tapping</span></div>
+    <div class="hud" id="hudStage"><b>STAGE</b><span>OUT</span></div>
+    <div class="hud" id="hudLaser"><b>SUM</b><span>0.00 V</span></div>
+    <div class="hud" id="hudZ"><b>Z</b><span>—</span></div>
+  </div>
+  <div class="mbtns">
+    <button class="mbtn on" id="bTut">Tutorial</button>
+    <button class="mbtn" id="bFree">Free</button>
+    <button class="mbtn" id="bAbout">About</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <div class="lp">
+
+    <div class="mod" id="modSample">
+      <div class="mh"><div class="mt">SAMPLE</div><div class="mhud">CASSETTE</div></div>
+      <div class="sample-cards">
+        <div class="scard" data-sample="plasma">
+          <div class="sn">Ar Plasma Etched Si</div>
+          <div class="ss">물리적 sputtering 표면</div>
+          <div class="rms">RMS ≈ 8.4 nm</div>
+        </div>
+        <div class="scard" data-sample="pecvd">
+          <div class="sn">PECVD SiO₂ Film</div>
+          <div class="ss">균일한 증착 박막</div>
+          <div class="rms">RMS ≈ 1.2 nm</div>
+        </div>
+        <div class="scard" data-sample="anneal">
+          <div class="sn">Annealed Poly-Si</div>
+          <div class="ss">결정립 성장 표면</div>
+          <div class="rms">RMS ≈ 4.5 nm</div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:6px">
+        <button class="btn" id="bLoad">▶ LOAD STAGE</button>
+        <button class="btn" id="bUnload" disabled>UNLOAD</button>
+      </div>
+    </div>
+
+    <div class="mod" id="modOptics">
+      <div class="mh"><div class="mt">HEAD · OPTICS</div><div class="mhud">PSPD</div></div>
+      <div class="row">
+        <label>Laser X</label>
+        <input type="range" id="rLaserX" min="0" max="100" value="20"/>
+        <span class="val" id="vLaserX">20</span>
+      </div>
+      <div class="row">
+        <label>Laser Y</label>
+        <input type="range" id="rLaserY" min="0" max="100" value="80"/>
+        <span class="val" id="vLaserY">80</span>
+      </div>
+      <div class="row">
+        <label>Detector X</label>
+        <input type="range" id="rDetX" min="-50" max="50" value="-20"/>
+        <span class="val" id="vDetX">-20</span>
+      </div>
+      <div class="row">
+        <label>Detector Y</label>
+        <input type="range" id="rDetY" min="-50" max="50" value="30"/>
+        <span class="val" id="vDetY">30</span>
+      </div>
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn" id="bAuto">AUTO ALIGN</button>
+      </div>
+    </div>
+
+    <div class="mod" id="modZ">
+      <div class="mh"><div class="mt">Z STAGE · APPROACH</div><div class="mhud" id="zHud">RETRACTED</div></div>
+      <div class="row">
+        <label>Setpoint</label>
+        <input type="range" id="rSet" min="0.1" max="1.5" step="0.05" value="0.6"/>
+        <span class="val" id="vSet">0.60 V</span>
+      </div>
+      <div class="row">
+        <label>Z-Range</label>
+        <input type="range" id="rZRange" min="1" max="10" value="5"/>
+        <span class="val" id="vZRange">5 µm</span>
+      </div>
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn primary" id="bApproach">▼ APPROACH</button>
+        <button class="btn danger" id="bWithdraw" disabled>▲ WITHDRAW</button>
+      </div>
+    </div>
+
+    <div class="mod" id="modScan">
+      <div class="mh"><div class="mt">SCAN PARAMETERS</div><div class="mhud" id="scanHud">IDLE</div></div>
+      <div class="row">
+        <label>Mode</label>
+        <select id="selMode">
+          <option value="tap">Tapping</option>
+          <option value="con">Contact</option>
+          <option value="nc">Non-Contact</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Scan Size</label>
+        <select id="selSize">
+          <option value="1">1 × 1 µm</option>
+          <option value="2">2 × 2 µm</option>
+          <option value="5" selected>5 × 5 µm</option>
+          <option value="10">10 × 10 µm</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Resolution</label>
+        <select id="selRes">
+          <option value="128">128 × 128</option>
+          <option value="256" selected>256 × 256</option>
+          <option value="512">512 × 512</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Scan Rate</label>
+        <input type="range" id="rRate" min="0.5" max="3" step="0.1" value="1.0"/>
+        <span class="val" id="vRate">1.0 Hz</span>
+      </div>
+      <div class="row">
+        <label>P-Gain</label>
+        <input type="range" id="rP" min="0" max="10" step="0.5" value="5"/>
+        <span class="val" id="vP">5.0</span>
+      </div>
+      <div class="row">
+        <label>I-Gain</label>
+        <input type="range" id="rI" min="0" max="10" step="0.5" value="3"/>
+        <span class="val" id="vI">3.0</span>
+      </div>
+      <div class="btn-row" style="margin-top:6px">
+        <button class="btn primary" id="bScan" disabled>▶ START SCAN</button>
+        <button class="btn" id="bStop" disabled>■ STOP</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="center">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab on" data-tab="scan">SCAN</button>
+      <button class="tab" data-tab="result" id="tabResult">RESULT <span class="badge" id="resultBadge" style="display:none">NEW</span></button>
+    </div>
+
+    <!-- Progress bar (탭 아래 전체 너비) -->
+    <div class="scan-progress" id="scanProgress">
+      <div class="scan-progress-header">
+        <span>▶ SCANNING · Line <span id="spLine">0</span> / <span id="spTotal">0</span> · <span id="spSize">5×5 µm</span></span>
+        <span class="pct"><span id="spPct">0</span>%</span>
+      </div>
+      <div class="scan-progress-bar">
+        <div class="scan-progress-fill" id="spFill" style="width:0%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span class="scan-progress-eta">Rate: <span id="spRate">1.0</span> Hz · Mode: <span id="spMode">Tapping</span></span>
+        <span class="scan-progress-eta">Elapsed: <span id="spElapsed">00:00</span> · ETA: <span id="spEta">--:--</span></span>
+      </div>
+    </div>
+
+    <!-- SCAN TAB -->
+    <div class="tab-content on" id="tabScan">
+      <div class="scan-layout">
+        <div class="main-col">
+          <div class="screen-square" id="mainScreen">
+            <div class="screen-overlay">
+              <div id="ovTitle">AFM TOPOGRAPHY</div>
+              <div id="ovSize">5.0 × 5.0 µm</div>
+              <div id="ovMode">Tapping Mode</div>
+            </div>
+            <canvas id="mainCanvas" width="512" height="512"></canvas>
+            <div class="scanbar" id="scanBar"></div>
+            <div class="screen-bottom">
+              <span id="ovStatus">STAGE NOT LOADED</span>
+              <span id="ovLine">Line 0 / 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="aux-stack">
+          <div class="aux" style="flex:1.1">
+            <div class="aux-title">▸ INSTRUMENT (Side View)</div>
+            <svg viewBox="0 0 320 240" class="aux-canvas" id="instSvg">
+              <rect x="120" y="15" width="80" height="22" fill="#1c2a3e" stroke="#3b556f"/>
+              <text x="160" y="29" fill="#7fb4d8" font-size="8" text-anchor="middle">SCAN HEAD</text>
+              <g id="cantGroup" transform="translate(0,0)">
+                <rect x="148" y="50" width="14" height="6" fill="#3b556f"/>
+                <polygon id="cantBeam" points="155,56 200,90 198,92 155,58" fill="#7fb4d8"/>
+                <polygon id="tip" points="198,92 202,92 200,100" fill="#cfe4f8"/>
+              </g>
+              <g id="stageGroup" transform="translate(-240,0)">
+                <rect x="60" y="140" width="200" height="14" fill="#2a3a52" stroke="#506a86"/>
+                <rect x="80" y="130" width="160" height="10" id="sampleSurf" fill="#2c4258"/>
+                <text x="160" y="170" fill="#7fb4d8" font-size="8" text-anchor="middle">SAMPLE STAGE</text>
+              </g>
+              <line id="zDistLine" x1="220" y1="100" x2="220" y2="130" stroke="#ffb84d" stroke-dasharray="2,2" opacity="0"/>
+              <text id="zDistText" x="226" y="118" fill="#ffb84d" font-size="9" font-family="monospace" opacity="0">— µm</text>
+              <circle id="engagedPulse" cx="200" cy="130" r="0" fill="#4fd494" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="aux" style="flex:0.95">
+            <div class="aux-title">▸ PHOTODIODE (4-Quadrant)</div>
+            <svg viewBox="0 0 200 160" class="aux-canvas" id="quadSvg">
+              <rect x="40" y="20" width="120" height="120" fill="#0a1828" stroke="#3b556f" stroke-width="1.5"/>
+              <line x1="100" y1="20" x2="100" y2="140" stroke="#3b556f"/>
+              <line x1="40" y1="80" x2="160" y2="80" stroke="#3b556f"/>
+              <text x="70" y="55" fill="#3b556f" font-size="10">A</text>
+              <text x="130" y="55" fill="#3b556f" font-size="10">B</text>
+              <text x="70" y="115" fill="#3b556f" font-size="10">C</text>
+              <text x="130" y="115" fill="#3b556f" font-size="10">D</text>
+              <line x1="95" y1="80" x2="105" y2="80" stroke="#4ecfff" stroke-width="0.8"/>
+              <line x1="100" y1="75" x2="100" y2="85" stroke="#4ecfff" stroke-width="0.8"/>
+              <circle id="quadSpot" cx="56" cy="116" r="14" fill="#ff3060" opacity="0.35"/>
+              <circle id="quadSpotCore" cx="56" cy="116" r="5" fill="#ffeded"/>
+            </svg>
+          </div>
+          <div class="aux" style="flex:0.9">
+            <div class="aux-title">▸ LINE PROFILE (current scan line)</div>
+            <canvas id="lineCanvas" class="aux-canvas" width="320" height="90"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT TAB -->
+    <div class="tab-content" id="tabResultContent">
+      <div class="result-layout">
+        <!-- 2D Topography -->
+        <div class="result-cell">
+          <div class="result-cell-title">
+            <span>▸ 2D TOPOGRAPHY</span>
+            <span class="rcaux" id="r2dInfo">— × — µm</span>
+          </div>
+          <div class="result-body">
+            <canvas id="result2dCanvas" class="result-canvas-2d" width="512" height="512"></canvas>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-family:monospace;font-size:10px;color:#7fb4d8">
+            <span id="r2dMin">0 nm</span>
+            <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(to right,#0a0e1a,#1e4070,#4ecfff,#ffffff)"></div>
+            <span id="r2dMax">— nm</span>
+          </div>
+        </div>
+
+        <!-- 3D View -->
+        <div class="result-cell">
+          <div class="result-cell-title">
+            <span>▸ 3D SURFACE</span>
+            <span class="rcaux">drag to rotate · wheel to zoom</span>
+          </div>
+          <div class="result-body" style="position:relative">
+            <canvas id="result3dCanvas" class="result-canvas-3d"></canvas>
+            <div class="threed-controls">
+              <button class="threed-btn" id="b3dReset">RESET</button>
+              <button class="threed-btn" id="b3dTop">TOP</button>
+              <button class="threed-btn" id="b3dSide">SIDE</button>
+              <button class="threed-btn" id="b3dIso">ISO</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="result-cell">
+          <div class="result-cell-title">
+            <span>▸ ROUGHNESS STATISTICS</span>
+            <span class="rcaux">ISO 25178</span>
+          </div>
+          <div class="result-body" style="align-items:stretch">
+            <div class="stats-grid" style="align-self:start">
+              <div class="stat-cell">
+                <div class="stat-label">Sq (RMS)</div>
+                <div class="stat-value"><span id="statRms">—</span><span class="stat-unit">nm</span></div>
+                <div class="stat-desc">Root mean square 거칠기</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-label">Sa (Ra)</div>
+                <div class="stat-value"><span id="statRa">—</span><span class="stat-unit">nm</span></div>
+                <div class="stat-desc">Arithmetic mean 거칠기</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-label">Sz (P-V)</div>
+                <div class="stat-value"><span id="statPv">—</span><span class="stat-unit">nm</span></div>
+                <div class="stat-desc">Peak-to-valley 높이</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-label">Sp (Max Peak)</div>
+                <div class="stat-value"><span id="statSp">—</span><span class="stat-unit">nm</span></div>
+                <div class="stat-desc">최대 봉우리 높이</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-label">Sv (Max Valley)</div>
+                <div class="stat-value"><span id="statSv">—</span><span class="stat-unit">nm</span></div>
+                <div class="stat-desc">최대 골 깊이</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-label">Ssk (Skewness)</div>
+                <div class="stat-value"><span id="statSk">—</span></div>
+                <div class="stat-desc">분포 비대칭성</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histogram -->
+        <div class="result-cell">
+          <div class="result-cell-title">
+            <span>▸ HEIGHT DISTRIBUTION</span>
+            <span class="rcaux">Histogram + Gaussian fit</span>
+          </div>
+          <div class="result-body">
+            <canvas id="histCanvas" class="histogram-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM STATUS -->
+    <div class="botbar">
+      <div class="pill"><b>RMS</b><span id="botRms">— nm</span></div>
+      <div class="pill"><b>Max</b><span id="botMax">— nm</span></div>
+      <div class="pill"><b>Mean</b><span id="botMean">— nm</span></div>
+      <div class="pill"><b>Cantilever</b><span id="botCant">NSC-15 · 325 kHz</span></div>
+      <div class="pill"><b>Drift</b><span id="botDrift">0.0 nm/s</span></div>
+      <div class="pill" style="margin-left:auto"><b>v0.1 Prototype</b><span> · educational</span></div>
+    </div>
+  </div>
+
+  <div class="rp">
+    <div class="tut" id="tutPanel">
+      <div class="tut-head">
+        <div class="tut-step" id="tutStep">Step 1 / 8</div>
+        <div class="tut-progress"><div class="tut-progress-bar" id="tutBar" style="width:12%"></div></div>
+      </div>
+      <div class="tut-title" id="tutTitle">시편 선택</div>
+      <div class="tut-desc" id="tutDesc">분석할 시편을 선택하세요.</div>
+      <div class="tut-action" id="tutAction">→ 좌측 <b>SAMPLE</b> 패널에서 시편 카드를 클릭</div>
+      <div class="tut-why" id="tutWhy"><b>왜?</b> 시편마다 표면 특성이 다릅니다.</div>
+      <div class="tut-nav">
+        <button class="btn" id="tPrev">◀ Prev</button>
+        <button class="btn primary" id="tNext">Next ▶</button>
+      </div>
+    </div>
+
+    <div class="mod">
+      <div class="mh"><div class="mt">SYSTEM LOG</div><div class="mhud" id="logCount">3 msgs</div></div>
+      <div id="logBox" style="font-family:monospace;font-size:10.5px;line-height:1.5;max-height:340px;overflow-y:auto;color:#9bb8d6">
+        <div style="color:#4fd494">[init] AFM Console v1.0 ready</div>
+        <div style="color:#7fb4d8">[init] Cantilever: NSC-15 (k=40 N/m, f0=325 kHz)</div>
+        <div style="color:#7fb4d8">[init] Awaiting sample selection...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-bd" id="aboutModal">
+  <div class="modal">
+    <h3>AFM Training Console</h3>
+    <p>본 모듈은 <b>AFM(Atomic Force Microscopy)</b>의 실제 운영 절차를 단계적으로 체험할 수 있는 교육용 시뮬레이터입니다.</p>
+    <p><b>SCAN 탭</b>에서 실시간 측정 → 완료 후 <b>RESULT 탭</b>에서 2D 이미지, 3D 표면, 통계, 높이 분포를 분석할 수 있습니다.</p>
+    <p><b>Tutorial Mode</b>: 8단계로 가이드와 함께 진행. 각 단계의 핵심 컴포넌트가 주황색으로 깜빡입니다.</p>
+    <p style="color:var(--muted);font-size:11px">v0.1 Prototype · semifabai</p>
+    <div class="mbtns2">
+      <button class="btn primary" id="aboutClose">시작하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var S = {
+  mode:'tutorial', step:0, sample:null, stageLoaded:false,
+  laserX:20, laserY:80, detX:-20, detY:30, sumSignal:0,
+  approaching:false, engaged:false, zPos:0,
+  setpoint:0.6, zRange:5,
+  scanMode:'tap', scanSize:5, scanRes:256, scanRate:1.0,
+  pGain:5, iGain:3, scanning:false, scanLine:0, data:null,
+  logMsgs:3, currentTab:'scan',
+  rot3d:{ rx:55, ry:35 }, zoom3d:1.0
+};
+
+var SAMPLES = {
+  plasma: { name:'Ar Plasma Etched Si', rms:8.4, maxH:32, color:'#ff8a3d' },
+  pecvd:  { name:'PECVD SiO2 Film',     rms:1.2, maxH:6,  color:'#4ecfff' },
+  anneal: { name:'Annealed Poly-Si',    rms:4.5, maxH:18, color:'#a78bfa' }
+};
+
+var STEPS = [
+  { id:'sample', target:'modSample', title:'1. 시편 선택',
+    desc:'분석할 시편을 선택합니다. SAMPLE 패널에 3가지 시편이 있습니다:\n• Ar Plasma Etched Si (거친 표면)\n• PECVD SiO2 Film (매끈한 박막)\n• Annealed Poly-Si (결정립 구조)',
+    action:'→ 좌측 <b>SAMPLE</b> 패널에서 시편 카드를 클릭',
+    why:'<b>왜?</b> 시편마다 표면 거칠기와 모폴로지가 다릅니다. AFM은 nm 단위 표면 형상을 직접 측정하므로 시편 특성을 미리 이해해야 결과 해석이 가능합니다.',
+    check: function(){ return S.sample !== null; } },
+  { id:'load', target:'modSample', title:'2. 시편 로딩',
+    desc:'선택한 시편을 스테이지에 로딩합니다. LOAD STAGE 버튼을 클릭하면 시편이 스캔 헤드 아래로 이동합니다.',
+    action:'→ <b>▶ LOAD STAGE</b> 버튼 클릭',
+    why:'<b>왜?</b> AFM은 시편을 정밀하게 위치시킨 후 측정해야 하므로, 자성·진공 스테이지를 사용해 시편을 고정합니다. 실제 장비는 진공 척, 자성 디스크, 메탈 클립으로 시편을 잡습니다.',
+    check: function(){ return S.stageLoaded; } },
+  { id:'laser', target:'modOptics', title:'3. 레이저 정렬',
+    desc:'레이저 빔을 캔틸레버 뒷면 끝부분에 정렬합니다. Laser X, Y 슬라이더를 조절해 SUM 신호가 최대(>1.5V)가 되도록 합니다.',
+    action:'→ <b>Laser X, Y</b> 슬라이더 조절 (또는 AUTO ALIGN)',
+    why:'<b>왜?</b> 캔틸레버 변위는 뒷면에서 반사된 레이저 빔의 위치 변화로 감지됩니다. 레이저가 캔틸레버 끝부분에 정확히 맺혀야 변위 감도가 최대가 됩니다.',
+    check: function(){ return S.sumSignal > 1.5; } },
+  { id:'detector', target:'modOptics', title:'4. 디텍터 정렬',
+    desc:'4분할 포토다이오드에서 반사 스팟을 중앙에 위치시킵니다. Detector X, Y를 조절해 빨간 스팟이 중앙(±5 이내)에 오도록 합니다.',
+    action:'→ <b>Detector X, Y</b> 슬라이더 조절',
+    why:'<b>왜?</b> 4분할 PSPD는 (A+B)-(C+D)로 수직 변위, (A+C)-(B+D)로 수평 변위(마찰)를 측정합니다. 측정 전에는 스팟이 중앙에 있어야 양방향 변위를 감지할 수 있습니다.',
+    check: function(){ return Math.abs(S.detX) < 5 && Math.abs(S.detY) < 5; } },
+  { id:'approach', target:'modZ', title:'5. 어프로치',
+    desc:'팁을 시편 표면까지 천천히 내립니다. APPROACH 버튼을 누르면 자동 어프로치가 시작됩니다. Setpoint에 도달하면 자동 정지합니다.',
+    action:'→ <b>▼ APPROACH</b> 버튼 클릭',
+    why:'<b>왜?</b> AFM 팁은 nm 단위로 시편과 상호작용하므로, 충돌 시 팁이 손상됩니다. 자동 어프로치는 cantilever deflection이 setpoint에 도달하는 순간을 감지해 정지합니다.',
+    check: function(){ return S.engaged; } },
+  { id:'params', target:'modScan', title:'6. 스캔 파라미터 설정',
+    desc:'스캔 모드, 사이즈, 해상도, Rate, P/I-Gain을 설정합니다.\n권장: Tapping, 5x5 µm, 256x256, Rate 1.0 Hz, P=5, I=3',
+    action:'→ <b>SCAN PARAMETERS</b> 값 확인 (기본값 사용 가능)',
+    why:'<b>왜?</b> P/I-Gain은 feedback loop 응답성을 결정합니다.\n• 너무 낮으면: 표면 추종 못해 디테일 손실\n• 너무 높으면: oscillation 발생, 영상에 줄무늬',
+    check: function(){ return true; } },
+  { id:'scan', target:'modScan', title:'7. 스캔 실행',
+    desc:'START SCAN 버튼을 눌러 측정을 시작합니다. 메인 화면에 한 줄씩 토포그래피 영상이 그려지며, 하단 LINE PROFILE에 현재 스캔 라인의 높이 프로파일이 실시간 표시됩니다.',
+    action:'→ <b>▶ START SCAN</b> 버튼 클릭',
+    why:'<b>왜?</b> AFM은 래스터 스캔으로 한 줄씩 표면을 스캔합니다. 각 픽셀에서 feedback이 동작해 setpoint를 유지하며, Z 보정값이 곧 표면 높이입니다.',
+    check: function(){ return S.scanLine >= S.scanRes; } },
+  { id:'analyze', target:'tabResult', title:'8. 결과 분석 (RESULT 탭)',
+    desc:'스캔 완료! 상단 <b>RESULT</b> 탭으로 이동해 2D 이미지, 3D 표면, Roughness 통계(Sq/Sa/Sz/Sp/Sv/Ssk), 높이 분포를 분석합니다.',
+    action:'→ 상단 <b>RESULT</b> 탭 클릭',
+    why:'<b>분석 포인트:</b>\n• <b>Sq (RMS)</b>: 표면 거칠기 표준편차 — 박막 품질 핵심 지표\n• <b>Sa</b>: 산술 평균 거칠기 — Sq보다 outlier에 둔감\n• <b>Sz (P-V)</b>: 최대 봉우리-골 차이\n• <b>Ssk (skewness)</b>: 양수면 봉우리 우세, 음수면 골 우세\n• <b>3D 뷰</b>로 형상 직관적 파악\n• <b>히스토그램</b>으로 분포 형태 확인 (정규분포 여부)',
+    check: function(){ return S.currentTab === 'result'; } }
+];
+
+function $(id){ return document.getElementById(id); }
+
+function log(msg, type){
+  type = type || 'info';
+  var colors = { info:'#9bb8d6', ok:'#4fd494', warn:'#ffb84d', err:'#ff6b6b', cmd:'#4ecfff' };
+  var box = $('logBox');
+  var d = document.createElement('div');
+  d.style.color = colors[type] || colors.info;
+  d.textContent = '[' + new Date().toLocaleTimeString('en-US',{hour12:false}) + '] ' + msg;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  S.logMsgs++;
+  $('logCount').textContent = S.logMsgs + ' msgs';
+}
+
+function generateSurface(type, N){
+  var data = [];
+  for (var y=0; y<N; y++){
+    var row = [];
+    for (var x=0; x<N; x++){
+      var h = 0;
+      if (type === 'plasma'){
+        h = (Math.random()-0.5)*20;
+        h += Math.sin(x*0.3)*Math.cos(y*0.4)*4;
+        h += Math.sin(x*0.7+y*0.5)*6;
+        h += (Math.random()-0.5)*8;
+        if (Math.random() < 0.003) h -= 12;
+      } else if (type === 'pecvd'){
+        h = (Math.random()-0.5)*1.5;
+        h += Math.sin(x*0.15)*Math.cos(y*0.15)*0.8;
+        h += Math.sin(x*1.2)*0.3;
+      } else if (type === 'anneal'){
+        var gs = N/9;
+        var gx = Math.floor(x/gs), gy = Math.floor(y/gs);
+        var seed = gx*137 + gy*241;
+        var cx = gx*gs + Math.abs(Math.sin(seed))*gs;
+        var cy = gy*gs + Math.abs(Math.cos(seed*1.3))*gs;
+        var dist = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
+        h = Math.cos(dist*0.15)*6;
+        h += (Math.random()-0.5)*2;
+        if (dist > gs*0.45 && dist < gs*0.55) h -= 5;
+      }
+      row.push(h);
+    }
+    data.push(row);
+  }
+  return data;
+}
+
+function heightToColor(h, maxH){
+  var norm = (h + maxH) / (2*maxH);
+  var t = Math.max(0, Math.min(1, norm));
+  var r, g, b, lt;
+  if (t < 0.33){
+    lt = t*3;
+    r = Math.floor(10+lt*20);
+    g = Math.floor(14+lt*50);
+    b = Math.floor(26+lt*80);
+  } else if (t < 0.66){
+    lt = (t-0.33)/0.33;
+    r = Math.floor(30+lt*50);
+    g = Math.floor(64+lt*150);
+    b = Math.floor(106+lt*130);
+  } else {
+    lt = (t-0.66)/0.34;
+    r = Math.floor(80+lt*175);
+    g = Math.floor(214+lt*41);
+    b = Math.floor(236+lt*19);
+  }
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+function clearMainCanvas(){
+  var c = $('mainCanvas');
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#1a3550';
+  ctx.font = '14px monospace';
+  ctx.textAlign = 'center';
+  if (!S.stageLoaded){
+    ctx.fillText('— NO SAMPLE LOADED —', c.width/2, c.height/2);
+  } else if (!S.engaged){
+    ctx.fillText('— TIP NOT ENGAGED —', c.width/2, c.height/2);
+    ctx.fillText('Run APPROACH first', c.width/2, c.height/2+22);
+  } else {
+    ctx.fillText('— READY TO SCAN —', c.width/2, c.height/2);
+    ctx.fillText('Press START SCAN', c.width/2, c.height/2+22);
+  }
+}
+
+function updateQuad(){
+  var ldx = S.laserX - 50, ldy = S.laserY - 50;
+  var dist = Math.sqrt(ldx*ldx + ldy*ldy);
+  S.sumSignal = Math.max(0, 2.0 - dist*0.04) * (0.95 + Math.random()*0.04);
+
+  var spotX = 100 + S.detX*1.5;
+  var spotY = 80 + S.detY*1.5;
+  var spotOpacity = Math.min(1, S.sumSignal/2);
+
+  $('quadSpot').setAttribute('cx', spotX);
+  $('quadSpot').setAttribute('cy', spotY);
+  $('quadSpot').setAttribute('opacity', spotOpacity * 0.4);
+  $('quadSpotCore').setAttribute('cx', spotX);
+  $('quadSpotCore').setAttribute('cy', spotY);
+  $('quadSpotCore').setAttribute('opacity', spotOpacity);
+
+  $('hudLaser').querySelector('span').textContent = S.sumSignal.toFixed(2) + ' V';
+  $('hudLaser').className = 'hud ' + (S.sumSignal > 1.5 ? 'ok' : S.sumSignal > 0.8 ? 'warn' : 'bad');
+}
+
+function updateInstrument(){
+  var stageX = S.stageLoaded ? 0 : -240;
+  $('stageGroup').setAttribute('transform', 'translate(' + stageX + ',0)');
+  if (S.sample){
+    $('sampleSurf').setAttribute('fill', SAMPLES[S.sample].color);
+  } else {
+    $('sampleSurf').setAttribute('fill', '#2c4258');
+  }
+  var cantY = S.zPos * 0.4;
+  $('cantGroup').setAttribute('transform', 'translate(0,' + cantY + ')');
+  if (S.zPos > 5 && !S.engaged){
+    $('zDistLine').setAttribute('opacity', '1');
+    $('zDistText').setAttribute('opacity', '1');
+    $('zDistLine').setAttribute('y1', 100 + cantY);
+    $('zDistText').setAttribute('y', 110 + cantY*0.5);
+    $('zDistText').textContent = ((100 - S.zPos) * 0.5).toFixed(1) + ' µm';
+  } else {
+    $('zDistLine').setAttribute('opacity', '0');
+    $('zDistText').setAttribute('opacity', '0');
+  }
+  if (S.engaged){
+    $('engagedPulse').setAttribute('r', '12');
+    $('engagedPulse').setAttribute('cy', 130 + cantY);
+  } else {
+    $('engagedPulse').setAttribute('r', '0');
+  }
+}
+
+function updateHUD(){
+  $('hudSample').querySelector('span').textContent = S.sample ? SAMPLES[S.sample].name.split(' ')[0] : '—';
+  $('hudMode').querySelector('span').textContent =
+    S.scanMode === 'tap' ? 'Tapping' : S.scanMode === 'con' ? 'Contact' : 'Non-Contact';
+  $('hudStage').querySelector('span').textContent = S.stageLoaded ? 'IN' : 'OUT';
+  $('hudStage').className = 'hud ' + (S.stageLoaded ? 'ok' : '');
+  $('hudZ').querySelector('span').textContent = S.engaged ? 'ENGAGED' : (S.approaching ? 'APPROACHING' : 'RETRACTED');
+  $('hudZ').className = 'hud ' + (S.engaged ? 'ok' : S.approaching ? 'warn' : '');
+  $('zHud').textContent = S.engaged ? 'ENGAGED' : (S.approaching ? 'APPROACHING...' : 'RETRACTED');
+
+  if (S.data && S.scanLine >= S.scanRes){
+    var stats = computeStats(S.data);
+    $('botRms').textContent = stats.rms.toFixed(2) + ' nm';
+    $('botMax').textContent = stats.max.toFixed(2) + ' nm';
+    $('botMean').textContent = stats.mean.toFixed(2) + ' nm';
+  } else {
+    $('botRms').textContent = '— nm';
+    $('botMax').textContent = '— nm';
+    $('botMean').textContent = '— nm';
+  }
+
+  var st = 'STAGE NOT LOADED';
+  if (S.scanning) st = 'SCANNING · ' + S.scanMode.toUpperCase();
+  else if (S.engaged) st = 'ENGAGED · READY';
+  else if (S.stageLoaded) st = 'LOADED · NOT ENGAGED';
+  $('ovStatus').textContent = st;
+  $('ovLine').textContent = 'Line ' + S.scanLine + ' / ' + S.scanRes;
+  $('ovSize').textContent = S.scanSize + '.0 × ' + S.scanSize + '.0 µm';
+  $('ovMode').textContent =
+    S.scanMode === 'tap' ? 'Tapping Mode' : S.scanMode === 'con' ? 'Contact Mode' : 'Non-Contact Mode';
+
+  $('bScan').disabled = !S.engaged || S.scanning;
+  $('bStop').disabled = !S.scanning;
+  $('scanHud').textContent = S.scanning ? 'SCANNING' : (S.scanLine >= S.scanRes && S.scanLine > 0 ? 'DONE' : 'IDLE');
+}
+
+// ====== STATISTICS ======
+function computeStats(data){
+  var N = data.length;
+  var values = [];
+  var sum = 0, sumSq = 0, mn = Infinity, mx = -Infinity;
+  for (var y=0; y<N; y++){
+    for (var x=0; x<N; x++){
+      var v = data[y][x];
+      values.push(v);
+      sum += v;
+      if (v < mn) mn = v;
+      if (v > mx) mx = v;
+    }
+  }
+  var mean = sum / values.length;
+  var sumDev2 = 0, sumDevAbs = 0, sumDev3 = 0;
+  for (var i=0; i<values.length; i++){
+    var d = values[i] - mean;
+    sumDev2 += d*d;
+    sumDevAbs += Math.abs(d);
+    sumDev3 += d*d*d;
+  }
+  var variance = sumDev2 / values.length;
+  var rms = Math.sqrt(variance);
+  var ra = sumDevAbs / values.length;
+  var skew = (sumDev3 / values.length) / Math.pow(rms, 3);
+  return {
+    mean: mean, rms: rms, ra: ra,
+    max: mx, min: mn,
+    sp: mx - mean, sv: mean - mn,
+    pv: mx - mn, skew: skew,
+    values: values
+  };
+}
+
+// ====== 2D RESULT CANVAS ======
+function render2dResult(){
+  if (!S.data) return;
+  var c = $('result2dCanvas');
+  var ctx = c.getContext('2d');
+  var N = S.data.length;
+  var sample = SAMPLES[S.sample];
+  var pixSize = c.width / N;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, c.width, c.height);
+  for (var y=0; y<N; y++){
+    for (var x=0; x<N; x++){
+      ctx.fillStyle = heightToColor(S.data[y][x], sample.maxH);
+      ctx.fillRect(x*pixSize, y*pixSize, Math.ceil(pixSize), Math.ceil(pixSize));
+    }
+  }
+  $('r2dInfo').textContent = S.scanSize + ' × ' + S.scanSize + ' µm · ' + N + '×' + N;
+  $('r2dMin').textContent = (-sample.maxH).toFixed(0) + ' nm';
+  $('r2dMax').textContent = sample.maxH.toFixed(0) + ' nm';
+}
+
+// ====== HISTOGRAM ======
+function renderHistogram(stats){
+  var c = $('histCanvas');
+  var rect = c.getBoundingClientRect();
+  c.width = rect.width;
+  c.height = rect.height;
+  var ctx = c.getContext('2d');
+  var w = c.width, h = c.height;
+  ctx.fillStyle = '#040810';
+  ctx.fillRect(0, 0, w, h);
+
+  // Build bins
+  var nBins = 40;
+  var minV = stats.min, maxV = stats.max;
+  var binSize = (maxV - minV) / nBins;
+  var bins = new Array(nBins).fill(0);
+  for (var i=0; i<stats.values.length; i++){
+    var idx = Math.min(nBins-1, Math.floor((stats.values[i] - minV) / binSize));
+    bins[idx]++;
+  }
+  var maxBin = Math.max.apply(null, bins);
+
+  // Padding
+  var pad = { l:36, r:10, t:10, b:24 };
+  var pw = w - pad.l - pad.r;
+  var ph = h - pad.t - pad.b;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(78,207,255,0.08)';
+  ctx.lineWidth = 1;
+  for (var gi=0; gi<=4; gi++){
+    var gy = pad.t + (ph/4)*gi;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, gy);
+    ctx.lineTo(w-pad.r, gy);
+    ctx.stroke();
+  }
+
+  // Bars
+  var barW = pw / nBins;
+  var color = SAMPLES[S.sample].color;
+  for (var bi=0; bi<nBins; bi++){
+    var bh = (bins[bi]/maxBin) * ph;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.65;
+    ctx.fillRect(pad.l + bi*barW, pad.t + ph - bh, barW-1, bh);
+  }
+  ctx.globalAlpha = 1;
+
+  // Gaussian fit overlay
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  var totalCount = stats.values.length;
+  for (var xx=0; xx<pw; xx++){
+    var vx = minV + (xx/pw)*(maxV-minV);
+    var gauss = (totalCount * binSize / (stats.rms * Math.sqrt(2*Math.PI))) *
+                Math.exp(-Math.pow(vx - stats.mean, 2) / (2*stats.rms*stats.rms));
+    var gy = pad.t + ph - (gauss/maxBin) * ph;
+    if (xx === 0) ctx.moveTo(pad.l + xx, gy);
+    else ctx.lineTo(pad.l + xx, gy);
+  }
+  ctx.stroke();
+
+  // Axes labels
+  ctx.fillStyle = '#7fb4d8';
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('Count', 4, pad.t + 10);
+  ctx.textAlign = 'center';
+  ctx.fillText(minV.toFixed(1) + ' nm', pad.l, h-6);
+  ctx.fillText('0', pad.l + pw/2, h-6);
+  ctx.fillText(maxV.toFixed(1) + ' nm', pad.l + pw, h-6);
+
+  // Legend
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'right';
+  ctx.fillText('— Gaussian fit', w-pad.r, pad.t+12);
+  ctx.fillStyle = color;
+  ctx.fillText('▮ Histogram', w-pad.r, pad.t+26);
+}
+
+// ====== 3D RENDERING ======
+function render3d(){
+  if (!S.data) return;
+  var c = $('result3dCanvas');
+  var rect = c.getBoundingClientRect();
+  c.width = rect.width;
+  c.height = rect.height;
+  var ctx = c.getContext('2d');
+  var w = c.width, h = c.height;
+  ctx.fillStyle = '#020812';
+  ctx.fillRect(0, 0, w, h);
+
+  var data = S.data;
+  var N = data.length;
+  var sample = SAMPLES[S.sample];
+  var step = Math.max(1, Math.floor(N/64));
+
+  // 시편 블록의 base depth (시편 두께를 시각적으로 표현)
+  var baseDepth = -sample.maxH * 2.5;
+
+  var rx = S.rot3d.rx * Math.PI / 180;
+  var ry = S.rot3d.ry * Math.PI / 180;
+  var cosX = Math.cos(rx), sinX = Math.sin(rx);
+  var cosY = Math.cos(ry), sinY = Math.sin(ry);
+
+  var scale = Math.min(w, h) * 0.5 * S.zoom3d;
+  var cx = w/2, cy = h/2 + scale*0.15;
+  var zScale = scale * 0.35 / sample.maxH;
+  var xyScale = scale / N;
+
+  function project(x, y, z){
+    var x0 = (x - N/2) * xyScale;
+    var y0 = (y - N/2) * xyScale;
+    var z0 = z * zScale;
+    var y1 = y0*cosX - z0*sinX;
+    var z1 = y0*sinX + z0*cosX;
+    var x2 = x0*cosY + z1*sinY;
+    var z2 = -x0*sinY + z1*cosY;
+    return { px: cx + x2, py: cy + y1, depth: z2 };
+  }
+
+  // ---------- 모든 면(faces)을 수집 ----------
+  var faces = [];
+
+  // 1. TOP SURFACE (측정된 표면 - 메쉬)
+  for (var y=0; y<N-step; y+=step){
+    for (var x=0; x<N-step; x+=step){
+      var p1 = project(x, y, data[y][x]);
+      var p2 = project(x+step, y, data[y][x+step]);
+      var p3 = project(x+step, y+step, data[y+step][x+step]);
+      var p4 = project(x, y+step, data[y+step][x]);
+      var avgZ = (data[y][x] + data[y][x+step] + data[y+step][x+step] + data[y+step][x]) / 4;
+      var avgDepth = (p1.depth + p2.depth + p3.depth + p4.depth) / 4;
+      faces.push({
+        type:'top',
+        pts:[p1, p2, p3, p4],
+        h: avgZ,
+        depth: avgDepth
+      });
+    }
+  }
+
+  // 2. SIDE FACES (4개 측면 - 불투명 평면, 시편 블록)
+  // 측면은 표면의 가장자리 라인 + 베이스 라인으로 구성
+
+  // FRONT face (y = N-1)
+  var frontTop = [];
+  var frontBot = [];
+  for (var x=0; x<N; x+=step){
+    frontTop.push(project(x, N-1, data[N-1][x]));
+    frontBot.push(project(x, N-1, baseDepth));
+  }
+  // 분할된 사각형으로 추가
+  for (var i=0; i<frontTop.length-1; i++){
+    var avgD = (frontTop[i].depth + frontTop[i+1].depth + frontBot[i].depth + frontBot[i+1].depth) / 4;
+    faces.push({
+      type:'side-front',
+      pts:[frontTop[i], frontTop[i+1], frontBot[i+1], frontBot[i]],
+      depth: avgD
+    });
+  }
+
+  // BACK face (y = 0)
+  var backTop = [];
+  var backBot = [];
+  for (var x=0; x<N; x+=step){
+    backTop.push(project(x, 0, data[0][x]));
+    backBot.push(project(x, 0, baseDepth));
+  }
+  for (var i=0; i<backTop.length-1; i++){
+    var avgD = (backTop[i].depth + backTop[i+1].depth + backBot[i].depth + backBot[i+1].depth) / 4;
+    faces.push({
+      type:'side-back',
+      pts:[backTop[i], backTop[i+1], backBot[i+1], backBot[i]],
+      depth: avgD
+    });
+  }
+
+  // LEFT face (x = 0)
+  var leftTop = [];
+  var leftBot = [];
+  for (var y=0; y<N; y+=step){
+    leftTop.push(project(0, y, data[y][0]));
+    leftBot.push(project(0, y, baseDepth));
+  }
+  for (var i=0; i<leftTop.length-1; i++){
+    var avgD = (leftTop[i].depth + leftTop[i+1].depth + leftBot[i].depth + leftBot[i+1].depth) / 4;
+    faces.push({
+      type:'side-left',
+      pts:[leftTop[i], leftTop[i+1], leftBot[i+1], leftBot[i]],
+      depth: avgD
+    });
+  }
+
+  // RIGHT face (x = N-1)
+  var rightTop = [];
+  var rightBot = [];
+  for (var y=0; y<N; y+=step){
+    rightTop.push(project(N-1, y, data[y][N-1]));
+    rightBot.push(project(N-1, y, baseDepth));
+  }
+  for (var i=0; i<rightTop.length-1; i++){
+    var avgD = (rightTop[i].depth + rightTop[i+1].depth + rightBot[i].depth + rightBot[i+1].depth) / 4;
+    faces.push({
+      type:'side-right',
+      pts:[rightTop[i], rightTop[i+1], rightBot[i+1], rightBot[i]],
+      depth: avgD
+    });
+  }
+
+  // BOTTOM face (단일 사각형)
+  var b1 = project(0, 0, baseDepth);
+  var b2 = project(N-1, 0, baseDepth);
+  var b3 = project(N-1, N-1, baseDepth);
+  var b4 = project(0, N-1, baseDepth);
+  faces.push({
+    type:'bottom',
+    pts:[b1, b2, b3, b4],
+    depth: (b1.depth + b2.depth + b3.depth + b4.depth) / 4
+  });
+
+  // ---------- Painter's algorithm: back-to-front 정렬 ----------
+  faces.sort(function(a, b){ return a.depth - b.depth; });
+
+  // ---------- 렌더링 ----------
+  for (var fi=0; fi<faces.length; fi++){
+    var f = faces[fi];
+    if (f.type === 'top'){
+      // 표면: 높이별 컬러
+      ctx.fillStyle = heightToColor(f.h, sample.maxH);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 0.5;
+    } else if (f.type === 'side-front' || f.type === 'side-back'){
+      // 앞/뒤 측면: 어두운 회청색 (시편 단면)
+      ctx.fillStyle = '#1a2535';
+      ctx.strokeStyle = 'rgba(80,110,140,0.3)';
+      ctx.lineWidth = 0.4;
+    } else if (f.type === 'side-left' || f.type === 'side-right'){
+      // 좌/우 측면: 약간 더 어두운 톤
+      ctx.fillStyle = '#141d2c';
+      ctx.strokeStyle = 'rgba(80,110,140,0.3)';
+      ctx.lineWidth = 0.4;
+    } else if (f.type === 'bottom'){
+      // 바닥: 가장 어두움
+      ctx.fillStyle = '#0a1018';
+      ctx.strokeStyle = 'rgba(60,80,110,0.4)';
+      ctx.lineWidth = 0.5;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(f.pts[0].px, f.pts[0].py);
+    for (var pi=1; pi<f.pts.length; pi++){
+      ctx.lineTo(f.pts[pi].px, f.pts[pi].py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // ---------- Axes ----------
+  ctx.strokeStyle = 'rgba(127,180,216,0.5)';
+  ctx.lineWidth = 1;
+  ctx.font = '10px monospace';
+  ctx.fillStyle = '#7fb4d8';
+  var origin = project(0, N-1, baseDepth);
+  var xEnd = project(N-1, N-1, baseDepth);
+  var yEnd = project(0, 0, baseDepth);
+  var zEnd = project(0, N-1, sample.maxH);
+  ctx.beginPath();
+  ctx.moveTo(origin.px, origin.py); ctx.lineTo(xEnd.px, xEnd.py); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(origin.px, origin.py); ctx.lineTo(yEnd.px, yEnd.py); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(origin.px, origin.py); ctx.lineTo(zEnd.px, zEnd.py); ctx.stroke();
+  ctx.fillText('X (' + S.scanSize + ' µm)', xEnd.px+4, xEnd.py);
+  ctx.fillText('Y', yEnd.px-15, yEnd.py-2);
+  ctx.fillText('Z (' + sample.maxH + ' nm)', zEnd.px+4, zEnd.py);
+}
+
+// ====== UPDATE RESULT TAB ======
+function updateResultTab(){
+  if (!S.data || S.scanLine < S.scanRes) return;
+  var stats = computeStats(S.data);
+  $('statRms').textContent = stats.rms.toFixed(2);
+  $('statRa').textContent = stats.ra.toFixed(2);
+  $('statPv').textContent = stats.pv.toFixed(2);
+  $('statSp').textContent = stats.sp.toFixed(2);
+  $('statSv').textContent = stats.sv.toFixed(2);
+  $('statSk').textContent = stats.skew.toFixed(3);
+
+  render2dResult();
+  render3d();
+  renderHistogram(stats);
+}
+
+// ====== TAB SWITCH ======
+function switchTab(name){
+  S.currentTab = name;
+  var tabs = document.querySelectorAll('.tab');
+  for (var i=0; i<tabs.length; i++){
+    tabs[i].classList.toggle('on', tabs[i].getAttribute('data-tab') === name);
+  }
+  $('tabScan').classList.toggle('on', name === 'scan');
+  $('tabResultContent').classList.toggle('on', name === 'result');
+  if (name === 'result'){
+    $('resultBadge').style.display = 'none';
+    setTimeout(updateResultTab, 50);
+  }
+  updateTutorial();
+}
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){ switchTab(t.getAttribute('data-tab')); });
+});
+
+// ====== SAMPLE SELECT ======
+var cards = document.querySelectorAll('.scard');
+for (var i=0; i<cards.length; i++){
+  (function(card){
+    card.addEventListener('click', function(){
+      if (S.stageLoaded){ log('Cannot change sample while loaded.', 'warn'); return; }
+      var allCards = document.querySelectorAll('.scard');
+      for (var j=0; j<allCards.length; j++) allCards[j].classList.remove('on');
+      card.classList.add('on');
+      S.sample = card.getAttribute('data-sample');
+      log('Sample selected: ' + SAMPLES[S.sample].name, 'ok');
+      updateHUD(); updateInstrument(); clearMainCanvas(); updateTutorial();
+    });
+  })(cards[i]);
+}
+
+$('bLoad').addEventListener('click', function(){
+  if (!S.sample){ log('Select a sample first.', 'warn'); return; }
+  if (S.stageLoaded) return;
+  log('Loading sample stage...', 'cmd');
+  S.stageLoaded = true;
+  $('bLoad').disabled = true;
+  $('bUnload').disabled = false;
+  setTimeout(function(){
+    log('Stage loaded successfully.', 'ok');
+    updateHUD(); updateInstrument(); clearMainCanvas(); updateTutorial();
+  }, 600);
+});
+
+$('bUnload').addEventListener('click', function(){
+  if (S.engaged){ log('Withdraw tip before unloading.', 'warn'); return; }
+  S.stageLoaded = false;
+  $('bLoad').disabled = false;
+  $('bUnload').disabled = true;
+  log('Sample unloaded.', 'ok');
+  updateHUD(); updateInstrument(); clearMainCanvas();
+});
+
+var sliderIds = ['rLaserX','rLaserY','rDetX','rDetY','rSet','rZRange','rRate','rP','rI'];
+for (var si=0; si<sliderIds.length; si++){
+  (function(id){
+    $(id).addEventListener('input', function(e){
+      var v = parseFloat(e.target.value);
+      if (id === 'rLaserX'){ S.laserX = v; $('vLaserX').textContent = v; }
+      if (id === 'rLaserY'){ S.laserY = v; $('vLaserY').textContent = v; }
+      if (id === 'rDetX'){ S.detX = v; $('vDetX').textContent = v; }
+      if (id === 'rDetY'){ S.detY = v; $('vDetY').textContent = v; }
+      if (id === 'rSet'){ S.setpoint = v; $('vSet').textContent = v.toFixed(2) + ' V'; }
+      if (id === 'rZRange'){ S.zRange = v; $('vZRange').textContent = v + ' µm'; }
+      if (id === 'rRate'){ S.scanRate = v; $('vRate').textContent = v.toFixed(1) + ' Hz'; }
+      if (id === 'rP'){ S.pGain = v; $('vP').textContent = v.toFixed(1); }
+      if (id === 'rI'){ S.iGain = v; $('vI').textContent = v.toFixed(1); }
+      // ====== ENFORCE SQUARE MAIN SCREEN ======
+function resizeMainScreen(){
+  var col = document.querySelector('.main-col');
+  var screen = $('mainScreen');
+  if (!col || !screen) return;
+  var w = col.clientWidth;
+  var h = col.clientHeight;
+  var size = Math.min(w, h) - 4;
+  if (size < 100) size = 100;
+  screen.style.width = size + 'px';
+  screen.style.height = size + 'px';
+}
+window.addEventListener('resize', resizeMainScreen);
+setTimeout(resizeMainScreen, 50);
+setTimeout(resizeMainScreen, 200);
+
+updateQuad(); updateTutorial();
+    });
+  })(sliderIds[si]);
+}
+
+$('bAuto').addEventListener('click', function(){
+  log('Auto alignment running...', 'cmd');
+  $('rLaserX').value = 50; $('rLaserY').value = 50;
+  $('rDetX').value = 0; $('rDetY').value = 0;
+  S.laserX = 50; S.laserY = 50; S.detX = 0; S.detY = 0;
+  $('vLaserX').textContent = 50; $('vLaserY').textContent = 50;
+  $('vDetX').textContent = 0; $('vDetY').textContent = 0;
+  updateQuad(); updateTutorial();
+  setTimeout(function(){ log('Auto alignment complete. SUM = ' + S.sumSignal.toFixed(2) + ' V', 'ok'); }, 400);
+});
+
+$('bApproach').addEventListener('click', function(){
+  if (!S.stageLoaded){ log('Load sample first.', 'warn'); return; }
+  if (S.sumSignal < 0.8){ log('Laser signal too low.', 'warn'); return; }
+  if (S.engaged || S.approaching) return;
+  S.approaching = true;
+  $('bApproach').disabled = true;
+  log('Starting auto-approach...', 'cmd');
+  var z = 0;
+  var interval = setInterval(function(){
+    z += 2 + Math.random();
+    S.zPos = Math.min(100, z);
+    updateInstrument(); updateHUD();
+    if (z >= 100){
+      clearInterval(interval);
+      S.approaching = false;
+      S.engaged = true;
+      $('bWithdraw').disabled = false;
+      log('Tip engaged. Deflection = ' + S.setpoint.toFixed(2) + ' V', 'ok');
+      updateHUD(); updateInstrument(); clearMainCanvas(); updateTutorial();
+    }
+  }, 120);
+});
+
+$('bWithdraw').addEventListener('click', function(){
+  S.engaged = false; S.zPos = 0;
+  $('bApproach').disabled = false;
+  $('bWithdraw').disabled = true;
+  log('Tip withdrawn.', 'ok');
+  updateHUD(); updateInstrument(); clearMainCanvas();
+});
+
+$('selMode').addEventListener('change', function(e){ S.scanMode = e.target.value; updateHUD(); });
+$('selSize').addEventListener('change', function(e){ S.scanSize = parseInt(e.target.value); updateHUD(); });
+$('selRes').addEventListener('change', function(e){ S.scanRes = parseInt(e.target.value); updateHUD(); });
+
+$('bScan').addEventListener('click', function(){
+  if (!S.engaged){ log('Engage tip first.', 'warn'); return; }
+  if (S.scanning) return;
+  S.data = generateSurface(S.sample, S.scanRes);
+  S.scanning = true;
+  S.scanLine = 0;
+  var scanStartTime = Date.now();
+  log('Starting scan: ' + S.scanSize + 'x' + S.scanSize + 'µm, ' + S.scanRes + 'x' + S.scanRes, 'cmd');
+
+  var c = $('mainCanvas');
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, c.width, c.height);
+  $('scanBar').style.display = 'block';
+  $('scanProgress').classList.add('on');
+  $('spTotal').textContent = S.scanRes;
+  $('spRate').textContent = S.scanRate.toFixed(1);
+  $('spSize').textContent = S.scanSize + '×' + S.scanSize + ' µm';
+  $('spMode').textContent = S.scanMode === 'tap' ? 'Tapping' : S.scanMode === 'con' ? 'Contact' : 'Non-Contact';
+
+  var pixelSize = c.width / S.scanRes;
+  var sample = SAMPLES[S.sample];
+
+  function scanStep(){
+    if (!S.scanning) return;
+    if (S.scanLine >= S.scanRes){
+      S.scanning = false;
+      $('scanBar').style.display = 'none';
+      // Progress bar 완료 표시 후 잠시 후 숨김
+      $('spPct').textContent = '100';
+      $('spFill').style.width = '100%';
+      $('spLine').textContent = S.scanRes;
+      $('spEta').textContent = 'DONE';
+      setTimeout(function(){ $('scanProgress').classList.remove('on'); }, 1500);
+      log('Scan complete. Switching to RESULT analysis ready.', 'ok');
+      $('resultBadge').style.display = 'inline-block';
+      updateHUD(); updateTutorial();
+      return;
+    }
+    var row = S.data[S.scanLine];
+    var gainBad = (1 - Math.min(1, S.pGain/8)) * 2 + Math.abs(S.setpoint - 0.6) * 1.5;
+    for (var x=0; x<S.scanRes; x++){
+      var h = row[x] + (Math.random()-0.5) * gainBad;
+      ctx.fillStyle = heightToColor(h, sample.maxH);
+      ctx.fillRect(x*pixelSize, S.scanLine*pixelSize, Math.ceil(pixelSize), Math.ceil(pixelSize));
+    }
+    var screen = $('mainScreen');
+    var bar = $('scanBar');
+    bar.style.top = ((S.scanLine/S.scanRes)*screen.clientHeight) + 'px';
+    bar.style.width = screen.clientWidth + 'px';
+    drawLineProfile(row, sample.maxH);
+    S.scanLine++;
+
+    // Progress bar 갱신
+    var pct = (S.scanLine / S.scanRes) * 100;
+    $('spLine').textContent = S.scanLine;
+    $('spPct').textContent = pct.toFixed(0);
+    $('spFill').style.width = pct + '%';
+    // 시간 계산
+    var elapsed = (Date.now() - scanStartTime) / 1000;
+    var totalEst = (elapsed / S.scanLine) * S.scanRes;
+    var remaining = Math.max(0, totalEst - elapsed);
+    function fmt(s){
+      var m = Math.floor(s / 60);
+      var sec = Math.floor(s % 60);
+      return (m < 10 ? '0'+m : m) + ':' + (sec < 10 ? '0'+sec : sec);
+    }
+    $('spElapsed').textContent = fmt(elapsed);
+    $('spEta').textContent = fmt(remaining);
+
+    updateHUD();
+    setTimeout(scanStep, Math.max(8, 80 / S.scanRate));
+  }
+  scanStep();
+});
+
+$('bStop').addEventListener('click', function(){
+  S.scanning = false;
+  $('scanBar').style.display = 'none';
+  $('scanProgress').classList.remove('on');
+  log('Scan stopped by user.', 'warn');
+  updateHUD();
+});
+
+function drawLineProfile(row, maxH){
+  var c = $('lineCanvas');
+  var ctx = c.getContext('2d');
+  var w = c.width, h = c.height;
+  ctx.fillStyle = '#040810';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(78,207,255,0.08)';
+  ctx.lineWidth = 1;
+  for (var i=0; i<=4; i++){
+    var y = (h/4)*i;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath();
+  ctx.moveTo(0, h/2);
+  ctx.lineTo(w, h/2);
+  ctx.stroke();
+  ctx.strokeStyle = SAMPLES[S.sample].color;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  for (var x=0; x<row.length; x++){
+    var px = (x/row.length) * w;
+    var py = h/2 - (row[x]/maxH) * (h/2 - 6);
+    if (x === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+// ====== 3D INTERACTION ======
+var c3d = $('result3dCanvas');
+var dragging = false, lastX = 0, lastY = 0;
+c3d.addEventListener('mousedown', function(e){
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+});
+window.addEventListener('mousemove', function(e){
+  if (!dragging) return;
+  S.rot3d.ry += (e.clientX - lastX) * 0.5;
+  S.rot3d.rx += (e.clientY - lastY) * 0.5;
+  S.rot3d.rx = Math.max(-90, Math.min(90, S.rot3d.rx));
+  lastX = e.clientX; lastY = e.clientY;
+  render3d();
+});
+window.addEventListener('mouseup', function(){ dragging = false; });
+c3d.addEventListener('wheel', function(e){
+  e.preventDefault();
+  S.zoom3d *= (e.deltaY < 0) ? 1.1 : 0.9;
+  S.zoom3d = Math.max(0.3, Math.min(3, S.zoom3d));
+  render3d();
+});
+
+$('b3dReset').addEventListener('click', function(){ S.rot3d = { rx:55, ry:35 }; S.zoom3d = 1.0; render3d(); });
+$('b3dTop').addEventListener('click', function(){ S.rot3d = { rx:90, ry:0 }; render3d(); });
+$('b3dSide').addEventListener('click', function(){ S.rot3d = { rx:0, ry:0 }; render3d(); });
+$('b3dIso').addEventListener('click', function(){ S.rot3d = { rx:55, ry:35 }; render3d(); });
+
+// ====== TUTORIAL ======
+function updateTutorial(){
+  if (S.mode !== 'tutorial'){
+    $('tutPanel').style.opacity = '0.4';
+    var hls = document.querySelectorAll('.highlight');
+    for (var k=0; k<hls.length; k++) hls[k].classList.remove('highlight');
+    return;
+  }
+  $('tutPanel').style.opacity = '1';
+
+  if (S.step >= STEPS.length){
+    $('tutTitle').textContent = '🎉 튜토리얼 완료';
+    $('tutDesc').textContent = '전체 AFM 측정·분석 워크플로우를 완료했습니다. Free Mode에서 다른 시편을 시도해 RMS 비교를 해보세요.';
+    $('tutAction').innerHTML = '→ <b>Free Mode</b> 버튼을 눌러 자유 실습 모드로 전환';
+    $('tutWhy').innerHTML = '<b>비교 실습:</b>\n3개 시편의 Sq 값을 표로 정리:\n• Plasma ≈ 8 nm\n• PECVD ≈ 1 nm\n• Anneal ≈ 4 nm\n\nSsk 값으로 봉우리/골 우세 판단 가능.';
+    $('tutStep').textContent = 'Complete';
+    $('tutBar').style.width = '100%';
+    var hls2 = document.querySelectorAll('.highlight');
+    for (var k=0; k<hls2.length; k++) hls2[k].classList.remove('highlight');
+    return;
+  }
+
+  var step = STEPS[S.step];
+  $('tutStep').textContent = 'Step ' + (S.step+1) + ' / ' + STEPS.length;
+  $('tutBar').style.width = ((S.step+1)/STEPS.length*100) + '%';
+  $('tutTitle').textContent = step.title;
+  $('tutDesc').textContent = step.desc;
+  $('tutAction').innerHTML = step.action;
+  $('tutWhy').innerHTML = step.why;
+
+  var hls3 = document.querySelectorAll('.highlight');
+  for (var k=0; k<hls3.length; k++) hls3[k].classList.remove('highlight');
+  if (step.target){
+    var t = $(step.target);
+    if (t) t.classList.add('highlight');
+  }
+}
+
+$('tPrev').addEventListener('click', function(){
+  if (S.step > 0){ S.step--; updateTutorial(); }
+});
+$('tNext').addEventListener('click', function(){
+  var step = STEPS[S.step];
+  if (step && step.check && !step.check()){
+    log('Step ' + (S.step+1) + ' 조건 미충족.', 'warn');
+    return;
+  }
+  if (S.step < STEPS.length){ S.step++; updateTutorial(); }
+});
+
+$('bTut').addEventListener('click', function(){
+  S.mode = 'tutorial';
+  $('bTut').classList.add('on');
+  $('bFree').classList.remove('on');
+  updateTutorial();
+});
+$('bFree').addEventListener('click', function(){
+  S.mode = 'free';
+  $('bFree').classList.add('on');
+  $('bTut').classList.remove('on');
+  updateTutorial();
+  log('Free Mode entered.', 'cmd');
+});
+
+$('bAbout').addEventListener('click', function(){ $('aboutModal').classList.add('show'); });
+$('aboutClose').addEventListener('click', function(){ $('aboutModal').classList.remove('show'); });
+
+// Window resize for 3D
+window.addEventListener('resize', function(){
+  if (S.currentTab === 'result' && S.data){
+    render3d();
+    renderHistogram(computeStats(S.data));
+  }
+});
+
+updateQuad();
+updateInstrument();
+updateHUD();
+clearMainCanvas();
+updateTutorial();
+$('aboutModal').classList.add('show');
+setInterval(updateQuad, 200);
+</script>
+</body>
+</html>
