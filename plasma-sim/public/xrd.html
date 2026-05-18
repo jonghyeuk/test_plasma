@@ -1834,33 +1834,44 @@ function renderSamplePrep() {
   }
 }
 
+// Accurate screen→SVG conversion that respects viewBox + preserveAspectRatio
+function toSvgCoords(svgEl, evt) {
+  const src = (evt.touches && evt.touches[0]) || (evt.changedTouches && evt.changedTouches[0]) || evt;
+  const pt = svgEl.createSVGPoint();
+  pt.x = src.clientX;
+  pt.y = src.clientY;
+  const ctm = svgEl.getScreenCTM();
+  if (!ctm) {
+    const rect = svgEl.getBoundingClientRect();
+    return { x: ((src.clientX - rect.left) / rect.width) * 800, y: ((src.clientY - rect.top) / rect.height) * 500 };
+  }
+  const p = pt.matrixTransform(ctm.inverse());
+  return { x: p.x, y: p.y };
+}
+
 function enablePowderDrag(g) {
   let dragging = false;
   let startX = 0, startY = 0, originX = 220, originY = 300;
   const svgEl = $workspaceSvg;
 
   function getSvgCoords(evt) {
-    const rect = svgEl.getBoundingClientRect();
-    const vbW = 800, vbH = 500;
-    return {
-      x: ((evt.clientX - rect.left) / rect.width) * vbW,
-      y: ((evt.clientY - rect.top) / rect.height) * vbH
-    };
+    return toSvgCoords(svgEl, evt);
   }
-  g.addEventListener('mousedown', (e) => {
+  function onStart(e) {
     dragging = true;
     g.style.cursor = 'grabbing';
     const c = getSvgCoords(e);
     startX = c.x; startY = c.y;
-  });
-  window.addEventListener('mousemove', (e) => {
+  }
+  function onMove(e) {
     if (!dragging) return;
+    if (e.cancelable) e.preventDefault();
     const c = getSvgCoords(e);
     const dx = c.x - startX;
     const dy = c.y - startY;
     g.setAttribute('transform', `translate(${originX + dx}, ${originY + dy})`);
-  });
-  window.addEventListener('mouseup', (e) => {
+  }
+  function onEnd(e) {
     if (!dragging) return;
     dragging = false;
     g.style.cursor = 'grab';
@@ -1873,7 +1884,13 @@ function enablePowderDrag(g) {
     } else {
       g.setAttribute('transform', `translate(${originX}, ${originY})`);
     }
-  });
+  }
+  g.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  g.addEventListener('touchstart', onStart, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
 }
 
 // ----- STEP 2: Mounting -----
@@ -1982,24 +1999,21 @@ function enableHolderDrag(g) {
   let startX = 0, startY = 0, originX = 680, originY = 100;
   const svgEl = $workspaceSvg;
   function getSvgCoords(evt) {
-    const rect = svgEl.getBoundingClientRect();
-    return {
-      x: ((evt.clientX - rect.left) / rect.width) * 800,
-      y: ((evt.clientY - rect.top) / rect.height) * 500
-    };
+    return toSvgCoords(svgEl, evt);
   }
-  g.addEventListener('mousedown', (e) => {
+  function onStart(e) {
     dragging = true;
     g.style.cursor = 'grabbing';
     const c = getSvgCoords(e);
     startX = c.x; startY = c.y;
-  });
-  window.addEventListener('mousemove', (e) => {
+  }
+  function onMove(e) {
     if (!dragging) return;
+    if (e.cancelable) e.preventDefault();
     const c = getSvgCoords(e);
     g.setAttribute('transform', `translate(${originX + c.x - startX}, ${originY + c.y - startY})`);
-  });
-  window.addEventListener('mouseup', (e) => {
+  }
+  function onEnd(e) {
     if (!dragging) return;
     dragging = false;
     g.style.cursor = 'grab';
@@ -2013,7 +2027,13 @@ function enableHolderDrag(g) {
     } else {
       g.setAttribute('transform', `translate(${originX}, ${originY})`);
     }
-  });
+  }
+  g.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  g.addEventListener('touchstart', onStart, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
 }
 
 // ----- STEP 3: Instrument Setup view (full diagram) -----

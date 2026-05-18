@@ -87,6 +87,14 @@ function App() {
       iframeSrc: '/xrd.html'
     },
     {
+      id: 'afm',
+      name: 'AFM',
+      description: 'Atomic Force Microscopy',
+      icon: '🪡',
+      color: 'from-teal-500 to-cyan-600',
+      iframeSrc: '/afm.html'
+    },
+    {
       id: 'sim1',
       name: '플라즈마 시뮬레이터 I',
       description: '기초 플라즈마 물리 원리',
