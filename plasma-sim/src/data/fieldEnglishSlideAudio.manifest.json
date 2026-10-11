@@ -1,0 +1,454 @@
+{
+ "첫 출근 · 화면 앞에 서다 입사 첫날, 선배가 당신을 장비 앞으로 데려간다. 눈앞의 큰 화면(HMI, Human-Machine Interface)에는 온통 영어다. CHAMBER A — IDLE, PRESS START TO BEGIN CYCLE, 그리고 빨간 글씨로 INTERLOCK ACTIVE. 선배가 묻는다. \"지금 이 장비, 돌려도 되는 상태야?\" 신입에게 필요한 영어는 작문도, 유창한 회화도 아니다. 화면 한 줄, 매뉴얼 한 문장을 정확히 읽어내는(read) 힘이다. 이 읽는 힘은 현장에서 바로 쓰일 뿐 아니라, 나중에 정비·설비 엔지니어로 성장할수록 더 큰 무기가 된다. 오늘은 그 첫걸음으로, 장비와 화면 전반에 두루 쓰이는 기초 용어와 화면 읽는 법을 넓게 살펴본다.": {
+  "h": "da63ce28a7",
+  "sec": 50
+ },
+ "왜 '현장 영어'인가 — 쓰기가 아니라 판단 이 수업의 목표는 영어를 '작성'하는 것이 아니라, 이미 영어로 쓰인 정보를 정확히 '읽고 판단'하는 것이다. 반도체 장비의 대부분은 미국·일본·유럽 제조사가 만든다. 그래서 화면 글자, 버튼 이름, 경고문, operating manual이 모두 영어로 고정되어 있다. 한국어 번역본이 있어도, 실제 화면과 로그(log)는 영어 원문이 기준이다. 현장에서 영어를 잘못 읽으면 곧바로 사고로 이어진다. DO NOT OPEN(열지 마시오)를 DO OPEN으로 착각하거나, HIGH VACUUM(고진공) 상태에서 문을 열면 장비 손상·안전사고가 난다. 즉 영어 읽기는 안전 그 자체다. 우리가 연습할 문장은 대부분 imperative(명령문)·short label(짧은 라벨)·warning note(경고문) 형태다. 문학적 영어가 아니라, 짧고 반복되는 실무 영어이므로 패턴만 익히면 빠르게 강해진다. 따라서 이 수업은 문법 시험이나 영작문이 아니다. '이 영어가 무슨 뜻인가', '지금 눌러도 되는가', '이 경고는 무엇을 금지하는가'를 판단하는 reading & judging 훈련이다.": {
+  "h": "ae49d66d38",
+  "sec": 74
+ },
+ "영어는 어디에서 나타나는가 — 세 곳 현장에서 영어를 만나는 통로는 크게 세 가지다. 각각 성격이 다르므로 읽는 방식도 다르다. 첫째, HMI/GUI 화면. 장비를 조작하는 터치스크린이다. 여기엔 status(상태), buttons(버튼), alarms(경보)가 짧은 영어 단어로 표시된다. 예: RUN, IDLE, ABORT, PROCESSING…. 한 단어의 뜻이 곧 장비의 현재 상태다. 둘째, operating manual / SOP(Standard Operating Procedure). 장비를 어떻게 켜고, 어떻게 웨이퍼를 넣고, 문제가 나면 어떻게 하는지 단계별로 적힌 문서다. 대부분 번호가 붙은 step-by-step imperative 문장이다. 셋째, work instruction(작업 지시문). 반장·엔지니어가 붙여 놓은 그날그날의 지시다. 예: Run PM on Tool 3 before shift end. 짧지만 '누가·무엇을·언제'가 압축되어 있어 정확한 해석이 중요하다. 세 통로 모두 공통 어휘를 공유한다. 그래서 오늘 배우는 기초 용어 하나가 화면·매뉴얼·지시문 세 곳에서 동시에 통한다. 기초 용어를 넓게 깔아두는 것이 오늘의 목적이다.": {
+  "h": "af0e5eee2e",
+  "sec": 81
+ },
+ "HMI 화면의 구조 읽기 낯선 장비 화면도 구조는 비슷하다. 어디에 무엇이 있는지 '틀'을 알면 처음 보는 화면도 읽을 수 있다. 화면 상단(top bar)에는 보통 tool ID와 current status가 있다. 예: TOOL EQP-204 | STATUS: IDLE. 여기만 봐도 '이 장비가 지금 놀고 있는지, 돌고 있는지'를 안다. 가운데(main view)에는 장비 내부를 본뜬 그림, 즉 schematic/diagram이 있다. chamber, valve, pump 같은 부품이 그림으로 표시되고, 각 부품 옆에 실시간 숫자(온도·압력)가 뜬다. 숫자에는 두 가지가 있다. setpoint(목표값)과 actual/PV(현재값, Process Value). 예: Temp SP 250°C / PV 248°C. 둘의 차이를 읽으면 장비가 목표에 도달했는지 판단할 수 있다. 하단(bottom/footer)에는 조작 버튼과 alarm banner(경보 띠)가 있다. 색이 중요하다. 보통 green=normal, yellow=warning, red=alarm/fault. 색과 영어 라벨을 함께 읽는 습관이 필요하다. 정리하면 '상단=무엇/무슨 상태, 가운데=어디가 어떤 값, 하단=무엇을 눌러 무엇을 막는가'. 이 세 질문으로 어떤 화면이든 스캔하라.": {
+  "h": "7c3c3fd3ca",
+  "sec": 85
+ },
+ "숫자 · 단위 · 상태 표시 읽기 현장 영어의 절반은 단어가 아니라 '숫자와 단위'다. 단위를 오독하면 판단 전체가 틀어진다. 온도는 °C, 압력은 Torr / mTorr / Pa, 유량(가스량)은 sccm(standard cubic centimeter per minute), 전력은 W(watt), 고주파는 MHz로 표시된다. 단위를 먼저 확인한 뒤 숫자를 읽어야 한다. 진공 상태는 숫자로도, 라벨로도 나온다. ATM(대기압), rough vacuum, high vacuum. 예: 1.0E-6 Torr 같은 지수 표기는 '10의 마이너스 6승 Torr = 아주 높은 진공'을 뜻한다. 상태 라벨은 대개 대문자 한 단어다. IDLE(대기), RUN/PROCESSING(진행중), DONE/COMPLETE(완료), ABORT(중단), FAULT/ERROR(고장). 이 단어만으로 '지금 개입해도 되는가'를 판단한다. 타이밍 표현도 자주 나온다. elapsed time(경과 시간), remaining(남은 시간), cycle time(1회 처리 시간). 예: REMAINING 00:45 = 45초 남음. 숫자 색·깜빡임도 정보다. 값이 out of range(범위 이탈)면 빨간색으로 바뀌거나 깜빡인다. 숫자+단위+색을 한 세트로 읽는 것이 프로의 습관이다.": {
+  "h": "66c52706e8",
+  "sec": 81
+ },
+ "현장 영어의 진짜 문체 — 완전문장이 아니다 교과서 영어와 현장 영어는 '문체(register)'가 다르다. 현장은 짧고 딱딱하다. 이 문체에 익숙해지는 것이 핵심이다. 화면 버튼·명령은 한 단어 동사다. 완전한 문장이 아니라 Pump / Vent / Purge / Abort / Accept / Reset 처럼 딱 떨어진다. '가스를 배출하시겠습니까?'가 아니라 그냥 Purge. 알람은 문장이 아니라 상태 조각(status fragment)으로 뜬다. \"The pressure is not correct\"가 아니라 Pressure out of spec, \"There is a problem with the interlock\"가 아니라 Interlock not satisfied. 숫자는 항상 단위와 붙어서 나온다. 0.1 Torr, 50 sccm, 13.56 MHz, 1500 W. 값만 읽지 말고 단위까지 한 세트로 읽어야 판단이 된다. 기록(로그)은 주어를 생략한 과거형이다. \"I found a leak and I replaced the o-ring\"가 아니라 Found leak, replaced O-ring, tool back up. 짧게 끊어 읽는 연습이 필요하다. 정리: 현장 영어 = 짧은 명령형 + 상태 조각 + 숫자·단위 + 끊어진 과거형 로그. 예쁜 완전문장을 기대하지 말 것. 이 딱딱함 자체가 현장의 표준이다.": {
+  "h": "4214e56edb",
+  "sec": 88
+ },
+ "영어 작업 지시문(imperative) 문장 구조 매뉴얼과 지시문의 문장은 거의 다 명령문이다. 명령문의 뼈대를 알면 빠르고 정확하게 읽힌다. 명령문은 주어(you)를 생략하고 동사로 시작한다. 예: Press START., Close the door., Check the pressure. 첫 단어(동사)가 '무엇을 하라'는 지시의 핵심이다. 금지·경고는 DO NOT / NEVER / DO NOT ...로 시작한다. 예: Do not open the chamber during processing. 'Do not' 뒤의 동사를 반드시 확인하라 — 그것이 하면 안 되는 행동이다. 조건은 If / When / Before / After / Until로 붙는다. 예: Before opening, vent the chamber to ATM. '먼저 무엇을 한 뒤에' 라는 순서를 이 접속사가 알려준다. 주의 등급은 단어로 구분된다. NOTE(참고) < CAUTION(주의, 경미한 손상) < WARNING(경고, 부상 위험) < DANGER(위험, 즉각적 위험). 등급 단어를 먼저 보고 긴장도를 조절하라. 지시문엔 대상이 짧게 온다. 예: Run PM on Tool 3. = 'Tool 3에 대해 PM(예방정비)을 실시하라'. '동사 + 대상 + 조건'의 3조각으로 끊어 읽는 연습을 하자.": {
+  "h": "a7561ebd55",
+  "sec": 88
+ },
+ "OPERATING PROCEDURE — WAFER LOADING 1. Verify that the tool status shows IDLE before you begin. 1. 시작 전에 장비 상태가 IDLE(대기)로 표시되는지 확인하라. — 다른 상태면 아직 개입하면 안 된다. 2. Place the FOUP on the load port and wait for the clamp to lock. 2. FOUP을 로드 포트에 올리고 클램프가 잠길 때까지 기다려라. — '기다려라'가 지시의 핵심. 3. On the HMI, select the correct recipe for this lot. 3. HMI에서 이 로트(lot)에 맞는 올바른 recipe를 선택하라. — 잘못된 레시피 선택은 공정 불량으로 직결된다. 4. Press START. The status will change to PROCESSING. 4. START를 눌러라. 상태가 PROCESSING(진행중)으로 바뀐다. — 상태 변화로 정상 시작을 확인. 5. Do not open the chamber door while the tool is PROCESSING. 5. 장비가 PROCESSING인 동안에는 챔버 문을 열지 마라. — 'Do not open'은 절대 금지.": {
+  "h": "be113b5150",
+  "sec": 72
+ },
+ "SAFETY — WARNINGS & CAUTIONS WARNING: High voltage present. Do not remove the RF cover during operation. 경고: 고전압이 흐른다. 가동 중에는 RF 커버를 제거하지 마라. — WARNING은 '부상 위험' 등급. CAUTION: Wear ESD wrist strap before handling any wafer. 주의: 웨이퍼를 다루기 전 ESD(정전기) 손목 밴드를 착용하라. — 정전기가 소자를 파괴한다. DANGER: In an emergency, press the EMO button to cut all power immediately. 위험: 비상시 EMO 버튼을 눌러 모든 전원을 즉시 차단하라. — DANGER는 최고 등급, 즉각 조치. NOTE: If the chamber is under high vacuum, vent to ATM before opening. 참고: 챔버가 고진공 상태면 열기 전에 대기압(ATM)으로 벤트하라. — 순서를 지키지 않으면 장비 손상.": {
+  "h": "a8353da935",
+  "sec": 58
+ },
+ "HMI SCREEN GUIDE — STATUS & ALARMS The top bar shows the Tool ID and the current status (IDLE, RUN, or FAULT). 상단 바에는 Tool ID와 현재 상태(IDLE, RUN, FAULT)가 표시된다. — 화면을 볼 때 여기부터 읽어라. A green banner means normal. A red banner means an active alarm. 초록색 띠는 정상, 빨간색 띠는 활성 경보를 뜻한다. — 색이 곧 1차 신호다. When an alarm appears, read the alarm text and press ACK to acknowledge it. 경보가 뜨면 경보 문구를 읽고 ACK를 눌러 확인 처리하라. — 원인 파악이 먼저, 그다음 ACK. If PV differs greatly from the setpoint, notify the process engineer. 현재값(PV)이 설정값(setpoint)과 크게 다르면 공정 엔지니어에게 알려라. — 임의 조작 금지, 보고가 원칙.": {
+  "h": "889ba7c2b5",
+  "sec": 62
+ },
+ "새 장비 앞에 선 첫날 당신은 오늘 처음으로 식각(etch) 장비 앞에 배정되었습니다. 선배 엔지니어가 장비 문을 열자 은색 원통, 굵은 파이프, 반짝이는 밸브들이 눈에 들어옵니다. 선배는 손으로 각 부분을 가리키며 영어로 말합니다. \"This is the chamber, and below it is the turbo pump. Watch the gate valve — never open it under atmosphere.\" 화면(HMI)에는 Chamber Pressure, Pump Speed, MFC Flow, RF Power 같은 영어 단어가 실시간으로 바뀝니다. 한국어 설명서는 어디에도 없습니다. 모든 부품 이름, 모든 경고문, 모든 버튼이 영어입니다. 부품 이름을 영어로 읽고 그 역할을 이해하는 순간, 당신은 비로소 이 장비를 '다룰' 수 있게 됩니다. 오늘 우리는 식각·증착 장비의 핵심 구성요소 7가지 — Chamber, Pump, Gate Valve, Gas Line, MFC, RF Generator, Wafer Chuck — 를 영어 이름과 역할, 그리고 매뉴얼·화면에서의 표기법으로 배웁니다.": {
+  "h": "6d19a65143",
+  "sec": 72
+ },
+ "왜 진공이 필요한가: Chamber의 존재 이유 식각·증착 공정은 대부분 진공(vacuum) 상태의 밀폐 공간 안에서 일어납니다. 그 공간이 바로 chamber입니다. Chamber(챔버, 반응실)는 웨이퍼가 실제로 공정을 받는 밀폐 금속 용기입니다. 매뉴얼에서는 흔히 process chamber 또는 reaction chamber라고 표기하며, 웨이퍼를 넣고 빼는 옆방을 load lock chamber라고 부릅니다. 왜 진공인가? 공기 중의 산소·수분·먼지 분자가 웨이퍼 표면에 붙으면 반응이 오염됩니다. 그래서 챔버를 base pressure(기저 압력) 수준까지 비운 뒤 공정 가스만 정확히 넣습니다. 화면에서 Chamber Pressure가 1.0E-6 Torr처럼 지수 표기로 보이면 '매우 낮은 압력 = 좋은 진공'이라는 뜻입니다. 챔버 벽은 보통 알루미늄(aluminum)에 특수 코팅을 하며, 플라즈마에 노출되는 소모성 부품을 chamber liner 또는 consumable parts라고 합니다. 매뉴얼의 PM(Preventive Maintenance) 항목에서 자주 등장합니다. 챔버 상태를 나타내는 영어 표기를 반드시 구분하세요: Vented(대기압 노출됨), Pumping(배기 중), Base Pressure Reached(기저 압력 도달), Process Ready(공정 준비 완료). 이 단어를 잘못 읽으면 대기압 상태에서 밸브를 여는 사고로 이어질 수 있습니다. 챔버 벽 온도도 중요합니다. 화면의 Wall Temp 또는 Chamber Temp는 부산물(by-product)이 벽에 응축되지 않도록 일정하게 유지되어야 하며, 낮으면 flaking(박리) 파티클 문제가 생깁니다.": {
+  "h": "b4c88bb9cf",
+  "sec": 106
+ },
+ "배기계 (1): Turbo Pump와 Roughing Pump 챔버를 진공으로 만드는 장치가 펌프(pump)입니다. 식각 장비는 보통 두 종류의 펌프를 직렬로 사용합니다. Roughing pump(러핑 펌프, 저진공 펌프)는 대기압(760 Torr)에서 시작해 챔버를 대략 mTorr 수준까지 초벌로 비웁니다. 매뉴얼에서는 dry pump 또는 backing pump라는 이름으로도 나옵니다. Turbo pump(터보 펌프, Turbomolecular pump)는 러핑 펌프가 만든 진공을 이어받아 고진공(high vacuum)까지 끌어내립니다. 내부의 수만 rpm으로 도는 날개(rotor blades)가 가스 분자를 쳐내는 원리입니다. 화면의 Turbo Speed 100% / 27,000 rpm이 정상 회전 표시입니다. 순서가 생명입니다. 터보 펌프는 반드시 러핑 펌프로 foreline(배기 배관) 쪽 압력을 충분히 낮춘 뒤에만 가속(spin up)해야 합니다. 대기압에서 터보를 돌리면 날개가 손상됩니다. 매뉴얼의 경고문 Do NOT start the turbo pump against atmosphere가 이 뜻입니다. 펌프 상태 영어 표기: Spinning Up(가속 중), At Speed / Normal(정상 속도), Spinning Down(감속 중), Fault(고장). Pump Fault 알람이 뜨면 즉시 공정을 멈추고(abort) 보고해야 합니다. 펌프에서 나온 배기 가스는 유해할 수 있어 abatement / scrubber(배기가스 처리장치)를 거쳐 처리됩니다. 매뉴얼에서 exhaust 관련 항목과 함께 자주 언급됩니다.": {
+  "h": "e0742e66c1",
+  "sec": 103
+ },
+ "배기계 (2): Gate Valve와 Foreline 펌프와 챔버 사이에는 진공을 지키는 관문, 게이트 밸브(gate valve)가 있습니다. Gate valve(게이트 밸브)는 챔버와 터보 펌프 사이를 여닫는 큰 판형 밸브입니다. 열면(Open) 챔버가 펌프에 연결되어 배기되고, 닫으면(Close/Closed) 챔버가 펌프로부터 격리(isolate)됩니다. 밸브 상태를 화면에서 정확히 읽어야 합니다: Open, Closed, Opening/Closing(동작 중), Interlocked(인터록으로 잠김). Interlocked는 안전 조건이 맞지 않아 밸브가 움직이지 않도록 소프트웨어가 막고 있다는 뜻입니다. Throttle valve(스로틀 밸브)는 게이트 밸브와 유사하지만 '얼마나' 여는지를 조절해 챔버 압력을 원하는 값으로 제어하는 밸브입니다. 화면에서 Throttle Position 45%처럼 백분율로 표시되며 pressure control 항목과 함께 나옵니다. Foreline(포어라인)은 터보 펌프 출구와 러핑 펌프를 잇는 배관입니다. 매뉴얼의 Foreline Pressure 값이 높으면 러핑 펌프 성능 저하나 배관 막힘을 의심합니다. 핵심 안전 규칙: 챔버가 Vented(대기압) 상태일 때 게이트 밸브를 열면 대기가 터보 펌프로 밀려들어 파손됩니다. 그래서 대부분의 장비는 interlock(인터록, 안전 연동) 으로 이를 물리적·소프트웨어적으로 차단합니다.": {
+  "h": "67c2394037",
+  "sec": 99
+ },
+ "가스 공급계: Gas Line과 MFC 공정에 필요한 반응 가스는 정확한 유량으로 챔버에 들어가야 합니다. 그 통로가 가스 라인(gas line), 유량을 재는 장치가 MFC입니다. Gas line(가스 라인)은 가스 실린더에서 챔버까지 이어지는 배관입니다. 여러 가스가 각각의 라인으로 오다가 챔버 직전에 합쳐지며, 매뉴얼에서는 각 라인을 Gas 1, Gas 2 또는 Ar line, CF4 line처럼 가스 이름으로 부릅니다. MFC(Mass Flow Controller, 질량 유량 제어기)는 각 가스가 초당 몇 sccm(standard cubic centimeter per minute) 흐르는지 정밀하게 제어합니다. 화면에서 MFC1 Set 50 sccm / Actual 49.8 sccm처럼 설정값(Setpoint)과 실제값(Actual/Readback)이 나란히 표시됩니다. 설정값과 실제값의 차이가 크면 문제 신호입니다. MFC not following setpoint나 Flow Alarm은 라인 막힘, 가스 부족, MFC 고장을 의미할 수 있습니다. 가스 라인을 열고 닫는 밸브를 isolation valve 또는 pneumatic valve라 하며, 화면에서 각 가스별로 On/Off 상태로 나타납니다. 공정 전후 라인에 남은 가스를 불활성 가스로 밀어내는 동작을 purge(퍼지)라고 합니다. showerhead(샤워헤드)는 챔버 상부에서 가스를 웨이퍼 위로 고르게 뿌려주는 다공성 전극판입니다. 증착·식각의 균일도(uniformity)를 좌우하는 핵심 부품으로 매뉴얼 PM 항목에 자주 등장합니다. 안전상 독성·가연성 가스는 toxic gas, flammable gas로 표기되며, 관련 경고문에는 항상 PPE(개인 보호구) 착용과 gas detector 확인이 함께 나옵니다.": {
+  "h": "453b54b198",
+  "sec": 117
+ },
+ "플라즈마와 웨이퍼: RF Generator와 Wafer Chuck 식각·플라즈마 증착은 가스를 플라즈마(plasma) 상태로 만들어 반응시킵니다. 그 에너지원이 RF generator, 웨이퍼를 붙잡는 판이 wafer chuck입니다. RF generator(RF 발생기)는 고주파(Radio Frequency, 흔히 13.56 MHz) 전력을 챔버 전극에 공급해 가스를 이온화(ionize)하여 플라즈마를 만듭니다. 화면의 RF Power 500 W, Forward Power, Reflected Power가 핵심 표시값입니다. Forward power(전방 전력)는 챔버로 보낸 전력, Reflected power(반사 전력)는 챔버가 받아들이지 못하고 되돌아온 전력입니다. 반사 전력이 높으면 에너지가 낭비되고 발생기가 손상될 수 있어, matching network(매칭 네트워크, 정합기)가 이를 최소화하도록 자동 조정합니다. 화면에서 Reflected Power < 5 W면 정상, 값이 크게 튀면 matching fault나 플라즈마 불안정(plasma unstable)을 의심합니다. Wafer chuck(웨이퍼 척, 웨이퍼 받침)은 공정 중 웨이퍼를 고정하는 판입니다. 정전기 힘으로 붙잡는 것을 ESC(Electrostatic Chuck, 정전 척)라 하며, 화면에서 Chuck Clamp On/Off로 표시됩니다. 웨이퍼는 플라즈마 때문에 뜨거워지므로 척 뒷면으로 헬륨을 흘려 온도를 식힙니다. 이를 backside gas 또는 He backside cooling이라 하며 Backside Pressure / He Flow 값으로 관리합니다. 안전: 플라즈마 공정 중에는 고전압·고주파가 흐르므로 매뉴얼에 RF ON, High Voltage 경고와 함께 챔버 문을 열지 말라는 지시가 반드시 붙습니다.": {
+  "h": "e7d8de6526",
+  "sec": 113
+ },
+ "매뉴얼과 HMI 화면에서 부품 읽는 법 같은 부품도 매뉴얼(문서)과 HMI(화면)에서 표기가 다를 수 있습니다. 현장에서 헷갈리지 않도록 표기 습관을 익힙니다. 부품 이름은 화면에서 약어로 줄어드는 경우가 많습니다. Mass Flow Controller → MFC, Electrostatic Chuck → ESC, Gate Valve → GV, Turbo Pump → TMP 또는 Turbo. 약어를 원래 이름과 연결해 기억해야 합니다. 상태(status)는 보통 색과 영어 단어로 함께 표시됩니다. 초록 Ready/Normal, 노랑 Warning, 빨강 Alarm/Fault/Error. 단어를 못 읽으면 색만으로 판단하게 되어 위험합니다. 값에는 항상 단위(unit)가 붙습니다. 압력은 Torr / mTorr / Pa, 유량은 sccm / slm, 전력은 W(watt), 온도는 degC, 속도는 rpm / %. 숫자만 보지 말고 단위까지 함께 읽는 습관이 중요합니다. 동작을 지시하는 버튼은 명령형 동사입니다: Pump / Vent / Purge / Open / Close / Start / Abort / Reset. 이들은 곧바로 장비를 움직이므로 뜻을 정확히 알아야 합니다. 매뉴얼 문장은 대부분 명령문(imperative)으로 시작합니다. 'Verify...', 'Ensure...', 'Do not...', 'Confirm...'로 시작하는 문장은 '반드시 확인/금지'의 안전 지시라는 신호입니다. 정리하면, 현장에서 부품을 다룬다는 것은 결국 '부품의 영어 이름 + 상태 단어 + 값과 단위 + 명령 동사'를 한눈에 읽어내는 능력입니다.": {
+  "h": "e2cf314797",
+  "sec": 108
+ },
+ "OPERATING PROCEDURE — CHAMBER PUMP-DOWN 1. Confirm the chamber door is fully closed and the seal is clean. 1. 챔버 문이 완전히 닫혔는지, 실링면(seal)이 깨끗한지 확인한다. 2. Verify the roughing pump is running and the foreline pressure is stable. 2. 러핑 펌프가 작동 중이고 포어라인 압력이 안정적인지 확인한다. 3. Press PUMP to begin evacuating the chamber to milliTorr range. 3. PUMP 버튼을 눌러 챔버를 mTorr 수준까지 배기하기 시작한다. 4. Do NOT start the turbo pump against atmosphere. Wait until the foreline pressure is below the crossover setpoint. 4. 대기압 상태에서 터보 펌프를 가동하지 말 것. 포어라인 압력이 교차(crossover) 설정값 아래로 내려갈 때까지 기다린다. 5. When the turbo pump reaches full speed, the gate valve may open automatically. 5. 터보 펌프가 정상 속도에 도달하면 게이트 밸브가 자동으로 열릴 수 있다. 6. Wait for the status to change to 'Base Pressure Reached' before loading the recipe. 6. 상태가 'Base Pressure Reached'로 바뀐 뒤에 레시피를 불러온다.": {
+  "h": "d175e9885e",
+  "sec": 84
+ },
+ "WORK INSTRUCTION — GAS LINE & MFC CHECK Ensure all gas isolation valves are closed before opening the manual cylinder valve. 실린더 수동 밸브를 열기 전에 모든 가스 차단(isolation) 밸브가 닫혀 있는지 확인한다. Set each MFC to its recipe setpoint and confirm the actual (readback) value matches within tolerance. 각 MFC를 레시피 설정값으로 맞추고, 실제값(readback)이 허용 오차 내에서 일치하는지 확인한다. If the MFC does not follow its setpoint, check for a clogged line or an empty gas cylinder. MFC가 설정값을 따라가지 못하면 라인 막힘이나 가스 실린더 소진을 점검한다. After the process, purge the gas lines with the inert gas for the specified time. 공정 종료 후 지정된 시간 동안 불활성 가스로 가스 라인을 퍼지한다.": {
+  "h": "25d91f2faa",
+  "sec": 62
+ },
+ "SAFETY NOTES — RF & VACUUM HAZARDS WARNING: High voltage and RF energy are present when RF power is ON. Do not open the chamber lid. 경고: RF 전원이 켜져 있을 때는 고전압과 RF 에너지가 존재한다. 챔버 뚜껑을 열지 말 것. CAUTION: Never open the gate valve while the chamber is vented. This can destroy the turbo pump. 주의: 챔버가 대기압(vented)일 때 게이트 밸브를 열지 말 것. 터보 펌프가 파손될 수 있다. NOTE: Some process gases are toxic or flammable. Verify the gas detector is active and wear required PPE. 참고: 일부 공정 가스는 독성·가연성이다. 가스 감지기가 작동 중인지 확인하고 필수 보호구(PPE)를 착용한다. If any Alarm or Fault appears, abort the process and notify the equipment engineer immediately. Alarm 또는 Fault가 뜨면 공정을 중단(abort)하고 즉시 장비 엔지니어에게 알린다.": {
+  "h": "917007e188",
+  "sec": 69
+ },
+ "초록불이 켜지기 전에는 손대지 마라 야간 근무 첫날, 선배가 장비 앞에서 말한다. \"화면에 READY 초록불 뜨기 전에는 절대 START 누르지 마.\" 신입은 웨이퍼 카세트를 load port에 올리고 START를 눌렀다. 장비는 곧바로 pump down을 시작했고, 압력계 숫자가 빠르게 떨어졌다. 하지만 아직 base pressure에 도달하지 못했는데 transfer valve를 열려고 하자, 화면에 붉은 글씨로 INTERLOCK: base pressure not reached 가 떴다. 선배가 웃으며 말한다. \"장비는 영어로 너한테 계속 말을 걸어. load, evacuate, pump down, purge, vent, start, stop, unload — 이 명령어들과 상태 표시만 정확히 읽으면, 절차는 반쯤 끝난 거야.\" 오늘 우리는 장비가 화면과 매뉴얼로 건네는 그 영어를 읽고, 지금 어떤 상태인지 스스로 판단하는 법을 배운다.": {
+  "h": "7638fab128",
+  "sec": 59
+ },
+ "운전 절차란 무엇인가 — 전체 시퀀스 읽기 장비 운전은 정해진 순서(sequence)를 따라 진행됩니다. 각 단계가 영어 명령어 한 단어로 표시되므로, 순서와 의미를 함께 이해해야 합니다. 반도체 공정 장비의 기본 흐름은 대개 load → evacuate(pump down) → process → purge → vent → unload 순서로 진행됩니다. 각 단계는 화면에서 영어 동사 하나로 표시되므로, 이 여섯~여덟 단어가 사실상 '운전 절차의 목차'입니다. load는 웨이퍼(또는 카세트)를 장비 안으로 넣는 단계이고, unload는 공정이 끝난 뒤 다시 꺼내는 단계입니다. 화면 버튼이 LOAD / UNLOAD로 구분되어 있어, 눌러야 할 방향을 반드시 확인해야 합니다. evacuate와 pump down은 사실상 같은 뜻으로, 챔버 안의 공기를 빼내 진공을 만드는 단계입니다. 매뉴얼에 따라 Evacuate the chamber 또는 Pump down the load lock처럼 표현이 달라질 뿐, 하는 일은 같습니다. 공정이 끝나면 purge(질소로 내부 가스 치환)와 vent(대기압으로 되돌림)를 거쳐야 문을 안전하게 열 수 있습니다. 이 순서를 건너뛰면 위험하거나 장비가 interlock으로 막힙니다. start와 stop은 시퀀스 전체를 시작/정지시키는 상위 명령입니다. 화면의 START 버튼은 '준비가 끝났으니 순서대로 진행하라', STOP은 '지금 진행 중인 동작을 멈춰라'를 의미합니다. 핵심은 '지금 장비가 시퀀스의 어느 단계에 있는가'를 화면 영어로 읽어내는 것입니다. 단계 이름을 모르면 다음에 무엇을 눌러야 하는지 판단할 수 없습니다.": {
+  "h": "c59ffee87e",
+  "sec": 105
+ },
+ "진공 만들기 — pump down / evacuate 의 물리적 의미 왜 챔버를 진공으로 만드는지, 그리고 화면의 압력 숫자를 어떻게 읽는지 이해하면 절차 판단이 쉬워집니다. 대부분의 반도체 공정은 진공(vacuum)에서 진행됩니다. 공기 중 산소·수분·먼지가 웨이퍼 표면을 오염시키거나 반응을 방해하기 때문에, pump down으로 이런 잔류 기체를 제거해야 합니다. pump down은 보통 두 단계로 나뉩니다. 먼저 러핑 펌프로 대기압에서 중간 진공까지 내리는 rough vacuum 단계, 그다음 터보/크라이오 펌프로 고진공까지 내리는 high vacuum 단계입니다. 화면에서 압력이 급격히 떨어지다가 천천히 내려가는 구간이 이 전환점입니다. 압력 단위는 주로 Torr, mTorr, 또는 Pa로 표시됩니다. 예를 들어 760 Torr는 대기압, 5.0E-6 Torr는 고진공을 뜻합니다. 지수 표기 E-6은 '×10의 -6승'이므로 숫자가 작을수록 진공도가 높습니다. 장비가 도달할 수 있는 가장 낮은 안정 압력을 base pressure라고 합니다. 공정을 시작하려면 이 base pressure에 도달해야 하며, 그렇지 않으면 오염이나 공정 불량이 발생합니다. 화면에는 흔히 Pumping..., Evacuating..., 또는 진행 막대(progress bar)가 표시됩니다. 이 표시는 '아직 진공 만드는 중이니 기다려라'는 뜻이며, 이때 밸브를 강제로 열면 안 됩니다. 압력이 목표값 근처에서 더 이상 내려가지 않고 멈추면(예: leak이나 배기 이상), 화면에 base pressure not reached나 경고가 뜹니다. 이 영어를 읽고 '지금 시작하면 안 된다'고 판단할 수 있어야 합니다.": {
+  "h": "17bb30bd64",
+  "sec": 112
+ },
+ "purge 와 vent — 가스 치환과 안전 공정이 끝난 뒤 문을 열기까지의 절차입니다. purge와 vent를 혼동하면 위험하므로 정확히 구분합니다. purge는 챔버 안에 남은 공정 가스(독성·가연성일 수 있음)를 질소(N2) 같은 불활성 가스로 밀어내 치환하는 단계입니다. 매뉴얼에 Purge the chamber with N2처럼 나옵니다. vent는 진공 상태의 챔버를 다시 대기압(atmosphere)으로 되돌리는 단계입니다. 진공 상태에서는 문이 압력차로 열리지 않으므로, vent로 압력을 맞춰야 안전하게 개방할 수 있습니다. 순서가 중요합니다. 보통 purge로 위험 가스를 먼저 제거한 뒤 vent로 대기압을 만듭니다. 이 순서를 바꾸면 유해 가스가 작업 공간으로 새어 나올 수 있습니다. 화면에는 Venting to atmosphere... 또는 N2 purge in progress가 표시되며, 완료되면 Vent complete 또는 Door unlocked 같은 메시지가 뜹니다. 이 완료 표시를 확인한 뒤에만 문을 엽니다. 펌프가 아직 돌고 있을 때 vent하면 펌프 손상이나 오일 역류가 생길 수 있으므로, 매뉴얼의 Never vent while the pump is running 같은 경고문을 반드시 읽고 지켜야 합니다. vent 후에는 압력계(gauge)가 대기압(약 760 Torr)을 가리키는지 눈으로 확인하는 것이 마지막 판단 기준입니다. 숫자와 화면 메시지가 일치해야 안전합니다.": {
+  "h": "af58c62b73",
+  "sec": 95
+ },
+ "READY 상태와 base pressure — '지금 시작해도 되는가' 판단 운전 절차에서 가장 중요한 판단은 '시작 가능 상태인지'를 읽는 것입니다. 이 판단 기준을 정리합니다. 장비가 공정을 시작할 준비가 되면 화면에 READY 표시가 뜨거나 상태 램프가 초록색으로 바뀝니다. 이 READY는 여러 조건이 모두 충족됐다는 종합 신호입니다. READY가 뜨려면 보통 ① base pressure 도달, ② 온도·유량 등 setpoint 도달, ③ 문·밸브의 interlock 해제, ④ 이전 단계 정상 완료가 모두 만족되어야 합니다. 하나라도 어긋나면 NOT READY로 남습니다. base pressure에 도달했는지는 압력 숫자로 판단합니다. 예를 들어 목표가 < 5.0E-6 Torr인데 화면이 2.0E-4 Torr를 가리키면, 아직 두 자릿수 이상 높으므로 '아직 준비 안 됨'입니다. 장비가 대기 중이지만 공정 중은 아닌 상태를 idle 또는 standby라고 표시합니다. idle은 '문제는 없지만 아직 START 전'이라는 뜻으로, READY와는 다릅니다. START 버튼이 회색(비활성)으로 흐려져 있으면 아직 조건이 안 맞은 것입니다. 버튼이 활성화되고 READY가 초록불일 때만 실제로 시작할 수 있습니다. 정리하면, 작업자는 '숫자(base pressure/setpoint) + 상태표시(READY/interlock) + 버튼 활성 여부'를 함께 읽고 나서 시작 여부를 판단해야 합니다. 하나만 보고 판단하면 오조작으로 이어집니다.": {
+  "h": "223c895aea",
+  "sec": 100
+ },
+ "명령문(imperative) 읽기 — 작업 지시문의 문법 매뉴얼과 작업 지시서(work instruction)는 대부분 명령문입니다. 명령문의 형태를 알면 '무엇을 하라는지'가 즉시 보입니다. 작업 지시문은 주어 없이 동사로 시작하는 imperative(명령문) 형태가 기본입니다. 예: Load the cassette. / Press START. / Pump down the chamber. — 앞에 'You'가 생략된 '~하라'는 지시입니다. 금지·주의는 부정 명령문으로 표현됩니다. Do not open the door.(문을 열지 마라), Never vent while pumping.(배기 중 벤트 금지). Do not / Never로 시작하면 '하면 안 되는 것'이므로 특히 주의해서 읽습니다. 확인을 요구하는 동사도 자주 나옵니다. Ensure ~, Verify ~, Confirm ~, Check ~는 모두 '~인지 반드시 확인하라'는 뜻입니다. 예: Verify the gauge reads atmospheric pressure. 조건은 If ~, (then) ... 구조로 옵니다. 예: If the sequence stalls, press STOP.(시퀀스가 멈추면 STOP을 눌러라). If / When / Before / After로 시작하는 부분은 '언제 그 동작을 하는가'를 알려줍니다. 경고 등급 단어의 세기를 구분해야 합니다. NOTE(참고) < CAUTION(주의, 경미한 손상 가능) < WARNING(경고, 부상 위험) < DANGER(위험, 심각·치명적). 등급이 높을수록 반드시 그대로 따릅니다. 순서 지시에는 번호와 then / next / after that가 함께 쓰입니다. Purge with N2, then vent to atmosphere. 처럼 then의 앞뒤 순서를 뒤바꾸지 않도록 읽습니다.": {
+  "h": "81c501678f",
+  "sec": 114
+ },
+ "HMI / GUI 화면 텍스트 읽기 장비의 상태는 대부분 영어 화면(HMI/GUI)으로 표시됩니다. 버튼·표시등·메시지의 영어를 유형별로 익힙니다. 화면의 조작 버튼은 동사 한두 단어입니다: START / STOP / LOAD / UNLOAD / PUMP / VENT / PURGE / ABORT. 버튼이 진하면 활성(누를 수 있음), 흐리면 비활성(지금은 못 누름)을 뜻합니다. 상태 표시등(status lamp)의 색은 관례가 있습니다. 초록 = READY / RUNNING(정상), 노랑 = IDLE / STANDBY / WARNING(대기·주의), 빨강 = ALARM / FAULT / STOP(이상·정지). 색과 영어 단어를 함께 읽습니다. 진행 중 상태는 현재진행형 또는 '...'으로 표시됩니다: Pumping..., Evacuating..., Venting..., Processing.... 이 표시가 있으면 '동작 중이니 기다려라'는 의미입니다. 확인을 요구하는 팝업(prompt)이 뜹니다: Confirm to continue? 또는 Are you sure you want to vent? — 여기서 OK/Yes는 진행, Cancel/No는 취소입니다. 내용을 읽지 않고 누르면 안 됩니다. 수치 표시는 보통 현재값(actual)과 목표값(setpoint)이 나란히 나옵니다. 예: Pressure: 8.0E-5 / SP 5.0E-6 Torr. 왼쪽이 지금, 오른쪽이 도달해야 할 값입니다. 이상 메시지는 짧은 영어 코드/문장으로 뜹니다: INTERLOCK ACTIVE, BASE PRESSURE NOT REACHED, DOOR OPEN, GAS FLOW LOW. 이 문장을 그대로 읽고 원인을 판단하는 것이 현장 영어의 핵심 능력입니다.": {
+  "h": "fd8a28cf8a",
+  "sec": 99
+ },
+ "OPERATING PROCEDURE — STARTUP SEQUENCE 1. Load the wafer cassette onto the load port and confirm the carrier is properly seated. 웨이퍼 카세트를 로드 포트에 올리고, 캐리어가 제대로 안착되었는지 확인하라. (load = 넣기, confirm = 확인) 2. Press START to begin the automatic evacuation sequence. START를 눌러 자동 배기 시퀀스를 시작하라. (evacuation = pump down 과 동일) 3. Pump down the load lock until the chamber reaches base pressure (< 5.0E-6 Torr). 챔버가 base pressure(5.0×10⁻⁶ Torr 미만)에 도달할 때까지 로드락을 배기하라. 숫자가 목표값 아래로 내려가야 한다. 4. Wait for the READY indicator to turn green before proceeding. 다음 단계로 넘어가기 전에 READY 표시등이 초록으로 바뀔 때까지 기다려라. (READY = 시작 가능 상태) 5. Do NOT open the transfer valve until base pressure is achieved. base pressure에 도달하기 전에는 트랜스퍼 밸브를 열지 마라. (Do NOT = 금지, 인터록으로 막힐 수 있음)": {
+  "h": "7e81e6b03e",
+  "sec": 80
+ },
+ "SHUTDOWN & VENT — NOTES AND WARNINGS To unload the wafers, first purge the chamber with N2, then vent to atmosphere. 웨이퍼를 꺼내려면, 먼저 질소(N2)로 챔버를 퍼지한 뒤 대기압으로 벤트하라. 순서를 지켜야 한다. NOTE: Purging replaces residual process gas with inert N2 before the chamber is vented. 참고: 퍼지는 벤트 전에 잔류 공정 가스를 불활성 질소로 치환하는 과정이다. (NOTE = 참고 수준) WARNING: Never vent the chamber while the vacuum pump is still running. 경고: 진공 펌프가 아직 돌고 있는 동안에는 절대로 챔버를 벤트하지 마라. 펌프 손상·역류 위험. (WARNING = 부상/손상 위험) CAUTION: Verify the gauge reads atmospheric pressure before opening the door. 주의: 문을 열기 전에 게이지가 대기압을 가리키는지 확인하라. (CAUTION = 주의) If the sequence stalls or an alarm appears, press STOP and notify the shift engineer. 시퀀스가 멈추거나 알람이 뜨면, STOP을 누르고 교대 엔지니어에게 알려라. (스스로 임의 조작하지 말 것)": {
+  "h": "0cb55b573e",
+  "sec": 78
+ },
+ "새벽 3시, 챔버 압력이 흔들린다 야간 근무 중인 신입 기술자 민준. 담당하는 식각(etch) 장비의 HMI 화면에 노란 경고가 뜬다. Chamber Pressure: 12.4 mTorr (SP 10.0) 그리고 그 아래 UNSTABLE. 옆에는 가스 라인 로그가 흐른다. Ar Flow: 48 sccm / SP 50 sccm — OUT OF RANGE. 민준은 순간 얼어붙는다. 이 숫자들이 정상인지, 지금 라인을 멈춰야 하는지 판단해야 한다. 값을 '읽는' 것과 '정상/이상을 판단하는' 것은 다르다. 오늘 우리는 vacuum & gas log를 읽고, set point와 actual value의 차이를 해석하고, stable/unstable, out of range 같은 상태어를 근거로 정상과 이상을 가려내는 법을 배운다.": {
+  "h": "6331bed051",
+  "sec": 56
+ },
+ "왜 진공과 가스를 로그로 감시하는가 반도체 공정은 대부분 저압(진공) 환경에서 진행되며, 압력과 유량이 결과를 결정합니다. 박막 증착(deposition)과 식각(etch)은 챔버 내부를 vacuum 상태로 만든 뒤 정해진 process pressure에서 진행됩니다. 압력이 조금만 달라져도 막의 두께·균일도(uniformity)가 흔들립니다. 공정 가스는 정확한 비율과 양으로 들어가야 하므로 MFC (Mass Flow Controller)가 유량을 제어하고, 그 값이 로그에 flow rate로 기록됩니다. 장비는 목표값인 set point (SP)와 실제 측정값인 actual value (PV, process value)를 나란히 보여줍니다. 두 값의 차이(deviation)가 정상 판단의 핵심 단서입니다. 로그는 단순한 숫자 나열이 아니라 시간에 따른 trend입니다. 값이 stable하게 유지되는지, 아니면 drift하거나 spike가 있는지를 봐야 합니다. HMI/GUI 화면과 영문 매뉴얼은 이 상태를 영어 단어로 표시합니다: STABLE / UNSTABLE / OUT OF RANGE / IN RANGE / OK / ALARM. 이 단어를 못 읽으면 값을 봐도 판단할 수 없습니다.": {
+  "h": "59d02957f5",
+  "sec": 84
+ },
+ "압력 단위와 유량 단위 읽기 로그의 숫자는 반드시 단위와 함께 읽어야 의미가 생깁니다. 압력 단위 Torr와 mTorr: 1 Torr = 1000 mTorr입니다. 공정 압력은 보통 mTorr 단위이며, 예: 10 mTorr는 0.010 Torr입니다. 단위를 착각하면 1000배 차이가 납니다. 참고로 대기압은 약 760 Torr이고, 진공 공정은 그보다 훨씬 낮은 mTorr 영역에서 이뤄집니다. 낮을수록 '더 강한 진공(high vacuum)'입니다. 유량 단위 sccm (standard cubic centimeters per minute): 표준 조건에서 1분당 흘러가는 가스 부피입니다. 예: Ar 50 sccm은 아르곤이 분당 50 표준 cc로 흐른다는 뜻입니다. 큰 유량은 slm (standard liters per minute)로도 표기됩니다. 1 slm = 1000 sccm. 로그에서 단위가 sccm인지 slm인지 먼저 확인하세요. 로그에서 값과 단위, 그리고 SP/PV 위치를 함께 읽는 습관이 중요합니다. 예: Pressure PV 9.8 mTorr / SP 10.0 mTorr → 목표 10에 거의 도달, 정상 범위.": {
+  "h": "a58d9dbd26",
+  "sec": 76
+ },
+ "정상과 이상, 무엇으로 판단하는가 판단은 감이 아니라 로그가 주는 명시적 신호로 합니다. Set point vs actual value: 실제값이 목표값 근처에서 허용 오차(tolerance) 안에 있으면 정상입니다. 예: SP 50 sccm, PV 49 sccm은 보통 정상, PV 30 sccm은 이상입니다. Deviation(편차)이 허용 범위를 넘으면 장비는 OUT OF RANGE 또는 DEVIATION ALARM을 띄웁니다. 이는 '값이 목표에서 너무 벗어났다'는 명확한 이상 신호입니다. STABLE vs UNSTABLE: 값이 시간에 따라 일정하면 stable, 위아래로 요동치면 unstable입니다. UNSTABLE은 누설(leak), MFC 이상, 밸브 문제의 초기 징후일 수 있습니다. Warning vs Alarm: 색으로도 구분됩니다. 보통 노랑=warning(주의), 빨강=alarm/interlock(즉시 조치·정지). 색과 단어를 함께 읽어야 대응 수준을 압니다. 판단 순서: (1) 단위 확인 → (2) SP와 PV 비교 → (3) 상태어(STABLE/OUT OF RANGE 등) 확인 → (4) 색/알람 등급 확인. 이 순서를 지키면 새벽 3시에도 흔들리지 않습니다.": {
+  "h": "23bf7a8c78",
+  "sec": 79
+ },
+ "로그를 시간 흐름으로 읽기 (trend) 한 순간의 값보다 시간에 따른 변화가 이상을 더 빨리 알려줍니다. 로그에는 timestamp(시각)가 함께 찍힙니다. 예: 03:12:04 Pressure 10.1 mTorr STABLE. 언제 이상이 시작됐는지 추적하려면 시각을 함께 봐야 합니다. Ramp: 값이 목표까지 서서히 올라가거나 내려가는 정상 구간입니다. 램프 중에는 SP와 PV가 다른 것이 정상일 수 있습니다. Settling: 값이 목표에 도달해 안정되는 과정입니다. settling이 끝나 STABLE이 되기 전에는 공정을 시작하지 않습니다. Spike와 drift는 다릅니다. spike는 순간 급등, drift는 서서히 벗어남입니다. 로그 트렌드를 보면 둘을 구분해 원인을 좁힐 수 있습니다. 정상 로그는 SP 근처에서 PV가 평평하게 STABLE로 유지됩니다. 이상 로그는 편차 확대, UNSTABLE, OUT OF RANGE, 색 변화가 시간 순으로 나타납니다.": {
+  "h": "191637f3cc",
+  "sec": 67
+ },
+ "OPERATING PROCEDURE — VACUUM & GAS LOG CHECK Before starting the process, confirm that the chamber pressure has reached the base pressure and reads STABLE. 공정 시작 전, 챔버 압력이 기준 압력(base pressure)에 도달했고 STABLE로 표시되는지 확인하세요. Verify that each gas flow actual value is within tolerance of its set point. 각 가스 유량의 실제값(PV)이 설정값(SP)의 허용 오차 안에 있는지 확인하세요. NOTE: A deviation greater than 10% of the set point will be logged as OUT OF RANGE. 참고: 설정값의 10%를 초과하는 편차는 OUT OF RANGE로 기록됩니다. If the pressure reading is UNSTABLE for more than 30 seconds, do not start the recipe. 압력이 30초 이상 UNSTABLE 상태이면 레시피를 시작하지 마세요. WARNING: A pressure alarm may indicate a leak. Notify the equipment engineer and do not override the interlock. 경고: 압력 경보는 누설의 신호일 수 있습니다. 장비 엔지니어에게 알리고 인터록을 임의로 해제하지 마세요. Record the set point, actual value, and status for each line in the shift log. 각 라인의 설정값, 실제값, 상태를 교대 로그(shift log)에 기록하세요.": {
+  "h": "d378ccfbf6",
+  "sec": 88
+ },
+ "ALARM RESPONSE — GAS FLOW OUT OF RANGE When a gas flow reads OUT OF RANGE, first check whether the value is above or below the set point. 가스 유량이 OUT OF RANGE로 표시되면, 먼저 값이 설정값보다 높은지 낮은지 확인하세요. A reading far below the set point often means the gas line is starved or the MFC is faulty. 설정값보다 크게 낮은 값은 가스 공급 부족 또는 MFC 고장을 의미하는 경우가 많습니다. Do NOT reset the alarm until the actual value returns to within tolerance. 실제값이 허용 오차 안으로 돌아오기 전에는 경보를 리셋하지 마세요. If the value does not recover, place the tool on hold and escalate to the shift leader. 값이 회복되지 않으면 장비를 홀드(hold) 상태로 두고 교대 책임자에게 보고하세요.": {
+  "h": "f03574c418",
+  "sec": 54
+ },
+ "플라즈마가 켜지지 않는 새벽 새벽 3시, 식각(etch) 라인의 플라즈마 장비 앞에 선 지원이. 레시피를 시작했지만 웨이퍼 처리가 멈춰 있다. HMI 화면에는 RF Power: 800 W 라고 떠 있지만 그 아래 Reflected: 210 W 가 빨갛게 깜빡인다. 선배가 다가와 한마디 한다. \"The plasma didn't ignite — look at the reflected power, the match isn't tuned.\" 지원이는 이 문장을 읽고 무엇을 봐야 하는지 알아야 한다. 오늘 우리는 RF power, forward/reflected power, matching network, impedance 같은 화면 속 영어가 실제로 무엇을 뜻하는지, 그리고 반사파(reflected power) 값이 왜 중요한지를 읽고 판단하는 법을 배운다.": {
+  "h": "dcd28f3955",
+  "sec": 52
+ },
+ "플라즈마와 RF Power의 원리 플라즈마 장비는 가스에 고주파 전력을 걸어 이온화된 상태(플라즈마)를 만든다. 화면의 영어를 읽으려면 먼저 무엇이 일어나는지 알아야 한다. 플라즈마는 챔버(chamber) 안의 가스에 강한 전기 에너지를 가해 전자와 이온으로 쪼개진 상태다. 이 에너지를 공급하는 것이 RF power (Radio Frequency power) 이며, 보통 13.56 MHz 같은 고주파를 사용한다. 화면에서 RF Power 또는 Forward Power 는 장비가 챔버 쪽으로 내보내는 전력(W, watt)을 뜻한다. 예를 들어 Forward Power: 800 W 는 발생기(generator)가 800와트를 밀어내고 있다는 의미다. 전력이 실제로 플라즈마에 전달되어야 식각이나 증착 반응이 일어난다. 즉 RF power 는 단순한 숫자가 아니라 공정 반응의 세기를 결정하는 핵심 파라미터다. 화면에서 자주 보이는 RF ON / RF OFF 는 고주파 전력의 인가 여부를 나타낸다. RF ON 상태에서 값이 정상 범위여야 정상 처리 중이라는 뜻이다. 전력이 너무 낮으면 플라즈마가 ignite(점화)되지 않고, 너무 높으면 웨이퍼 손상이나 아크(arc)가 발생할 수 있어 항상 화면 값을 레시피(recipe) 설정값과 비교해 읽는다.": {
+  "h": "d0f7a64121",
+  "sec": 87
+ },
+ "Forward Power와 Reflected Power 현장에서 가장 중요한 판단은 '나간 전력'과 '되돌아온 전력'을 구분해 읽는 것이다. 반사파의 의미가 이 슬라이드의 핵심이다. Forward Power 는 발생기에서 챔버(부하) 쪽으로 나가는 전력이고, Reflected Power 는 부하에 흡수되지 못하고 발생기 쪽으로 되돌아온 전력이다. 화면에는 보통 두 값이 나란히 표시된다. 이상적인 상태에서는 Reflected Power ≈ 0 W 여야 한다. 나간 전력이 전부 플라즈마에 전달됐다는 뜻이기 때문이다. 반사파가 크면 그만큼 전력이 낭비되고 공정이 불안정해진다. 실제로 전달된 전력은 Delivered Power = Forward − Reflected 로 계산된다. 화면에 Fwd 800 W / Ref 200 W 라면 실제 플라즈마에 들어간 전력은 약 600 W다. Reflected Power 가 높다는 것은 impedance mismatch(임피던스 부정합)를 의미한다. 즉 발생기와 챔버의 전기적 조건이 맞지 않아 전력이 튕겨 나오는 상태다. 높은 반사파는 발생기 자체를 손상시킬 수 있어 장비는 High Reflected Power 알람을 띄우고 스스로 RF OFF 될 수 있다. 그래서 화면의 Reflected 값이 빨갛게 뜨면 즉시 확인해야 한다. 현장 판단 규칙: Forward 는 목표값 근처, Reflected 는 가능한 한 0에 가깝게 — 이 두 조건이 동시에 맞아야 '정상'이라고 읽는다.": {
+  "h": "b3edf9957c",
+  "sec": 94
+ },
+ "Matching Network와 Impedance 반사파를 0으로 만드는 장치가 매칭 네트워크다. 임피던스라는 개념을 알면 화면의 tune 값들이 읽힌다. Impedance 는 고주파 전력에 대한 회로의 '저항 성분'으로, 단위는 옴(Ω)이다. RF 발생기는 보통 50 Ω 로 설계되어 있고, 플라즈마 챔버의 임피던스는 공정 조건에 따라 계속 변한다. 발생기의 50 Ω 과 챔버의 임피던스가 다르면 전력이 반사된다. 이 둘을 맞춰 주는 장치가 matching network (또는 matchbox, matching unit)다. 매칭 네트워크 안에는 값을 조절하는 두 개의 가변 커패시터(variable capacitor)가 있고, 화면에는 보통 Load 와 Tune 두 위치 값이 % 또는 스텝(step)으로 표시된다. 장비가 이 커패시터를 자동으로 움직여 반사파를 최소로 만드는 동작을 auto tune 또는 impedance matching 이라 한다. 화면의 Tuning... 표시는 지금 매칭을 맞추는 중이라는 뜻이다. Match Position: Load 45% / Tune 62% 같은 값이 매번 크게 튀거나 한쪽 끝(0% 또는 100%)에 붙어 있으면 매칭이 제대로 잡히지 못한 상태(match at limit)로, 반사파가 높게 남는다. 즉 matching network 의 역할은 한 줄로: '챔버 임피던스를 50 Ω 으로 맞춰 reflected power 를 0에 가깝게 만든다'이다.": {
+  "h": "337b1be781",
+  "sec": 91
+ },
+ "Ignite와 Tune: 플라즈마 켜는 순서 실제 절차에서 쓰이는 동사들 — ignite, strike, tune, stabilize — 를 순서로 이해하면 매뉴얼과 알람이 그대로 읽힌다. ignite the plasma (또는 strike the plasma)는 '플라즈마를 점화한다'는 뜻으로, 가스를 넣고 RF 전력을 인가해 처음 방전을 일으키는 단계다. 화면에 Plasma ON / Plasma detected 가 뜨면 점화 성공이다. 점화 직후에는 임피던스가 급격히 변하므로 반사파가 잠깐 튄다. 이때 matching network 가 tune(맞춤) 동작을 하며 반사파를 끌어내린다. 화면 순서는 대개 RF ON → Igniting → Tuning → Stable 이다. tune 은 '반사파가 최소가 되도록 매칭 값을 조정한다'는 뜻이다. stabilize 는 값이 안정되어 공정이 정상 진행되는 상태를 가리킨다. 점화가 실패하면 Failed to ignite / No plasma 알람이 뜬다. 원인은 가스 유량 부족, 압력(pressure) 이상, 전력 부족, 매칭 불량 등이며 화면의 다른 값들과 함께 읽어 원인을 좁힌다. 정상 사이클을 영어 흐름으로 외워 두면 좋다: Set gas flow → Set pressure → RF ON → Ignite → Auto tune → Reflected drops to ~0 → Stable → Process runs. 현장에서 'tune 이 안 잡힌다'는 말은 곧 '반사파가 안 떨어진다', 즉 매칭 문제라는 뜻으로 통용된다.": {
+  "h": "962d713d2a",
+  "sec": 97
+ },
+ "HMI 화면 값 읽는 법 이론을 실제 화면에 대입해 보자. 같은 화면이라도 어떤 값을 짝지어 읽느냐가 판단을 좌우한다. 화면 값은 항상 짝으로 읽는다: Forward 는 Reflected 와 함께, Setpoint(SP) 는 Process Value(PV) 와 함께. 예: RF SP 1000 W / PV 995 W 면 목표와 실제가 거의 같아 정상이다. SP (Setpoint) 는 우리가 설정한 목표값, PV / Actual 는 지금 측정되는 실제값이다. 둘의 차이가 크면 장비가 목표를 못 따라가고 있다는 신호다. 색과 상태 텍스트도 정보다. Reflected 값이 초록/흰색이면 정상, 빨강 + HIGH 면 경고. Match: AUTO 는 자동 조정, Match: MANUAL / HOLD 는 수동 고정 상태를 뜻한다. 단위를 반드시 확인한다: 전력은 W (watt), 임피던스는 Ω (ohm), 매칭 위치는 % 또는 step, 주파수는 MHz. 단위를 놓치면 값의 크기를 오판한다. 정상 판단 체크: (1) Forward ≈ Setpoint, (2) Reflected ≈ 0, (3) Match 값이 양 끝단에 붙어 있지 않음, (4) 상태 텍스트가 Stable / RUN. 이 네 가지가 맞으면 '읽어서 정상'이라고 보고할 수 있다.": {
+  "h": "db115c5c9d",
+  "sec": 87
+ },
+ "OPERATING PROCEDURE — PLASMA IGNITION 1. Confirm that the process gas flow and chamber pressure have reached their setpoints before applying RF power. 1. RF 전력을 인가하기 전에 공정 가스 유량과 챔버 압력이 설정값에 도달했는지 확인한다. 2. Turn RF power ON and allow the system to ignite the plasma automatically. 2. RF 전력을 ON 하고 시스템이 자동으로 플라즈마를 점화하도록 둔다. 3. Keep the matching network in AUTO mode so it can tune and minimize reflected power. 3. 매칭 네트워크를 AUTO 모드로 유지하여 정합을 맞추고 반사파를 최소화하게 한다. 4. Verify that reflected power drops to nearly 0 W and the readings stabilize. 4. 반사파가 거의 0 W까지 떨어지고 값들이 안정화되는지 확인한다. 5. If the plasma fails to ignite, do NOT increase the RF power repeatedly; check gas flow, pressure, and the match position first. 5. 플라즈마가 점화되지 않으면 RF 전력을 반복해서 올리지 말고, 먼저 가스 유량·압력·매칭 위치를 점검한다.": {
+  "h": "ec79f12096",
+  "sec": 82
+ },
+ "WARNING — HIGH REFLECTED POWER WARNING: Sustained high reflected power can damage the RF generator and its output components. 경고: 반사파가 높은 상태가 지속되면 RF 발생기와 출력 부품이 손상될 수 있다. If the reflected power exceeds the alarm limit, the generator will automatically turn RF OFF to protect itself. 반사파가 알람 한계를 초과하면 발생기는 자기 보호를 위해 자동으로 RF를 OFF 한다. NOTE: A reflected power alarm usually indicates an impedance mismatch or a match unit stuck at limit. 참고: 반사파 알람은 대개 임피던스 부정합 또는 매칭 유닛이 한계에 걸린 상태를 나타낸다. Do not restart the RF power until the cause of the mismatch has been identified and cleared. 부정합의 원인을 확인하고 해소하기 전에는 RF 전력을 다시 켜지 않는다.": {
+  "h": "3fec4b9e2e",
+  "sec": 66
+ },
+ "빨간 램프가 켜졌다 새벽 3시, 식각(etch) 장비의 타워 램프가 초록에서 빨강으로 바뀌고 로봇이 멈춘다. HMI 화면에는 붉은 글씨로 ALARM: RF POWER FAILURE — Reflected power exceeded limit이 떠 있다. 신입 기술자 지훈은 반사적으로 RESET 버튼에 손을 뻗었지만, 사수가 말린다. \"먼저 읽어. alarm인지 warning인지, interlock이 걸린 건지부터 봐야 해.\" 화면 아래에는 작은 글씨로 INTERLOCK ACTIVE — Chamber door open도 함께 떠 있었다. 만약 지훈이 그냥 리셋을 눌렀다면, 도어가 열린 채로 공정이 재개되어 위험한 상황이 벌어졌을 것이다. 이 장에서 우리는 화면과 매뉴얼에 뜨는 영어 알람 문장을 읽고, 무엇을 먼저 할지 판단하는 법을 배운다. 현장에서 영어는 쓰는 것이 아니라 정확히 읽고 조치를 결정하는 도구다.": {
+  "h": "29a3a51fce",
+  "sec": 59
+ },
+ "알람이란 무엇인가 — 장비가 보내는 신호 알람은 장비가 \"정상 범위를 벗어났다\"고 사람에게 알리는 표준화된 메시지다. Alarm(알람)은 공정 값이나 장비 상태가 미리 정해진 허용 범위(limit)를 벗어났을 때 자동으로 발생한다. 대부분의 장비는 알람이 뜨는 순간 공정을 stop(정지)하거나 hold(대기) 상태로 전환한다. 화면에서 알람은 보통 빨간색(red) 텍스트와 타워 램프로 표시되고, 각 알람에는 고유한 alarm code(알람 코드)와 한 줄짜리 영어 message(메시지)가 붙는다. 예: ALM-1203: Chamber pressure out of range. 알람은 원인과 시간이 기록되는 alarm log / alarm history(알람 이력)에 남는다. 기술자는 코드와 발생 시각(timestamp)을 읽어 나중에 엔지니어에게 정확히 보고할 수 있어야 한다. 중요한 점: 알람 메시지는 \"무엇이 잘못됐는지\"를 알려줄 뿐, \"눌러도 되는지\"를 말해주지 않는다. 그래서 기술자의 판단(judgement)이 필요하다 — 읽고, 종류를 구분하고, 안전 조건을 확인한 뒤 조치한다. 알람의 심각도는 색과 단어로 구분된다. information / warning / alarm / critical(interlock) 순으로 위험도가 올라가며, 단어 하나가 \"지금 멈춰라\"인지 \"곧 문제될 수 있다\"인지를 결정한다.": {
+  "h": "d8c87f8773",
+  "sec": 92
+ },
+ "Alarm vs Warning vs Interlock — 세 단어의 차이 가장 먼저 구분해야 할 세 단어. 이 구분이 조치의 순서를 결정한다. Warning(경고)는 아직 공정을 멈추지는 않지만 \"이대로 가면 곧 알람\"이라는 예고다. 예: WARNING: Chamber temperature approaching upper limit. 보통 노란색(yellow)으로 표시되며, 기술자는 상황을 관찰하고 원인을 미리 조치할 수 있다. Alarm(알람)은 실제로 한계를 벗어나 공정이 정지된 상태다. 예: ALARM: Gas flow below setpoint. 원인을 확인하고 조치한 뒤 reset해야 재개할 수 있다. Interlock(인터록)은 안전/설비 보호를 위한 강제 잠금이다. 도어 열림, 압력 이상, EMO 눌림 같은 안전 조건(safety condition)이 만족되지 않으면 장비가 절대 동작하지 못하게 막는다. 예: INTERLOCK: Chamber door open. 핵심 차이: 일반 알람은 원인을 없애면 리셋되지만, 인터록은 안전 조건 자체를 물리적으로 해소하기 전에는 절대 리셋되지 않으며, 억지로 리셋하려 해서는 안 된다. 화면의 INTERLOCK ACTIVE는 \"사람이 다칠 수 있다\"는 최고 우선순위 신호다. 따라서 여러 메시지가 동시에 뜨면 읽는 순서는 항상 interlock → alarm → warning이다. 가장 위험한 것부터 읽고, 안전 조건을 먼저 확인한다.": {
+  "h": "7904ad08aa",
+  "sec": 90
+ },
+ "Timeout · Failure · Abort — 실패의 종류를 읽기 알람 문장에 자주 등장하는 세 가지 실패 유형. 원인이 다르면 조치도 다르다. Timeout(타임아웃)은 어떤 단계가 정해진 시간 안에 완료되지 않았을 때 발생한다. 예: TIMEOUT: Vacuum not reached within 120 s. 이는 밸브, 펌프, 누설(leak) 등 \"완료를 막는 원인\"이 있음을 뜻하므로, 단순 리셋이 아니라 원인 점검이 필요하다. Failure / Fault(실패·고장)는 부품이나 신호 자체가 정상 응답을 하지 못한 상태다. 예: RF POWER FAILURE, PUMP FAULT. 하드웨어 문제일 가능성이 높아 대개 엔지니어 호출 대상이다. Abort(중단)는 진행 중이던 공정이나 동작이 도중에 강제로 취소된 것이다. 예: PROCESS ABORTED by interlock. \"누가/무엇이\" 중단시켰는지(by ~)를 읽는 것이 원인 파악의 핵심이다. 이 단어들은 종종 한 문장에 겹쳐 나온다. 예: Step aborted due to pump-down timeout — \"펌프다운 타임아웃 때문에 스텝이 중단됨\". 각 단어를 분해해 읽으면 원인 사슬(cause chain)이 보인다. 판단 요령: timeout은 대기·재시도로 회복될 때가 있지만, failure/fault는 하드웨어 조치가 필요하고, abort는 무엇이 트리거(trigger)했는지를 먼저 찾아야 한다. 문장의 동사와 명사를 정확히 읽는 것이 곧 조치의 방향이다.": {
+  "h": "31066795b8",
+  "sec": 100
+ },
+ "Reset · Recovery — 되돌리기 전에 확인할 것 알람을 지우고 장비를 정상으로 되돌리는 절차. 순서를 지키지 않으면 위험하다. Acknowledge(ACK, 확인)는 \"이 알람을 봤다\"고 시스템에 알리는 첫 동작이다. ACK를 눌러도 원인이 사라지는 것은 아니며, 단지 알람음/깜빡임을 멈추고 이력에 확인 시각을 남긴다. Reset(리셋)은 알람 상태를 해제하고 장비를 IDLE/READY 상태로 되돌리는 동작이다. 반드시 원인을 해소(clear the cause)한 뒤에만 눌러야 한다. 원인이 남은 채 리셋하면 같은 알람이 즉시 다시 뜨거나, 인터록이라면 위험을 초래한다. Recovery(복구)는 정지 지점에서 공정을 안전하게 재개하거나 초기 상태로 되돌리는 전체 과정을 말한다. 화면의 Recovery 메뉴는 보통 단계별(step-by-step) 안내를 제공한다. 표준 순서는 대개 이렇다: (1) 메시지 읽기(read) → (2) 안전/인터록 조건 확인(verify) → (3) 원인 조치(clear) → (4) ACK → (5) RESET → (6) 상태가 READY인지 확인 → (7) 재개(resume) 또는 엔지니어 보고. Override(강제 해제)는 인터록이나 안전 조건을 사람이 임의로 무시하는 기능으로, 권한이 있는 엔지니어만 사용해야 한다. 매뉴얼에 Do NOT override라고 적혀 있으면 절대 눌러서는 안 된다.": {
+  "h": "d129fc954c",
+  "sec": 99
+ },
+ "화면(HMI)에서 알람 읽기 — 어디를 보나 실제 장비 GUI에서 알람 정보는 정해진 위치와 형식으로 표시된다. Status bar(상태 표시줄): 화면 상단 또는 하단에 장비 상태가 영어 한 단어로 뜬다 — RUN / IDLE / READY / HOLD / DOWN / ALARM. 이 단어만 봐도 지금 장비가 돌 수 있는지 없는지를 알 수 있다. Alarm banner(알람 배너): 붉은 띠에 code + message + timestamp가 표시된다. 형식은 보통 ALM-1203 03:14:07 Chamber pressure out of range처럼 코드-시각-문장 순이다. Active vs History(현재 vs 이력): Active alarms는 아직 해소되지 않아 지금 조치가 필요한 알람이고, Alarm history는 지나간 기록이다. 조치할 때는 반드시 Active 목록을 먼저 본다. Severity color(심각도 색): 대부분 빨강=alarm/critical, 노랑=warning, 파랑/회색=information. 색과 단어를 함께 읽어 우선순위를 정한다. Help / Guidance 링크: 알람을 누르면 Probable cause(추정 원인)와 Recommended action(권장 조치) 영어 설명이 나오는 장비가 많다. 이 두 항목을 읽는 습관이 오조작을 막는다. 정리하면, 기술자는 화면에서 항상 이 순서로 눈을 움직인다: 상태 단어 → 인터록 여부 → 알람 코드/문장 → 추정 원인 → 권장 조치. 읽는 순서가 곧 안전이다.": {
+  "h": "02fc112f46",
+  "sec": 104
+ },
+ "알람은 '문장'이 아니라 '상태 조각'이다 실제 알람 배너는 예의 바른 문장이 아니라, 원인·상태를 압축한 짧은 조각이다. 이 형태에 익숙해져야 빨리 판단한다. 실제 배너 예시: Interlock not satisfied(인터록 조건 미충족), Chamber pressure out of spec(챔버 압력 규격 이탈), Reflected power high — Process abort(반사파 높음 → 공정 중단), Water flow low — Warning(냉각수 유량 낮음, 경고). 알람에는 심각도 등급이 붙는다(SECS/GEM 표준). personal safety(인명 안전) > equipment safety(장비 안전) > parameter control(공정 파라미터) > others. 등급 단어를 먼저 보고 긴장도를 정한다. 색으로도 등급을 준다. 보통 Blue = Warning(주의), Red = Process abort / Fault(중단·고장). 색과 텍스트를 함께 읽는다. 알람을 지우는 동작도 딱딱한 동사다: Accept / Acknowledge(확인해 로그에 남김), Silence(경보음만 끔), Reset(원인 해소 후 해제). 'Acknowledge'는 문제 해결이 아니라 그냥 '봤음'이다. 핵심: 알람을 완전문장으로 기대하지 말고 대상 + 상태/문제 + 조치 조각으로 끊어 읽어라. 예: APC valve / stuck / abort.": {
+  "h": "0d544ce1a3",
+  "sec": 93
+ },
+ "ALARM RESPONSE PROCEDURE When an alarm is triggered, the equipment stops automatically and the alarm lamp turns red. 알람이 발생하면 장비는 자동으로 정지하고 타워 램프가 빨간색으로 바뀐다. 이때 당황하지 말고 화면을 먼저 읽는다. Read the alarm code and message on the HMI before taking any action. 어떤 조치를 하기 전에 반드시 HMI에 표시된 알람 코드와 메시지를 먼저 읽는다. 읽는 것이 첫 번째 조치다. Check whether an interlock is active. If so, resolve the safety condition first. 인터록이 활성 상태인지 확인한다. 활성이라면 도어 닫기 등 안전 조건을 가장 먼저 해소한다. Do NOT press RESET until the root cause has been identified and cleared. 근본 원인을 찾아 해소하기 전에는 RESET을 누르지 않는다. 원인이 남아 있으면 같은 알람이 다시 발생한다. WARNING: Resetting an active interlock may cause serious injury or equipment damage. 경고: 활성 상태의 인터록을 강제로 리셋하면 중대한 부상이나 장비 손상을 일으킬 수 있다. If the alarm cannot be cleared, record the alarm code and contact the equipment engineer. 알람이 해소되지 않으면 알람 코드를 기록하고 장비 엔지니어에게 연락한다. 임의 판단으로 계속 시도하지 않는다.": {
+  "h": "352916cc45",
+  "sec": 93
+ },
+ "INTERLOCK CLEAR & RECOVERY An interlock prevents the process from starting while a safety condition is not satisfied. 인터록은 안전 조건이 만족되지 않는 동안 공정이 시작되지 못하도록 막는다. 이는 오작동이 아니라 정상적인 보호 동작이다. Verify that all doors are closed and the chamber pressure is within range before clearing the interlock. 인터록을 해제하기 전에 모든 도어가 닫혀 있고 챔버 압력이 정상 범위 안에 있는지 확인한다. Press ACK to acknowledge the alarm, then press RESET to return the tool to IDLE. ACK를 눌러 알람을 확인 처리한 뒤, RESET을 눌러 장비를 IDLE 상태로 되돌린다. 순서를 지킨다. NOTE: A timeout alarm indicates that a step did not complete within the allowed time. 참고: 타임아웃 알람은 어떤 스텝이 허용 시간 안에 완료되지 못했음을 뜻한다. 밸브·펌프·누설 여부를 점검한다. After recovery, confirm that the tool status shows READY before resuming the lot. 복구 후에는 로트를 재개하기 전에 장비 상태가 READY로 표시되는지 확인한다. 상태 확인 없이 재개하지 않는다.": {
+  "h": "aa822b5442",
+  "sec": 84
+ },
+ "정비의 아침: 오늘 이 장비는 'DOWN'이다 야간 근무를 마친 지훈은 교대 전 HMI 화면에서 붉은 글씨를 본다. PM DUE — 오늘 이 식각(etch) 장비의 예방 정비(Preventive Maintenance) 기한이다. 화면 하단에는 상태가 TOOL DOWN으로 바뀌어 있고, 옆에는 Work Order #4471이 떠 있다. 선임 기술자가 태블릿을 건네며 말한다. \"Follow the PM checklist. Inspect the O-ring, clean the chamber wall, replace the pump oil, and calibrate the MFC.\" 지훈이 받은 체크리스트는 전부 영어 명령문이다. Inspect / Clean / Replace / Calibrate / Tighten / Lubricate — 이 여섯 개의 동사가 오늘 하루를 지배할 것이다. 그는 먼저 LOTO(잠금·표찰)를 걸어 장비의 위험 에너지를 차단한다. 챔버를 열자 O-ring에 미세한 균열이 보인다. 체크리스트에는 이렇게 적혀 있다: *Replace the O-ring if any damage is found.* 지훈은 새 O-ring에 vacuum grease를 얇게 바르고(lubricate), 볼트를 star pattern으로 규정 토크에 맞춰 조인다(tighten). 정비의 핵심은 손재주가 아니라 영어 지시문을 정확히 읽고 판단하는 능력이다. 한 줄을 잘못 읽으면 진공 누설(vacuum leak)로 이어진다.": {
+  "h": "9cd0fb49c7",
+  "sec": 93
+ },
+ "예방 정비(PM)란 무엇이며, 왜 영어로 되어 있는가 PM은 '고장 난 뒤 고치는' 것이 아니라 '고장 나기 전에 정기적으로 손보는' 정비입니다. 반도체 팹의 장비 대부분은 해외 제조사(미국·일본·유럽 장비사) 제품이므로, PM 문서와 화면 텍스트는 거의 전부 영어입니다. Preventive Maintenance (PM) 는 정해진 주기마다 부품을 점검·청소·교체하여 예기치 못한 고장(unplanned downtime)을 막는 정비입니다. 반대 개념은 고장 후 수리하는 Corrective Maintenance(사후 정비) 입니다. PM은 주기(interval)로 관리됩니다. 화면에는 상태가 PM DUE(기한 도래), OVERDUE(기한 초과), DONE(완료)로 표시됩니다. OVERDUE가 뜨면 그 장비는 규정상 가동을 멈추고 TOOL DOWN 상태가 됩니다. 실제 작업은 PM checklist(정비 체크리스트) 로 진행됩니다. 각 줄은 Inspect / Clean / Replace / Calibrate / Tighten / Lubricate 같은 명령형 동사로 시작하고, 기술자는 각 항목을 Pass / Fail 로 표시합니다. 대부분의 팹은 CMMS(Computerized Maintenance Management System) 로 정비 이력을 관리합니다. 기술자는 측정값을 CMMS log에 기록하고, 끝나면 Work Order(작업 지시서) 를 닫습니다(*close the work order*). PM의 목적은 단순 청소가 아니라 공정 안정성 유지입니다. 챔버 벽의 폴리머, 열화된 O-ring, 오염된 펌프 오일은 모두 파티클 증가·진공 누설·유량 오차로 이어져 웨이퍼 수율을 떨어뜨립니다. 즉 이 수업의 핵심은 도구 설계가 아니라 영어 체크리스트와 HMI 문구를 정확히 읽고, 합격/불합격을 판단하는 것입니다.": {
+  "h": "95213ac987",
+  "sec": 118
+ },
+ "체크리스트 6대 동사: 무엇을 하라는 명령인가 PM 체크리스트의 모든 줄은 동사로 시작합니다. 이 여섯 개 동사의 뜻을 헷갈리면 엉뚱한 작업을 하게 됩니다. 각 동사가 실제로 어떤 물리적 행동을 지시하는지 정리합니다. Inspect (점검하다) — 부품을 눈·손·계측기로 확인합니다. 예: *Inspect the O-ring for cracks and particles.* '교체'가 아니라 '상태 확인'입니다. 이상이 없으면 다음 단계로 넘어갑니다. Clean (청소하다) — 오염물·폴리머·파티클을 제거합니다. 예: *Clean the chamber wall with IPA-dampened wipes.* 보통 lint-free wipe(보풀 없는 와이프) 와 IPA(이소프로필알코올) 를 사용합니다. Replace (교체하다) — 소모품이나 손상 부품을 새것으로 바꿉니다. 예: *Replace the pump oil.* Clean(청소) 과 혼동하면 안 됩니다 — Replace는 반드시 새 부품으로 바꾸라는 뜻입니다. Calibrate (교정하다) — 계측기의 값을 기준기에 맞춰 보정합니다. 예: *Calibrate the MFC against the reference flow meter.* 흔히 zero(영점) 를 먼저 맞춥니다. Tighten (조이다) — 볼트·피팅을 규정 토크로 조입니다. 예: *Tighten the bolts to 8 N·m in a star pattern.* 너무 세게 조이면(over-tighten) 세라믹 부품이 깨질 수 있습니다. Lubricate (윤활하다) — O-ring이나 이동 부위에 그리스를 얇게 바릅니다. 예: *Lightly lubricate the new O-ring with vacuum grease.* '얇게(lightly)'가 핵심 — 과도하면 오히려 파티클 원인이 됩니다.": {
+  "h": "fd6180aa2f",
+  "sec": 110
+ },
+ "PM 대상 부품과 소모품: O-ring, pump oil, chamber wall, MFC/gauge 체크리스트에 반복해서 등장하는 네 가지 핵심 부품·소모품입니다. 각각이 왜 정비 대상인지, 문제가 생기면 무슨 증상이 나타나는지 이해하면 영어 문장의 뜻이 명확해집니다. O-ring(오링) — 챔버 뚜껑·플랜지의 진공 실링(seal)입니다. 균열·변형·이물질이 있으면 vacuum leak(진공 누설) 이 생겨 base pressure(도달 진공도) 가 올라갑니다. PM 때 inspect → (손상 시) replace → lubricate 순서로 다룹니다. Pump oil(펌프 오일) — 러핑 펌프(rough/roughing pump)의 윤활·밀봉 오일입니다. 색이 어두워지거나 sight glass(점검창) 의 MIN line 아래로 내려가면 교체합니다. 예: *Replace the pump oil when it turns dark.* Chamber wall(챔버 벽) — 공정 중 폴리머·부산물이 쌓입니다. 방치하면 벗겨져 파티클(particle)이 됩니다. wet clean(습식 세정) 이나 와이프로 제거합니다. 예: *Remove polymer buildup from the chamber wall.* MFC (Mass Flow Controller, 질량유량제어기) — 공정 가스 유량을 sccm 단위로 제어합니다. 오차가 커지면 공정이 틀어지므로 정기적으로 calibrate 합니다. 화면에 *setpoint 50 / actual 0 sccm* 처럼 표시됩니다. Gauge(진공 게이지) — 챔버 압력을 측정합니다(예: Pirani, 이온 게이지). zero(영점) 확인과 base pressure 검증이 PM 항목에 포함됩니다. 예: *Check the gauge zero.* 핵심: 이 네 부품은 서로 연결되어 있습니다 — O-ring 누설이나 게이지 오차는 결국 진공 불량으로, MFC 오차는 유량 불량으로, 챔버 벽 오염은 파티클 불량으로 나타납니다.": {
+  "h": "d28f5768b0",
+  "sec": 126
+ },
+ "측정과 규격 판단: torque, leak rate, base pressure, out of spec PM은 단순 작업이 아니라 '측정하고 규격(spec)과 비교해 합격/불합격을 판단'하는 일입니다. 영어 화면·체크리스트에 나오는 수치와 판정 문구를 읽는 법입니다. Torque spec(토크 규격) — 볼트를 조이는 힘의 규정값입니다. 단위는 N·m(뉴턴미터). 예: *Tighten to 8 N·m.* 규격보다 세게 조이면 부품 손상, 약하게 조이면 누설이 생깁니다. 보통 star pattern(별 모양 순서) 으로 균일하게 조입니다. Leak check / leak rate(누설 검사 / 누설률) — 진공 밀봉이 제대로 됐는지 확인합니다. 흔히 helium leak check(헬륨 누설 검사) 를 하며, leak rate가 규격보다 크면 실링(O-ring) 재점검이 필요합니다. Base pressure(도달 진공도) — 가스를 넣지 않은 상태에서 도달하는 최저 압력입니다. 단위는 mTorr / Torr. 예: *Verify base pressure reaches 5 mTorr.* 값이 규격보다 높으면 누설·오염을 의심합니다. Setpoint vs Actual(설정값 대 실제값) — HMI에서 유량·온도·압력은 목표(setpoint)와 실제(actual)가 나란히 표시됩니다. 예: *MFC1 flow 0 sccm (setpoint 50)* → 설정은 50인데 실제 0이므로 가스가 흐르지 않는 이상 상태입니다. 판정 문구 — 각 항목 결과는 Pass / Fail, OK / NG(No Good), 또는 In Spec / Out of Spec 로 표시됩니다. Out of Spec 은 '규격을 벗어남 — 조치 필요'라는 뜻입니다. 따라서 좋은 기술자는 '값을 읽는 것'을 넘어, 그 값이 limit(한계) 안에 있는지 즉시 판단합니다. 예: *Base pressure 12 mTorr (limit 5 mTorr)* → 한계 초과, 불합격.": {
+  "h": "ae944fd422",
+  "sec": 115
+ },
+ "HMI·체크리스트 화면 영어 읽기: 상태·단위·기록 정비 중에는 종이 체크리스트뿐 아니라 장비 HMI(터치스크린) 문구도 읽어야 합니다. 자주 나오는 상태 표시, 단위, 기록 관련 표현을 정리합니다. 상태(status) 표시 — TOOL UP(가동 가능) / TOOL DOWN(가동 중지) / PM DUE(정비 기한) / OVERDUE(기한 초과) / IN PROGRESS(작업 중) / DONE(완료). 붉은색은 대개 이상·중지를 의미합니다. 단위(units) — 유량은 sccm, 압력은 Torr / mTorr / Pa, 토크는 N·m, 온도는 °C. 단위를 잘못 읽으면 판단이 완전히 틀어집니다(예: 5 mTorr ≠ 5 Torr). 지시 문구 — *Confirm*, *Verify*, *Record*, *Do not operate*, *Remove before servicing* 등 명령·주의 표현이 자주 나옵니다. 특히 Do not(하지 마라) 로 시작하는 줄은 안전·손상 방지 경고이므로 반드시 지켜야 합니다. 기록(logging) — *Record the reading in the CMMS log*(측정값을 정비 시스템에 기록), *Sign off each step*(각 단계에 서명), *Close the work order*(작업 지시 종료). 정비는 '기록으로 끝난다'는 점을 기억하세요. 경고 단계 — 문서의 NOTE(참고) < CAUTION(주의, 장비 손상 가능) < WARNING(경고, 인명 위험) < DANGER(위험, 즉각적 인명 위험) 순으로 위험도가 올라갑니다. 요약: 화면 한 줄을 읽을 때 ①동사(무엇을), ②대상(어디에), ③수치·단위(얼마나), ④판정(합격 여부)의 네 가지를 순서대로 파악하는 습관을 들이면 실수를 크게 줄일 수 있습니다.": {
+  "h": "c7594622a7",
+  "sec": 106
+ },
+ "PREVENTIVE MAINTENANCE CHECKLIST — VACUUM CHAMBER 1. Inspect the main chamber O-ring for cracks, particles, and permanent deformation. 해설: 챔버 메인 O-ring에 균열·이물질·영구 변형이 있는지 점검하라. (Inspect = 확인만, 교체 아님) 2. Clean the chamber wall and showerhead using lint-free wipes dampened with IPA. 해설: 보풀 없는 와이프에 IPA를 적셔 챔버 벽과 샤워헤드를 청소하라. 용제를 직접 분사하지 말 것. 3. Replace the O-ring if any damage is found. Do not reuse a used O-ring. 해설: 손상이 발견되면 O-ring을 교체하라. 사용했던 O-ring을 재사용하지 말 것. 4. Lightly apply vacuum grease to the new O-ring before installation. 해설: 설치 전 새 O-ring에 진공 그리스를 얇게 바르라. ('lightly' = 얇게가 핵심) 5. Tighten all chamber bolts to the specified torque (8 N·m) in a star pattern. 해설: 모든 챔버 볼트를 규정 토크 8 N·m로, 별 모양 순서로 조여 압력을 고르게 분산하라. 6. Mark each step Pass / Fail and record any out-of-spec value in the CMMS log. 해설: 각 단계를 합격/불합격으로 표시하고, 규격 이탈 값은 CMMS 기록에 남겨라.": {
+  "h": "c44ea62fad",
+  "sec": 96
+ },
+ "SAFETY — LOCKOUT / TAGOUT (LOTO) WARNING: Hazardous energy present. Perform LOTO before opening the chamber. 해설: 경고 — 위험 에너지가 있음. 챔버를 열기 전에 반드시 LOTO(잠금·표찰)를 수행하라. Shut off and lock the RF, gas, and vacuum supplies, then attach your personal tag. 해설: RF·가스·진공 공급을 차단하고 잠근 뒤, 본인 이름표(개인 표찰)를 부착하라. Do not operate the tool until all locks and tags are removed by the assigned technician. 해설: 담당 기술자가 모든 잠금과 표찰을 제거하기 전에는 장비를 절대 가동하지 말라. NOTE: Verify the zero-energy state before starting any maintenance work. 해설: 참고 — 정비 작업을 시작하기 전 '무에너지 상태(zero-energy)'를 반드시 확인하라.": {
+  "h": "860a63562a",
+  "sec": 61
+ },
+ "MFC / GAUGE CALIBRATION PROCEDURE 1. Zero the MFC with no gas flow. The display should read 0 sccm. 해설: 가스 흐름이 없는 상태에서 MFC 영점을 맞춰라. 표시값이 0 sccm이어야 한다. 2. Calibrate the MFC against the reference flow meter at 20%, 50%, and 100% of full scale. 해설: 기준 유량계에 맞춰 풀스케일의 20%, 50%, 100% 지점에서 MFC를 교정하라. 3. If the deviation exceeds ±1% of full scale, recalibrate or replace the MFC. 해설: 편차가 풀스케일의 ±1%를 넘으면 MFC를 재교정하거나 교체하라. 4. Check the vacuum gauge zero and verify the base pressure reaches 5 mTorr. 해설: 진공 게이지 영점을 확인하고, 도달 진공도가 5 mTorr에 도달하는지 검증하라. 5. Record all readings in the CMMS maintenance log and close the work order. 해설: 모든 측정값을 CMMS 정비 기록에 남기고 작업 지시서를 종료하라.": {
+  "h": "b83ae3993a",
+  "sec": 73
+ },
+ "중간 점검 안내 앞 챕터(CH 1~7)에서 배운 장비 구성 · 운전 절차 · 로그 값 · 알람 해석을 확인합니다. 영어 문장과 용어를 읽고 답하세요.": {
+  "h": "9c22fdf2b6",
+  "sec": 11
+ },
+ "층으로 읽는 반도체 신입 기술자 지훈은 첫 출근날, 엔지니어가 모니터에 띄운 소자 cross-section 그림 앞에서 멈칫했다. 화면 맨 아래엔 회색 substrate (Si), 그 위로 well, active, 빨간 poly (gate), 그리고 위쪽 굵은 선들에는 metal이라 적혀 있었다. 선배가 물었다. \"This layer here — what is it?\" 지훈은 순간 당황했지만, 곧 깨달았다. 반도체는 결국 bottom-up 으로 층층이 쌓인 구조이고, 화면과 매뉴얼의 영어 단어는 각각 그 '층(layer)'의 이름일 뿐이라는 것을. 아래에서 위로 substrate → well → active → poly → contact → metal 순서만 머릿속에 넣으면, 낯선 영어 화면도 '지도'처럼 읽을 수 있다. 오늘 수업의 목표는 바로 이 층 이름을 영어로 '읽고 판단'하는 것이다.": {
+  "h": "2ff96a65a9",
+  "sec": 58
+ },
+ "소자 단면과 적층 순서 (아래→위) 반도체 소자를 옆에서 자른 단면(cross-section)으로 보면, 아래에서 위로 정해진 순서대로 층이 쌓입니다. 소자는 cross-section 으로 보면 아래에서 위로 층층이 쌓인 구조입니다. 순서는 substrate (Si) → well → active → gate (poly) → contact / via → metal (interconnect) 이며, 이 bottom-up stack 을 외워두면 모든 화면 용어의 '위치'를 알 수 있습니다. 맨 아래층인 substrate 는 순수 실리콘 wafer 본체입니다. 모든 소자가 이 위에 만들어지므로 '바닥'이자 기준면(reference plane)이 됩니다. 각 층은 도면(layout)에서는 서로 다른 색의 layer 로 그려지고, 실제 소자에서는 물리적으로 쌓인 박막(thin film)이 됩니다. 즉 화면의 layer = 실물의 한 층입니다. 매뉴얼과 HMI 화면에서 \"Metal 1\", \"poly\", \"active\" 같은 단어는 이 적층 순서 중 특정 층을 가리키는 이름입니다. 순서를 알면 낯선 영어 단어도 '어느 높이의 층인지'로 해석할 수 있습니다. 공정 관점에서는 아래쪽(substrate ~ contact)을 FEOL (Front-End-Of-Line), 위쪽 배선(metal / via)을 BEOL (Back-End-Of-Line) 이라 부르며, 적층 순서가 곧 공정 순서와 대응됩니다.": {
+  "h": "78408dee3b",
+  "sec": 99
+ },
+ "맨 아래층: substrate · well · active 소자의 뿌리에 해당하는 세 층입니다. 트랜지스터가 '어디에, 어떤 극성으로' 만들어질지를 결정합니다. substrate 는 소자의 기반이 되는 실리콘 몸체입니다. 화면 라벨로 \"Sub\", \"Si substrate\", \"P-sub\" 등으로 나타나며, 보통 P형(P-type) 실리콘을 씁니다. well 은 substrate 안에 만드는 넓은 도핑 영역입니다. N-well 은 PMOS 트랜지스터를, P-well 은 NMOS 트랜지스터를 담는 '방(pocket)' 역할을 합니다. 화면의 \"NW\" / \"PW\" 가 이것입니다. active (또는 active area, OD)는 트랜지스터가 실제로 동작하는 영역입니다. 이 영역 밖은 field oxide / STI 로 절연되어 소자끼리 서로 간섭하지 않게 격리(isolation)됩니다. 즉 순서상 substrate 위에 well 을 만들고, 그 안에 active 영역을 정의합니다. active 영역 안에서 source, drain, 채널(channel)이 형성됩니다. 매뉴얼에서 \"Define the active region inside the well\" 같은 문장을 만나면, '웰 안에 소자 동작 영역을 잡는다'는 뜻으로 읽으면 됩니다.": {
+  "h": "0e1754cee7",
+  "sec": 80
+ },
+ "게이트층: poly · gate oxide · source/drain 트랜지스터의 '스위치'를 이루는 핵심 층들입니다. 이 부분 영어 용어가 화면·매뉴얼에 가장 자주 등장합니다. gate 는 트랜지스터를 켜고 끄는 전극입니다. 재료로 폴리실리콘을 쓰기 때문에 화면·도면에서는 흔히 poly 라는 층 이름으로 표시됩니다. 즉 \"poly\" = gate layer 로 이해하면 됩니다. gate 와 active 사이에는 아주 얇은 절연막인 gate oxide (GOX) 가 있습니다. 두께가 나노미터 수준이라 품질 관리가 매우 중요하며, 매뉴얼에 \"gate oxide thickness\" 스펙이 자주 나옵니다. gate 양옆의 active 영역이 각각 source 와 drain 이 됩니다. 전류가 source → channel → drain 으로 흐르며, 이 흐름을 gate 전압이 제어합니다. 적층 순서로 보면 active 위에 gate oxide, 그 위에 poly (gate) 가 올라갑니다. 따라서 단면도에서 poly 는 active 보다 한 층 위에 그려집니다. HMI/매뉴얼 표현 예: \"Inspect the poly gate for bridging\" → '폴리 게이트가 서로 붙었는지(단락) 검사하라'. \"S/D implant\" → source/drain 도핑 주입 공정을 뜻합니다.": {
+  "h": "14504ce997",
+  "sec": 81
+ },
+ "배선층: contact · via · metal (interconnect) 소자를 만든 뒤, 각 부분을 전기적으로 연결하는 위층 배선 구조입니다. contact 는 아래쪽 소자(active / poly)와 첫 번째 금속층을 세로로 이어주는 연결 기둥(plug)입니다. 화면 라벨 \"CO\" / \"CONT\" 가 이것입니다. metal (interconnect) 은 소자들을 가로로 연결하는 전선입니다. 여러 층으로 쌓이며 아래부터 Metal 1 (M1), Metal 2 (M2) … 순으로 번호가 커집니다. 번호가 클수록 더 위층입니다. via 는 금속층과 금속층 사이(예: M1 ↔ M2)를 세로로 잇는 연결입니다. contact 는 '소자↔금속', via 는 '금속↔금속' 연결이라는 점이 핵심 차이입니다. 금속층 사이의 절연막은 ILD (Inter-Layer Dielectric) / IMD 라 부르며, 서로 다른 배선이 합선되지 않도록 막아줍니다. 적층 순서 정리: … active/poly → contact → M1 → via → M2 → via → M3 … 로, 위로 갈수록 배선이 굵어지고 전원(power)·신호(signal) 배선을 나눠 담습니다. 매뉴얼 표현 예: \"Route the signal on Metal 2 and drop a via to Metal 1\" → '신호를 M2로 배선하고 via로 M1에 연결하라'.": {
+  "h": "4bfb404328",
+  "sec": 91
+ },
+ "화면·매뉴얼에서 layer 용어 읽는 법 현장에서는 이 층 이름들이 도면 색상, HMI 라벨, 검사 리포트 형태로 계속 등장합니다. 읽는 규칙을 정리합니다. 레이아웃 툴/검사 화면에서 각 layer 는 색과 이름표로 구분됩니다. 예: active(초록), poly(빨강), contact(검정 점), metal(파랑). 색만 봐도 어느 층인지 판단할 수 있어야 합니다. 층 이름은 보통 대문자 약어로 표시됩니다: OD/AA = active, PO/GT = poly gate, CO = contact, M1/M2 = metal, VIA/V1 = via, NW/PW = well. 약어를 층 위치로 변환해 읽으세요. 검사 리포트의 \"Layer: METAL1, Defect: bridge\" 같은 문장은 '금속1 층에서 다리처럼 붙는 결함 발견'을 뜻합니다. 즉 layer 이름 + 결함(defect) 유형 조합으로 읽습니다. cross-section 이미지(SEM 단면 사진)에서는 아래→위 순서가 그대로 보입니다. 층 두께(thickness)와 정렬(alignment)을 눈으로 확인하는 것이 기술자의 주요 판단 업무입니다. 정렬 관련 표현 \"contact not landed on active\" → '컨택이 액티브 위에 제대로 안 닿음(오정렬)'. 이런 문장을 즉시 뜻으로 읽어 불량 여부를 판단해야 합니다.": {
+  "h": "031253bd49",
+  "sec": 82
+ },
+ "CROSS-SECTION LAYER STACK (BOTTOM-UP) Layer 1 (bottom): Silicon substrate (P-type). This is the base for all devices. 맨 아래층: P형 실리콘 기판(substrate). 모든 소자의 바닥이 됩니다. Layer 2: N-well / P-well formed in the substrate to hold the transistors. 2층: 트랜지스터를 담기 위해 기판 안에 만든 N-웰/P-웰. Layer 3: Active area, isolated from neighbors by STI (field oxide). 3층: 액티브 영역. 옆 소자와는 STI(필드 산화막)로 격리됩니다. Layer 4: Gate oxide, then poly gate on top of the active area. 4층: 게이트 산화막 위에 폴리(게이트)가 액티브 영역 위로 올라갑니다. Layer 5: Contacts connect source/drain and poly up to Metal 1. 5층: 컨택이 소스/드레인과 폴리를 금속1(M1)까지 위로 연결합니다. Layer 6 and above: Metal layers (M1, M2 …) linked by vias. 6층 이상: 금속층(M1, M2 …)들이 비아(via)로 서로 연결됩니다.": {
+  "h": "139185d43d",
+  "sec": 79
+ },
+ "LAYER INSPECTION WORK INSTRUCTION STEP 1. Open the cross-section SEM image and identify each layer bottom-up. 1단계: 단면 SEM 이미지를 열고 각 층을 아래에서 위로 식별하십시오. STEP 2. Verify that every contact has landed fully on the active area. 2단계: 모든 컨택이 액티브 영역 위에 완전히 안착했는지 확인하십시오. NOTE: A contact not landed on active is an alignment defect. Reject the lot. 참고: 액티브에 안착하지 못한 컨택은 정렬 불량입니다. 해당 로트를 불합격 처리하십시오. STEP 3. Measure the gate oxide thickness and confirm it is within spec. 3단계: 게이트 산화막 두께를 측정하고 규격 이내인지 확인하십시오. WARNING: Do not touch the poly gate line; bridging between gates causes a short. 경고: 폴리 게이트 라인을 건드리지 마십시오. 게이트 간 브리징은 단락을 유발합니다. STEP 4. Record the layer name and defect type for any anomaly found. 4단계: 발견된 이상에 대해 레이어 이름과 결함 유형을 기록하십시오.": {
+  "h": "adb2ce0d79",
+  "sec": 78
+ },
+ "현장 이야기: 0.02um이 만든 재작업 신입 공정 기술자 지훈은 마스크 레이아웃 검증 화면 앞에 앉았다. 화면 오른쪽에는 영어로 된 표 하나가 떠 있었다. Design Rule Table. 표에는 Rule, Layer, Min Width, Min Spacing 같은 영어 항목과 함께 숫자들이 um 단위로 빼곡히 적혀 있었다. 선배가 물었다. \"이 metal 라인 하나, 폭이 0.18um인데 룰은 min width 0.20um이야. 이거 통과야, 아니야?\" 지훈은 잠깐 멈칫했다. 값은 읽었지만, 영어 항목이 무엇을 요구하는지 정확히 몰랐다. 결국 이 한 줄을 잘못 읽어 DRC violation이 그대로 넘어갔고, 마스크는 재작업(rework) 대상이 되었다. 현장에서 영어 Design Rule을 '읽고 판단'하는 힘은, 설계 실력이 아니라 안전과 수율의 문제였다.": {
+  "h": "edc5112059",
+  "sec": 54
+ },
+ "Design Rule이란 무엇인가 디자인 규칙은 '만들 수 있는 도형'의 최소 조건을 정한 약속입니다. Design Rule은 공정 장비가 실제로 재현할 수 있는 도형의 기하학적 한계를 규정한 규칙 모음입니다. 화면과 문서에서는 흔히 design rules 또는 DR로 표기됩니다. 각 규칙은 보통 layer(층), rule name(규칙 이름), symbol/기호, value(값), description(설명)으로 이루어진 표(Design Rule Table) 형태로 제공됩니다. 값의 단위는 대부분 micron(um) 또는 nanometer(nm)입니다. 화면에 `0.20 um` 또는 `200 nm`처럼 표기되며, 두 값이 같은 크기임을 즉시 환산해 읽을 수 있어야 합니다. 규칙의 목적은 manufacturability(제조 가능성)입니다. 너무 가늘거나 너무 가까운 패턴은 노광·식각에서 끊기거나 붙어(short) 불량이 됩니다. 즉 규칙은 '수율(yield)을 지키는 최소 안전선'입니다. 기술자의 핵심 임무는 도형을 '그리는' 것이 아니라, 측정된 값(measured value)이 규칙 값(rule value)을 satisfy(만족)하는지 pass/fail을 판단하는 것입니다.": {
+  "h": "a0b475ccd3",
+  "sec": 77
+ },
+ "핵심 규칙 5종: Width · Spacing · Overlap · Enclosure · Extension 현장 표에서 가장 자주 보는 다섯 가지 규칙 유형입니다. Minimum Width (min width): 한 도형이 가질 수 있는 가장 얇은 폭입니다. `Metal1 min width = 0.20 um`이면 폭이 0.20um보다 작으면 violation입니다. 너무 가늘면 라인이 끊어져(open) 전기가 통하지 않습니다. Minimum Spacing (min spacing): 같은 층의 서로 다른 두 도형 사이의 최소 간격입니다. 간격이 규칙보다 좁으면 두 배선이 붙어 short(단락)가 납니다. 화면에서는 `spacing`, `space`, `S`로 표기됩니다. Overlap: 두 층이 서로 겹쳐야 하는 최소 겹침량입니다. 예를 들어 via와 metal은 반드시 일정 넓이 이상 겹쳐야 접촉(contact)이 안정적으로 형성됩니다. Enclosure: 한 층이 다른 층을 '감싸는' 최소 여유입니다. `Metal enclosure of via = 0.05 um`은 via 둘레를 metal이 사방 0.05um 이상 덮어야 한다는 뜻입니다. 정렬 오차(misalignment)를 견디게 해줍니다. Extension: 한 도형이 경계를 넘어 뻗어야 하는 최소 길이입니다. gate가 active 영역 밖으로 충분히 뻗어야(poly extension) 누설을 막습니다. 이 다섯 규칙은 각각 min(최소) 조건인지 max(최대) 조건인지 반드시 확인해야 합니다. min은 '이보다 크면 OK', max는 '이보다 작으면 OK'로 판단 방향이 정반대입니다.": {
+  "h": "3cf667995d",
+  "sec": 111
+ },
+ "규칙 표(Design Rule Table) 읽는 법 표의 열(column) 이름과 기호를 정확히 해석해야 판단이 흔들리지 않습니다. Rule / Rule Name 열: 규칙의 식별자입니다. 흔히 `M1.W.1`, `V1.E.2`처럼 '층.유형.번호'로 코드화됩니다. `W`=width, `S`=space, `E`=enclosure/extension, `O`=overlap을 뜻하는 경우가 많습니다. Layer 열: 규칙이 적용되는 층입니다. `POLY`, `ACTIVE`, `METAL1(M1)`, `VIA1(V1)`, `CONTACT(CO)` 등이 자주 등장합니다. Symbol 열: `≥`(이상), `≤`(이하), `=`(정확히)로 판단 방향을 알려줍니다. `Min Width ≥ 0.20`은 '0.20 이상이어야 통과'라는 뜻입니다. Value / Min / Max 열: 기준 수치입니다. `Min` 열의 값은 하한선, `Max` 열의 값은 상한선입니다. 두 값이 함께 있으면 '범위(range)' 규칙입니다. Description 열: 규칙의 영어 설명 문장입니다. 예: `Minimum spacing between two Metal1 lines`. 이 문장을 읽고 '무엇과 무엇 사이'의 규칙인지 파악하는 것이 핵심입니다. 판단 절차: (1) 어떤 layer인지 확인 → (2) rule type(width/spacing/…)을 확인 → (3) symbol로 방향 확인 → (4) 측정값과 비교해 pass 또는 fail 결정.": {
+  "h": "89f0ad8d12",
+  "sec": 95
+ },
+ "판단 실습의 사고 흐름과 단위 함정 값을 읽는 것과 '만족 여부를 판단'하는 것은 다른 능력입니다. 측정값 비교의 기본 문장: `measured 0.18 um < min 0.20 um → FAIL`. 부등호의 방향과 규칙이 min인지 max인지를 함께 봐야 합니다. 단위 함정 1 — um vs nm: `0.20 um`과 `200 nm`은 같은 값입니다. 화면마다 단위가 다르므로 `1 um = 1000 nm` 환산을 항상 염두에 둬야 합니다. 단위 함정 2 — 소수점 자리: `0.020 um`과 `0.20 um`은 10배 차이입니다. 현장 화면의 작은 글씨에서 이 자리 실수가 실제 rework를 부릅니다. Waived / Waiver: 일부 violation은 검토 후 '예외 승인'되어 무시됩니다. 리포트에서 `waived`로 표시된 항목은 실제 fail이 아닐 수 있으니 상태(status)를 함께 읽어야 합니다. Error vs Warning: DRC 리포트는 심각도를 나눕니다. `error`는 반드시 수정, `warning`은 검토 후 판단입니다. 색상(빨강/노랑)과 함께 영어 라벨을 확인하세요. 최종 산출물은 언제나 하나의 영어 판정어입니다: PASS(clean) 또는 FAIL(violation). 이 한 단어를 정확히 도출하는 것이 이 수업의 목표입니다.": {
+  "h": "57e52fc4f2",
+  "sec": 90
+ },
+ "DESIGN RULE CHECK - OPERATING PROCEDURE 1. Load the layout and select the technology rule deck before running the check. 1. 검사를 실행하기 전에 레이아웃을 불러오고 공정 룰 덱(rule deck)을 선택합니다. 2. Verify that all measured values are displayed in microns (um). 2. 모든 측정값이 마이크론(um) 단위로 표시되는지 확인합니다. (단위 혼동 방지) 3. Run DRC and review each violation in the report by layer and rule name. 3. DRC를 실행하고, 리포트의 각 위반을 layer와 rule name 기준으로 검토합니다. NOTE: A rule marked 'min' passes only when the measured value is greater than or equal to the rule value. 참고: 'min' 규칙은 측정값이 규칙 값 이상일 때만 통과합니다. (부등호 방향 주의) WARNING: Do not release a layout that still contains errors. Warnings must be reviewed before waiver. 경고: error가 남아 있는 레이아웃은 배포(release)하지 마십시오. warning은 예외 승인 전에 반드시 검토합니다.": {
+  "h": "64f07025f1",
+  "sec": 76
+ },
+ "WORK INSTRUCTION - JUDGING A RULE TABLE Step 1: Identify the layer and rule type (width, spacing, enclosure) from the table. 1단계: 표에서 layer와 규칙 유형(폭/간격/감쌈)을 먼저 파악합니다. Step 2: Read the symbol column to confirm the direction ( >= for minimum, <= for maximum ). 2단계: symbol 열을 읽어 판단 방향을 확인합니다 (최소는 >=, 최대는 <=). Step 3: Compare the measured value against the rule value and record PASS or FAIL. 3단계: 측정값을 규칙 값과 비교하여 PASS 또는 FAIL을 기록합니다. CAUTION: 0.020 um and 0.20 um differ by ten times. Always check the decimal point. 주의: 0.020 um과 0.20 um은 10배 차이입니다. 소수점 자리를 항상 확인하십시오.": {
+  "h": "dd68658966",
+  "sec": 58
+ },
+ "도면대로 놓였는가? 신입 기술자 민수는 포토 공정 앞에서 영어로 된 layout 배치 지시서를 받는다. 화면에는 여러 색의 layer가 겹쳐 있고, 지시서에는 'Place the metal pattern on layer M1, keep minimum spacing 0.5 μm'라고 적혀 있다. 민수의 일은 새 패턴을 그리는 것이 아니라, 이미 배치된 패턴이 line width와 spacing 규칙에 맞는지 읽고 판단하는 것이다. 한 곳이라도 alignment가 틀어지거나 두 패턴이 overlap되면, 웨이퍼 수백 장이 불량이 된다. 오늘 민수가 배워야 할 것은 영어 배치 지시문을 정확히 해석하고, 화면의 grid 위 수치가 규칙을 위반하는지 눈으로 잡아내는 능력이다.": {
+  "h": "60f4a9a6da",
+  "sec": 45
+ },
+ "패턴 배치란 무엇인가 패턴 배치(layout placement)는 각 층의 도형을 정해진 위치·크기·간격 규칙에 맞게 놓는 작업이다. 반도체 소자는 여러 층(layer)의 패턴이 위아래로 쌓여 만들어진다. 각 layer는 실제 공정에서 하나의 mask(포토 마스크)에 대응하며, 화면에서는 서로 다른 색으로 표시된다. Layout은 이 층들을 위에서 내려다본 평면도이다. 현장 기술자는 보통 이 layout을 직접 그리기보다, 배치가 규칙에 맞는지 읽고 확인(review/verify)하는 역할을 맡는다. 배치의 핵심 판단 기준은 네 가지다: 선의 굵기(line width), 도형 사이 간격(spacing), 층 정렬(alignment), 그리고 겹침(overlap) 여부. 지시서에는 항상 수치 규칙이 붙는다. 예: 'Keep line width ≥ 0.25 μm'. 이 문장은 '선 굵기를 0.25 마이크로미터 이상으로 유지하라'는 뜻이며, 이보다 얇으면 위반이다. HMI/GUI 화면 하단에는 보통 coordinate(좌표)와 grid 값이 표시된다. 이 숫자를 읽어야 패턴이 규칙 안에 있는지 즉시 판단할 수 있다.": {
+  "h": "3b3a06c74d",
+  "sec": 77
+ },
+ "선폭·간격·피치의 물리적 의미 line width, spacing, pitch는 소자 성능과 수율을 직접 결정하는 치수 규칙이다. Line width(선폭)는 도형 한 개의 굵기다. 너무 얇으면 식각·현상 중에 끊기고(open), 전기가 흐르지 못한다. 그래서 규칙은 항상 최소값을 정한다: minimum line width. Spacing(간격)은 이웃한 두 패턴 사이의 빈 거리다. 너무 좁으면 두 배선이 붙어 합선(short)되므로, minimum spacing 규칙이 존재한다. Pitch(피치)는 '선폭 + 간격'을 합한 반복 주기다. 화면 규칙에 'Pitch = 0.5 μm'라고 나오면, 한 선의 중심에서 다음 선의 중심까지 거리가 0.5 μm라는 뜻이다. 이 세 값 중 가장 작고 중요한 치수를 critical dimension (CD)라 부른다. 공정 관리에서 CD가 규격을 벗어나면 즉시 알람이 뜬다. 영어 지시문에서 '≥'는 '이상', '≤'는 '이하', 'min'은 최소, 'max'는 최대를 뜻한다. 예: 'Spacing shall be no less than 0.3 μm'는 '간격은 0.3 μm 미만이면 안 된다'는 규칙이다.": {
+  "h": "0cfdade070",
+  "sec": 74
+ },
+ "정렬·겹침·오정렬을 판단하기 층과 층 사이의 정렬(alignment)과 겹침(overlap)은 배치 판단의 핵심이다. Alignment(정렬)는 위층 패턴이 아래층 패턴에 정확히 맞춰졌는지를 뜻한다. 두 층의 위치 어긋남 정도를 overlay error(오버레이 오차) 또는 misalignment라고 한다. 정렬을 돕기 위해 웨이퍼에는 alignment mark 또는 registration mark라는 십자·박스 모양 기준점이 새겨진다. 장비는 이 마크를 보고 층을 맞춘다. Overlap(겹침)은 두 도형이 서로 포개지는 것이다. 의도된 겹침(예: contact이 배선 위에 놓임)은 정상이지만, 규칙에 없는 겹침은 불량이다. 지시문 예: 'The via must fully overlap the underlying metal by at least 0.05 μm.' — 비아가 아래 금속을 최소 0.05 μm 감싸며 완전히 겹쳐야 한다는 뜻. 이 감싸는 여유를 enclosure라고 한다. 화면에서 위반이 발생하면 보통 빨간색 하이라이트와 함께 'Overlap violation' 또는 'Misalignment detected' 같은 영어 메시지가 뜬다. 이 문구를 읽고 즉시 원인을 파악해야 한다.": {
+  "h": "4bc498b008",
+  "sec": 87
+ },
+ "그리드·스냅·좌표 읽기 모든 배치는 격자(grid) 위에서 이루어지며, 좌표를 읽는 것이 판단의 출발점이다. Grid(격자)는 화면에 깔린 보이지 않는 눈금이다. 모든 패턴의 꼭짓점은 이 grid 위 점에 놓여야 하며, 이 최소 눈금 간격을 grid resolution 또는 manufacturing grid라 한다. Snap은 도형을 가장 가까운 grid 점에 자동으로 붙이는 기능이다. 'Snap to grid' 옵션이 켜져 있으면 좌표가 항상 눈금값의 정수배가 된다. 화면 좌표는 보통 (X, Y)로 표시된다. 원점을 origin이라 하며, 'Set origin to (0,0)'는 기준점을 좌하단으로 잡으라는 뜻이다. 좌표를 읽으면 치수를 직접 계산할 수 있다. 두 선의 X좌표가 각각 1.0과 1.4라면 중심 간 거리는 0.4 μm이고, 규칙이 'pitch ≥ 0.5'라면 이는 위반이다. GUI 상태바의 'X: 1.400 Y: 0.800 Grid: 0.005' 같은 표시는 '현재 커서 좌표와 격자 해상도'를 알려준다. 이 값을 규칙과 대조하는 것이 현장 판단의 기본이다.": {
+  "h": "8d6cd690a3",
+  "sec": 73
+ },
+ "영어는 화면 어디에 나타나는가 배치 영어는 지시서뿐 아니라 HMI/GUI 곳곳에 짧은 문구로 등장한다. 메뉴·버튼: 'Move', 'Align', 'Distribute', 'Snap to Grid', 'Check Rules' — 배치 조작 명령들이다. 레이어 패널: 각 층 옆에 'M1', 'M2', 'VIA', 'POLY' 같은 층 이름과 표시/숨김(visible/hidden), 잠금(lock) 상태가 영어로 나온다. 규칙 결과창(DRC report): 위반 항목이 'Spacing < 0.3 μm', 'Width violation', 'Off-grid vertex' 처럼 짧은 영어로 나열된다. 경고 팝업: 'WARNING: Two patterns on the same layer overlap.' 같은 완전한 문장으로 뜨기도 한다. 대문자 WARNING/CAUTION은 즉시 확인이 필요한 신호다. 이 모든 영어는 '작성'이 아니라 '해석'의 대상이다. 짧은 명사구와 부등호를 빠르게 읽어 규칙 위반 여부를 판단하는 훈련이 이 수업의 목표다.": {
+  "h": "3e09e22fc7",
+  "sec": 61
+ },
+ "LAYOUT PLACEMENT PROCEDURE 1. Open the layout file and confirm the active layer shown in the layer panel. 레이아웃 파일을 열고, 레이어 패널에 표시된 활성 층(active layer)이 맞는지 확인한다. 2. Enable 'Snap to Grid' before moving or placing any pattern. 패턴을 옮기거나 놓기 전에 'Snap to Grid'(격자 스냅)를 반드시 켠다. 3. Verify that each line width is no less than the minimum value listed in the rule table. 각 선폭이 규칙 표에 적힌 최소값 이상인지 확인한다. ('no less than' = 이상) 4. Ensure the spacing between adjacent patterns on the same layer meets the minimum spacing rule. 같은 층의 이웃한 패턴 사이 간격이 최소 간격 규칙을 만족하는지 확인한다. 5. NOTE: Vias must fully overlap the metal below; check the enclosure value on all four sides. 참고: 비아는 아래 금속을 완전히 감싸야 한다. 네 방향 모두 감싸는 여유(enclosure) 값을 확인한다.": {
+  "h": "870aa73e3d",
+  "sec": 72
+ },
+ "DESIGN RULE CHECK (DRC) — READING THE REPORT Run 'Check Rules' to generate the DRC report before releasing the layer. 층을 넘기기 전에 'Check Rules'를 실행해 DRC 리포트를 생성한다. Each line lists the rule name, the measured value, and the location. 각 줄에는 규칙 이름, 측정값, 위치가 표시된다. Example entry: 'Spacing violation: 0.22 μm (min 0.30 μm) at (1.40, 0.80)'. 예시 항목: '간격 위반: 0.22 μm (최소 0.30 μm), 위치 (1.40, 0.80)' — 측정값이 최소값보다 작아 위반이다. WARNING: Do not release a layer while any red 'violation' entry remains in the report. 경고: 리포트에 빨간색 'violation'(위반) 항목이 하나라도 남아 있으면 층을 넘기지 말 것. If a violation is a known exception, mark it as 'waived' only with supervisor approval. 위반이 이미 알려진 예외라면, 반드시 감독자 승인 하에만 'waived'(면제)로 표시한다.": {
+  "h": "7a49d17326",
+  "sec": 65
+ },
+ "CAUTION NOTES ON PLACEMENT CAUTION: Two patterns on the same layer must never overlap unless the rule allows it. 주의: 같은 층의 두 패턴은 규칙이 허용하지 않는 한 절대 겹쳐서는 안 된다. Keep sufficient clearance between any pattern and the chip boundary. 모든 패턴과 칩 경계 사이에 충분한 이격 거리(clearance)를 유지한다. Do not place any vertex off the manufacturing grid; off-grid points cause fabrication errors. 어떤 꼭짓점도 제조 격자를 벗어나게 두지 말 것. 격자를 벗어난 점은 제조 오류를 일으킨다. After any move, re-run the rule check to confirm the layout still passes. 패턴을 옮긴 뒤에는 반드시 규칙 검사를 다시 실행해 레이아웃이 여전히 통과하는지 확인한다.": {
+  "h": "8157371cb0",
+  "sec": 53
+ },
+ "빨간 마커가 뜬 화면 야간 근무 중, 신입 기술자 지훈은 레이아웃 검증 장비의 HMI 화면 앞에 앉아 있다. 방금 돌린 검사 결과 창에 붉은 글씨가 잔뜩 떴다. 화면 상단에는 DRC RESULTS, 그 아래로 SPACING violation: 15 errors, WIDTH violation: 3 errors, 그리고 노란색으로 2 warnings라는 줄이 보인다. 각 줄 끝에는 insufficient spacing (min 0.14um) 같은 짧은 영어 문장과 좌표가 붙어 있다. 지훈은 이 영어가 '무엇이 잘못되었는지'를 말해준다는 것을 안다. error는 반드시 고쳐야 하는 규칙 위반이고, warning은 확인이 필요한 경고다. 이 화면을 정확히 읽어내는 것이 오늘 그의 임무다. 선임은 말했다. \"메시지를 못 읽으면 멀쩡한 칩을 버리거나, 불량을 그냥 넘긴다.\" 오늘 우리는 이 붉은 줄들을 하나씩 해독한다.": {
+  "h": "00a8819a7f",
+  "sec": 60
+ },
+ "DRC란 무엇인가 DRC는 설계된 레이아웃이 공정에서 실제로 만들 수 있는지 규칙과 대조해 검사하는 절차다. DRC (Design Rule Check)는 칩 레이아웃의 도형(선, 사각형, 홀)이 공정에서 정한 최소 치수·간격 규칙을 지키는지 자동으로 검사하는 단계다. 위반이 있으면 그 위치를 violation으로 표시한다. 각 공정 노드(예: 28nm, 14nm)는 리소그래피·식각의 한계 때문에 minimum width(최소 선폭)와 minimum spacing(최소 간격) 같은 물리적 한계를 가진다. DRC는 이 한계를 숫자 규칙으로 바꿔 검사한다. 검사 기준의 묶음을 rule deck 또는 runset이라 부르며, 화면에는 보통 `Loaded rule deck: N28_M1.drc` 처럼 어떤 규칙 세트를 썼는지 표시된다. DRC를 통과하지 못한 도형은 실제 웨이퍼에서 short(붙어야 안 될 것이 붙음)나 open(끊어짐), 패턴 불량으로 이어질 수 있다. 그래서 현장에서는 '규칙 위반'을 '잠재 불량'으로 읽는다. 결과는 사람이 읽는 리포트(텍스트)와, 레이아웃 위에 겹쳐 보이는 그래픽 마커(색깔 도형) 두 형태로 나온다. 기술자는 두 가지를 연결해 판단한다.": {
+  "h": "cbca640e58",
+  "sec": 88
+ },
+ "왜 규칙이 존재하는가 — 물리적 의미 DRC 규칙은 자의적인 숫자가 아니라 실제 공정의 한계에서 나온다. minimum spacing이 존재하는 이유: 두 배선이 너무 가까우면 식각·증착 공정에서 사이가 메워져 short(단락)가 나거나, 전기적으로 서로 간섭(bridge)한다. minimum width가 존재하는 이유: 선이 너무 얇으면 식각 때 그 부분이 끊어져 open(단선)가 되거나, 저항이 커져 발열·신호 지연을 일으킨다. 즉 숫자 규칙은 '수율(yield)을 지키기 위한 안전 여유'다. 규칙을 어기면 바로 불량이 아니더라도 불량 확률이 크게 오른다. 그래서 리포트의 required / min 값은 협상 대상이 아니라 공정이 보장하는 최소선이다. 기술자가 임의로 낮추지 않는다. 이 때문에 화면의 error는 '보기 싫은 것'이 아니라 '이대로 만들면 칩이 죽을 수 있다'는 물리적 경고로 읽어야 한다.": {
+  "h": "fc92cf0b23",
+  "sec": 56
+ },
+ "SPACING violation — 간격이 부족하다 가장 흔한 오류. 두 도형 사이가 규칙보다 가까울 때 뜬다. SPACING violation은 서로 다른(또는 같은) 도형 사이의 거리가 정해진 minimum spacing보다 작을 때 발생한다. 메시지 예: insufficient spacing between metal lines (measured 0.10um, required 0.14um). 리포트에서 핵심 숫자는 두 개다. measured(실제 측정된 값)와 required / min(규칙이 요구하는 최소값). measured < required 이면 위반이다. 화면 문구가 insufficient spacing, spacing < min, space violation 등으로 다양하게 표현되어도 의미는 모두 '간격이 최소 기준에 못 미친다'로 같다. 같은 layer 안에서 나는 간격 위반은 보통 배선이 너무 촘촘한 것이고, 다른 layer 사이 위반은 정렬·겹침 규칙(enclosure/overlap)과 함께 봐야 한다. 화면에서 해당 줄을 클릭하면 두 도형 사이의 가장 가까운 지점이 highlight marker로 표시되어, 어느 모서리가 문제인지 보인다.": {
+  "h": "5f986ea10b",
+  "sec": 72
+ },
+ "WIDTH violation — 선이 너무 얇다 도형 자체의 폭이 최소 기준보다 좁을 때 발생하는 오류다. WIDTH violation은 한 도형(주로 금속 배선)의 폭이 minimum width보다 작을 때 뜬다. 메시지 예: metal width below minimum (measured 0.08um, min 0.10um). SPACING이 '도형과 도형 사이'를 보는 반면, WIDTH는 '한 도형의 안쪽 폭'을 본다. 이 차이를 구분하는 것이 리포트 해석의 기본이다. 화면 표현은 width < min, minimum width violation, narrow metal 등으로 나오지만 모두 '폭이 최소 기준 미달'을 뜻한다. 간혹 notch(도형 가장자리가 살짝 파인 부분)나 짧은 돌출부에서 국소적으로 폭이 줄어 WIDTH 위반이 잡히기도 한다. 이때는 좌표를 확대해 어느 지점인지 확인한다. 선폭이 규칙보다 얇으면 실제 공정에서 그 부분이 끊기거나(open) 저항이 급격히 커져 신호가 약해질 수 있다. 즉 '얇음 = 끊길 위험'이다.": {
+  "h": "6f25839520",
+  "sec": 69
+ },
+ "error 와 warning — 심각도 읽기 모든 위반이 같은 무게는 아니다. 영어 심각도 표시를 정확히 구분해야 한다. error는 반드시 수정해야 하는 규칙 위반이다. error가 남아 있으면 다음 공정(테이프아웃, 마스크 제작)으로 넘길 수 없다. 화면에서 보통 빨간색으로 표시된다. warning은 규칙을 어긴 것은 아니지만 확인이 필요한 항목이다. 예: 권장 간격 미달, 예외 규칙 적용 구간. 보통 노란색이며 '검토 후 판단'을 뜻한다. 리포트 요약 줄은 대개 `Errors: 18 Warnings: 2 Info: 5` 형태다. Info(정보)는 조치가 아니라 참고용 메시지다. 현장 판단 원칙: error = must fix, warning = review, info = note. 이 세 단계를 혼동하면 멀쩡한 설계를 붙잡거나 위험한 위반을 방치하게 된다. 일부 장비는 심각도를 severity: high / medium / low 나 critical / minor로도 표기한다. 색과 단어를 함께 보고 우선순위를 정한다.": {
+  "h": "af0e649c48",
+  "sec": 71
+ },
+ "DRC 리포트와 HMI 화면 읽기 텍스트 리포트의 구조와, 그것이 화면 위에 어떻게 그려지는지 연결한다. 리포트 한 줄의 전형적 구조: severity rule_name : description @ (x, y) layer. 예: `ERROR SP1.2 : insufficient spacing (0.11 < 0.14) @ (12.40, 8.66) METAL1`. rule_name / rule ID (예: SP1.2, W3.1)는 어떤 규칙을 어겼는지 가리키는 코드다. SP는 spacing, W는 width 계열임을 관례적으로 알 수 있다. 괄호 안의 좌표 (x, y)는 위반이 발생한 정확한 위치다. HMI에서 그 줄을 클릭하면 레이아웃이 해당 좌표로 zoom to violation 되어 붉은 마커가 보인다. 화면에서 위반은 보통 색으로 구분된다: 빨강 = error, 노랑 = warning, 표시된 도형에는 highlight marker가 겹쳐 그려진다. 색과 텍스트를 반드시 함께 읽는다. 상단 요약 패널의 총계(Total errors/warnings)와 하단 리스트의 개별 줄은 연결되어 있다. 총계가 0이 되어야 DRC clean(무결) 상태다. 리포트를 저장할 때 파일명은 흔히 `top_drc.rpt`, `drc_summary.txt` 형태다. 재검사 후에는 before/after 개수를 비교해 조치 효과를 확인한다.": {
+  "h": "ac5a97da92",
+  "sec": 86
+ },
+ "오류 대응 워크플로우 — 현장 판단 리포트를 읽은 뒤 어떤 순서로 판단하고 움직이는지 정리한다. 1단계: 요약 줄의 Errors / Warnings 총계를 먼저 본다. Errors가 0이 아니면 절대 다음 공정으로 보내지 않는다. 2단계: severity(심각도)로 정렬해 error를 위로 올리고, 같은 rule ID(예: SP1.2)가 반복되는지 본다. 반복 규칙은 보통 한 가지 원인에서 비롯된다. 3단계: 각 오류의 (x, y) 좌표로 확대해 문제 도형을 눈으로 확인하고, measured와 min 값을 비교해 얼마나 모자람는지 파악한다. 4단계: warning은 원인을 검토해 면제(waive) 가능한지 판단하고, 면제하려면 선임의 승인(sign-off)을 받는다. 5단계: 수정 후 DRC를 다시 돌려 before/after 개수를 비교하고, 총계가 0(DRC clean)이 되었는지 확인한다.": {
+  "h": "12a7a41b82",
+  "sec": 60
+ },
+ "DRC RESULTS REPORT (excerpt) SUMMARY: Errors: 18 Warnings: 2 Info: 5 Status: NOT CLEAN 요약 줄: 오류 18, 경고 2, 정보 5, 상태는 '무결 아님(NOT CLEAN)'. error가 남아 있으므로 통과가 아니다. ERROR SP1.2 : insufficient spacing (measured 0.11, required 0.14) @ (12.40, 8.66) METAL1 오류 SP1.2: 간격 부족. 측정 0.11 < 요구 0.14, 위치 (12.40, 8.66), 레이어 METAL1. 반드시 수정. ERROR W3.1 : metal width below minimum (measured 0.08, min 0.10) @ (30.15, 4.02) METAL2 오류 W3.1: 선폭이 최소 미달. 측정 0.08 < 최소 0.10, 위치 (30.15, 4.02), 레이어 METAL2. WARNING SP2.0 : recommended spacing not met (0.16 < 0.18); may be waived after review 경고 SP2.0: 권장 간격 미달(0.16 < 0.18). 규칙 위반은 아니며 검토 후 예외 처리 가능.": {
+  "h": "a01adec7ed",
+  "sec": 61
+ },
+ "OPERATING PROCEDURE — REVIEWING DRC ERRORS 1. Open the DRC results and check the SUMMARY line for the total error and warning count. 1. DRC 결과를 열고 요약 줄에서 오류·경고 총 개수를 먼저 확인한다. 2. Sort the results by severity so that all ERROR items appear at the top of the list. 2. 심각도 순으로 정렬해 모든 ERROR 항목이 목록 위쪽에 오도록 한다. 3. Double-click each error to zoom to its coordinate; the violating shapes are shown with a red highlight marker. 3. 각 오류를 더블클릭해 좌표로 확대한다. 위반 도형은 빨간 강조 표시로 나타난다. NOTE: Do NOT proceed to tape-out while any ERROR remains. Warnings must be reviewed but may be waived with sign-off. 주의: ERROR가 하나라도 남아 있으면 테이프아웃으로 진행하지 말 것. 경고는 검토 대상이며 승인 시 면제 가능. WARNING: Loading the wrong rule deck will report false results. Always confirm the process node before running DRC. 경고: 잘못된 규칙 세트를 불러오면 결과가 틀린다. DRC 실행 전 반드시 공정 노드를 확인한다.": {
+  "h": "39bbf0b840",
+  "sec": 88
+ },
+ "도면과 실제가 다르면? 야간 근무 중 후배 기술자가 화면을 보다가 당신을 부릅니다. 검증 리포트 맨 위에 빨간 글씨로 LVS FAILED 라고 떠 있습니다. 그 아래에는 1 mismatch, 2 missing devices, 1 short. 후배가 묻습니다. \"선배님, 이거 레이아웃을 잘못 그린 건가요, 아니면 회로도가 틀린 건가요?\" 당신은 침착하게 설명합니다. LVS(Layout Versus Schematic) 는 설계자가 그린 schematic(회로도)과 실제로 그려진 layout(레이아웃)이 전기적으로 똑같은지를 자동으로 비교하는 검증입니다. 두 개를 각각 netlist(넷리스트)로 뽑아서 소자 하나하나, 연결선 하나하나를 대조합니다. match 가 뜨면 통과, mismatch 가 뜨면 어딘가 다르다는 뜻이죠. 현장에서 우리가 읽어야 할 것은 바로 이 영문 리포트입니다. 어느 소자가 빠졌는지(missing), 어디가 붙어버렸는지(short), 어디가 끊어졌는지(open) — 영어 한 줄을 정확히 읽어내는 것이 오늘의 목표입니다.": {
+  "h": "b29e1f2a0f",
+  "sec": 72
+ },
+ "LVS란 무엇인가 LVS는 '내가 그린 그림'과 '내가 의도한 회로'가 같은지 확인하는 검증입니다. LVS = Layout Versus Schematic. 이름 그대로 layout(실제 배치된 도형)과 schematic(설계자가 의도한 회로도)을 서로(Versus) 비교하는 검증입니다. 화면에는 보통 Compare Layout vs. Schematic 또는 LVS Run 이라는 메뉴로 나타납니다. 비교의 핵심은 도형을 직접 보는 게 아니라 netlist(넷리스트)로 변환해서 대조한다는 점입니다. 넷리스트는 '어떤 소자가, 어떤 핀끼리, 어떤 선(net)으로 연결되어 있는가'를 글자로 적어놓은 목록입니다. 레이아웃에서는 layout extraction(레이아웃 추출) 과정을 통해 실제 그려진 도형에서 자동으로 넷리스트를 뽑아냅니다. 화면 로그에 Extracting devices..., Building connectivity... 같은 영문이 흘러갑니다. 두 넷리스트가 완전히 같으면 리포트에 LVS clean 또는 Match 가 표시되고, 하나라도 다르면 Mismatch 와 함께 오류 목록이 나옵니다. 우리가 현장에서 읽어야 하는 것이 바로 이 오류 목록입니다. LVS가 검증하는 것은 '모양'이 아니라 'connectivity(연결 관계)'입니다. 선이 예쁘게 그려졌는지가 아니라, 전기적으로 같은 회로인지를 봅니다. 그래서 오류 메시지도 대부분 '무엇이 무엇에 잘못 연결/미연결되었다'는 문장입니다.": {
+  "h": "75ea1d1bbf",
+  "sec": 95
+ },
+ "검증 흐름 속에서의 LVS LVS는 혼자 돌아가지 않습니다. DRC·LVS·PEX로 이어지는 검증 흐름의 한 단계입니다. 먼저 DRC(Design Rule Check) 가 돌아갑니다. 이것은 선 간격·폭 같은 '물리적 규칙'을 지켰는지 보는 검사로, '그릴 수 있는 모양인가'를 판단합니다. LVS와는 별개의 검증입니다. DRC가 통과해도 LVS 는 따로 해야 합니다. DRC는 '잘 그렸다'만 보지, '설계 의도와 같은 회로인가'는 보지 않기 때문입니다. 모양은 규칙을 지켰어도 엉뚱한 net에 연결될 수 있습니다. 현장 화면에서는 보통 DRC → LVS → PEX 순서로 버튼이 배치되어 있고, 각각 Clean / Errors 상태를 표시합니다. LVS가 clean이 되어야 다음 단계로 넘어갑니다. PEX(Parasitic Extraction) 는 LVS가 통과된 뒤 기생 저항·기생 용량을 뽑아내는 후속 단계입니다. LVS가 틀리면 PEX 결과도 믿을 수 없으므로, LVS clean이 전제 조건입니다. 정리하면 DRC = 모양 검사, LVS = 연결 검사, PEX = 성능 예측입니다. 현장에서 \"LVS 못 넘어가서 PEX 못 돌린다\"는 말은 이 순서 때문입니다.": {
+  "h": "3cff81eb94",
+  "sec": 78
+ },
+ "LVS 오류의 종류를 읽는 법 영문 리포트에 반복적으로 등장하는 오류 유형은 정해져 있습니다. 유형만 알면 절반은 읽은 것입니다. Missing device(누락 소자): schematic에는 있는데 layout에는 없는 소자입니다. 리포트에는 Device in schematic but not in layout 형태로 나옵니다. 설계자가 의도한 트랜지스터를 레이아웃에서 안 그렸다는 뜻입니다. Extra device(잉여 소자): 반대로 layout에는 있는데 schematic에는 없는 소자입니다. Device in layout but not in schematic — 필요 없는 소자를 실수로 더 그린 경우입니다. Incorrect connection(잘못된 연결): 소자는 맞는데 연결된 net(노드)이 다른 경우입니다. Net mismatch 또는 terminal connected to wrong net 처럼 표시됩니다. 트랜지스터의 게이트가 엉뚱한 선에 붙은 상황이죠. Short(단락): 원래 떨어져 있어야 할 두 개의 net이 하나로 붙어버린 것입니다. 리포트의 Nets shorted together 또는 Short between VDD and VSS 같은 문장은 매우 위험한 신호입니다. 전원-접지 단락은 소자 파손으로 이어집니다. Open(단선): 원래 하나로 이어져야 할 net이 중간에 끊어진 것입니다. Open net 또는 Net is not fully connected 로 나타나며, 신호가 목적지까지 도달하지 못합니다. 정리하면 소자 개수 문제는 missing/extra device, 연결 문제는 incorrect connection/short/open 입니다. 리포트를 읽을 때 '개수 이야기인가, 연결 이야기인가'부터 구분하면 원인 파악이 빨라집니다.": {
+  "h": "62f4630690",
+  "sec": 101
+ },
+ "화면과 리포트에서 오류가 보이는 방식 LVS 결과는 텍스트 리포트와 GUI 하이라이트, 두 가지 형태로 함께 제공됩니다. 리포트 최상단에는 항상 총평이 한 줄로 뜹니다. LVS PASSED / LVS FAILED, 또는 Layout matches schematic / Layout does NOT match schematic. 이 한 줄로 통과 여부를 즉시 판단합니다. 그 아래 Summary(요약) 표에는 유형별 개수가 나옵니다. 예: Unmatched devices: 2, Unmatched nets: 1, Property errors: 0. Unmatched 는 '짝을 못 찾은' 이라는 뜻으로 mismatch의 구체적 표현입니다. GUI에서는 문제 지점을 색으로 강조합니다. Highlight errors 버튼을 누르면 short난 net이 빨간색, open난 net이 노란색으로 레이아웃 위에 표시됩니다. 화면 안내문 Click an error to zoom to location 을 따라가면 됩니다. 각 오류에는 위치 정보가 붙습니다. at (X, Y) 좌표나 on net CLK, device M12 처럼 어느 소자·어느 선인지 지목합니다. 이 식별자를 설계자에게 그대로 전달하면 소통이 정확해집니다. 마지막으로 Cross-probing(크로스 프로빙) 기능은 리포트의 오류를 클릭하면 schematic과 layout에서 같은 지점을 동시에 띄워줍니다. 안내문 Select in schematic and layout 를 이해하면 원인을 눈으로 대조할 수 있습니다.": {
+  "h": "4bbe3295b2",
+  "sec": 94
+ },
+ "LVS VERIFICATION PROCEDURE 1. Load both the schematic netlist and the layout view before starting the run. 1. 실행 전에 회로도 넷리스트와 레이아웃 뷰를 모두 불러옵니다. 2. Select Verify > LVS and click Run to begin the comparison. 2. Verify > LVS 메뉴를 선택하고 Run을 눌러 비교를 시작합니다. 3. Wait until the status bar shows LVS PASSED or LVS FAILED. 3. 상태 표시줄에 LVS PASSED 또는 LVS FAILED가 나올 때까지 기다립니다. 4. If the run fails, open the report and read the Summary section first. 4. 실패하면 리포트를 열고 Summary(요약) 항목부터 읽습니다. NOTE: A device shown 'in schematic but not in layout' is a missing device. 참고: '회로도엔 있으나 레이아웃엔 없음'으로 표시된 소자는 누락 소자입니다. WARNING: Do NOT tape out the design while any short or open remains unresolved. 경고: short(단락)나 open(단선)이 해결되지 않은 상태로 절대 최종 제출(tape out)하지 마십시오.": {
+  "h": "e3caee041d",
+  "sec": 74
+ },
+ "READING THE LVS ERROR REPORT Summary: Unmatched devices = 2, Unmatched nets = 1, Property errors = 0. 요약: 짝을 못 찾은 소자 2개, 짝을 못 찾은 배선 1개, 속성 오류 0개. Error 1: Device M12 exists in layout but not in schematic (extra device). 오류 1: 소자 M12가 레이아웃엔 있으나 회로도엔 없음 (잉여 소자). Error 2: Terminal 'gate' of M7 is connected to net N4; expected net CLK. 오류 2: M7의 게이트 단자가 N4에 연결됨; 원래는 CLK에 연결되어야 함 (잘못된 연결). Error 3: Net VOUT is open; two segments are not joined. 오류 3: 배선 VOUT가 끊겨 있음; 두 구간이 이어지지 않음 (단선). Action: Fix each error, then re-run LVS until the report shows LVS clean. 조치: 각 오류를 수정한 뒤, 리포트가 LVS clean으로 나올 때까지 LVS를 다시 실행합니다.": {
+  "h": "f82c7d38f8",
+  "sec": 66
+ },
+ "야간 근무 인계, 영어 리포트 한 장 새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 shift report 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. Problem: Chamber A pressure spiked to 12 mTorr during etch step 3. Cause: APC throttle valve stuck at 40%. Action: Aborted lot, switched to Chamber B, notified equipment engineer. Result: Lot recovered, chamber A placed DOWN pending PM. 당신이 할 일은 영작이 아니다. 이 problem–cause–action–result 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 장비부터 디자인 검증까지 현장 전체를 아우르는 영어 보고문을 읽고, 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.": {
+  "h": "737544ab31",
+  "sec": 67
+ },
+ "현장 보고의 뼈대: Problem–Cause–Action–Result 영어 현장 보고문은 대부분 4단 구조를 따른다. 이 순서를 알면 낯선 문장도 '어디를 읽어야 할지' 바로 잡힌다. Problem (문제): 무엇이 잘못됐는지. 보통 abnormal, spiked, failed, out of spec, alarm triggered 같은 단어가 신호다. 예: *Wafer scratch detected on lot #A231.* '무엇이/어디서/얼마나'를 먼저 잡는다. Cause (원인): 왜 그 문제가 생겼는지. due to, caused by, root cause, traced to 뒤에 원인이 온다. 예: *Root cause traced to worn robot arm gripper.* 원인이 '확정(confirmed)'인지 '추정(suspected)'인지 단어로 구분해야 한다. Action (조치): 실제로 무엇을 했는지. 과거형 동사가 줄줄이 온다 — aborted, replaced, notified, rebooted, isolated. 예: *Replaced gripper and re-qualified the tool.* 조치가 '임시(temporary fix)'인지 '영구(permanent)'인지가 핵심. Result (결과): 조치 후 상태. recovered, back to normal, still down, pending PM 등. 예: *Tool back UP, monitoring for 24h.* 결과 문장이 곧 '지금 현재 상태'이므로, 구두 보고에서 가장 먼저 말해야 할 정보다. 이 4단은 화면 HMI 이벤트 로그, 종이 work instruction, 이메일 8D report 어디서나 반복된다. 순서가 뒤섞여 있어도 각 문장을 P/C/A/R 중 어디에 속하는지 분류하며 읽으면 요약이 쉬워진다.": {
+  "h": "016f50ff4c",
+  "sec": 102
+ },
+ "상태·심각도를 나타내는 영어 신호어 보고문에서 '지금 얼마나 심각한가'는 몇 개의 정해진 단어로 표현된다. 이 단어들의 강도 차이를 읽어야 올바르게 판단한다. 장비 상태는 세 단계로 압축된다. UP (정상 가동 가능), DOWN (정지, 생산 불가), IDLE (가동 가능하지만 대기 중). 보고문에서 *Tool is DOWN*을 보면 '생산 중단'이라는 뜻이며 즉시 위로 전달해야 한다. 심각도(severity)는 보통 Critical > Major > Minor 순. Critical은 라인 정지·안전 위험, Minor는 모니터링만 하면 되는 수준. *Minor alarm, no action required*와 *Critical fault, line stopped*는 대응 자체가 다르다. 조치의 성격을 구분하는 짝: temporary fix / workaround (임시 우회) vs permanent fix / root-cause fix (근본 해결). *Applied a temporary workaround*라고 쓰여 있으면 '문제가 아직 남아 있다'는 뜻으로 읽어야 한다. 후속 필요를 알리는 표현: pending (~대기 중), follow-up required, needs PM, escalated to engineer. *Pending PM*은 '예방정비 전까지는 못 돌린다'는 강한 제약이다. 확실성의 정도: confirmed (확인됨) / suspected, likely (추정) / under investigation (조사 중). 원인이 suspected면 아직 확정이 아니므로 '원인 미상' 취지로 보고해야 정확하다. 이 신호어들은 HMI 상단 배너, 알람 팝업, 리포트 헤더에 색상(빨강=Critical)과 함께 뜨는 경우가 많다. 단어와 색을 함께 읽으면 오판을 줄인다.": {
+  "h": "b6b3719631",
+  "sec": 112
+ },
+ "장비·공정·디자인을 아우르는 종합 보고 종합 현장 보고는 장비 고장 하나만 다루지 않는다. 공정 이상, 검사 결과, 심지어 디자인 규칙 위반까지 같은 틀로 묶인다. 장비 측(equipment): 알람, 인터록, 밸브·로봇 고장 등이 Problem이 되고, 부품 교체·챔버 전환이 Action이 된다. HMI 로그가 1차 근거다. 공정 측(process): SPC 관리도 이탈, 두께 드리프트, 파티클 급증(particle excursion) 등이 Problem으로 잡히며, 보통 yield loss(수율 손실)와 연결된다. 검사·디자인 측(design/inspection): DRC(Design Rule Check) 위반, 레이아웃 간격 오류, 마스크 결함 등이 보고된다. 이때도 '위반 내용–원인–수정–재검증 결과'로 서술된다. 세 측 모두 결국 같은 P–C–A–R 구조이므로, 분야가 바뀜어도 읽는 방법은 동일하다. 단어만 분야별로 다를 뿐이다. 또한 각 보고에는 impact(영향 범위: 몇 로트, 몇 장)와 follow-up owner(후속 담당: 장비/공정/설계 엔지니어)가 명시된다. 구두 보고 시 이 둘을 빼면 반드시 되묻는다.": {
+  "h": "6e8c1e1aa7",
+  "sec": 78
+ },
+ "교대 인수인계 로그 — 짧게 끊어 쓴 과거형 보고의 실제 형태는 매끈한 문장이 아니라 '인수인계 로그(passdown)'다. 주어를 빼고 과거형으로 짧게 끊는다. 실제 passdown 예: Found leak on Chamber B, replaced O-ring, tool back up. (B챔버 누설 발견 → O-링 교체 → 장비 재가동). 'I found... and then I replaced...'로 풀어 쓰지 않는다. 아직 안 끝난 일은 이렇게: Etcher 3 still down, waiting on the part, escalated to the vendor. (3호기 여전히 정지, 부품 대기 중, 벤더에 에스컬레이션). 자주 쓰는 덩어리 표현(청크): tool is down / back up(장비 정지/재가동), waiting on the part(부품 대기), out of spec(규격 이탈), no trouble found (NTF)(이상 없음), placed down pending PM(PM까지 정지 처리). 읽을 때는 무엇을 발견 → 무엇을 조치 → 지금 상태 세 조각으로 끊는다. 이 순서가 곧 problem–action–status 다. 핵심: passdown은 '잘 쓴 영어'가 목표가 아니라 다음 근무자가 3초 안에 상태를 파악하게 하는 것. 그래서 짧고 딱딱하다. 그 형태를 읽어내는 게 이 챕터의 실전 능력이다.": {
+  "h": "d1cabf6177",
+  "sec": 81
+ },
+ "SHIFT HANDOVER REPORT — READING GUIDE PROBLEM: During night shift, Chamber A chamber pressure spiked above 10 mTorr and the process alarm triggered on etch step 3. 문제: 야간조 중 A 챔버 압력이 10 mTorr를 초과해 급등했고, 식각 3단계에서 공정 알람이 발동했다. CAUSE: Root cause traced to the APC throttle valve stuck at 40% open. Confirmed by valve position log. 원인: 근본 원인은 APC 스로틀 밸브가 40% 개방 상태로 고착된 것으로, 밸브 위치 로그로 확인됨(추정이 아닌 확정). ACTION: Aborted the running lot, isolated Chamber A, rerouted the lot to Chamber B, and escalated to the equipment engineer. 조치: 진행 로트 중단, A 챔버 격리, 로트를 B 챔버로 우회, 장비 엔지니어에게 상위 보고함. RESULT: Lot recovered with no wafer loss. Chamber A placed DOWN, pending PM. ETA to recovery: 6 hours. 결과: 로트는 웨이퍼 손실 없이 복구됨. A 챔버는 DOWN 상태로 예방정비 대기, 복구 예상 6시간.": {
+  "h": "b2e5bd50d1",
+  "sec": 82
+ },
+ "WORK INSTRUCTION — WHEN YOU RECEIVE A DOWN REPORT NOTE: A tool marked DOWN must not be run until an engineer clears it, even if the alarm has cleared on the HMI. 주의: DOWN으로 표시된 장비는 HMI에서 알람이 사라졌더라도 엔지니어가 해제(clear)하기 전까지 가동하면 안 된다. Verify the current tool state on the HMI status banner before reporting to the next shift. 다음 조에 보고하기 전에 HMI 상태 배너에서 현재 장비 상태를 반드시 확인한다. If the report says 'temporary workaround applied', treat the tool as still at risk and inform the incoming operator. 보고문에 'temporary workaround applied'라고 있으면 장비가 여전히 위험 상태라고 보고 다음 작업자에게 알린다. WARNING: Do NOT release any quarantined lot back to production without written engineering approval. 경고: 보류(quarantine) 처리된 로트는 서면 엔지니어링 승인 없이 절대 생산으로 되돌리지 않는다.": {
+  "h": "9eb27878c3",
+  "sec": 71
+ },
+ "NIGHT SHIFT PASSDOWN LOG (raw) EQP-204 (Etcher 3): Unscheduled down at 02:10. RF fault, reflected power high. NTF after re-tune. Tool back up 03:05. Watch reflected power. EQP-204(3호기): 02:10 비계획 정지. RF 고장, 반사파 높음. 재매칭 후 이상 없음(NTF). 03:05 재가동. 반사파 계속 주시할 것. EQP-118 (CVD B): Chamber pressure out of spec during lot 7. Aborted lot, switched to Chamber A. Placed down pending PM. EQP-118(CVD B): 로트 7 중 챔버 압력 규격 이탈(OOS). 로트 중단, A챔버로 우회. PM까지 정지 처리. Open items: Etcher 5 waiting on the part (turbo pump), ETA tomorrow AM. WO #4471 still open. Escalated to vendor. 미결 항목: 5호기 부품(터보펌프) 대기, 예상 도착(ETA) 내일 오전. 작업지시(WO) #4471 미결. 벤더 에스컬레이션. NOTE: Read every line as what was found -> what was done -> current status. Confirm any tool marked 'down' before you start it. 참고: 각 줄을 발견->조치->현재 상태로 끊어 읽을 것. 'down'으로 표시된 장비는 가동 전 반드시 상태를 확인하라.": {
+  "h": "173bd982db",
+  "sec": 84
+ },
+ "종합 점검 안내 장비·공정·디자인 전체를 종합합니다. 로그 · 매뉴얼 · Design Rule · DRC/LVS 오류를 읽고 답하세요.": {
+  "h": "1703ff19a7",
+  "sec": 8
+ }
+}

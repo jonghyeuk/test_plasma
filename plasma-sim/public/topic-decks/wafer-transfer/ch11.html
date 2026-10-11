@@ -1,0 +1,411 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.11 진공 이송 — Vacuum Robot과 Process Chamber</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+.wt-photo{ margin:0; flex:1; min-height:0; display:flex; flex-direction:column; }
+/* 실사(생성 이미지)는 도면 옆에 "실물은 이렇게 생겼다"를 보여 주는 한 장이다. 캡션에 (생성 이미지) 를 적는다. */
+.wt-photo img{ display:block; width:100%; flex:1; min-height:0; object-fit:cover; border:1px solid var(--ln2); border-radius:3px; background:#0e1d29; }
+.wt-photo figcaption{ font-family:var(--mono); font-size:18px; line-height:1.5; color:var(--t4); margin-top:10px; letter-spacing:.02em; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="11-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 11</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">진공 이송<br/>Vacuum Robot과 Process Chamber</h1>
+    <div class="wt-lead" style="margin-top:26px">Load Lock을 넘으면 <b>진공의 세계</b>입니다.
+     대기 로봇과 다른 <b>진공 이송 로봇</b>이 웨이퍼를 공정 챔버로 나릅니다.</div>
+    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>이 강의</b> — 진공 로봇이 왜 다르게 생겼는지,
+     Load Lock에서 챔버까지 어떻게 넘기는지 봅니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="28 108 444 264">
+     <rect class="fx-vac" x="150" y="120" width="220" height="220" rx="14"/><text class="fx-lbl" x="170" y="150" fill="#bcaeff">TRANSFER</text>
+     <circle cx="260" cy="240" r="38" fill="#1c2340" stroke="#8a7dff" stroke-width="3"/><circle cx="260" cy="240" r="8" fill="#8a7dff"/><rect class="fx-arm v" x="260" y="230" width="100" height="20" rx="8"/>
+     <rect class="fx-box" x="40" y="200" width="70" height="90" rx="8" stroke="#6f63c9"/><text class="fx-sub" x="54" y="192">LL</text>
+     <circle class="fx-vac" cx="420" cy="170" r="40"/><text class="fx-sub" x="400" y="176">PM1</text>
+     <circle class="fx-vac" cx="420" cy="320" r="40"/><text class="fx-sub" x="400" y="326">PM2</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-02" data-level="intro standard pro" data-here="tm">
+ <div class="wt-pad"><div class="wt-eye">01 · 다른 로봇</div><h2 class="h-title">진공 로봇은 구동부가 밖에 있습니다</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num v"><i>1</i><div><b>왜 밖에?</b> 진공 안에서는 윤활유가 증발해 웨이퍼를 오염시키고, 대류가 없어 모터 열이 빠져나가지 못합니다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>자력 전달</b> 모터·베어링은 진공 밖에 두고, <b>자석</b>으로 힘만 안으로 전달해 팔을 움직입니다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>내열 재질</b> End Effector도 고온·진공을 견디는 재질을 씁니다.</div></div>
+    <div class="wt-note v" style="margin-top:0"><b>한 줄</b> — "오염과 발열을 피하려고 <b>구동부를 진공 밖</b>에 두는 것"이 진공 로봇의 가장 큰 특징입니다.</div></div>
+   <div class="wt-col"><figure class="wt-photo"><img src="../../images/wafer-transfer/vacuum-robot.webp" alt="뚜껑을 연 다각형 스테인리스 Transfer Chamber 안, 가운데 기둥에서 뻗은 개구리다리형 금속 팔이 웨이퍼 한 장을 들고 있고 벽마다 공정 챔버로 이어지는 슬릿 밸브 구멍이 있다" loading="lazy"/>
+    <figcaption>Transfer Chamber 안의 진공 로봇 — 팔만 안에 있고 모터는 바닥 아래(대기) 쪽입니다. 벽의 네모 구멍이 챔버로 가는 문 (생성 이미지)</figcaption></figure></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-03" data-here="tm"><div class="wt-pad"><div class="wt-eye">개념 · 커플링</div>
+ <h2 class="h-title">자석으로 힘을 넘긴다 — 마그네틱 커플링</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-num v"><i>1</i><div><b>벽 너머로</b> 진공 벽을 사이에 두고 바깥 자석이 돌면 안쪽 자석이 따라 돕니다.</div></div>
+  <div class="wt-num v"><i>2</i><div><b>밀봉 유지</b> 축이 벽을 관통하지 않아 회전 씰에서 새는 누설이 없습니다.</div></div>
+  <table class="wt-tbl" style="margin-top:6px"><tr><th>진공의 문제</th><th>설계 답</th></tr>
+   <tr><td>윤활유 증발 → 오염</td><td>구동부를 밖에 · 무윤활 재질</td></tr>
+   <tr><td>대류 없음 → 모터 발열</td><td>모터를 대기 쪽에 두어 냉각</td></tr>
+   <tr><td>축 관통 → 누설</td><td>자석으로 벽 너머 전달</td></tr></table></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 520 380">
+    <rect x="20" y="30" width="480" height="150" rx="10" fill="#161a35" stroke="#4d3f8c" stroke-width="2"/>
+    <text class="fx-cap v" x="36" y="60">진공 (Transfer Chamber)</text>
+    <rect x="20" y="196" width="480" height="160" rx="10" fill="rgba(53,224,200,.04)" stroke="#2c6d63" stroke-width="2"/>
+    <text class="fx-cap" x="36" y="344">대기 — 모터 · 베어링</text>
+    <rect x="20" y="180" width="480" height="16" fill="#3a4c5c" stroke="#6b8397" stroke-width="1.5"/>
+    <text class="fx-sub" x="404" y="174">진공 벽</text>
+    <rect x="200" y="120" width="120" height="50" rx="6" fill="#2f2a52" stroke="#8a7dff" stroke-width="2.5"/>
+    <text class="fx-sub" x="214" y="151" style="fill:#bcaeff">안쪽 자석</text>
+    <rect class="fx-arm v" x="250" y="80" width="190" height="20" rx="8"/><rect x="250" y="96" width="20" height="26" fill="#2f2a52" stroke="#8a7dff" stroke-width="2"/>
+    <text class="fx-sub" x="330" y="74" style="fill:#bcaeff">팔</text>
+    <rect x="200" y="206" width="120" height="50" rx="6" fill="#1d3b3a" stroke="#35e0c8" stroke-width="2.5"/>
+    <text class="fx-sub" x="214" y="237" style="fill:#9fe8dc">바깥 자석</text>
+    <rect x="235" y="256" width="50" height="60" fill="#233746" stroke="#4a7ea6" stroke-width="2"/><text class="fx-sub" x="296" y="292">모터</text>
+    <path d="M150 145 C130 185 130 205 150 235" stroke="#ffb340" stroke-width="2.5" fill="none" stroke-dasharray="6 6"/>
+    <path d="M370 145 C390 185 390 205 370 235" stroke="#ffb340" stroke-width="2.5" fill="none" stroke-dasharray="6 6"/>
+    <text class="fx-sub" x="72" y="228" style="fill:#ffcf85">자력</text></svg></div>
+   <div class="wt-figc">축은 벽을 뚫지 않고, 자력선만 벽을 지나갑니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-04" data-here="tm"><div class="wt-pad"><div class="wt-eye">02 · 손</div>
+ <h2 class="h-title">진공용 End Effector — 흡착을 못 쓴다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>내열 재질</h3><p>고온 공정 근처를 오가므로 세라믹 등 내열·저오염 재질을 씁니다.</p></div>
+  <div class="wt-card v"><h3>지지 방식</h3><p>대기 로봇의 진공 흡착은 "주변 공기압이 웨이퍼를 눌러 주는" 원리라 진공 안에서는 힘이 생기지 않습니다. 그래서 <b>마찰 패드</b> 위에 얹거나 <b>가장자리 걸림(edge grip)</b>으로 잡습니다.</p></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>결과</b> — 붙잡는 힘이 약하므로 진공 로봇은 대기 로봇보다 <b>가감속을 부드럽게</b> 합니다. 축은 여전히 R·θ·Z, 리듬(접고·돌고·펴고)도 같습니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="11-05" data-level="intro standard pro" data-here="tm">
+ <div class="wt-pad"><div class="wt-eye">02 · 넘기기</div><h2 class="h-title">Load Lock에서 챔버까지 — 시뮬레이터 순서</h2>
+  <div class="wt-body"><div class="wt-col">
+   <div class="wt-num"><i>1</i><div><b>Load Lock Pump Down</b> 웨이퍼를 넣고 대기측 밸브를 닫은 뒤 1.0E-2 Torr까지 배기.</div></div>
+   <div class="wt-num"><i>2</i><div><b>TM 밸브 개방</b> 1 Torr 이하여야 열립니다(아니면 ALM-314).</div></div>
+   <div class="wt-num v"><i>3</i><div><b>로봇 전환 + Initialize → Home</b> 수동조작 탭에서 Vacuum Robot을 선택. <b>진공 로봇은 따로</b> 초기화·원점 복귀해야 합니다(아니면 ALM-101 / 102).</div></div></div>
+   <div class="wt-col">
+   <div class="wt-num v"><i>4</i><div><b>Load Lock에서 Pick</b> Move Load Lock → Extend → Pick → Retract.</div></div>
+   <div class="wt-num v"><i>5</i><div><b>챔버에 Place</b> Move PM1 또는 PM2 → Extend → Place → Retract. <b>놓는 순간 공정 시작.</b></div></div>
+   <div class="wt-note"><b>대기 로봇과 리듬은 같다</b> — 접고·돌고·펴고. 달라진 것은 환경(진공)과 목적지(공정 챔버)입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-06" data-here="lock"><div class="wt-pad"><div class="wt-eye">개념 · 흐름</div>
+ <h2 class="h-title">대기와 진공, Load Lock에서 손을 바꿔 잡는다</h2>
+ <div class="wt-fig">
+  <svg viewBox="0 0 1700 380">
+   <rect x="20" y="40" width="560" height="300" rx="14" fill="rgba(53,224,200,.04)" stroke="#2c6d63" stroke-width="2"/>
+   <text class="fx-cap" x="40" y="76">대기 (EFEM)</text>
+   <rect x="1120" y="40" width="560" height="300" rx="14" fill="rgba(155,140,255,.05)" stroke="#4d3f8c" stroke-width="2"/>
+   <text class="fx-cap v" x="1500" y="76">진공 (TM)</text>
+   <circle cx="300" cy="200" r="46" fill="#1c3040" stroke="#4a7ea6" stroke-width="3"/><text class="fx-sub" x="250" y="280">EFEM Robot</text>
+   <rect class="fx-arm" x="300" y="190" width="200" height="20" rx="8"/>
+   <rect class="fx-box" x="700" y="110" width="300" height="180" rx="12" stroke="#6f63c9"/><text class="fx-lbl" x="770" y="100">LOAD LOCK</text>
+   <ellipse class="fx-w" cx="850" cy="200" rx="90" ry="14"/>
+   <rect x="660" y="160" width="26" height="80" fill="#2e7d5a" stroke="#35e0c8" stroke-width="2"/><text class="fx-sub" x="610" y="266">ATM V</text>
+   <rect x="1014" y="160" width="26" height="80" fill="#3a2e6a" stroke="#9b8cff" stroke-width="2"/><text class="fx-sub" x="1010" y="266">TM V</text>
+   <text class="fx-sub" x="760" y="330">① 놓기 → 닫기 → Pump → 열기 ②</text>
+   <circle cx="1400" cy="200" r="46" fill="#1c2340" stroke="#8a7dff" stroke-width="3"/><text class="fx-sub" x="1340" y="280">Vacuum Robot</text>
+   <rect class="fx-arm v" x="1200" y="190" width="200" height="20" rx="8"/>
+   <path class="fx-ln" d="M510 150 H640" marker-end="url(#mA)"/><text class="fx-cap" x="520" y="136">① Place</text>
+   <path class="fx-ln v" d="M1060 150 H1190" marker-end="url(#mV)"/><text class="fx-cap v" x="1070" y="136">② Pick</text></svg></div>
+ <div class="wt-note"><b>릴레이</b> — 두 로봇은 같은 공간에 동시에 손을 넣지 않습니다. 한쪽 밸브가 열려 있을 때 다른 쪽은 반드시 닫혀 있으므로(ALM-312 / 315), 인계는 늘 "놓고 → 압력 전환 → 집기" 순서입니다. 돌아올 때는 정확히 거꾸로(Vent).</div>
+ </div>
+</section>
+
+<section class="slide" data-nid="11-07" data-level="standard pro" data-here="pm">
+ <div class="wt-pad"><div class="wt-eye">03 · 클러스터</div><h2 class="h-title">하나의 허브, 여러 챔버</h2>
+  <div class="wt-body"><div class="wt-col">
+   <div class="wt-card v"><h3>클러스터 툴</h3><p>Transfer Chamber를 중심으로 Load Lock과 여러 공정 챔버(PM)가 방사형으로 붙습니다. 한 로봇이 웨이퍼를 여러 챔버로 분배합니다.</p></div>
+   <div class="wt-card"><h3>장점</h3><p>한 번 진공에 들어온 웨이퍼가 여러 공정을 <b>진공을 깨지 않고</b> 연속 처리합니다.</p></div>
+   <div class="wt-note v" style="margin-top:0"><b>시뮬레이터</b> — 진공 로봇의 목적지는 Load Lock(왼쪽) · PM1(위) · PM2(아래) 세 곳입니다.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 440 380"><circle class="fx-vac" cx="220" cy="190" r="70"/>
+    <circle cx="220" cy="190" r="26" fill="#1c2340" stroke="#8a7dff" stroke-width="3"/><text class="fx-sub" x="204" y="240">TM</text>
+    <circle class="fx-vac" cx="220" cy="54" r="44"/><text class="fx-lbl" x="190" y="61" fill="#bcaeff">PM1</text>
+    <circle class="fx-vac" cx="220" cy="326" r="44"/><text class="fx-lbl" x="190" y="333" fill="#bcaeff">PM2</text>
+    <rect class="fx-box" x="30" y="150" width="90" height="80" rx="8" stroke="#6f63c9"/><text class="fx-lbl" x="52" y="197">LL</text>
+    <path class="fx-ln v" d="M220 164 V104" marker-end="url(#mV)"/><path class="fx-ln v" d="M220 216 V276" marker-end="url(#mV)"/>
+    <path class="fx-ln v" d="M194 190 H126" marker-end="url(#mV)"/>
+    <text class="fx-sub" x="300" y="60">10초</text><text class="fx-sub" x="300" y="332">22초</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-08" data-here="pm"><div class="wt-pad"><div class="wt-eye">05 · 목적지</div>
+ <h2 class="h-title">Process Chamber — 놓는 순간 공정이 시작된다</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-num"><i>1</i><div><b>Place</b> 챔버에 놓으면 레시피가 바로 돕니다. PM1 <b>10초</b>, PM2 <b>22초</b>.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>공정 중 반출 금지</b> 도는 동안 Pick 하면 <b>ALM-601</b> "공정 진행 중 — 남은 n초".</div></div>
+  <div class="wt-num v"><i>2</i><div><b>완료 로그</b> "공정 완료 : W1 — 반출할 수 있습니다." 이후 Pick으로 꺼냅니다.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>이미 웨이퍼가 있는 챔버</b>에 또 놓으면 <b>ALM-505</b> Double Place.</div></div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 520 300">
+    <text class="fx-sub" x="20" y="36">센서 탭 · PM1 / PM2 Status</text>
+    <rect class="fx-panel" x="20" y="50" width="480" height="100" rx="8"/>
+    <text class="fx-lbl" x="40" y="88">PM1</text><rect x="120" y="72" width="340" height="18" rx="4" fill="#1a2a38"/><rect x="120" y="72" width="210" height="18" rx="4" fill="#9b8cff"/>
+    <text class="fx-sub" x="120" y="124">공정 중 — 남은 4초 → Pick 거부(601)</text>
+    <rect class="fx-panel" x="20" y="170" width="480" height="100" rx="8"/>
+    <text class="fx-lbl" x="40" y="208">PM2</text><rect x="120" y="192" width="340" height="18" rx="4" fill="#35e0c8"/>
+    <text class="fx-sub" x="120" y="244">완료 — 반출 대기 → Pick 가능</text></svg></div>
+   <div class="wt-figc">개념도 — 시뮬레이터 화면을 단순화했습니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-09" data-here="pm"><div class="wt-pad"><div class="wt-eye">개념 · 스케줄링</div>
+ <h2 class="h-title">어느 챔버로 먼저 보낼까 — 긴 쪽 먼저</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-num"><i>1</i><div><b>비는 챔버 우선</b> 준비된 PM으로 보내 로봇이 기다리지 않게.</div></div>
+  <div class="wt-num v"><i>2</i><div><b>오래 걸리는 챔버를 먼저</b> 22초짜리 PM2를 먼저 채우면, 그 사이 PM1(10초)이 끝납니다.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>반대로 하면</b> 둘째 장이 들어간 뒤 PM2의 22초를 통째로 기다립니다.</div></div>
+  <div class="wt-note" style="margin-top:0"><b>연결</b> — 이 판단이 훈련 ③의 기록 시간으로 드러나고, 15강 과제 ③ 처리량(두 장 겹쳐 돌리기)에서 프로그램으로 다시 만납니다.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 540 330">
+    <text class="fx-cap v" x="20" y="34">PM2 먼저</text>
+    <rect x="80" y="54" width="352" height="30" rx="4" fill="#9b8cff"/><text class="fx-sub" x="20" y="75">PM2</text><text class="fx-sub" x="210" y="75" style="fill:#0b1520">22초</text>
+    <rect x="80" y="92" width="80" height="30" rx="4" fill="#2a3a4a"/><rect x="160" y="92" width="160" height="30" rx="4" fill="#35e0c8"/><text class="fx-sub" x="20" y="113">PM1</text><text class="fx-sub" x="210" y="113" style="fill:#0b1520">10초</text>
+    <path d="M432 44 V132" stroke="#35e0c8" stroke-width="2.5"/><text class="fx-cap" x="440" y="100">끝</text>
+    <text class="fx-cap" x="20" y="184" style="fill:#ffb340">PM1 먼저</text>
+    <rect x="80" y="204" width="160" height="30" rx="4" fill="#35e0c8"/><text class="fx-sub" x="20" y="225">PM1</text><text class="fx-sub" x="130" y="225" style="fill:#0b1520">10초</text>
+    <rect x="80" y="242" width="80" height="30" rx="4" fill="#2a3a4a"/><rect x="160" y="242" width="352" height="30" rx="4" fill="#9b8cff"/><text class="fx-sub" x="20" y="263">PM2</text><text class="fx-sub" x="300" y="263" style="fill:#0b1520">22초</text>
+    <path d="M512 194 V282" stroke="#ff5e5e" stroke-width="2.5"/>
+    <text class="fx-sub" x="80" y="312">회색 = 둘째 장을 올려 오는 이송 시간</text></svg></div>
+   <div class="wt-figc">같은 두 장, 순서만 바꿔도 끝나는 시각이 달라집니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-10"><div class="wt-pad"><div class="wt-eye">06 · 흔한 문제</div>
+ <h2 class="h-title">진공 이송에서 자주 나는 알람</h2>
+ <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1500px;margin:0 auto"><table class="wt-tbl"><tr><th>코드</th><th>상황</th><th>고칠 것</th></tr>
+   <tr><td><b>ALM-101 / 102</b></td><td>진공 로봇으로 전환만 하고 바로 움직임</td><td>진공 로봇도 Initialize → Home</td></tr>
+   <tr><td><b>ALM-314</b></td><td>배기가 끝나기 전 TM 밸브 열기</td><td>Pump Down 완료(1 Torr 이하) 확인</td></tr>
+   <tr><td><b>ALM-304</b></td><td>TM 밸브를 안 열고 Load Lock으로 Extend</td><td>TM 밸브 먼저 열기</td></tr>
+   <tr><td><b>ALM-502</b></td><td>Load Lock이 비었는데 Pick</td><td>EFEM이 웨이퍼를 넣었는지(Load Lock 탭 · 화면) 확인</td></tr>
+   <tr><td><b>ALM-601</b></td><td>공정이 끝나기 전 챔버에서 Pick</td><td>PM Status의 남은 시간 · 완료 로그 확인</td></tr>
+   <tr><td><b>ALM-505</b></td><td>웨이퍼가 있는 챔버에 또 Place</td><td>다른 챔버로 · 먼저 반출</td></tr>
+   <tr><td><b>ALM-316</b></td><td>팔이 Load Lock 안인데 TM 밸브 닫기</td><td>Retract 후 닫기</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>대응</b> — 압력 · Presence · PM Status를 먼저 확인하고, 알람 로그의 코드로 원인을 좁힙니다(14강).</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="11-11" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">11강에서 직접 해볼 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>Load Lock Pump Down</b> 웨이퍼 넣고 배기.</div></div>
+    <div class="wt-num"><i>2</i><div><b>진공측 Gate Valve 개방</b> 압력 맞춰 연다.</div></div></div>
+   <div class="wt-col"><div class="wt-num v"><i>3</i><div><b>Process Chamber로 이송</b> 진공 로봇으로 PM까지.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>훈련 탭 3개</b>
+      ① 챔버에는 시간이 걸린다 · ② 두 챔버 동시 가동 · ③ 두 장 처리 시간 재기.</div></div>
+    <div class="wt-note"><b>완료 기준</b> — PM 도착과 <b>훈련 3개</b>를 통과하면 11강 종료.</div></div></div>
+  <div class="wt-note" style="margin:0 60px 40px"><b>챔버에는 공정 시간이 있습니다 — PM1은 10초, PM2는 22초.</b>
+   놓는 순간 레시피가 시작되고 끝나기 전에는 반출할 수 없습니다(ALM-601).
+   그래서 <b>어느 챔버로 먼저 보낼지</b>가 총 시간을 바꿉니다. 이 판단을 ③에서 시간으로 확인합니다.</div></div>
+</section>
+
+<section class="slide" data-nid="11-12" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">11강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num v"><i>1</i><div><b>구동부는 진공 밖</b> 오염·발열 회피, 자력 전달.</div></div>
+    <div class="wt-num"><i>2</i><div><b>압력 맞춰 넘긴다</b> Pump Down 후 Gate Valve, 진공 로봇은 따로 Init/Home.</div></div>
+    <div class="wt-num warn"><i>3</i><div><b>챔버에는 시간이 있다</b> 공정 중 반출은 ALM-601, 긴 챔버를 먼저 채운다.</div></div></div>
+   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① 진공 로봇의 구동부가 진공 밖에 있는 이유 두 가지는? → 윤활유 증발 오염, 모터 발열.<br/>
+     ② Vacuum Robot으로 전환하자마자 Move를 누르면? → ALM-101, 진공 로봇도 Initialize → Home.<br/>
+     ③ PM1(10초)·PM2(22초)에 두 장을 넣을 때 어느 쪽을 먼저? → 긴 PM2.</p></div>
+    <div class="wt-note"><b>다음 강</b> — 12강 <b>시퀀스</b>: 지금까지의 이송을 블록으로 엮어 자동 실행합니다.</div></div></div></div>
+</section>
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"11-01":{"key":"Load Lock 을 넘으면 진공의 세계 — <b>진공 로봇</b>이 웨이퍼를 공정 챔버로 나른다","kw":["Vacuum Robot","Transfer Chamber","LL → PM1 · PM2"],"sec":58,"audio":true},"11-02":{"key":"진공 로봇은 <b>구동부가 밖에 있다</b> — 윤활유 증발·모터 발열을 피하려고 자석으로 힘만 전달","kw":["윤활유 증발 → 오염","대류 없음 → 발열","자력 전달","내열 End Effector"],"sec":54,"audio":true},"11-03":{"key":"마그네틱 커플링 — 축이 벽을 뚫지 않고 <b>자력선만 벽을 지난다</b>, 그래서 회전 씰 누설이 없다","kw":["바깥 자석 → 안쪽 자석","축 관통 없음","회전 씰 누설 0","무윤활 재질"],"sec":61,"audio":true},"11-04":{"key":"진공에선 <b>흡착을 못 쓴다</b> — 마찰 패드나 edge grip, 그래서 가감속을 부드럽게. 축과 리듬은 같다","kw":["세라믹 내열 재질","흡착 = 공기압이 눌러 주는 것","마찰 패드 · edge grip","가감속 완만"],"sec":61,"audio":true},"11-05":{"key":"Pump → TM 열기 → <b>Vacuum Robot + Init·Home</b> → LL Pick → PM Place","kw":["1.0E-2 까지 배기","TM ≤1 Torr (314)","Vacuum Robot 따로 Init/Home (101/102)","Move LL → Pick","Move PM1/PM2 → Place"],"sec":63,"audio":true},"11-06":{"key":"두 로봇은 같은 공간에 동시에 손을 넣지 않는다 — 인계는 늘 <b>놓고 → 압력 전환 → 집기</b>","kw":["EFEM Place","ATM 닫기 → Pump → TM 열기","Vacuum Pick","312/315 가 보장","돌아올 땐 Vent"],"sec":60,"audio":true},"11-07":{"key":"클러스터 툴 — Transfer Chamber 허브에 LL 과 PM 이 방사형, <b>진공을 깨지 않고</b> 연속 처리","kw":["허브 + 방사형","한 로봇이 분배","진공 안 깨고 여러 공정","시뮬: LL · PM1 · PM2"],"sec":58,"audio":true},"11-08":{"key":"놓는 순간 공정 시작 — <b>PM1 10초 · PM2 22초</b>, 도는 중 Pick 601 · 또 놓으면 505","kw":["Place = 레시피 시작","PM1 10초 · PM2 22초","ALM-601 남은 n초","완료 로그 → Pick","ALM-505"],"sec":57,"audio":true},"11-09":{"key":"어느 챔버 먼저? — <b>긴 PM2(22초)를 먼저</b> 채우면 그 사이 PM1(10초)이 끝난다","kw":["비는 챔버 우선","오래 걸리는 쪽 먼저","반대면 22초 통째로 기다림","훈련 ③ · 15강 과제 ③"],"sec":58,"audio":true},"11-10":{"key":"101/102·314·304·502·601·505·316 — 먼저 <b>압력·Presence·PM Status</b>","kw":["101/102 진공 로봇도 Init·Home","314 · 304","502 LL 비었음","601 공정 중","316 팔이 안인데 TM 닫기"],"sec":64,"audio":true},"11-11":{"key":"실습 — Pump · TM 개방 · PM 이송 · 훈련 ① 시간 ② 동시 가동 ③ <b>두 장 시간 재기</b>","kw":["Pump Down","Gate Valve 개방","Vacuum Robot → PM","훈련 3개","순서가 총 시간을 바꾼다"],"sec":67,"audio":true},"11-12":{"key":"남길 것 — <b>구동부는 진공 밖 · 압력 맞춰 넘긴다 · 챔버엔 시간</b>. Q 오염·발열 / 101 / PM2","kw":["자력 전달","Pump Down → Gate Valve → 따로 Init/Home","601 · 긴 챔버 먼저","다음 12강 시퀀스"],"sec":60,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

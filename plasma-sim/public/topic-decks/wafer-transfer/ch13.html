@@ -1,0 +1,432 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.13 인터록 — 비정상 동작 판별</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+<style>/* 표지는 메모 바 때문에 13px 모자란다 — 오른쪽 그림 높이를 제한하고 왼쪽 간격만 줄인다 */
+section[data-nid="13-01"] .wt-fig svg{ max-height:420px; width:auto; display:block; margin:0 auto; } section[data-nid="13-01"] .wt-lead{ margin-top:16px !important; } section[data-nid="13-01"] .wt-note{ margin-top:24px !important; }</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="13-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 13</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">인터록<br/>막는 것이 임무입니다</h1>
+    <div class="wt-lead" style="margin-top:26px">인터록은 <b>조건이 맞지 않으면 동작을 거부</b>하는 안전장치입니다.
+     지금까지 흩어져 나온 인터록들을 한자리에 모아 정리합니다.</div>
+    <div class="wt-note warn" style="margin-top:40px;max-width:960px"><b>이 강의</b> — 네 가지 인터록을 <b>일부러</b> 발생시켜
+     "고장이 아니라 보호"임을 확실히 이해합니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="43 23 374 394">
+     <polygon points="230,40 400,140 400,300 230,400 60,300 60,140" fill="#161a35" stroke="#9b8cff" stroke-width="3"/>
+     <text class="fx-cap v" x="230" y="215" text-anchor="middle" style="font-size:26px">INTERLOCK</text>
+     <text class="fx-sub" x="230" y="250" text-anchor="middle">조건 불충족 → 거부</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="13-02"><div class="wt-pad"><div class="wt-eye">개요</div>
+ <h2 class="h-title">인터록은 왜 존재하나</h2>
+ <div class="wt-body">
+  <div class="wt-col">
+   <div class="wt-card" style="flex:none"><h3>지키는 것들</h3><p>웨이퍼(한 장에 수백만~수천만 원), 장비(수십억), 사람. 이 셋을 지키려 위험한 명령을 거부합니다.</p></div>
+   <div class="wt-card v" style="flex:none"><h3>거부 = 정상</h3><p>알람은 고장이 아니라 "지금 그건 위험하다"는 안전 신호입니다.</p></div>
+   <div class="wt-note" style="margin-top:0"><b>이 강의</b> — 인터록을 원리와 재현법으로 하나씩 보고, 마지막엔 <b>한 번도 걸리지 않는</b> 프로그램을 씁니다.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 540 400">
+    <rect class="fx-panel" x="20" y="30" width="170" height="70" rx="10"/><text class="fx-lbl" x="44" y="72">명령</text>
+    <path class="fx-ln" d="M190 65 H250" marker-end="url(#mA)"/>
+    <polygon points="340,20 440,65 340,110 240,65" fill="#1a2a38" stroke="#ffb340" stroke-width="2.5"/>
+    <text class="fx-lbl" x="296" y="72" style="fill:#ffcf85">조건?</text>
+    <path class="fx-ln" d="M340 110 V190" marker-end="url(#mA)"/><text class="fx-cap" x="352" y="160">맞음</text>
+    <rect class="fx-panel" x="260" y="196" width="160" height="64" rx="10"/><text class="fx-lbl" x="296" y="236">실행</text>
+    <path class="fx-bad" d="M440 65 H500 V190" marker-end="url(#mR)"/><text class="fx-sub" x="452" y="52" style="fill:#ff8f8f">틀림</text>
+    <rect x="440" y="196" width="90" height="64" rx="10" fill="rgba(255,94,94,.08)" stroke="#ff5e5e" stroke-width="2"/><text class="fx-lbl" x="458" y="236" style="fill:#ff8f8f">거부</text>
+    <path class="fx-bad" d="M485 260 V320" marker-end="url(#mR)"/>
+    <rect class="fx-panel" x="20" y="326" width="510" height="56" rx="8"/>
+    <text class="fx-sub" x="36" y="360" style="fill:#ff8f8f">[E] ALM-301 Load Port Door가 닫혀 있습니다</text></svg></div>
+   <div class="wt-figc">인터록은 "실행 전 검사", 알람 로그는 그 거부의 기록입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="13-03" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">01 · 지도</div><h2 class="h-title">시뮬레이터의 인터록 전체 지도</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1560px;margin:0 auto"><table class="wt-tbl"><tr><th>계열</th><th>코드</th><th>막는 상황</th></tr>
+    <tr><td>Robot</td><td>ALM-101·102·103</td><td>Initialize 전 · Home 전 · 이동 중에 새 명령</td></tr>
+    <tr><td>Collision</td><td>ALM-201·202·203</td><td>편 채 회전 · 편 채 Z 이동 · 안 편 채 Pick/Place</td></tr>
+    <tr><td>Door</td><td>ALM-301·302·305~307</td><td>닫힌 문 진입 · 미도킹 · 도킹 전 Door · 팔이 FOUP 안인데 Door/Undock · 문 닫힌 채 Mapping</td></tr>
+    <tr><td>Vacuum</td><td>ALM-303·304·308~316</td><td>밸브 닫힌 채 진입 · 압력 안 맞는 개방 · 동시 개방 · 팔이 안인데 닫기</td></tr>
+    <tr><td>Position</td><td>ALM-401·405</td><td>Z 한계 초과 · θ가 목표와 3° 넘게 어긋난 채 Extend</td></tr>
+    <tr><td>Presence</td><td>ALM-501~505</td><td>든 채 또 Pick · 빈 곳 Pick · 센서 불량 · 빈손 Place · 두 번 Place</td></tr>
+    <tr><td>Process</td><td>ALM-601·602</td><td>빈 정렬기 Align · 공정 중 반출 · 정렬 중 Pick</td></tr>
+    <tr><td>Timeout</td><td>ALM-701</td><td>9초 안에 목표 압력 미도달</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>읽는 법</b> — 백의 자리가 <b>계열</b>입니다. 코드 첫 자리만 봐도 로봇·도어·진공·위치·웨이퍼 중 어디를 봐야 할지 좁혀집니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-04" data-level="standard pro" data-here="lock">
+ <div class="wt-pad"><div class="wt-eye">02 · 왜 필요</div><h2 class="h-title">Door · Vacuum · Presence · Position</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>D</i><div><b>Door</b> 닫힌 문으로 진입하면 FOUP 문과 충돌, 파티클 발생. 그래서 막습니다.</div></div>
+    <div class="wt-num v"><i>V</i><div><b>Vacuum</b> 압력 안 맞는 개방은 진공을 깨거나 웨이퍼를 날립니다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-num"><i>P</i><div><b>Presence</b> 빈손으로 Place, 든 채 또 Pick, 차 있는 곳에 Place → 충돌·낙하.</div></div>
+    <div class="wt-num v"><i>Po</i><div><b>Position</b> 기준(Home) 없이, 또는 θ가 어긋난 채 뻗으면 벽·슬롯에 부딪힙니다(ALM-102 · 405).</div></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="13-05" data-here="efem"><div class="wt-pad"><div class="wt-eye">03 · Collision</div>
+ <h2 class="h-title">Collision — 편 채 회전 금지 (ALM-201)</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-num warn"><i>!</i><div><b>왜</b> 팔을 편 채 돌면 옆 장치·챔버 벽과 충돌합니다. 편 채 Z 이동도 같은 이유로 막힙니다(ALM-202).</div></div>
+  <div class="wt-num"><i>✓</i><div><b>지키기</b> 회전·Z 이동 전 Retract → Home Sensor ON 확인.</div></div>
+  <div class="wt-note warn" style="margin-top:0"><b>재현</b> — Extend 상태에서 다른 스테이션으로 Move → ALM-201.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 480 320">
+    <rect x="330" y="30" width="120" height="260" rx="10" fill="#1a2a38" stroke="#4a6b85" stroke-width="2"/><text class="fx-sub" x="352" y="60">옆 장치</text>
+    <circle cx="140" cy="200" r="40" fill="#1c3040" stroke="#4a7ea6" stroke-width="3"/>
+    <rect class="fx-arm" x="140" y="190" width="220" height="20" rx="8" transform="rotate(-28 140 200)"/>
+    <path d="M300 60 A180 180 0 0 1 330 160" stroke="#ff5e5e" stroke-width="3" fill="none" stroke-dasharray="7 6" marker-end="url(#mR)"/>
+    <text class="fx-cap" x="20" y="300" style="fill:#ff8f8f">편 채 회전 → 팔 끝이 휩쓴다</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="13-06" data-here="port"><div class="wt-pad"><div class="wt-eye">04 · Door</div>
+ <h2 class="h-title">Door — 닫힌 문으로 진입 금지 (ALM-301)</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num warn"><i>!</i><div><b>왜</b> 문 닫힘 상태 진입은 충돌·오염.</div></div>
+  <div class="wt-num"><i>✓</i><div><b>지키기</b> Docking → Door Open 후 Extend.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>반대 방향도</b> 팔이 FOUP 안에 있는데 Door Close · Undock → ALM-306.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>순서</b> 도킹 전 Door Open → ALM-305, 문 닫힌 채 Mapping → ALM-307.</div></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>재현</b> — 문 닫은 채 FOUP으로 Extend → ALM-301.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-07" data-here="lock"><div class="wt-pad"><div class="wt-eye">05 · Vacuum</div>
+ <h2 class="h-title">Vacuum — 압력 안 맞는 개방 금지 (ALM-311 · 314)</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num warn"><i>!</i><div><b>ALM-314</b> 1 Torr 넘는 상태(예: 대기압)에서 진공측 밸브 개방 → 진공 붕괴.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>ALM-311</b> 700 Torr 미만(배기된 상태)에서 대기측 밸브 개방 → 공기 역류.</div></div>
+  <div class="wt-num warn"><i>!</i><div><b>ALM-312 / 315</b> 한쪽이 열린 채 다른 쪽 개방.</div></div>
+  <div class="wt-num"><i>✓</i><div><b>지키기</b> 목표 압력 도달(CHECK vacuum) 후에만 개방.</div></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>재현</b> — 대기압에서 TM 밸브 → ALM-314, Pump Down 후 ATM 밸브 → ALM-311.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-08" data-here="efem"><div class="wt-pad"><div class="wt-eye">06 · Presence</div>
+ <h2 class="h-title">Presence — 웨이퍼 유무 불일치 금지 (ALM-50x)</h2>
+ <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1400px;margin:0 auto"><table class="wt-tbl"><tr><th>코드</th><th>상황</th><th>막는 사고</th></tr>
+    <tr><td><b>ALM-501</b></td><td>손에 웨이퍼가 있는데 또 Pick</td><td>웨이퍼 두 장 겹침 · 파손</td></tr>
+    <tr><td><b>ALM-502</b></td><td>빈 곳(Presence OFF)에서 Pick</td><td>헛동작 · 잘못된 겨냥 방치</td></tr>
+    <tr><td><b>ALM-504</b></td><td>빈손으로 Place</td><td>이력 불일치</td></tr>
+    <tr><td><b>ALM-505</b></td><td>이미 웨이퍼가 있는 곳에 Place</td><td>Double Place · 충돌</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>재현</b> — 매핑 결과에 없는 칸에서 Pick(502), 빈손으로 Place(504). 미션 ③은 502 또는 504로 인정됩니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-09" data-here="efem"><div class="wt-pad"><div class="wt-eye">07 · Position</div>
+ <h2 class="h-title">Position — 기준 없이, 어긋난 채 뻗지 않는다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>ALM-102 · Home 미완</h3><p>원점을 모르는 축은 "지금 어디 있는지"를 모릅니다. Home 전에는 회전·전진·Z를 모두 거부합니다.</p></div>
+  <div class="wt-card v"><h3>ALM-405 · θ 편차</h3><p>θ가 목표 스테이션과 <b>3°</b> 넘게 어긋나면 Extend를 거부. 팔 끝이 슬롯 대신 벽을 칩니다.</p></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>재현</b> — Initialize 후 Home 없이 Move → ALM-102. 405는 14강 고장 주입(엔코더 편차)에서 만납니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-10"><div class="wt-pad"><div class="wt-eye">08 · Error vs Timeout</div>
+ <h2 class="h-title">거부에도 두 종류가 있다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>Error (조건 위반)</h3><p>"하면 안 되는 것을 하려 함." 문 닫힌 채 Extend(301), 편 채 회전(201), Home 전 이동(102).
+     명령 <b>시작 순간</b> 즉시 거부 → <b>순서·조건</b>을 고친다.</p></div>
+    <div class="wt-card v"><h3>Timeout (도달 실패)</h3><p>"해야 할 것이 시간 안에 안 됨." Pump Down이 9초 안에 1.0E-2 Torr에 못 닿음(<b>ALM-701</b>).
+     명령은 맞았고 <b>진행 도중</b> 실패 → <b>설비 상태</b>(펌프·누설)를 확인한다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>구분이 진단의 시작</b> — Error면 내 순서를, Timeout이면 장비를 의심합니다. 14강 고장 진단의 출발점입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-11"><div class="wt-pad"><div class="wt-eye">개념 · 계층</div>
+ <h2 class="h-title">안전은 여러 겹으로 — 하드와이어와 소프트</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 36px;align-content:center"><div class="wt-card warn"><h3>하드와이어 인터록</h3><p>배선·릴레이로 물리 차단. 소프트웨어가 죽어도 동작. 최후의 안전.</p></div>
+  <div class="wt-card"><h3>소프트 인터록</h3><p>제어기 로직이 조건을 검사해 명령을 거부. 유연하지만 SW에 의존. 이 시뮬레이터의 알람이 모두 이 층입니다.</p></div>
+  <div class="wt-card v"><h3>여러 겹</h3><p>소프트 리밋·리밋 센서·기구 스토퍼처럼, 하나가 실패해도 다음이 잡도록 겹칩니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>한 줄</b> — 인터록은 "막아서 지킨다". 잘 막히는 장비가 좋은 장비입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="13-12"><div class="wt-pad"><div class="wt-eye">개념 · Fail-safe</div>
+ <h2 class="h-title">고장 나면 "안전한 쪽"으로</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>정전 시</b> 밸브는 닫힘, 로봇은 정지 — 위험을 만들지 않는 상태로.</div></div>
+  <div class="wt-num"><i>2</i><div><b>신호 끊김 시</b> "모름"을 "위험"으로 간주해 멈춤.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>원칙</b> — 애매하면 진행이 아니라 <b>정지.</b> 웨이퍼·사람이 우선.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="13-13"><div class="wt-pad"><div class="wt-eye">개념 · 구분</div>
+ <h2 class="h-title">인터록과 알람은 다르다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>인터록</h3><p>위험한 동작을 <b>미리 막는</b> 예방 장치.</p></div>
+  <div class="wt-card v"><h3>알람</h3><p>일어난 이상을 <b>알리는</b> 통지. 인터록이 걸리면 알람도 함께 뜹니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>정리</b> — 인터록 = 브레이크, 알람 = 경고등.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="13-14"><div class="wt-pad"><div class="wt-eye">개념 · 문화</div>
+ <h2 class="h-title">인터록을 우회하지 않는다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num warn"><i>!</i><div><b>임의 해제 금지</b> "귀찮다고" 인터록을 끄면 사고로 직결.</div></div>
+  <div class="wt-num"><i>✓</i><div><b>원인 제거</b> 막혔으면 조건을 맞추지, 안전장치를 끄지 않습니다.</div></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>현장 원칙</b> — 안전장치가 자주 걸리면 "장치를 끄기"가 아니라 "절차를 고치기".</div>
+  </div></div>
+</section>
+
+
+
+
+
+
+<section class="slide" data-nid="13-15"><div class="wt-pad"><div class="wt-eye">09 · 프로그래밍</div>
+ <h2 class="h-title">걸리지 않는 프로그램 — 확인하고 움직인다</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-card" style="flex:none"><h3>과제 ① 방어적 프로그래밍</h3><p>장비가 거부할 동작을 <b>IF로 미리</b> 막습니다. 열려 있지 않으면 열고, 진공이 아니면 배기하고. 알람이 한 번이라도 나면 불합격입니다.</p></div>
+  <div class="wt-card v" style="flex:none"><h3>과제 ② 복구 루틴</h3><p>과제를 고를 때마다 장비가 세 가지 중 하나로 <b>흐트러집니다</b>(FOUP에 팔 · Load Lock에 팔 · 진공 로봇이 LL에). 상태를 읽고 원점으로 되돌리세요.</p></div>
+  <div class="wt-note warn" style="margin-top:0"><b>채점 조건</b> — 두 과제 모두 고르는 순간 장비를 다시 맞춥니다. 앞에서 해 둔 상태로 통과할 수 없습니다.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 560 400">
+    <rect class="fx-panel" x="10" y="10" width="540" height="380" rx="10"/>
+    <text class="fx-sub" x="30" y="44" style="fill:#9fe8dc">{op:'IF', cond:'extended() == 1',</text>
+    <text class="fx-sub" x="60" y="70" style="fill:#9fe8dc">then:[{op:'RETRACT'}]}</text>
+    <text class="fx-sub" x="30" y="110" style="fill:#9fe8dc">{op:'IF', cond:'homed() == 0',</text>
+    <text class="fx-sub" x="60" y="136" style="fill:#9fe8dc">then:[{op:'HOME'}]}</text>
+    <text class="fx-sub" x="30" y="176" style="fill:#9fe8dc">{op:'IF', cond:'door() == 0',</text>
+    <text class="fx-sub" x="60" y="202" style="fill:#9fe8dc">then:[{op:'DOOR', arg:'OPEN'}]}</text>
+    <text class="fx-sub" x="30" y="242" style="fill:#bcaeff">{op:'IF', cond:'vacuum() == 0',</text>
+    <text class="fx-sub" x="60" y="268" style="fill:#bcaeff">then:[{op:'PUMP'}]}</text>
+    <line x1="30" y1="296" x2="530" y2="296" stroke="#274357" stroke-width="2"/>
+    <text class="fx-sub" x="30" y="330">복구 순서: 팔 빼기(양쪽 로봇) → Home</text>
+    <text class="fx-sub" x="30" y="358">→ 도어 닫기 → 밸브 닫기</text></svg></div>
+   <div class="wt-figc">읽을 수 있는 상태: inited() · homed() · extended() · door() · docked() · vacuum() · atmValve() · tmValve() …</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="13-16" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">13강에서 직접 해볼 것 — 네 인터록 발생</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num warn"><i>1</i><div><b>Door</b> 문 닫은 채 Extend → ALM-301.</div></div>
+    <div class="wt-num warn"><i>2</i><div><b>Vacuum</b> 대기압에서 진공측 밸브(ALM-314) 또는 배기 후 대기측 밸브(ALM-311).</div></div></div>
+   <div class="wt-col"><div class="wt-num warn"><i>3</i><div><b>Presence</b> 빈 곳 Pick(ALM-502) 또는 빈손 Place(ALM-504).</div></div>
+    <div class="wt-num v"><i>4</i><div><b>서로 다른 코드 4종</b> 알람 로그에서 코드를 확인한다(Collision 201 · Position 102 등 무엇이든).</div></div>
+    <div class="wt-num v"><i>5</i><div><b>프로그래밍 과제 2개</b>
+      ① 알람 없이 완주하는 방어 프로그램 · ② 어떤 상태에서 시작해도 원점으로 돌리는 복구 루틴.</div></div></div></div>
+  <div class="wt-note" style="margin:0 60px 40px"><b>여기서 방향이 뒤집힙니다.</b>
+   앞의 네 항목은 인터록을 <b>일부러 걸어</b> 무엇을 막는지 봅니다.
+   프로그래밍 과제는 반대로 <b>한 번도 걸리지 않는</b> 프로그램을 씁니다 —
+   <b>IF door() == 0</b> 처럼 조건을 먼저 확인하고 움직이는 것이 현장에서 시퀀스를 짜는 방식입니다.</div></div>
+</section>
+
+<section class="slide" data-nid="13-17" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">13강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>거부=보호</b> 인터록은 고장이 아니다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>Error vs Timeout</b> 순서 문제(즉시 거부) / 설비 문제(ALM-701).</div></div>
+    <div class="wt-num"><i>3</i><div><b>코드 첫 자리 = 계열</b> 1 로봇 · 2 충돌 · 3 도어·진공 · 4 위치 · 5 웨이퍼 · 6 공정 · 7 시간.</div></div></div>
+   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① ALM-201과 ALM-314는 각각 무엇을 막나? → 편 채 회전 충돌 / 대기압에서 진공측 개방.<br/>
+     ② "Home 미완"은 Error인가 Timeout인가? → Error(ALM-102), 순서 문제.<br/>
+     ③ 복구 루틴에서 도어보다 팔을 먼저 빼는 이유는? → 팔이 안에 있으면 닫기가 거부(306 · 313 · 316).</p></div>
+    <div class="wt-note"><b>다음 강</b> — 14강 <b>고장 진단</b>: 이 알람 로그를 읽어 원인을 추적합니다.</div></div></div></div>
+</section>
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"13-01":{"key":"인터록은 고장이 아니라 <b>보호</b> — 네 가지를 일부러 걸어 본다","kw":["조건 불충족 → 거부","거부 = 보호","네 가지 재현","걸리지 않는 프로그램"],"sec":49,"audio":true},"13-02":{"key":"웨이퍼 · 장비 · 사람을 지키려 위험한 명령을 거부한다 — <b>거부 = 정상</b>","kw":["웨이퍼·장비·사람","실행 전 검사","알람 로그 = 거부의 기록","거부는 정상"],"sec":49,"audio":true},"13-03":{"key":"<b>백의 자리가 계열</b> — 1 로봇·2 충돌·3 문·진공·4 위치·5 웨이퍼·6 공정·7 시간","kw":["1xx 준비 · 2xx 충돌","3xx 문·진공","4xx 위치 · 5xx 유무","6xx 공정 · 7xx 시간"],"sec":66,"audio":true},"13-04":{"key":"네 계열이 막는 사고 — <b>문 충돌 · 진공 붕괴 · 낙하 · 벽 충돌</b>, 전부 되돌릴 수 없다","kw":["Door → FOUP 문 충돌","Vacuum → 진공 붕괴","Presence → 충돌·낙하","Position → 벽·슬롯 충돌"],"sec":52,"audio":true},"13-05":{"key":"편 채 회전하면 팔 끝이 옆 장치를 휩쓴다 — <b>ALM-201</b>, 편 채 Z 이동은 202","kw":["201 편 채 회전","202 편 채 Z","Retract → Home ON","재현: Extend 상태에서 Move"],"sec":53,"audio":true},"13-06":{"key":"닫힌 문 진입 <b>301</b> · 팔이 안인데 닫기 306 · 도킹 전 Door 305 · 닫힌 채 Map 307","kw":["301 닫힌 문 진입","306 팔이 안인데 Close·Undock","305 도킹 전 Door Open","307 닫힌 채 Mapping"],"sec":56,"audio":true},"13-07":{"key":"압력이 안 맞으면 안 연다 — 대기압에서 진공측 <b>314</b> · 배기 후 대기측 <b>311</b> · 동시 312/315","kw":["314 1 Torr 넘는데 TM 밸브","311 700 Torr 미만에 ATM 밸브","312 · 315 동시 개방","CHECK vacuum 뒤 개방"],"sec":59,"audio":true},"13-08":{"key":"손과 자리의 <b>유무가 어긋나면</b> 거부 — 501 · 502 · 504 · 505 Double Place","kw":["501 든 채 또 Pick","502 빈 곳 Pick","504 빈손 Place","505 Double Place"],"sec":58,"audio":true},"13-09":{"key":"기준 없이 뻗지 않는다 — Home 미완 <b>102</b> · θ 3° 넘게 어긋나면 <b>405</b>","kw":["102 Home 전 이동 거부","405 θ 편차 3° 초과","원점 없으면 위치도 모른다","405는 14강 엔코더 고장"],"sec":54,"audio":true},"13-10":{"key":"거부에도 두 종류 — <b>Error</b>는 순서 위반 즉시 거부 · <b>Timeout</b>은 시간 안에 도달 실패(701)","kw":["Error = 하면 안 되는 것","Timeout = 해야 할 것이 안 됨","701 9초 · 1.0E-2 Torr","Error면 내 순서 · Timeout이면 장비"],"sec":48,"audio":true},"13-11":{"key":"안전은 여러 겹 — <b>하드와이어</b>는 SW가 죽어도 막고, <b>소프트</b>는 제어기 로직. 시뮬의 알람은 모두 소프트","kw":["하드와이어 = 배선·릴레이","소프트 = 제어기 로직","소프트 리밋 · 리밋 센서 · 스토퍼","잘 막히는 장비가 좋은 장비"],"sec":47,"audio":true},"13-12":{"key":"고장 나면 <b>안전한 쪽</b>으로 — 정전이면 밸브 닫힘·로봇 정지, 신호 끊기면 위험으로 간주","kw":["정전 → 밸브 닫힘 · 로봇 정지","신호 끊김 = 위험","애매하면 정지","웨이퍼·사람이 우선"],"sec":48,"audio":true},"13-13":{"key":"인터록은 <b>브레이크</b>, 알람은 <b>경고등</b> — 미리 막는 예방 장치와 일어난 이상의 통지","kw":["인터록 = 예방","알람 = 통지","걸리면 둘이 같이 뜬다","브레이크 vs 경고등"],"sec":46,"audio":true},"13-14":{"key":"인터록을 <b>우회하지 않는다</b> — 자주 걸리면 장치를 끄는 게 아니라 절차를 고친다","kw":["임의 해제 금지","원인 제거","절차를 고치기","사고로 직결"],"sec":45,"audio":true},"13-15":{"key":"걸리지 않는 프로그램 — <b>IF로 확인하고 움직인다</b>. 복구는 팔 빼기 → Home → 도어 → 밸브","kw":["과제 ① 방어적 프로그래밍","과제 ② 복구 루틴","IF door()==0 → DOOR OPEN","팔 → Home → 도어 → 밸브"],"sec":69,"audio":true},"13-16":{"key":"301 · 314/311 · 502/504 · 코드 4종 · 과제 2개 — <b>여기서 방향이 뒤집힌다</b>","kw":["① Door 301","② Vacuum 314/311","③ Presence 502/504","④ 코드 4종","⑤ 과제 ①②"],"sec":68,"audio":true},"13-17":{"key":"남길 것 셋 — <b>거부=보호 · Error vs Timeout · 첫 자리 = 계열</b>. 다음 14강","kw":["거부 = 보호","Error 즉시 · Timeout 701","1 로봇 · 2 충돌 · 3 문·진공 · 4 위치 · 5 웨이퍼","다음: 14강 고장 진단"],"sec":58,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

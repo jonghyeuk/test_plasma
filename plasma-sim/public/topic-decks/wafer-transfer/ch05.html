@@ -1,0 +1,472 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.5 이송 실습 — Pick·Transfer·Place</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+.wt-photo{ margin:0; flex:1; min-height:0; display:flex; flex-direction:column; }
+/* 실사(생성 이미지)는 도면 옆에 "실물은 이렇게 생겼다"를 보여 주는 한 장이다. 캡션에 (생성 이미지) 를 적는다. */
+.wt-photo img{ display:block; width:100%; flex:1; min-height:0; object-fit:cover; border:1px solid var(--ln2); border-radius:3px; background:#0e1d29; }
+.wt-photo figcaption{ font-family:var(--mono); font-size:18px; line-height:1.5; color:var(--t4); margin-top:10px; letter-spacing:.02em; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="05-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 5</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">이송 실습<br/>Pick — Transfer — Place</h1>
+    <div class="wt-lead" style="margin-top:26px">4강의 동작들을 이어 <b>웨이퍼 한 장을 실제로 옮깁니다.</b>
+     FOUP에서 집어(Pick), 옮겨(Transfer), Pre-aligner에 내려놓기(Place)까지.</div>
+    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>이 강의는 실습 중심</b> — 원리보다
+     "이 순서로 하면 웨이퍼가 옮겨진다"를 손에 익히는 것이 목표입니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="30 94 523 216">
+     <rect class="fx-box" x="40" y="140" width="90" height="160" rx="8"/><text class="fx-sub" x="54" y="128">FOUP</text>
+     <ellipse class="fx-w" cx="85" cy="190" rx="34" ry="6"/>
+     <circle class="fx-box" cx="440" cy="150" r="46"/><circle class="fx-w" cx="440" cy="150" r="28"/><text class="fx-sub" x="492" y="150">ALIGN</text>
+     <circle cx="270" cy="260" r="26" fill="#16283a" stroke="#4f8bb5" stroke-width="3"/><rect class="fx-arm" x="270" y="252" width="90" height="16" rx="6"/>
+     <path class="fx-ln" d="M130 200 Q200 210 250 250" marker-end="url(#mA)"/><text class="fx-cap" x="150" y="240">Pick</text>
+     <path class="fx-ln" d="M300 240 Q380 200 410 175" marker-end="url(#mA)"/><text class="fx-cap" x="330" y="210">Place</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-02" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">00 · 목표</div><h2 class="h-title">이 강의가 끝나면</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>한 장을 옮긴다</b> FOUP 의 웨이퍼 한 장을 Pre-aligner 까지 알람 없이 옮기고, 다시 제자리에 되돌린다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Pick · Place 의 박자를 안다</b> 겨냥(Z) → Extend → Pick/Place → Retract. 팔을 편 채로는 돌지도, 오르내리지도 않는다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-num v"><i>3</i><div><b>성공을 신호로 판정한다</b> 팔이 움직인 것이 아니라 손의 <b>Wafer Presence</b> 가 바뀐 것이 성공의 증거.</div></div>
+    <div class="wt-num warn"><i>4</i><div><b>5xx 를 읽는다</b> 빈 곳에서 Pick(502) · 빈손으로 Place(504) · 이미 있는 곳에 Place(505) 가 왜 막히는지 설명한다.</div></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-03" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">01 · 한눈에</div><h2 class="h-title">전체 흐름 — 다섯 단계</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Docking → Door → Mapping</b> FOUP을 열고 어느 칸에 웨이퍼가 있는지 확인. (Load Port 탭)</div></div>
+    <div class="wt-num"><i>2</i><div><b>Pick</b> Z 로 슬롯을 겨냥 → Extend → <b>Pick</b> → Retract.</div></div>
+    <div class="wt-num"><i>3</i><div><b>Transfer</b> 접은 채 θ 로 Pre-aligner 앞으로 회전.</div></div>
+    <div class="wt-num"><i>4</i><div><b>Place</b> Extend → <b>Place</b> → Retract.</div></div>
+    <div class="wt-num v"><i>5</i><div><b>Home 복귀</b> 접고 기준으로 돌아온다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>대칭</h3><p>Pick 과 Place 는 가운데 버튼만 다른 같은 동작입니다. 앞뒤는 똑같이 <b>Extend … Retract</b>.</p></div>
+    <div class="wt-card warn"><h3>Pick 은 버튼 하나다 — Up 이 아니다</h3><p>팔을 편 뒤 ▲ Up 으로 웨이퍼를 들려고 하면 <b>ALM-202</b>(편 채 Z 이동)로 거부됩니다.
+     ▲ Up · ▼ Down 은 <b>팔을 접은 채 슬롯을 고르는</b> 버튼입니다. 들어올리는 미세 동작은 Pick 버튼 안에 들어 있습니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-04" data-level="intro standard pro" data-here="foup">
+ <div class="wt-pad"><div class="wt-eye">02 · 실물</div><h2 class="h-title">Pick 이 실제로 하는 일</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.1">
+    <figure class="wt-photo"><img src="../../images/wafer-transfer/end-effector-slot.webp" alt="FOUP 칸 사이로 얇은 포크 모양 손이 웨이퍼 한 장 바로 아래에 들어가 있는 클로즈업" loading="lazy"/>
+     <figcaption>(생성 이미지) 칸과 칸 사이 틈으로 들어간 손끝. 실물과 세부가 다를 수 있습니다.</figcaption></figure></div>
+   <div class="wt-col" style="flex:.9">
+    <div class="wt-num"><i>1</i><div><b>틈으로 들어간다</b> 칸 간격 10 mm, 웨이퍼 두께 0.775 mm. 손이 위아래 웨이퍼 어느 쪽에도 닿지 않을 높이로 들어가야 합니다 — 그래서 겨냥(Z)이 먼저입니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>살짝 들어 올린다</b> 실제 장비는 Pick 명령 안에서 손을 몇 mm 올려 웨이퍼를 받침에서 띄웁니다. 진공 흡착식이면 이때 흡착이 켜집니다.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>센서가 확인한다</b> 손끝의 Wafer Presence 가 ON 이 되어야 Pick 완료입니다.</div></div>
+    <div class="wt-note"><b>시뮬레이터에서는</b> — 이 세 가지를 <b>Pick 버튼 하나</b>로 묶었습니다. Place 도 마찬가지로 살짝 내려 얹고 흡착을 끄는 동작이 버튼 안에 있습니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-05" data-level="intro standard pro" data-here="foup">
+ <div class="wt-pad"><div class="wt-eye">03 · Pick</div><h2 class="h-title">Pick은 네 박자입니다</h2>
+  <div class="wt-fig" style="margin-top:26px">
+   <svg viewBox="0 0 1500 360">
+    <g font-family="var(--mono)">
+     <g transform="translate(10,0)">
+      <text class="fx-cap" x="10" y="40" style="font-size:20px">① 겨냥 — Z</text>
+      <rect x="150" y="80" width="190" height="220" rx="8" fill="#101d29" stroke="#3a6b8c" stroke-width="2"/>
+      <g stroke="#3a6b8c" stroke-width="3"><path d="M150 152 H172 M318 152 H340 M150 232 H172 M318 232 H340"/></g>
+      <ellipse class="fx-w" cx="245" cy="146" rx="80" ry="6"/><ellipse class="fx-w" cx="245" cy="226" rx="80" ry="6" opacity=".45"/>
+      <rect class="fx-arm" x="20" y="158" width="100" height="10" rx="4"/>
+      <path class="fx-ln" d="M70 230 V178" marker-end="url(#mA)"/>
+      <text class="fx-sub" x="10" y="330">접은 채 높이 맞추기</text></g>
+     <g transform="translate(385,0)">
+      <text class="fx-cap" x="10" y="40" style="font-size:20px">② Extend</text>
+      <rect x="150" y="80" width="190" height="220" rx="8" fill="#101d29" stroke="#3a6b8c" stroke-width="2"/>
+      <g stroke="#3a6b8c" stroke-width="3"><path d="M150 152 H172 M318 152 H340 M150 232 H172 M318 232 H340"/></g>
+      <ellipse class="fx-w" cx="245" cy="146" rx="80" ry="6"/><ellipse class="fx-w" cx="245" cy="226" rx="80" ry="6" opacity=".45"/>
+      <rect class="fx-arm" x="20" y="158" width="280" height="10" rx="4"/>
+      <text class="fx-sub" x="10" y="330">웨이퍼 바로 아래로</text></g>
+     <g transform="translate(760,0)">
+      <text class="fx-cap" x="10" y="40" style="font-size:20px">③ Pick</text>
+      <rect x="150" y="80" width="190" height="220" rx="8" fill="#101d29" stroke="#3a6b8c" stroke-width="2"/>
+      <g stroke="#3a6b8c" stroke-width="3"><path d="M150 152 H172 M318 152 H340 M150 232 H172 M318 232 H340"/></g>
+      <ellipse class="fx-w" cx="245" cy="136" rx="80" ry="6"/><ellipse class="fx-w" cx="245" cy="226" rx="80" ry="6" opacity=".45"/>
+      <rect class="fx-arm" x="20" y="146" width="280" height="10" rx="4"/>
+      <path class="fx-ln" d="M110 176 V150" marker-end="url(#mA)"/>
+      <text class="fx-sub" x="10" y="330">버튼 안에서 살짝 들기</text></g>
+     <g transform="translate(1135,0)">
+      <text class="fx-cap" x="10" y="40" style="font-size:20px">④ Retract</text>
+      <rect x="150" y="80" width="190" height="220" rx="8" fill="#101d29" stroke="#3a6b8c" stroke-width="2"/>
+      <g stroke="#3a6b8c" stroke-width="3"><path d="M150 152 H172 M318 152 H340 M150 232 H172 M318 232 H340"/></g>
+      <ellipse class="fx-w" cx="245" cy="226" rx="80" ry="6" opacity=".45"/>
+      <rect class="fx-arm" x="20" y="146" width="100" height="10" rx="4"/><ellipse class="fx-w" cx="75" cy="136" rx="58" ry="6"/>
+      <rect x="170" y="112" width="160" height="34" rx="6" fill="rgba(53,224,200,.12)" stroke="#2c6d63"/><text class="fx-cap" x="184" y="136" style="font-size:17px">Presence ON</text>
+      <text class="fx-sub" x="10" y="330">든 채로 접어 나온다</text></g>
+    </g></svg></div>
+  <div class="wt-note" style="margin-top:14px"><b>확인</b> — 센서 탭의 <b>Wafer Presence (End Effector)</b> 가 "없음" → 웨이퍼 ID(W1) 로 바뀌면 성공. 옆에서 본 그림입니다(아래 칸 웨이퍼는 흐리게).</div>
+  </div>
+</section>
+
+<section class="slide" data-nid="05-06" data-level="standard pro" data-here="foup">
+ <div class="wt-pad"><div class="wt-eye">04 · Pick 상세 ①</div><h2 class="h-title">겨냥과 Extend — 웨이퍼 아래로 정확히</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>높이 먼저</b> 목표 슬롯의 Z 에 맞춘 뒤 팔을 뻗습니다. ▲ Up 은 1번 쪽, ▼ Down 은 5번 쪽. 시작 위치는 Z = 3.</div></div>
+    <div class="wt-num"><i>2</i><div><b>깊이</b> End Effector 가 웨이퍼 중심 아래까지 충분히 들어가야 안정적으로 듭니다. 얕으면 가장자리만 걸려 기울거나 떨어질 수 있습니다(실장비 — 티칭으로 맞춘 값).</div></div>
+    <div class="wt-num v"><i>3</i><div><b>도착 확인</b> Extend 뒤 상태줄 R 이 0 에서 커졌는지, 센서 탭 Home Sensor 가 "전진중"인지 봅니다.</div></div></div>
+   <div class="wt-col">
+    <table class="wt-tbl" style="font-size:21px"><tr><th>Extend 가 거부되면</th><th>코드</th></tr>
+     <tr><td>Initialize · Home 안 함</td><td><b>ALM-101 · 102</b></td></tr>
+     <tr><td>FOUP 문이 닫힘</td><td><b>ALM-301</b></td></tr>
+     <tr><td>θ 가 목표에서 3° 넘게 어긋남</td><td><b>ALM-405</b></td></tr>
+     <tr><td>아직 회전 중</td><td><b>ALM-103</b></td></tr></table>
+    <div class="wt-note warn"><b>순서</b> — Z 는 팔을 <b>접은 채</b> 맞춥니다. 뻗은 뒤에 Z 를 누르면 ALM-202.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-07" data-level="standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">05 · Pick 상세 ②</div><h2 class="h-title">Retract — 접어서 안전하게 빼낸다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-num"><i>1</i><div><b>수평 유지</b> 접는 동안 웨이퍼는 계속 수평을 유지해야 합니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>간섭 회피</b> 완전히 접혀야 회전으로 넘어갈 수 있습니다. 상태줄 R 이 0, Home Sensor 가 다시 ON.</div></div>
+    <div class="wt-num warn"><i>!</i><div><b>편 채 회전</b> ALM-201 Collision Interlock.</div></div>
+    <div class="wt-num warn"><i>!</i><div><b>접히는 도중 회전</b> ALM-103 — 축이 아직 움직이는 중입니다. 멈출 때까지 기다립니다.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>규칙</b> — Retract 완료 전 Rotate 금지(충돌). 항상 접힘 확인 후 회전.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-08" data-level="intro standard pro" data-here="foup">
+ <div class="wt-pad"><div class="wt-eye">06 · 판정</div><h2 class="h-title">"도착했다"와 "집어도 된다"는 다릅니다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>위치만으론 부족</h3><p>팔이 슬롯 앞에 도착해도, 거기 웨이퍼가 실제로 <b>있는지</b>는 센서가 말해줍니다. 그래서 Pick 전에 Mapping 목록을 봅니다.</p></div>
+    <div class="wt-card warn"><h3>빈 슬롯 Pick — ALM-502</h3><p>웨이퍼 없는 칸에서 Pick 하면 장비가 <b>거부</b>합니다(그 위치의 Presence OFF). 로봇 고장이 아니라 겨냥이 틀린 것입니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>원칙</b> — 동작 성공 여부는 <b>센서</b>로 판정합니다. "팔이 갔으니 됐겠지"가 아니라 "Presence가 ON이니 됐다".</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-09" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">07 · Transfer</div><h2 class="h-title">Transfer — 접은 채 목표로 회전</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-card"><h3>이동은 회전</h3><p>웨이퍼를 든 채 θ 로 Pre-aligner 앞으로 돕니다. 팔은 접힌 상태. FOUP(180°) 에서 Rotate ▶ 한 번이면 Pre-aligner(270°) 입니다.</p></div>
+    <div class="wt-card"><h3>속도와 안정</h3><p>급가속은 웨이퍼가 미끄러질 수 있어, 장비는 부드러운 가감속으로 이동합니다. 흡착이 약하면 이때 떨어뜨립니다(6강 ALM-506 Wafer Lost).</p></div></div>
+   <div class="wt-col">
+    <div class="wt-note" style="margin-top:0"><b>확인 — 도착</b> 상태줄 STATION 이 <b>Pre-aligner</b> 로 바뀌고, 센서 탭 Position Sensor 가 "Pre-aligner 정위치" 인지 봅니다.</div>
+    <div class="wt-card warn"><h3>편 채로 돌면</h3><p>ALM-201. 손끝이 회전 반경 밖으로 나가 옆 스테이션을 치기 때문입니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-10" data-level="intro standard pro" data-here="align">
+ <div class="wt-pad"><div class="wt-eye">08 · Place</div><h2 class="h-title">Place는 Pick의 거울입니다</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Extend</b> Pre-aligner 위로 팔을 뻗는다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Place</b> 버튼 안에서 살짝 내려 웨이퍼를 받침에 얹고, 흡착식이면 흡착을 끈다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>Retract</b> 빈 손으로 접어 빠진다.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>확인</b> 손의 Presence 가 "없음", 도면의 정렬대에 웨이퍼.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>같은 동작, 반대 방향</h3><p>Pick 은 들고, Place 는 놓습니다. 앞뒤의 Extend · Retract 는 똑같습니다.</p></div>
+    <table class="wt-tbl" style="font-size:21px"><tr><th>Place 가 거부되면</th><th>코드</th></tr>
+     <tr><td>빈손으로 Place</td><td><b>ALM-504</b></td></tr>
+     <tr><td>놓을 곳에 이미 웨이퍼</td><td><b>ALM-505</b></td></tr>
+     <tr><td>팔을 안 뻗고 Place</td><td><b>ALM-203</b></td></tr></table></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-11" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">09 · 판정표</div><h2 class="h-title">신호로 읽는 성공과 실패</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl"><tr><th>결과</th><th>손 Presence</th><th>그 밖의 증거</th><th>화면</th></tr>
+    <tr><td><b>Pick 성공</b></td><td>없음 → <b>W1</b></td><td>Load Port 표에서 Slot 1 실제 "없음"</td><td>토스트 "Pick W1"</td></tr>
+    <tr><td><b>Place 성공</b></td><td>W1 → <b>없음</b></td><td>도면 정렬대에 웨이퍼</td><td>토스트 "Place W1"</td></tr>
+    <tr><td>Pick 거부</td><td>없음 그대로</td><td>빈 칸(502) · 팔 안 뻗음(203) · 이미 들고 있음(501)</td><td>이유가 잠깐 뜨고 ALARM +1</td></tr>
+    <tr><td>Place 거부</td><td>W1 그대로</td><td>빈손(504) · 이미 있음(505) · 팔 안 뻗음(203)</td><td>이유가 잠깐 뜨고 ALARM +1</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>원칙</b> — 두 위치의 상태 조합이 곧 성공 여부입니다. 눈이 아니라 신호.
+    알람이 뜨면 화면 아래에 이유가 잠깐 뜨고 상태줄 <b>ALARM</b> 숫자가 오릅니다. 코드는 <b>알람 로그</b> 탭에 남습니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-12" data-level="intro standard pro" data-here="align">
+ <div class="wt-pad"><div class="wt-eye">10 · 왜 Pre-aligner</div><h2 class="h-title">여기서 잠깐 — 왜 정렬대에 놓나</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>방향을 맞추려고</h3><p>공정 전에 웨이퍼의 중심·Notch 방향을 규격에 맞춰야 합니다(9강).</p></div>
+    <div class="wt-card v"><h3>이송 흐름의 한 정거장</h3><p>FOUP → (정렬) → Load Lock. 정렬은 이송 중 거치는 필수 정거장.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>다음</b> — 정렬이 끝나면 웨이퍼를 다시 Pick 해 Load Lock으로 옮깁니다(8강 종합 실습). 5강에서는 정렬(Align)까지 하지 않고 놓고 되돌리는 데까지입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-13" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">11 · 실패 시나리오</div><h2 class="h-title">이럴 때 이송이 막힙니다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl"><tr><th>하려던 것</th><th>결과</th><th>원인 · 대응</th></tr>
+    <tr><td>편 채 ▲ Up 으로 "들어 올리기"</td><td><b>ALM-202</b></td><td>Up 은 슬롯 고르기 버튼. 들어 올리는 것은 Pick 버튼</td></tr>
+    <tr><td>빈 슬롯 Pick</td><td><b>ALM-502</b></td><td>Mapping 목록을 다시 보고 Z 를 맞춘다</td></tr>
+    <tr><td>편 채 회전</td><td><b>ALM-201</b></td><td>Retract 먼저</td></tr>
+    <tr><td>들고 있는데 또 Pick</td><td><b>ALM-501</b></td><td>먼저 Place</td></tr>
+    <tr><td>정렬대에 웨이퍼가 있는데 또 Place</td><td><b>ALM-505</b></td><td>있던 것을 먼저 집어 간다</td></tr>
+    <tr><td>얕은 Extend (실장비)</td><td>웨이퍼가 걸려 기움</td><td>시뮬은 재현하지 않음 — 티칭 문제(3강)</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>대응</b> — 실패는 대부분 겨냥 · 순서 문제입니다. 알람의 앞자리가 계통을 알려 줍니다 — 2xx 자세 · 5xx 웨이퍼 유무.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-14" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">12 · 왕복과 효율</div><h2 class="h-title">돌아 나올 땐 정확히 역순 · 손이 둘이면 기다리지 않는다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>역순의 원리</h3><p>공정을 마친 웨이퍼는 들어온 길을 거꾸로 되짚어 FOUP으로 돌아갑니다. Pick/Place · 회전 규칙은 방향만 반대일 뿐 동일합니다.
+     훈련 ①이 바로 이 왕복입니다 — 되돌릴 때 Z 를 원래 칸에 맞춰 두었는지 확인하세요.</p></div>
+    <div class="wt-card v"><h3>듀얼 암</h3><p>많은 이송 로봇은 팔이 둘입니다. 한 손이 새 웨이퍼를 집는 동안 다른 손이 처리된 웨이퍼를 빼내 대기 시간을 줄입니다.
+     시뮬레이터의 로봇은 팔이 하나입니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>맛보기</b> — 이 "동시에 처리" 개념이 12강 시퀀스에서 자동화의 효율로 이어집니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-15" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">13 · 순서표</div><h2 class="h-title">미션 순서표 — Slot 1 을 Pre-aligner 로</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:20px"><tr><th>#</th><th>어디서</th><th>동작</th><th>확인 신호</th></tr>
+    <tr><td>1–2</td><td>수동조작</td><td>Initialize → Home</td><td>Home Sensor ON</td></tr>
+    <tr><td>3–5</td><td>Load Port</td><td>Docking → Door Open → Mapping</td><td>Door Sensor OPEN · Slot Mapping "1 2 3 - -"</td></tr>
+    <tr><td>6</td><td>수동조작</td><td>▲ Z Up 두 번 (Z3 → Z1)</td><td>상태줄 Z = 1</td></tr>
+    <tr><td>7–9</td><td>수동조작</td><td>Extend → <b>Pick</b> → Retract</td><td>Wafer Presence <b>W1</b> · Home Sensor ON</td></tr>
+    <tr><td>10</td><td>수동조작</td><td>Rotate ▶</td><td>STATION = Pre-aligner</td></tr>
+    <tr><td>11–13</td><td>수동조작</td><td>Extend → <b>Place</b> → Retract</td><td>Wafer Presence 없음 · 도면 정렬대에 W1</td></tr>
+    <tr><td>14</td><td>수동조작</td><td>Home</td><td>Home Sensor ON — 완료</td></tr></table></div>
+   <div class="wt-note v" style="margin-top:0"><b>완료</b> — 이 순서로 조작 15회, 알람 0건으로 끝나는 것을 시뮬레이터에서 확인했습니다. 학습 탭 미션 4개가 차례로 체크됩니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="05-16" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">14 · 실습 미션 · 훈련</div><h2 class="h-title">5강에서 직접 해볼 것</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Docking → Door → Mapping</b> 준비.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Slot 1 Pick</b> 1번 칸 웨이퍼를 집는다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>Pre-aligner에 Place</b> 정렬대에 내려놓는다.</div></div>
+    <div class="wt-num"><i>4</i><div><b>Retract → Home</b> 접고 복귀.</div></div>
+    <div class="wt-num v"><i>5</i><div><b>훈련 탭 2개</b> 아래 표.</div></div></div>
+   <div class="wt-col">
+    <table class="wt-tbl" style="font-size:20px"><tr><th>훈련</th><th>완료 조건</th><th>제한 · 기록</th></tr>
+     <tr><td><b>① 첫 이송</b></td><td>준비 → FOUP 에서 Pick → 정렬대에 Place → 다시 Pick → FOUP 원래 칸에 Place</td><td>알람 0 · 조작 수</td></tr>
+     <tr><td><b>② 세 번 왕복</b></td><td>정렬대에 <b>세 번</b> 놓기 — 놓은 웨이퍼를 다시 빼야 다음을 놓을 수 있다</td><td>알람 0 · 시간</td></tr></table>
+    <div class="wt-note warn"><b>알람이 한 번이라도 나면 실패</b>입니다 — 빠르게가 아니라 정확하게 빠르게가 목표입니다. 훈련은 시작한 뒤에 한 일만 셉니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="05-17" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">5강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Pick 4박자</b> 겨냥(Z) → Extend → Pick → Retract.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Place 는 거울</b> Extend → Place → Retract.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>성공은 센서로</b> 손의 Presence 가 바뀌었는가.</div></div>
+    <div class="wt-num warn"><i>4</i><div><b>편 채로는 아무 데도 안 간다</b> 회전 201 · Z 202.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>Q1</h3><p>빈 칸에서 Pick 을 누르면 어떻게 되나요?
+     <br/><span style="color:var(--t4)">→ <b>ALM-502</b> 로 거부. 손의 Presence 는 "없음" 그대로. 겨냥이 틀린 것.</span></p></div>
+    <div class="wt-card v"><h3>Q2</h3><p>팔을 뻗은 뒤 ▲ Up 으로 웨이퍼를 들려고 했더니 거부됐습니다. 왜?
+     <br/><span style="color:var(--t4)">→ 편 채 Z 이동 <b>ALM-202</b>. 들어 올리기는 Pick 버튼이 합니다.</span></p></div>
+    <div class="wt-card"><h3>Q3</h3><p>정렬대에 이미 웨이퍼가 있는데 Place 하면?
+     <br/><span style="color:var(--t4)">→ <b>ALM-505</b> Double Place.</span></p></div>
+    <div class="wt-note"><b>다음 강</b> — 6강 <b>센서</b>: 방금 쓴 Presence 를 포함해 이송 센서들을 자세히 봅니다.</div></div></div></div>
+</section>
+
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"05-01":{"key":"4강의 동작을 이어 웨이퍼 한 장을 실제로 옮긴다 — <b>Pick · Transfer · Place</b>","kw":["FOUP → Pre-aligner","실습 중심","순서를 손에 익힌다"],"sec":49,"audio":true},"05-02":{"key":"한 장 옮기고 되돌리기 · Pick/Place 박자 · <b>성공은 Presence</b> · 5xx 읽기","kw":["알람 없이 왕복","Z → Extend → Pick/Place → Retract","Wafer Presence","502 · 504 · 505"],"sec":51,"audio":true},"05-03":{"key":"다섯 단계 — 준비 · Pick · Transfer · Place · Home. <b>Pick 은 버튼 하나, ▲ Up 이 아니다</b>","kw":["Docking → Door → Mapping","Pick ↔ Place 대칭","편 채 Up → ALM-202"],"sec":59,"audio":true},"05-04":{"key":"실제 Pick = 틈으로 들어가 → 살짝 들어 → 센서가 확인. 시뮬은 <b>Pick 버튼 하나</b>로 묶었다","kw":["칸 간격 10 mm · 두께 0.775 mm","몇 mm 들어 띄운다","Presence ON = 완료"],"sec":54,"audio":true},"05-05":{"key":"Pick 네 박자 — <b>겨냥 Z → Extend → Pick → Retract</b>. 센서 탭에서 없음 → W1 이면 성공","kw":["접은 채 높이","웨이퍼 바로 아래로","Presence ON 후 접어 나옴"],"sec":53,"audio":true},"05-06":{"key":"높이 먼저, 깊이는 티칭, 도착은 R 과 Home 센서로 — Extend 거부는 <b>101·102 · 301 · 405 · 103</b>","kw":["Z 맞춘 뒤 Extend","R 이 0 에서 커짐 · Home 전진중","뻗은 뒤 Z → 202"],"sec":69,"audio":true},"05-07":{"key":"Retract — 수평 유지, 완전히 접혀야 회전. 편 채 회전 <b>201</b>, 접히는 도중 회전 <b>103</b>","kw":["R = 0 · Home ON","Retract 완료 전 Rotate 금지","접힘 확인 후 회전"],"sec":54,"audio":true},"05-08":{"key":"<b>도착했다 ≠ 집어도 된다</b> — 웨이퍼가 있는지는 센서가 말한다. 빈 슬롯 Pick 은 ALM-502","kw":["Pick 전 Mapping 목록","Presence OFF 위치에서 Pick → 502","Presence ON 이니 됐다"],"sec":51,"audio":true},"05-09":{"key":"Transfer = 접은 채 θ 회전 — FOUP 180° 에서 ▶ 한 번이면 Pre-aligner 270°. 편 채 돌면 <b>201</b>","kw":["Rotate ▶ 한 번","부드러운 가감속 · 506 Wafer Lost","STATION = Pre-aligner · Position 정위치"],"sec":57,"audio":true},"05-10":{"key":"Place 는 Pick 의 거울 — <b>Extend → Place → Retract</b>. 거부는 504 빈손 · 505 이미 있음 · 203 안 뻗음","kw":["살짝 내려 얹고 흡착 OFF","Presence 없음 · 정렬대에 웨이퍼","ALM-504 · 505 · 203"],"sec":64,"audio":true},"05-11":{"key":"판정표 — 성공은 <b>손 Presence 의 변화</b>, 거부는 그대로 + ALARM +1. 눈이 아니라 신호","kw":["없음 → W1 · W1 → 없음","502 · 203 · 501","504 · 505 · 203","코드는 알람 로그 탭"],"sec":62,"audio":true},"05-12":{"key":"왜 정렬대에 놓나 — 공정 전에 <b>중심과 Notch 방향</b>을 맞추는 필수 정거장. 5강은 놓고 되돌리는 데까지","kw":["Notch 방향 · 9강","FOUP → 정렬 → Load Lock","8강에서 다시 Pick"],"sec":47,"audio":true},"05-13":{"key":"막히는 경우 대부분 <b>겨냥·순서</b> 문제 — 202 · 502 · 201 · 501 · 505. 앞자리 2xx 자세 · 5xx 유무","kw":["편 채 Up → 202","들고 있는데 Pick → 501","정렬대에 또 Place → 505","얕은 Extend 는 시뮬 미재현"],"sec":60,"audio":true},"05-14":{"key":"돌아올 땐 <b>정확히 역순</b> — 되돌릴 때 Z 를 원래 칸에. 듀얼 암은 기다리지 않는다(시뮬은 한 팔)","kw":["역순 · 방향만 반대","훈련 ①이 왕복","듀얼 암 → 12강 효율"],"sec":53,"audio":true},"05-15":{"key":"미션 순서표 — <b>14단계 · 조작 15회 · 알람 0</b>. 매 단계 확인 신호를 보고 다음으로","kw":["Init·Home → Docking·Door·Mapping","Z Up 두 번 → Z1","Extend·Pick·Retract → ▶ → Extend·Place·Retract → Home"],"sec":49,"audio":true},"05-16":{"key":"미션 5개 + 훈련 2개 — ① 첫 이송은 <b>알람 0 · 조작 수</b>, ② 세 번 왕복은 <b>알람 0 · 시간</b>","kw":["Slot 1 Pick → 정렬대 Place","① 되돌려 FOUP 원래 칸","② 놓은 것을 빼야 다음","정확하게 빠르게"],"sec":61,"audio":true},"05-17":{"key":"남길 것 — <b>Pick 4박자 · Place 는 거울 · 성공은 센서 · 편 채로는 아무 데도 안 간다</b>","kw":["Z → Extend → Pick → Retract","Presence 가 바뀌었는가","Q1 502 · Q2 202 · Q3 505"],"sec":60,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

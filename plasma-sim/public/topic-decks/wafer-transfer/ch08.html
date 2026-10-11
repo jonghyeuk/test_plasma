@@ -1,0 +1,506 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.8 종합 실습 1 — 구성·동작·센서</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+.wt-photo{ margin:0; flex:1; min-height:0; display:flex; flex-direction:column; }
+/* 실사(생성 이미지)는 도면 옆에 "실물은 이렇게 생겼다"를 보여 주는 한 장이다. 캡션에 (생성 이미지) 를 적는다. */
+.wt-photo img{ display:block; width:100%; flex:1; min-height:0; object-fit:cover; border:1px solid var(--ln2); border-radius:3px; background:#0e1d29; }
+.wt-photo figcaption{ font-family:var(--mono); font-size:18px; line-height:1.5; color:var(--t4); margin-top:10px; letter-spacing:.02em; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+<style>/* 순서표 두 장은 메모 바 때문에 15px 모자란다 — 표 행 패딩과 간격만 줄인다 */
+section[data-nid="08-08"] .wt-tbl th, section[data-nid="08-08"] .wt-tbl td, section[data-nid="08-09"] .wt-tbl th, section[data-nid="08-09"] .wt-tbl td{ padding:10px 15px; }
+section[data-nid="08-08"] .wt-body, section[data-nid="08-09"] .wt-body{ gap:10px !important; }</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="08-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 8</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">종합 실습 1<br/>여기까지 이어서 해보기</h1>
+    <div class="wt-lead" style="margin-top:26px">1~7강의 동작을 <b>하나의 흐름</b>으로 잇습니다.
+     FOUP의 웨이퍼 한 장을 <b>알람 없이</b> Load Lock까지 이송하는 것이 목표입니다.</div>
+    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>이 강의는 실습 가이드</b> — 새 이론은 없습니다.
+     지금까지 배운 것을 순서표대로 실행하며 몸에 익힙니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="19 85 530 235">
+     <rect class="fx-box" x="30" y="150" width="70" height="130" rx="6"/><text class="fx-sub" x="40" y="140">FOUP</text>
+     <circle class="fx-box" cx="250" cy="130" r="34"/><circle class="fx-w" cx="250" cy="130" r="20"/><text class="fx-sub" x="290" y="130">ALIGN</text>
+     <circle cx="220" cy="250" r="24" fill="#16283a" stroke="#4f8bb5" stroke-width="3"/><rect class="fx-arm" x="220" y="242" width="80" height="16" rx="6"/>
+     <rect class="fx-box" x="430" y="200" width="100" height="110" rx="8" stroke="#6f63c9"/><text class="fx-sub" x="446" y="188">LOAD LOCK</text>
+     <path class="fx-ln" d="M100 210 Q160 220 200 245" marker-end="url(#mA)"/>
+     <path class="fx-ln" d="M270 230 Q300 160 250 140" marker-end="url(#mA)" opacity=".6"/>
+     <path class="fx-ln" d="M300 250 Q400 250 430 255" marker-end="url(#mA)"/></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-02" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">00 · 목표</div><h2 class="h-title">이번 실습의 성공 기준</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Mapping까지 완료</b> FOUP을 열고 목록을 만든다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Pre-aligner 정렬</b> 웨이퍼를 집어 정렬대에 올려 Align한다.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>Load Lock 도착</b> 정렬된 웨이퍼를 Load Lock까지 이송.</div></div>
+    <div class="wt-num warn"><i>0</i><div><b>알람 0건</b> 전 과정을 <b>인터록 없이</b> 완료.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-note" style="margin-top:0"><b>이 챕터의 검정은 훈련 탭에 있습니다.</b>
+     ① 무알람 완주에 걸린 <b>시간,</b> ② 같은 일을 <b>조작 34회 이내</b>로 — 둘 다 기록이 남습니다.</div>
+    <div class="wt-card"><h3>쓰는 탭</h3><p><b>수동조작</b>(로봇 · Align) · <b>Load Port</b>(도킹 · 문 · 매핑) · <b>Load Lock</b>(대기측 Gate Valve) ·
+     <b>센서 모니터</b>(확인 신호) · <b>알람 로그</b>(막혔을 때).</p></div>
+    <div class="wt-card v"><h3>순서표를 옆에</h3><p>뒤의 20단계 체크리스트를 펴 두고, 각 단계마다 <b>확인 신호</b>를 보고 다음으로 넘어가세요.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-03" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">01 · 실물</div><h2 class="h-title">이 여정이 벌어지는 장비</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.2">
+    <figure class="wt-photo"><img src="../../images/wafer-transfer/cluster-tool.webp" alt="앞쪽에 FOUP 네 개가 놓인 Load Port, 그 뒤 EFEM 캐비닛, 가장 뒤에 스테인리스 챔버들이 둘러싼 클러스터 장비" loading="lazy"/>
+     <figcaption>(생성 이미지) 클러스터 장비 — 앞줄 Load Port 위 FOUP, 그 뒤 EFEM, 가장 뒤 진공 챔버들. 실물과 세부가 다를 수 있습니다.</figcaption></figure></div>
+   <div class="wt-col" style="flex:.8">
+    <div class="wt-num"><i>1</i><div><b>앞 — Load Port</b> FOUP 이 도착하는 현관 (7강).</div></div>
+    <div class="wt-num"><i>2</i><div><b>가운데 — EFEM</b> 대기압에서 웨이퍼를 옮기는 방. 로봇과 Pre-aligner 가 들어 있습니다 (3~6강).</div></div>
+    <div class="wt-num v"><i>3</i><div><b>뒤 — Load Lock 과 진공 쪽</b> 대기와 진공 사이의 관문, 그 뒤로 공정 챔버 (10~11강).</div></div>
+    <div class="wt-note"><b>8강의 범위</b> — 앞에서 가운데를 지나 관문 입구까지. 관문을 진공으로 만드는 것은 10강입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-04" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">02 · 흐름 관점</div><h2 class="h-title">한 장의 여정을 위에서 내려다보기</h2>
+  <div class="wt-fig" style="margin-top:26px">
+   <svg viewBox="10 70 1544 214">
+    <g font-family="ui-monospace,monospace">
+     <g>
+      <rect x="20" y="80" width="320" height="150" rx="12" class="fx-box"/>
+      <text class="fx-lbl" x="44" y="120" style="font-size:22px">Load Port</text>
+      <rect x="44" y="150" width="120" height="60" rx="8" fill="#101d29" stroke="#3a6b8c"/><ellipse class="fx-w" cx="104" cy="180" rx="44" ry="7"/>
+      <text class="fx-cap" x="44" y="270" style="font-size:17px">→ 매핑된 목록</text></g>
+     <path class="fx-ln" d="M344 155 H404" marker-end="url(#mA)"/>
+     <g>
+      <rect x="408" y="80" width="320" height="150" rx="12" class="fx-box"/>
+      <text class="fx-lbl" x="432" y="120" style="font-size:22px">EFEM</text>
+      <circle cx="500" cy="180" r="24" fill="#16283a" stroke="#4f8bb5" stroke-width="2"/><rect class="fx-arm" x="500" y="172" width="70" height="16" rx="6"/>
+      <text class="fx-cap" x="432" y="270" style="font-size:17px">→ 집힌 웨이퍼</text></g>
+     <path class="fx-ln" d="M732 155 H792" marker-end="url(#mA)"/>
+     <g>
+      <rect x="796" y="80" width="320" height="150" rx="12" class="fx-box"/>
+      <text class="fx-lbl" x="820" y="120" style="font-size:22px">Pre-aligner</text>
+      <circle cx="880" cy="180" r="34" fill="url(#wg)"/><path d="M880 148 l-8 16 h16 z" fill="#0a141c"/>
+      <text class="fx-cap" x="820" y="270" style="font-size:17px">→ 방향 맞춘 웨이퍼</text></g>
+     <path class="fx-ln" d="M1120 155 H1180" marker-end="url(#mA)"/>
+     <g>
+      <rect x="1184" y="80" width="360" height="150" rx="12" class="fx-box" stroke="#6f63c9"/>
+      <text class="fx-lbl" x="1208" y="120" style="font-size:22px">Load Lock</text>
+      <rect x="1208" y="150" width="120" height="60" rx="8" fill="#101d29" stroke="#6f63c9"/><ellipse class="fx-w" cx="1268" cy="180" rx="44" ry="7"/>
+      <text class="fx-cap v" x="1208" y="270" style="font-size:17px">→ 진공으로 갈 준비</text></g>
+    </g>
+   </svg>
+  </div>
+  <table class="wt-tbl" style="margin-top:14px;font-size:21px"><tr><th>정거장</th><th>넘겨주는 것</th><th>그걸 증명하는 신호</th></tr>
+   <tr><td>Load Port</td><td>매핑된 웨이퍼 목록</td><td>Slot Mapping "1 2 3 - -"</td></tr>
+   <tr><td>EFEM</td><td>집힌 웨이퍼</td><td>Wafer Presence (End Effector) W1</td></tr>
+   <tr><td>Pre-aligner</td><td>방향 맞춘 웨이퍼</td><td>로그 "정렬 완료 : Notch 0°"</td></tr>
+   <tr><td>Load Lock</td><td>대기압에서 받은 웨이퍼 — 배기는 10강</td><td>로그 "Place 완료 : W1 → Load Lock"</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-nid="08-05" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">03 · 통합</div><h2 class="h-title">왜 "이어서" 해보는가</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>낱개 ≠ 흐름</h3><p>각 동작을 따로 할 줄 아는 것과, 끊김 없이 <b>이어서</b> 하는 것은 다른 능력입니다.</p></div>
+    <div class="wt-card v"><h3>인수인계</h3><p>한 스테이션의 결과(정렬된 웨이퍼)가 다음 단계의 입력이 됩니다. 그 연결을 몸에 익힙니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>관점</b> — 이송은 "정거장 릴레이". 각 정거장의 완료 신호가 다음의 출발 신호.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="08-06" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">04 · 품질</div><h2 class="h-title">"알람 0"이 왜 목표인가</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>조건 준수의 증거</b> 알람 없이 끝났다면 순서·조건을 정확히 지켰다는 뜻입니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>생산성</b> 알람은 곧 정지·지연. 현장에선 가동률로 직결됩니다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card v"><h3>알람이 났다면</h3><p>그 지점이 바로 아직 덜 익은 조건입니다. 복습 포인트로 삼습니다.
+     훈련 ①은 알람 한 번에 그 자리에서 실패하니, 챕터 버튼을 다시 눌러 초기화하고 처음부터 합니다.</p></div>
+    <div class="wt-note"><b>연결</b> — 이 수동 완주 경험이 12강 자동 시퀀스의 밑바탕입니다. "됐다"가 아니라 "알람 없이 됐다"를 목표로.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-07" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">05 · 준비</div><h2 class="h-title">시작 전 점검 — 초기 상태 확인</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>알람 0</b> 이전 알람이 남아 있으면 Reset. 훈련은 시작할 때 장비를 초기 상태로 되돌립니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>제어 대상 = EFEM Robot</b> 수동조작 탭 위쪽 선택이 Vacuum Robot 이면 훈련이 판정되지 않습니다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>FOUP 준비</b> 시작 상태는 Slot 1·2·3 에 W1·W2·W3, 로봇 Z = 3.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-num v"><i>4</i><div><b>Load Lock 상태</b> 센서 탭 Pressure Sensor <b>760 Torr</b>(대기압), 양쪽 Gate Valve 닫힘. 대기측 밸브는 대기압에서만 열립니다.</div></div>
+    <div class="wt-note"><b>원칙</b> — 깨끗한 초기 상태에서 시작해야 도중 문제의 원인을 좁힐 수 있습니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-08" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">06 · 순서표 · 앞부분</div><h2 class="h-title">단계별 체크리스트 (1/2) — FOUP 에서 손까지</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:21px"><tr><th>#</th><th>어디서</th><th>동작</th><th>확인 신호 (센서 탭 · 로그)</th></tr>
+    <tr><td>1</td><td>수동조작</td><td>Initialize</td><td>로그 "초기화 완료. Home을 실행하세요."</td></tr>
+    <tr><td>2</td><td>수동조작</td><td>Home</td><td><b>Home Sensor ON</b></td></tr>
+    <tr><td>3</td><td>Load Port</td><td>Docking</td><td>버튼이 Undock 으로 바뀜 · 로그 "Docking 완료"</td></tr>
+    <tr><td>4</td><td>Load Port</td><td>Door Open</td><td><b>Door Sensor OPEN</b></td></tr>
+    <tr><td>5</td><td>Load Port</td><td>Mapping</td><td>Slot Mapping "1 2 3 - -"</td></tr>
+    <tr><td>6</td><td>수동조작</td><td>▲ Z Up 두 번 (Z3 → Z1)</td><td>Limit Sensor "Z = 1 / 5"</td></tr>
+    <tr><td>7</td><td>수동조작</td><td>Extend (FOUP)</td><td>Home Sensor "전진중"</td></tr>
+    <tr><td>8</td><td>수동조작</td><td>Pick</td><td><b>Wafer Presence W1</b></td></tr>
+    <tr><td>9</td><td>수동조작</td><td>Retract</td><td>Home Sensor ON</td></tr>
+    <tr><td>10</td><td>수동조작</td><td>Rotate ▶ (Pre-aligner)</td><td>Position Sensor "Pre-aligner 정위치"</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>팁</b> — 각 단계 뒤에는 항상 <b>확인 신호</b>를 보고 다음으로. "됐겠지"가 아니라 "신호가 떴으니 됐다".</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="08-09" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">07 · 순서표 · 뒷부분</div><h2 class="h-title">단계별 체크리스트 (2/2) — 정렬하고 관문까지</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:21px"><tr><th>#</th><th>어디서</th><th>동작</th><th>확인 신호 (센서 탭 · 로그)</th></tr>
+    <tr><td>11</td><td>수동조작</td><td>Extend (Pre-aligner)</td><td>Home Sensor "전진중"</td></tr>
+    <tr><td>12</td><td>수동조작</td><td>Place</td><td>Wafer Presence "없음" · 로그 "Place 완료 : W1 → Pre-aligner"</td></tr>
+    <tr><td>13</td><td>수동조작</td><td>Align — <b>끝날 때까지 기다린다</b></td><td>로그 <b>"정렬 완료 : Notch 0°"</b></td></tr>
+    <tr><td>14</td><td>수동조작</td><td>Pick</td><td>Wafer Presence W1</td></tr>
+    <tr><td>15</td><td>수동조작</td><td>Retract</td><td>Home Sensor ON</td></tr>
+    <tr><td>16</td><td>수동조작</td><td>Rotate ▶ (Load Lock)</td><td>Position Sensor "Load Lock 정위치"</td></tr>
+    <tr><td>17</td><td><b class="v">Load Lock</b></td><td><b>대기측 Gate Valve</b> 열기</td><td>로그 "대기측 Gate Valve OPEN"</td></tr>
+    <tr><td>18</td><td>수동조작</td><td>Extend (Load Lock)</td><td>Home Sensor "전진중"</td></tr>
+    <tr><td>19</td><td>수동조작</td><td>Place</td><td>로그 <b>"Place 완료 : W1 → Load Lock"</b></td></tr>
+    <tr><td>20</td><td>수동조작</td><td>Retract</td><td>Home Sensor ON — 완료</td></tr></table></div>
+   <div class="wt-note v" style="margin-top:0"><b>완료</b> — Load Lock 에 웨이퍼가 놓이고 <b>알람 0</b>이면 종합 실습 1 성공. 이 순서 그대로 시뮬레이터에서 알람 0건으로 완주되는 것을 확인했습니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="08-10" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">08 · 구간 1 · 대기</div><h2 class="h-title">FOUP 열고 첫 웨이퍼 집기 — 1~10단계</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.05">
+    <figure class="wt-photo"><img src="../../images/wafer-transfer/efem-robot.webp" alt="EFEM 안에서 두 마디 팔 끝의 얇은 포크 위에 웨이퍼 한 장을 얹고 벽의 좁은 슬롯 쪽으로 팔을 뻗은 대기 로봇" loading="lazy"/>
+     <figcaption>(생성 이미지) EFEM 안의 대기 로봇 — 포크 모양 손(End Effector)에 웨이퍼 한 장. 실물과 세부가 다를 수 있습니다.</figcaption></figure></div>
+   <div class="wt-col" style="flex:.95">
+    <div class="wt-num"><i>1</i><div><b>Docking → Door Open</b> 순서대로. 거꾸로면 ALM-305.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Mapping</b> 있는 칸 확인 — 시작 상태는 1·2·3.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>Z 를 슬롯에 맞추고 Pick</b> ▲ Up 은 Z1 쪽입니다. Extend → Pick → <b>Presence ON</b> → Retract.</div></div>
+    <div class="wt-note warn"><b>막히면</b> Extend 거부 = Door(301) · θ 편차(405) 확인 / 회전 거부 = Retract 확인(201) / Pick 거부 = 빈 칸(502) · 팔 안 뻗음(203).</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-11" data-level="intro standard pro" data-here="align">
+ <div class="wt-pad"><div class="wt-eye">09 · 구간 2 · 정렬</div><h2 class="h-title">Pre-aligner에서 방향 맞추기 — 11~15단계</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Place</b> 정렬대에 올린다. 손의 Presence 가 "없음"으로 바뀝니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Align</b> Notch 를 0° 로 돌립니다. 도는 데 시간이 걸립니다.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>재-Pick</b> 로그에 "정렬 완료"가 뜬 뒤에 정렬된 웨이퍼를 다시 집습니다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card warn"><h3>정렬 중에 Pick 하면 — ALM-602</h3><p>정렬대는 도는 동안 웨이퍼를 붙잡고 있습니다. 그 사이에 집으려 하면 거부됩니다.
+     기다림도 순서의 일부입니다.</p></div>
+    <div class="wt-card"><h3>빈 정렬대에서 Align — ALM-601</h3><p>웨이퍼를 올리지 않고 Align 을 누르면 "Pre-aligner에 웨이퍼가 없습니다".</p></div>
+    <div class="wt-note"><b>왜</b> — 공정 방향을 맞추기 위해 이송 중 반드시 거치는 정거장. 원리는 9강에서.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-12" data-level="intro standard pro" data-here="lock">
+ <div class="wt-pad"><div class="wt-eye">10 · 구간 3 · 관문</div><h2 class="h-title">Load Lock까지 안착 — 16~20단계</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>θ 회전</b> 접은 채 Load Lock 앞으로.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>대기측 Gate Valve 열기</b> Load Lock 탭. 이 문이 닫혀 있으면 Extend 가 <b>ALM-303</b> 으로 거부됩니다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>Extend → Place</b> Load Lock 에 내려놓기.</div></div>
+    <div class="wt-num"><i>4</i><div><b>Retract</b> 접고 Home Sensor ON.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card warn"><h3>대기측 밸브가 안 열린다면 — ALM-311</h3><p>Load Lock 이 대기압이 아닙니다(700 Torr 미만). 시작 상태는 760 Torr 라서 그대로 열리지만,
+     Pump Down 을 눌렀다면 Vent 로 되돌린 뒤 엽니다.</p></div>
+    <div class="wt-card"><h3>여기서 멈춘다</h3><p>Pump Down 과 진공측 밸브는 10강입니다. 8강은 웨이퍼를 <b>대기압 Load Lock 에 넣는 데</b>까지입니다.</p></div>
+    <div class="wt-note v"><b>완료</b> — Load Lock 에 웨이퍼가 놓이고 <b>알람 0</b>이면 종합 실습 1 성공.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-13" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">11 · 확인</div><h2 class="h-title">각 구간의 성공 신호 정리</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl"><tr><th>구간</th><th>확인 신호</th><th>어디서 보나</th></tr>
+    <tr><td>준비</td><td>Home ON · Door OPEN · 매핑 목록</td><td>센서 탭</td></tr>
+    <tr><td>대기 Pick</td><td>로봇 손 <b>Wafer Presence</b> 에 웨이퍼 ID</td><td>센서 탭</td></tr>
+    <tr><td>정렬</td><td>"정렬 완료 : Notch 0°"</td><td>알람 로그 탭 (정보 줄)</td></tr>
+    <tr><td>관문</td><td>"대기측 Gate Valve OPEN" → "Place 완료 : → Load Lock"</td><td>알람 로그 탭</td></tr>
+    <tr><td>복귀</td><td>Home ON · 알람 0</td><td>센서 탭 · 상태줄</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>습관</b> — 구간마다 신호를 확인하고 다음으로. 신호 없이 넘어가지 않기. 알람 로그 탭에는 알람만이 아니라 정상 동작 기록도 쌓입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="08-14" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">12 · 막힐 때</div><h2 class="h-title">알람별 빠른 대응표</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:20px"><tr><th>알람</th><th>의미</th><th>조치</th></tr>
+    <tr><td><b>ALM-101 · 102</b></td><td>Initialize · Home 안 함</td><td>Initialize → Home</td></tr>
+    <tr><td><b>ALM-201 · 202</b></td><td>편 채 회전 · Z 이동</td><td>Retract 후 이동</td></tr>
+    <tr><td><b>ALM-203</b></td><td>팔을 안 뻗고 Pick/Place</td><td>Extend 먼저</td></tr>
+    <tr><td><b>ALM-301 · 305 · 307</b></td><td>문 닫힘 · 도킹 전 개방 · 문 닫힌 채 매핑</td><td>Docking → Door Open 순서</td></tr>
+    <tr><td><b>ALM-303</b></td><td>대기측 Gate Valve 닫힘</td><td>Load Lock 탭에서 대기측 밸브 열기</td></tr>
+    <tr><td><b>ALM-401</b></td><td>Z 한계 넘음</td><td>Z1 에서 ▲, Z5 에서 ▼ 금지</td></tr>
+    <tr><td><b>ALM-502 · 504</b></td><td>빈 곳에서 Pick · 빈손으로 Place</td><td>매핑 목록 · Z · Presence 확인</td></tr>
+    <tr><td><b>ALM-602</b></td><td>정렬 중 Pick</td><td>"정렬 완료"를 기다린다</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>순서</b> — 로그에서 코드 확인 → 원인 제거 → Reset → 재시도. 앞자리가 계통 — 1xx 준비 · 2xx 자세 · 3xx 문·밸브 · 4xx 한계 · 5xx 웨이퍼 유무 · 6xx 스테이션.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="08-15" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">13 · 막힐 때</div><h2 class="h-title">알람이 뜨면 — 빠른 점검표</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <table class="wt-tbl"><tr><th>증상</th><th>먼저 볼 것</th></tr>
+     <tr><td>Extend 가 거부됨</td><td>Door 열렸나 · 대기측 밸브 열렸나 · θ 정위치인가</td></tr>
+     <tr><td>회전이 거부됨</td><td>팔이 편(Extend) 상태인가</td></tr>
+     <tr><td>Pick 이 거부됨</td><td>빈 슬롯을 겨냥했나 · 팔을 뻗었나 · 정렬 중인가</td></tr>
+     <tr><td>정렬 미션이 안 체크됨</td><td>"정렬 완료" 로그가 떴나</td></tr></table>
+    <div class="wt-note warn"><b>습관</b> — 안 되면 먼저 <b>알람 로그</b>를 보세요. ALM 코드가 원인을 알려줍니다(14강에서 본격적으로).</div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>스스로 묻는 3가지</h3><p><b>1. 지금 어느 정거장?</b> 현재 상태를 먼저 특정.<br/>
+     <b>2. 완료 신호가 떴나?</b> 이전 단계가 진짜 끝났는지.<br/>
+     <b>3. 다음 조건은 충족?</b> 문 · 밸브 · 압력 · 유무를 확인.</p></div>
+    <div class="wt-note"><b>이 습관</b>이 14강 고장 진단의 기초가 됩니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-16" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">14 · 훈련 ②</div><h2 class="h-title">같은 일을 더 적은 조작으로</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <table class="wt-tbl"><tr><th>경로</th><th>조작 수</th></tr>
+     <tr><td>체크리스트 그대로 (Slot 1, 마지막 Retract 포함)</td><td><b>21</b></td></tr>
+     <tr><td>시작 위치 Z3 의 W3 를 그대로 집기 (Z 이동 0)</td><td><b>19</b></td></tr>
+     <tr><td>+ 마지막 Retract 생략 (훈련 ②는 Place 에서 끝)</td><td><b>18 — 최단</b></td></tr>
+     <tr><td>허용</td><td>34</td></tr></table>
+    <div class="wt-figc" style="text-align:left">Load Port · Load Lock 탭 버튼도 조작으로 셉니다</div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>조작이 새는 곳</h3><p><b>·</b> 반대 방향으로 한 칸 더 돈 회전<br/>
+     <b>·</b> 필요 없는 Z 이동 — 어느 칸을 집을지 먼저 정한다<br/>
+     <b>·</b> Align 뒤 Retract 했다가 다시 Extend — 정렬 중에도 팔은 뻗은 채 기다려도 된다<br/>
+     <b>·</b> 알람 뒤의 되돌리기 — 훈련 ②도 알람 0 이 조건이다</p></div>
+    <div class="wt-note"><b>핵심</b> — 누르기 전에 전체 경로를 한 번 정하세요. 12강에서 이 경로를 프로그램으로 씁니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-17" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">15 · 훈련</div><h2 class="h-title">드릴 2개 · 미션 — 무엇을 보는가</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%">
+    <table class="wt-tbl"><tr><th>드릴</th><th>완료 조건</th><th>제한</th><th>기록</th></tr>
+     <tr><td><b>① 전 구간<br/>무알람 완주</b></td><td>Mapping → 정렬 → Load Lock 이송 → 팔을 넣고 Home ON</td><td><b>알람 0</b></td><td>시간</td></tr>
+     <tr><td><b>② 더 적은 조작</b></td><td>Mapping → 정렬 → Load Lock 이송</td><td><b>조작 34회 · 알람 0</b></td><td>조작 수</td></tr></table></div>
+   <div class="wt-col" style="flex:1;width:100%">
+    <div class="wt-card v"><h3>학습 탭 미션 5개</h3><p>Mapping 완료 · Pre-aligner 정렬 · Load Lock 이송 · <b>알람 0건으로 완료</b> · 훈련 2개.
+     알람이 한 번이라도 나면 "알람 0건" 미션은 챕터를 다시 눌러 초기화해야 체크됩니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="08-18" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">8강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>흐름의 완성</b> 낱개 동작이 하나의 이송으로 이어졌다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>신호로 진행</b> 매 단계 확인 신호로 다음을 판단.</div></div>
+    <div class="wt-num warn"><i>3</i><div><b>문은 둘</b> FOUP 쪽은 Door, Load Lock 쪽은 대기측 Gate Valve. 둘 다 열려야 팔이 들어간다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>Q1</h3><p>Load Lock 앞에서 Extend 가 ALM-303 으로 거부됐습니다. 무엇을 빠뜨렸나요?
+     <br/><span style="color:var(--t4)">→ Load Lock 탭의 <b>대기측 Gate Valve</b> 열기.</span></p></div>
+    <div class="wt-card v"><h3>Q2</h3><p>Align 을 누르자마자 Pick 했더니 거부됐습니다. 왜?
+     <br/><span style="color:var(--t4)">→ 정렬 중(<b>ALM-602</b>). "정렬 완료" 로그를 기다린다.</span></p></div>
+    <div class="wt-card"><h3>Q3</h3><p>대기측 밸브를 열려면 Load Lock 은 어떤 상태여야 하나요?
+     <br/><span style="color:var(--t4)">→ <b>대기압</b>(700 Torr 이상). 아니면 ALM-311.</span></p></div>
+    <div class="wt-note"><b>다음 강</b> — 9강 <b>정렬</b>: 방금 지나친 Pre-aligner의 원리를 자세히 봅니다.</div></div></div></div>
+</section>
+
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"08-01":{"key":"새 이론은 없다 — 1~7강을 하나로 이어 <b>FOUP → Load Lock 을 알람 없이</b>","kw":["종합 실습 1","FOUP → ALIGN → LOAD LOCK","실습 가이드"],"sec":47,"audio":true},"08-02":{"key":"성공 기준 네 가지 — Mapping 완료 · 정렬 · Load Lock 도착 · <b>알람 0건</b>. 검정은 시간과 조작 34회","kw":["Align 까지","탭 다섯 개 쓴다","20단계 체크리스트","기록이 남는다"],"sec":60,"audio":true},"08-03":{"key":"앞 Load Port · 가운데 EFEM · 뒤 Load Lock 과 진공 — 8강은 <b>관문 입구까지</b>","kw":["Load Port = 현관 (7강)","EFEM = 대기 이송 (3~6강)","Load Lock = 관문 (10~11강)"],"sec":63,"audio":true},"08-04":{"key":"정거장마다 <b>넘겨주는 것과 그것을 증명하는 신호</b>가 있다 — 매핑 목록 · W1 · Notch 0° · Place 완료","kw":["Slot Mapping \"1 2 3 - -\"","Presence W1","\"정렬 완료 : Notch 0°\"","\"Place 완료 : W1 → Load Lock\""],"sec":59,"audio":true},"08-05":{"key":"낱개 ≠ 흐름 — 이송은 <b>정거장 릴레이</b>, 각 정거장의 완료 신호가 다음의 출발 신호","kw":["따로 vs 이어서","인수인계","완료 신호 = 출발 신호"],"sec":55,"audio":true},"08-06":{"key":"알람 0 = <b>조건을 정확히 지켰다는 증거</b>, 현장에선 가동률. 훈련 ①은 알람 한 번이면 실패","kw":["조건 준수의 증거","알람 = 정지·지연","알람 지점 = 복습 포인트","챕터 버튼으로 초기화"],"sec":54,"audio":true},"08-07":{"key":"시작 전 점검 — 알람 0 · <b>제어 대상 EFEM Robot</b> · Slot 1·2·3 에 W1~W3, Z3 · Load Lock 760 Torr","kw":["남은 알람은 Reset","Vacuum Robot 이면 판정 안 됨","양쪽 Gate Valve 닫힘","깨끗한 초기 상태"],"sec":60,"audio":true},"08-08":{"key":"체크리스트 1~10 — Init·Home → Docking·Door·Mapping → Z1 → Pick → ▶ Pre-aligner. <b>신호가 떴으니 됐다</b>","kw":["Docking → 버튼이 Undock 으로","Z Up 두 번 → Limit \"Z = 1 / 5\"","Pick → Presence W1","Position \"Pre-aligner 정위치\""],"sec":51,"audio":true},"08-09":{"key":"체크리스트 11~20 — Place → <b>Align 끝날 때까지</b> → Pick → ▶ Load Lock → 대기측 밸브 → Place","kw":["\"정렬 완료 : Notch 0°\"","Load Lock 탭 대기측 Gate Valve","\"Place 완료 : W1 → Load Lock\"","Retract → Home ON 완료"],"sec":48,"audio":true},"08-10":{"key":"구간 1 · 대기 — Docking → Door → Mapping → Z 맞추고 Pick. 막히면 <b>301·405 / 201 / 502·203</b>","kw":["거꾸로면 305","시작 상태 1·2·3","▲ Up 은 Z1 쪽","Presence ON 후 Retract"],"sec":50,"audio":true},"08-11":{"key":"구간 2 · 정렬 — Place → Align → <b>정렬 완료 로그 뒤에</b> 재-Pick. 정렬 중 Pick 602 · 빈 정렬대 Align 601","kw":["Notch 0°","도는 데 시간이 걸린다","ALM-602 · 601","기다림도 순서"],"sec":65,"audio":true},"08-12":{"key":"구간 3 — <b>Load Lock 탭 대기측 Gate Valve</b> 먼저. 닫힌 채 Extend 303 · 대기압 아니면 311","kw":["밸브 닫힘 → ALM-303","700 Torr 미만 → ALM-311","Pump Down 했으면 Vent","Pump Down 은 10강"],"sec":62,"audio":true},"08-13":{"key":"구간별 성공 신호 — 센서 탭과 알람 로그 탭. <b>로그에는 정상 동작 기록도 쌓인다</b>","kw":["준비 Home·Door·목록","Pick = Presence 에 ID","정렬·관문 = 로그 정보 줄","복귀 Home ON · 알람 0"],"sec":56,"audio":true},"08-14":{"key":"대응표 — <b>로그 → 원인 제거 → Reset → 재시도</b>. 앞자리 1 준비 · 2 자세 · 3 문·밸브 · 5 유무 · 6 스테이션","kw":["303 → Load Lock 탭 밸브","602 → 정렬 완료 대기","301·305·307 → Docking → Door","502·504 → 목록·Z·Presence"],"sec":62,"audio":true},"08-15":{"key":"증상별 점검표 + 스스로 묻는 3가지 — <b>어느 정거장? 완료 신호 떴나? 다음 조건 충족?</b>","kw":["Extend 거부 → Door·밸브·θ","회전 거부 → 편 상태","Pick 거부 → 빈 칸·안 뻗음·정렬 중","정렬 미션 → 로그"],"sec":63,"audio":true},"08-16":{"key":"훈련 ② — 체크리스트 그대로 21, Z3 의 W3 를 집으면 19, 마지막 Retract 생략 18 최단. 허용 <b>34</b>, 탭 버튼도 센다","kw":["Z 이동 0 = W3","정렬 중 팔은 뻗은 채 대기 가능","반대 방향 회전 금지","알람 0 도 조건"],"sec":63,"audio":true},"08-17":{"key":"드릴 ① 전 구간 무알람 완주(시간) · ② 조작 34회 이내(조작 수) · 학습 탭 <b>미션 5개</b>","kw":["① Mapping → 정렬 → Load Lock → Home ON","② 알람 0 · 34회","알람 0건 미션은 초기화 후","훈련 2개도 미션"],"sec":66,"audio":true},"08-18":{"key":"남길 것 — <b>흐름의 완성 · 신호로 진행 · 문은 둘</b>(Door 와 대기측 Gate Valve). Q1 303 · Q2 602 · Q3 311","kw":["낱개 → 하나의 이송","매 단계 확인 신호","Door + 대기측 밸브","다음 9강 정렬"],"sec":53,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

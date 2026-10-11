@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<!--
+  같은 개념 · 다른 현장 — 자동차 공장 핸들링 로봇 셋업 (6강 '센서' 의 유사 개념 체험)
+
+  웨이퍼 이송 로봇 6강에서 배운 다섯 신호(Home · Limit · Presence · Position · Encoder)와 문 인터록이
+  산업용 로봇에서는 마스터링 · 소프트 리밋 · 파트 센서 · In-Position · 절대형 엔코더(배터리) · 안전 펜스로
+  불린다는 것을, 같은 뼈대의 셋업 절차로 돌려 보는 단일 HTML 시뮬레이터.
+
+  구조는 process-hmi-trainer 스킬의 Drafting Room 테마와 시나리오 엔진(절차형·진단형)을 따랐다.
+  도면 위의 장치를 누르면 페이스플레이트가 열리고, 진단형에서는 그 열어 본 순서가 점검 기록이 된다.
+  헤드리스 검증용으로 window.RS 에 상태(S)·동작(act)·시나리오 함수를 노출한다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자동차 공장 핸들링 로봇 셋업 — 같은 개념, 다른 현장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --room:#0F151A; --room2:#161E25; --room3:#1E2830;
+  --sheet:#FBFCFD; --grid:#E4EAEF; --cons:#C9D6E0;
+  --ink:#1A2026; --ink2:#5A6873; --ink3:#8E9BA5;
+  --dim:#67757F; --pale:#C6D2DA;
+  --ok:#128A5E; --warn:#D9962B; --alm:#CF2F27; --stk:#2F6FB0;
+  --okl:#2FBF87; --warnl:#EDB255; --alml:#EE6A62;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"IBM Plex Sans KR","IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--room);color:var(--pale);font-family:var(--sans);line-height:1.6;word-break:keep-all;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1360px;margin:0 auto;padding:14px 14px 40px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.brand .eb{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.brand h1{font-family:var(--cond);font-size:1.6rem;font-weight:700;margin:1px 0 3px;color:#EDF2F5;line-height:1.1}
+.brand p{margin:0;font-size:.84rem;color:#8E9BA5;max-width:70ch}
+.modewrap{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.modelbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--dim)}
+.modesw{display:flex;border:1px solid #2E3B45;border-radius:2px;overflow:hidden}
+.modesw button{appearance:none;border:0;background:var(--room2);color:#7E8D98;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.16em;padding:10px 18px;cursor:pointer;min-height:44px}
+.modesw button[aria-pressed="true"]{background:#EDF2F5;color:#0F151A}
+.rig{display:grid;grid-template-columns:330px minmax(0,1fr);grid-template-areas:"a b" "c b";gap:14px;align-items:start}
+.scpanel{grid-area:a} .mainc{grid-area:b} .logcard{grid-area:c}
+@media (max-width:1040px){.rig{grid-template-columns:1fr;grid-template-areas:"a" "b" "c"}}
+.sheet{background:var(--sheet);color:var(--ink);border-radius:2px;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;box-shadow:0 16px 40px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.sheet::before{content:"";position:absolute;inset:9px;border:1px solid var(--cons);pointer-events:none}
+.sheetpad{padding:16px 14px 0}
+.sheet svg{width:100%;height:auto;max-height:56vh;display:block;margin:0 auto;touch-action:manipulation}
+@media (max-width:1040px){.sheet svg{max-height:none}}
+.eq{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+.eqtag{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;fill:var(--ink2);text-anchor:middle}
+.eqname{font-family:var(--sans);font-size:11.5px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.note{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;fill:var(--ink3);text-anchor:middle}
+.hit{cursor:pointer}
+.hit:hover .eq{fill:#EFF6FA}
+.bub{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+.bubtag{font-family:var(--mono);font-size:7.5px;font-weight:600;fill:var(--ink2);text-anchor:middle}
+.bubval{font-family:var(--mono);font-size:10px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.tblock{display:flex;border-top:1.5px solid var(--ink);margin:6px 9px 9px;flex-wrap:wrap}
+.tb{border-right:1px solid var(--cons);padding:6px 11px;flex:1;min-width:90px}
+.tb:last-child{border-right:0}
+.tb .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--ink3);text-transform:uppercase}
+.tb .v{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.tb.wide{flex:2.2}
+.tb .v.big{font-family:var(--cond);font-size:15px;font-weight:700}
+.tb .v.alm{color:var(--alm)}
+.card{background:var(--room2);border:1px solid #263139;border-radius:2px}
+.card > h2{margin:0;padding:10px 14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;font-weight:600;border-bottom:1px solid #263139}
+.log{height:190px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.7;padding:8px 12px}
+.log div{display:flex;gap:8px;padding:2px 0}
+.log .t{color:#4C5C66;flex:none}
+.log .tag{flex:none;font-weight:600;min-width:52px}
+.log .m{color:#9CAAB4}
+.log .o .tag{color:var(--okl)}
+.log .w .tag{color:var(--warnl)} .log .w .m{color:#D8C79E}
+.log .a .tag{color:var(--alml)} .log .a .m{color:#E9B6B2}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media (max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--room2);border:1px solid #263139;border-top:2px solid #33424C;border-radius:2px;padding:9px 12px}
+.kpi .l{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.kpi .v{font-family:var(--mono);font-size:1.2rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25;color:#8E9BA5;margin:3px 0 2px}
+.kpi .s{font-size:.72rem;color:#6F7D87;line-height:1.45;min-height:2.9em}
+.kpi.ok{border-top-color:var(--ok)} .kpi.ok .v{color:var(--okl)}
+.kpi.warn{border-top-color:var(--warn)} .kpi.warn .v{color:var(--warnl)}
+.kpi.bad{border-top-color:var(--alm)} .kpi.bad .v{color:var(--alml)}
+/* 티치 펜던트 */
+.pend{margin-top:10px;background:var(--room2);border:1px solid #263139;border-radius:2px;padding:10px 12px 12px}
+.pend h2{margin:0 0 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;font-weight:600}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:900px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+.pg{background:#111A20;border:1px solid #263139;padding:8px 9px 9px}
+.pg .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between}
+.pg .l i{font-style:normal;color:#4C5C66;letter-spacing:.06em}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btns.one{grid-template-columns:1fr}
+.btns.three{grid-template-columns:1fr 1fr 1fr}
+.btn{appearance:none;font-family:var(--sans);font-weight:600;font-size:.8rem;border:1px solid #33424C;background:var(--room3);color:#DCE5EA;padding:9px 8px;border-radius:2px;cursor:pointer;min-height:44px;line-height:1.25}
+.btn:hover{background:#26333C}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.on{background:#EDF2F5;color:#0F151A;border-color:#EDF2F5}
+.btn.pri{background:var(--stk);border-color:#245a92;color:#fff}
+.btn.dgr{background:var(--alm);border-color:#a32620;color:#fff}
+.btn.w{width:100%}
+.btn small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:inherit;opacity:.7;font-weight:500}
+.brow{display:flex;gap:8px;flex-wrap:wrap}
+.brow > .btn{flex:1}
+/* I/O 모니터 */
+.io{margin-top:10px}
+.iorow{display:grid;grid-template-columns:16px 1.15fr 1.3fr 1fr;gap:10px;align-items:center;padding:7px 12px;border-bottom:1px solid #1F2A32;font-size:.8rem}
+.iorow:last-child{border-bottom:0}
+.iorow .n{color:#B9C6CE;font-weight:600}
+.iorow .v{font-family:var(--mono);font-size:.78rem;color:#9CAAB4;font-variant-numeric:tabular-nums}
+.iorow .eq2{font-size:.72rem;color:#5A6873}
+.iorow .eq2 b{color:#7E8D98;font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%;background:#2A3740;display:inline-block}
+.dot.on{background:var(--okl);box-shadow:0 0 0 3px rgba(47,191,135,.18)}
+.dot.warn{background:var(--warnl);box-shadow:0 0 0 3px rgba(237,178,85,.18)}
+.dot.err{background:var(--alml);box-shadow:0 0 0 3px rgba(238,106,98,.2)}
+.iohead{display:grid;grid-template-columns:16px 1.15fr 1.3fr 1fr;gap:10px;padding:6px 12px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#4C5C66;text-transform:uppercase;border-bottom:1px solid #263139}
+/* 시나리오 패널 */
+.scpanel{background:var(--room2);border:1px solid #2A3740;border-left:3px solid var(--stk);border-radius:2px}
+.schead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #263139}
+.schead h2{margin:0;font-family:var(--cond);font-size:1.05rem;font-weight:700;color:#EDF2F5}
+.scsub{font-size:.74rem;color:var(--dim)}
+.scin{padding:13px 15px 15px}
+.sclist{display:grid;grid-template-columns:1fr;gap:6px}
+.scbtn{appearance:none;text-align:left;border:1px solid #2A3740;background:var(--room3);color:#DCE5EA;padding:9px 11px;border-radius:2px;cursor:pointer;font-family:var(--sans);min-height:44px}
+.scbtn:hover{background:#26333C;border-color:#3D4E59}
+.scbtn .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.scbtn.diag .k{color:var(--warnl)}
+.scbtn .t{font-size:.85rem;font-weight:600;margin:1px 0;color:#EDF2F5;line-height:1.35}
+.scbtn .d{font-size:.71rem;color:#6F7D87;line-height:1.45}
+.scnote{font-size:.78rem;color:#7E8D98;margin:0 0 12px;line-height:1.6}
+.scnote b{color:#B9C6CE}
+.scbrief{border-left:2px solid var(--warn);background:#221C10;padding:11px 14px;font-size:.84rem;color:#E2CFA6;line-height:1.65;margin-bottom:12px}
+.scbrief b{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--warn);margin-bottom:3px;text-transform:uppercase}
+.insp{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 2px;min-height:32px}
+.insp span{font-family:var(--mono);font-size:.72rem;background:#1E2830;border:1px solid #33424C;color:#9CAAB4;padding:5px 8px;border-radius:2px}
+.insp .em{color:#6F7D87;border-style:dashed}
+.steps{list-style:none;margin:0;padding:0;font-size:.82rem}
+.steps li{display:flex;gap:9px;align-items:flex-start;padding:5px 0;color:#6F7D87;border-bottom:1px dotted #263139}
+.steps li:last-child{border-bottom:0}
+.steps .n{font-family:var(--mono);font-size:10px;color:#4C5C66;flex:none;width:18px;padding-top:3px}
+.steps li.done,.steps li.done .n{color:var(--okl)}
+.steps li.next{color:#EDF2F5;font-weight:600}
+.steps li.next .n{color:var(--stk)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{appearance:none;border:1px solid #33424C;background:var(--room3);color:#9CAAB4;font-family:var(--sans);font-size:.76rem;font-weight:600;padding:7px 10px;border-radius:2px;cursor:pointer;min-height:40px;text-align:left}
+.chip[aria-pressed="true"]{background:#EDF2F5;color:#0F151A;border-color:#EDF2F5}
+.sublbl{font-size:.76rem;color:var(--dim);display:block;margin-top:12px}
+.vd{background:#111A20;border:1px solid #263139;border-left:2px solid var(--stk);padding:13px 15px;margin-top:12px;font-size:.8rem;line-height:1.7;color:#9CAAB4}
+.vd h3{margin:0 0 8px;font-family:var(--cond);font-size:1.05rem;color:#EDF2F5}
+.vd .g{color:var(--okl);font-weight:700} .vd .b{color:var(--alml);font-weight:700}
+.vd ol{margin:8px 0 0;padding-left:19px} .vd b{color:#DCE5EA}
+/* 대응표 */
+.map{margin-top:10px}
+.map table{width:100%;border-collapse:collapse;font-size:.78rem}
+.map th,.map td{text-align:left;padding:7px 12px;border-bottom:1px solid #1F2A32;vertical-align:top}
+.map th{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#4C5C66;text-transform:uppercase;font-weight:600}
+.map td b{color:#B9C6CE}
+.map td:last-child{color:#7E8D98}
+/* 페이스플레이트 */
+.scrim{position:fixed;inset:0;background:rgba(6,10,13,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.scrim[hidden]{display:none}
+.fp{background:var(--room2);border:1px solid #33424C;border-radius:3px;width:min(430px,100%);max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.fph{background:var(--room3);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #33424C}
+.fph .tg{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.16em;color:#EDF2F5}
+.fph .nm{font-size:.78rem;color:var(--dim);margin-top:1px}
+.fpx{appearance:none;border:1px solid #3B4A55;background:transparent;color:#9CAAB4;font-size:20px;width:38px;height:38px;border-radius:2px;cursor:pointer}
+.fpb{padding:14px 16px 18px}
+.state{font-family:var(--mono);font-size:1.05rem;font-weight:700;text-align:center;letter-spacing:.14em;padding:12px;border:1px solid #33424C;background:#111A20;margin-bottom:12px;color:#8E9BA5}
+.state.on{color:var(--okl);border-color:#1d5c45}
+.state.tr{color:var(--warnl);border-color:#6b5326}
+.state.er{color:var(--alml);border-color:#7a2a25}
+.r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #232E36;font-size:.83rem}
+.r:last-of-type{border-bottom:0}
+.r .l{color:var(--dim)}
+.r .v{font-family:var(--mono);font-weight:600;color:#DCE5EA;font-variant-numeric:tabular-nums}
+.r .v.warn{color:var(--warnl)} .r .v.bad{color:var(--alml)} .r .v.ok{color:var(--okl)}
+.hint{font-size:.76rem;color:#7E8D98;margin-top:12px;line-height:1.7;border-top:1px solid #232E36;padding-top:11px}
+.hint b{color:#B9C6CE}
+.foot{margin-top:24px;font-size:.75rem;color:#5A6873;line-height:1.8;max-width:100ch}
+.foot b{color:#8E9BA5}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1E2830;border:1px solid #33424C;color:#DCE5EA;padding:10px 16px;border-radius:2px;font-size:.84rem;z-index:70;opacity:0;transition:.2s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.toast.bad{border-color:var(--alm);color:#E9B6B2}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="eb">같은 개념 · 다른 현장 — 6강 센서 체험</div>
+      <h1>자동차 공장 핸들링 로봇 셋업</h1>
+      <p>컨베이어 팔레트의 도어 패널을 집어 용접 지그에 놓는 로봇을 새로 세팅합니다. 웨이퍼 로봇의 Home · Limit · Presence · Position · Encoder 가 여기서는 마스터링 · 소프트 리밋 · 파트 센서 · In-Position · 절대형 엔코더로 불립니다. 도면의 장치를 누르면 상세가 열립니다.</p>
+    </div>
+    <div class="modewrap">
+      <span class="modelbl">PENDANT MODE (키 스위치)</span>
+      <div class="modesw" role="group" aria-label="운전 모드">
+        <button id="mode-t1" aria-pressed="true" title="티칭 모드 — 저속(250 mm/s 이하), 펜스 안에서 인에이블 스위치를 쥐고 조작">T1 티칭</button>
+        <button id="mode-auto" aria-pressed="false" title="자동 운전 — 펜스가 닫혀야 서보가 살아 있다">AUTO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rig">
+    <section class="scpanel">
+      <div class="schead"><h2 id="sc-head">실습 시나리오</h2><span class="scsub" id="sc-sub">하나를 고르면 셀이 그 상황으로 세팅됩니다</span></div>
+      <div class="scin" id="sc-idle">
+        <p class="scnote">절차형은 <b>순서</b>를, 진단형은 <b>어느 신호를 먼저 봤는가</b>를 채점합니다. 진단형에서는 도면의 장치를 여는 순서가 그대로 점검 기록이 됩니다.</p>
+        <div class="sclist" id="sc-list"></div>
+        <div class="brow" style="margin-top:10px"><button class="btn w" id="b-reset">전체 초기화 (자유 연습)</button></div>
+      </div>
+      <div class="scin" id="sc-active" hidden>
+        <div class="scbrief" id="sc-brief"></div>
+        <div id="sc-body"></div>
+        <div class="brow" style="margin-top:12px">
+          <button class="btn pri" id="b-judge">판정</button>
+          <button class="btn" id="b-abort">시나리오 종료</button>
+        </div>
+        <div id="judgebox"></div>
+      </div>
+    </section>
+
+    <div class="mainc">
+      <div class="sheet">
+        <div class="sheetpad"><svg id="cell" viewBox="0 0 760 440" role="group" aria-label="로봇 셀 평면도"></svg></div>
+        <div class="tblock">
+          <div class="tb wide"><div class="l">Drawing Title</div><div class="v big">BODY SHOP · HANDLING CELL R-01 (TOP VIEW)</div></div>
+          <div class="tb"><div class="l">Mode</div><div class="v" id="tb-mode">T1</div></div>
+          <div class="tb"><div class="l">Servo</div><div class="v" id="tb-servo">OFF</div></div>
+          <div class="tb"><div class="l">J1 / R / Z</div><div class="v" id="tb-pose">0° / 300 / 400</div></div>
+          <div class="tb"><div class="l">Alarm</div><div class="v" id="tb-alm">0</div></div>
+          <div class="tb"><div class="l">Elapsed</div><div class="v" id="tb-clk">00:00</div></div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi" id="kpi-a"><div class="l">마스터링 (원점)</div><div class="v" id="kv-a">미확립</div><div class="s" id="ks-a">≈ 웨이퍼 로봇의 Home</div></div>
+        <div class="kpi" id="kpi-b"><div class="l">소프트 리밋 J1</div><div class="v" id="kv-b">±170°</div><div class="s" id="ks-b">≈ Z 1~5 범위 (ALM-401)</div></div>
+        <div class="kpi" id="kpi-c"><div class="l">파트 센서 (그리퍼)</div><div class="v" id="kv-c">OFF</div><div class="s" id="ks-c">≈ Wafer Presence</div></div>
+        <div class="kpi" id="kpi-d"><div class="l">자동 사이클</div><div class="v" id="kv-d">0</div><div class="s" id="ks-d">팔레트 → 지그 1사이클</div></div>
+      </div>
+
+      <div class="pend">
+        <h2>Teach Pendant — 조작은 전부 여기서 · 도면은 보고 누르는 곳</h2>
+        <div class="pgrid">
+          <div class="pg"><div class="l">준비 <i>≈ Initialize · Home</i></div>
+            <div class="btns">
+              <button class="btn" data-a="servoOn">서보 ON</button>
+              <button class="btn" data-a="servoOff">서보 OFF</button>
+              <button class="btn" data-a="master" style="grid-column:1/3">마스터링 <small>기준 자세 J1 0° · R 300 · Z 400</small></button>
+              <button class="btn" data-a="goHome">홈 자세로</button>
+              <button class="btn" data-a="reset">알람 리셋</button>
+            </div></div>
+          <div class="pg"><div class="l">조그 <i>T1 저속 · AUTO 고속</i></div>
+            <div class="btns three">
+              <button class="btn" data-a="jog:j1:-1">J1 −10°</button><button class="btn" data-a="jog:j1:1">J1 +10°</button><button class="btn" data-a="jog:r:1">R +50</button>
+              <button class="btn" data-a="jog:z:-1">Z −40</button><button class="btn" data-a="jog:z:1">Z +40</button><button class="btn" data-a="jog:r:-1">R −50</button>
+            </div></div>
+          <div class="pg"><div class="l">포인트 · 그리퍼 <i>≈ 티칭 · Pick/Place</i></div>
+            <div class="btns">
+              <button class="btn" data-a="rec:1">P1 기록 <small>팔레트 픽</small></button>
+              <button class="btn" data-a="rec:2">P2 기록 <small>지그 플레이스</small></button>
+              <button class="btn" data-a="go:1">P1 이동</button>
+              <button class="btn" data-a="go:2">P2 이동</button>
+              <button class="btn" data-a="gripClose">그리퍼 닫기</button>
+              <button class="btn" data-a="gripOpen">그리퍼 열기</button>
+            </div></div>
+          <div class="pg"><div class="l">리밋 · 자동 · 안전 <i>≈ Limit · 시퀀스 · Door</i></div>
+            <div class="btns">
+              <button class="btn" data-a="limSet">소프트 리밋 설정 <small>J1 ±100° · Z 60~420</small></button>
+              <button class="btn" data-a="limClear">리밋 해제 <small>공장 기본 ±170°</small></button>
+              <button class="btn pri" data-a="cycle">사이클 시작 <small>AUTO 전용</small></button>
+              <button class="btn" data-a="cycleStop">사이클 정지</button>
+              <button class="btn" data-a="fence">펜스 문 열기/닫기 <small>현장 조작</small></button>
+              <button class="btn dgr" data-a="estop">E-STOP</button>
+            </div></div>
+        </div>
+      </div>
+
+      <div class="card io">
+        <h2>I/O 모니터 — 웨이퍼 로봇의 '센서 모니터'와 같은 자리</h2>
+        <div class="iohead"><span></span><span>신호</span><span>값</span><span>웨이퍼 로봇에서는</span></div>
+        <div id="io"></div>
+      </div>
+
+      <div class="card map">
+        <h2>용어 대응표</h2>
+        <table><tr><th>웨이퍼 이송 로봇 (6강)</th><th>이 셀</th><th>같은 것</th></tr>
+          <tr><td><b>Initialize → Home</b> (ALM-101·102)</td><td>서보 ON → <b>마스터링</b> (A-101·102)</td><td>0점을 잡아야 좌표가 뜻이 있다</td></tr>
+          <tr><td><b>Limit</b> Z 1~5 (ALM-401)</td><td><b>소프트 리밋</b> J1·Z (A-401) → 리밋 스위치 → 스토퍼</td><td>범위 끝에서 거부, 세 겹</td></tr>
+          <tr><td><b>Wafer Presence</b> (ALM-502·503·506)</td><td>그리퍼 <b>파트 센서</b> (A-501·506)</td><td>집었다는 증거는 센서</td></tr>
+          <tr><td><b>Position</b> θ 편차 3° (ALM-405)</td><td><b>In-Position</b> 허용 오차 J1 2° · R 25 · Z 15 mm</td><td>목표 − 실제</td></tr>
+          <tr><td><b>Encoder</b> 증분형 → 켤 때마다 Home</td><td><b>절대형 엔코더 + 배터리</b> → 배터리가 죽으면 마스터링 소실 (A-103)</td><td>실제 돌아간 양</td></tr>
+          <tr><td><b>Door Interlock</b> 문이 열려야 진입 (ALM-301)</td><td><b>안전 펜스</b> 문이 닫혀야 AUTO (A-301) — 방향은 반대</td><td>문 신호가 조건</td></tr>
+          <tr><td><b>Slot Mapping</b></td><td>팔레트 <b>파트 유무</b> 확인</td><td>집기 전에 목록</td></tr></table>
+      </div>
+    </div>
+
+    <div class="card logcard"><h2>Alarm / Event</h2><div class="log" id="log" role="log" aria-live="polite"></div></div>
+  </div>
+
+  <p class="foot">
+    <b>화면 관례에 대해.</b> 티치 펜던트의 T1/AUTO 키 스위치, 마스터링, 소프트 리밋, 포인트 티칭, 펜스 도어 인터록, 알람 코드 체계는 산업용 로봇 셀의 일반적인 관례를 따랐습니다(T1 모드의 250 mm/s 제한은 ISO 10218 의 저속 요건). 특정 제조사(FANUC·KUKA·ABB·현대로보틱스 등)의 실제 화면·용어·커리큘럼을 복제한 것은 아니며, A-xxx 코드는 웨이퍼 로봇 시뮬의 ALM-xxx 와 자리수를 맞춰 이 실습용으로 붙인 것입니다.<br>
+    <b>모델에 대해.</b> 6축 로봇을 J1(회전) · R(팔 뻗기) · Z(상하) 세 축으로 줄였고, 축 속도는 T1 60°/s·250 mm/s, AUTO 180°/s·900 mm/s 로 고정했습니다. 마스터링은 기준 자세(J1 0° · R 300 · Z 400)에서 버튼 한 번으로 끝나는 것으로 묶었고, 실제의 마크 맞추기·지그 삽입은 생략했습니다. 엔코더 배터리는 전압 3.0 V 기준의 LOW 플래그 하나로만 다룹니다. 모든 시간은 실시간입니다.
+  </p>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="fp" role="dialog" aria-modal="true" aria-labelledby="fp-tag">
+    <div class="fph"><div><div class="tg" id="fp-tag">—</div><div class="nm" id="fp-name">—</div></div><button class="fpx" id="fp-close" aria-label="닫기">×</button></div>
+    <div class="fpb" id="fp-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var NS="http://www.w3.org/2000/svg";
+function $(id){return document.getElementById(id);}
+var logEl=$("log"), svg=$("cell");
+
+/* ═══ A. 상수와 상태 ═══ */
+var HOME={j1:0,r:300,z:400};
+var STN={ pallet:{j1:-90,r:700,z:120,n:'팔레트 PL-01'}, jig:{j1:90,r:650,z:200,n:'용접 지그 JG-01'} };
+var TOL={j1:2,r:25,z:15};                 // In-Position 허용 오차
+var HARD=170;                              // 기계 스토퍼 직전의 리밋 스위치 각도
+var SPD={T1:{j1:60,r:250,z:250}, AUTO:{j1:180,r:900,z:900}};
+var S, C, ACT, SC, FP=null, lastTick=performance.now();
+
+function freshState(){
+  return {
+    mode:'T1', servo:false, master:false, battLow:false, battV:3.6, estop:false,
+    j1:0,j1t:0, r:300,rt:300, z:400,zt:400,
+    mOff:0,                      // 마스터링 틀어짐(실제 = 제어기 각도 + mOff). 배터리 방전 시나리오에서만 0 이 아니다
+    grip:false, part:null, gripSensorOk:true,
+    pallet:{part:'DOOR-L-0417'}, jig:{part:null},
+    fence:{closed:true, switchOk:true},
+    lim:{set:false, j1:HARD, zmin:0, zmax:500},
+    P:{1:null,2:null},
+    auto:{run:false, step:0, wait:0}, cycles:0, t:0, limHit:0
+  };
+}
+function hardReset(){
+  S=freshState(); C={alarm:0, ilk:{}}; ACT=[];
+  SC={id:null,kind:null,insp:[],done:false,picked:null,t0:0,hints:0,judged:false,revealed:0};
+  if(logEl) logEl.innerHTML='';
+}
+hardReset();
+
+/* ═══ B. 로그 · 토스트 ═══ */
+function stamp(){var s=Math.floor(S.t);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+function addLog(kind,tag,msg){
+  var d=document.createElement("div"); d.className=kind;
+  d.innerHTML='<span class="t">'+stamp()+'</span><span class="tag">'+tag+'</span><span class="m">'+msg+'</span>';
+  logEl.appendChild(d); while(logEl.children.length>120) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop=logEl.scrollHeight;
+}
+var tt;
+function toast(m,bad){ var t=$('toast'); t.textContent=m; t.className='toast show'+(bad?' bad':''); clearTimeout(tt); tt=setTimeout(function(){t.className='toast';},2600); }
+function fail(code,msg){ C.alarm++; C.ilk[code]=(C.ilk[code]||0)+1; addLog('a',code,msg); toast(code+' '+msg,true); ACT.push({a:'ALM',code:code}); return false; }
+function okmsg(tag,msg){ addLog('o',tag,msg); toast(msg,false); }
+
+/* ═══ C. 기하 · 판정 ═══ */
+var busy=function(){ return Math.abs(S.j1-S.j1t)>0.3||Math.abs(S.r-S.rt)>1||Math.abs(S.z-S.zt)>1; };
+function near(p,q){ return Math.abs(p.j1-q.j1)<=TOL.j1&&Math.abs(p.r-q.r)<=TOL.r&&Math.abs(p.z-q.z)<=TOL.z; }
+function actualPose(){ return {j1:S.j1+S.mOff, r:S.r, z:S.z}; }     // 실제 기구 위치 (도면이 그리는 것)
+function atStation(){ var a=actualPose(); for(var k in STN) if(near(a,STN[k])) return k; return null; }
+function inPos(){                                                     // 제어기 기준 In-Position 표시
+  if(busy()) return {txt:'이동중',st:false};
+  var p={j1:S.j1,r:S.r,z:S.z};
+  for(var n=1;n<=2;n++) if(S.P[n]&&near(p,S.P[n])) return {txt:'P'+n+' 도달',st:true};
+  if(near(p,HOME)) return {txt:'HOME 자세',st:true};
+  for(var k in STN){ var d=Math.abs(p.j1-STN[k].j1), dr=Math.abs(p.r-STN[k].r), dz=Math.abs(p.z-STN[k].z);
+    if(d<=12&&dr<=120&&dz<=120) return {txt:STN[k].n.split(' ')[0]+' 기준 편차 J1 '+(p.j1-STN[k].j1).toFixed(0)+'° · R '+(p.r-STN[k].r).toFixed(0)+' · Z '+(p.z-STN[k].z).toFixed(0),st:'warn'}; }
+  return {txt:'포인트 밖',st:false};
+}
+
+/* ═══ D. 인터록 — 웨이퍼 로봇 guard() 와 같은 순서로 검사한다 ═══ */
+function guard(act){
+  if(S.estop&&act!=='reset') return fail('A-000','비상정지 상태 — 리셋 전에는 아무것도 움직이지 않습니다.');
+  if(['jog','go','grip','master','cycle','rec'].indexOf(act)>=0&&!S.servo) return fail('A-101','서보 OFF — 서보를 켜야 축이 움직입니다 (≈ ALM-101 Initialize).');
+  if(['jog','go','master','grip'].indexOf(act)>=0&&busy()) return fail('A-104','축이 이동 중입니다. 정지 후 실행하세요 (≈ ALM-103).');
+  if(S.mode==='AUTO'&&['jog','go','grip','cycle','master'].indexOf(act)>=0&&!fenceOk())
+    return fail('A-301','안전 펜스 열림(또는 스위치 신호 없음) — AUTO 에서는 움직일 수 없습니다. T1 로 바꾸거나 문을 닫으세요 (≈ ALM-301, 방향만 반대).');
+  if(['go','rec','cycle'].indexOf(act)>=0&&!S.master) return fail('A-102','원점(마스터링) 미확립 — 좌표가 뜻이 없어 포인트 이동·기록·자동운전을 거부합니다 (≈ ALM-102 Home 미완료).');
+  return true;
+}
+var fenceOk=function(){ return S.fence.closed&&S.fence.switchOk; };
+function limCheck(j1,z){
+  if(Math.abs(j1)>S.lim.j1+1e-6||z<S.lim.zmin-1e-6||z>S.lim.zmax+1e-6){ S.limHit=Date.now();
+    return fail('A-401','소프트 리밋 초과 — J1 ±'+S.lim.j1+'° · Z '+S.lim.zmin+'~'+S.lim.zmax+' 밖입니다 (≈ ALM-401 Axis Limit).'); }
+  return true;
+}
+
+/* ═══ E. 동작 ═══ */
+var A={};
+A.setMode=function(m){ if(S.mode===m) return true; S.mode=m; ACT.push({a:'MODE_'+m});
+  if(m==='AUTO'&&!fenceOk()&&S.servo){ S.servo=false; S.auto.run=false; fail('A-301','AUTO 전환 — 펜스가 열려 있어 서보를 내렸습니다 (보호 정지).'); }
+  addLog('o','MODE','펜던트 모드 '+m+(m==='T1'?' — 저속 250 mm/s, 펜스 안 작업 허용(인에이블 스위치)':' — 고속, 펜스 닫힘 필수')); return true; };
+A.servoOn=function(){ if(S.estop) return fail('A-000','비상정지 상태 — 리셋 먼저.');
+  if(S.mode==='AUTO'&&!fenceOk()) return fail('A-301','펜스가 열려 있어 AUTO 에서는 서보를 켤 수 없습니다.');
+  S.servo=true; ACT.push({a:'SERVO_ON'}); okmsg('SERVO','서보 ON — 브레이크 해제, 축 통전'); return true; };
+A.servoOff=function(){ S.servo=false; S.auto.run=false; S.j1t=S.j1; S.rt=S.r; S.zt=S.z; addLog('o','SERVO','서보 OFF'); return true; };
+A.master=function(){ if(!guard('master')) return false;
+  if(!near({j1:S.j1,r:S.r,z:S.z},HOME)) return fail('A-105','마스터링 기준 자세가 아닙니다 — 조그로 J1 0° · R 300 · Z 400 에 마크를 맞춘 뒤 누르세요.');
+  S.master=true; S.mOff=0; ACT.push({a:'MASTER'});
+  okmsg('MASTER','마스터링 완료 — 엔코더 현재값을 0점으로 등록'+(S.battLow?' (배터리 LOW: 교체 전이면 다음 전원 차단 때 다시 잃습니다)':'')); return true; };
+A.jog=function(axis,dir){ if(!guard('jog')) return false;
+  var j1=S.j1t, r=S.rt, z=S.zt;
+  if(axis==='j1') j1+=10*dir; if(axis==='r') r=Math.min(900,Math.max(300,r+50*dir)); if(axis==='z') z+=40*dir;
+  if(!limCheck(j1,z)) return false;
+  S.j1t=j1; S.rt=r; S.zt=z; ACT.push({a:'JOG'}); addLog('o','JOG',axis.toUpperCase()+(dir>0?' +':' −')+' → J1 '+j1+'° · R '+r+' · Z '+z); return true; };
+A.goHome=function(){ if(!guard('go')) return false; S.j1t=HOME.j1; S.rt=HOME.r; S.zt=HOME.z; addLog('o','MOVE','홈 자세로 이동'); return true; };
+A.go=function(n){ if(!guard('go')) return false; var p=S.P[n]; if(!p) return fail('A-202','P'+n+' 이 기록되어 있지 않습니다.');
+  if(!limCheck(p.j1,p.z)) return false; S.j1t=p.j1; S.rt=p.r; S.zt=p.z; ACT.push({a:'GO'+n}); addLog('o','MOVE','P'+n+' 으로 이동 ('+p.j1+'° · '+p.r+' · '+p.z+')'); return true; };
+A.rec=function(n){ if(!guard('rec')) return false; if(busy()) return fail('A-104','이동 중에는 포인트를 기록할 수 없습니다.');
+  S.P[n]={j1:S.j1,r:S.r,z:S.z}; ACT.push({a:'REC'+n});
+  var k=n===1?'pallet':'jig', d=STN[k], msg='P'+n+' 기록 — J1 '+S.j1+'° · R '+S.r+' · Z '+S.z;
+  if(near(S.P[n],d)) okmsg('TEACH',msg+' ('+d.n+' 허용 오차 안)'); else { addLog('w','TEACH',msg+' — '+d.n+' 기준에서 벗어나 있습니다. 재생하면 집히지 않을 수 있습니다.'); toast('P'+n+' 기록 — 스테이션 기준에서 벗어남',true); }
+  return true; };
+A.gripClose=function(){ if(!guard('grip')) return false; if(S.grip) return fail('A-502','그리퍼가 이미 닫혀 있습니다.');
+  S.grip=true; var st=atStation();
+  var here = st && (st==='pallet'?S.pallet.part:S.jig.part);
+  if(here){ if(st==='pallet') S.pallet.part=null; else S.jig.part=null; S.part=here; }
+  ACT.push({a:'GRIP_CLOSE'});
+  if(S.part&&S.gripSensorOk){ okmsg('GRIP','그리퍼 닫힘 — 파트 센서 ON ('+S.part+')'); return true; }
+  if(S.part&&!S.gripSensorOk){ return fail('A-501','PART NOT DETECTED — 그리퍼는 닫혔는데 파트 센서가 ON 되지 않았습니다 (≈ ALM-503).'); }
+  return fail('A-501','PART NOT DETECTED — 닫았지만 파트 센서 OFF. 그 자리에 파트가 없거나 위치가 어긋났습니다 (≈ ALM-502).'); };
+A.gripOpen=function(){ if(!guard('grip')) return false; if(!S.grip) return fail('A-504','그리퍼가 이미 열려 있습니다.');
+  S.grip=false; ACT.push({a:'GRIP_OPEN'});
+  if(S.part){ var st=atStation();
+    if(st==='pallet'&&!S.pallet.part){ S.pallet.part=S.part; S.part=null; okmsg('GRIP','그리퍼 열림 — 파트를 팔레트에 되돌림'); return true; }
+    if(st==='jig'&&!S.jig.part){ S.jig.part=S.part; S.part=null; okmsg('GRIP','그리퍼 열림 — 파트를 지그에 안착'); return true; }
+    var lost=S.part; S.part=null; return fail('A-506','파트 낙하 — 스테이션 밖에서 그리퍼를 열어 '+lost+' 를 떨어뜨렸습니다 (≈ ALM-506 Wafer Lost). 팔레트에서 "파트 보충"으로 다시 받으세요.'); }
+  okmsg('GRIP','그리퍼 열림'); return true; };
+A.limSet=function(){ var nl={set:true,j1:100,zmin:60,zmax:420};
+  if(Math.abs(S.j1)>nl.j1||S.z<nl.zmin||S.z>nl.zmax) return fail('A-403','현재 자세가 새 리밋 밖입니다 — 범위 안으로 옮긴 뒤 설정하세요.');
+  S.lim=nl; ACT.push({a:'LIM_SET'}); okmsg('LIMIT','소프트 리밋 설정 — J1 ±100° · Z 60~420 (펜스·지그 간섭 영역을 제외)'); return true; };
+A.limClear=function(){ S.lim={set:false,j1:HARD,zmin:0,zmax:500}; addLog('w','LIMIT','소프트 리밋 해제 — 공장 기본 ±170° (리밋 스위치 직전까지 간다)'); return true; };
+A.fence=function(){ S.fence.closed=!S.fence.closed; ACT.push({a:S.fence.closed?'FENCE_CLOSE':'FENCE_OPEN'});
+  if(!S.fence.closed){ addLog('w','FENCE','펜스 문 열림');
+    if(S.mode==='AUTO'&&(S.servo||S.auto.run)){ S.servo=false; S.auto.run=false; S.j1t=S.j1; S.rt=S.r; S.zt=S.z; fail('A-301','안전 펜스 열림 — 보호 정지, 서보 OFF (AUTO 중 문이 열리면 즉시 멈춘다).'); } }
+  else addLog('o','FENCE','펜스 문 닫힘'+(S.fence.switchOk?' — 도어 스위치 신호 ON':' — 그러나 도어 스위치 신호가 들어오지 않습니다'));
+  return true; };
+A.estop=function(){ S.estop=!S.estop; if(S.estop){ S.servo=false; S.auto.run=false; S.j1t=S.j1; S.rt=S.r; S.zt=S.z; fail('A-000','E-STOP 눌림 — 서보 OFF, 브레이크 체결'); } else addLog('o','ESTOP','E-STOP 해제 (리셋 필요)'); return true; };
+A.reset=function(){ if(S.estop) return fail('A-000','E-STOP 이 눌려 있습니다 — 버튼을 먼저 풀어 주세요.'); addLog('o','RESET','알람 리셋'); toast('알람 리셋'); return true; };
+A.cycle=function(){ if(S.mode!=='AUTO') return fail('A-201','사이클은 AUTO 모드에서만 시작됩니다 — 키 스위치를 돌리세요.');
+  if(!guard('cycle')) return false; if(!S.P[1]||!S.P[2]) return fail('A-202','P1 · P2 가 모두 기록되어야 합니다.');
+  if(S.auto.run) return fail('A-203','이미 사이클 중입니다.');
+  S.auto={run:true,step:0,wait:0}; ACT.push({a:'CYCLE_START'}); okmsg('AUTO','사이클 시작 — 홈 → P1 위 → P1 → 집기 → P2 위 → P2 → 놓기 → 홈'); return true; };
+A.cycleStop=function(){ if(S.auto.run){ S.auto.run=false; S.j1t=S.j1; S.rt=S.r; S.zt=S.z; addLog('w','AUTO','사이클 정지'); } return true; };
+A.battReplace=function(){ S.battLow=false; S.battV=3.6; addLog('o','CTRL','엔코더 배터리 교체 — 3.6 V. 마스터링을 다시 하세요'); toast('배터리 교체 완료 — 마스터링 필요'); return true; };
+A.refill=function(){ if(S.pallet.part) return fail('A-507','팔레트에 이미 파트가 있습니다.'); S.pallet.part='DOOR-L-'+String(400+Math.floor(Math.random()*90)).padStart(4,'0'); okmsg('PALLET','컨베이어가 다음 파트를 올렸습니다 ('+S.pallet.part+')'); return true; };
+A.jigClear=function(){ if(!S.jig.part) return fail('A-508','지그가 이미 비어 있습니다.'); addLog('o','JIG','용접 완료 — '+S.jig.part+' 반출'); S.jig.part=null; toast('지그 비움'); return true; };
+A.switchFix=function(){ S.fence.switchOk=true; okmsg('FENCE','도어 스위치 정렬 — 신호 ON'); return true; };
+A.sensorClean=function(){ S.gripSensorOk=true; okmsg('GRIP','파트 센서 청소·감지거리 조정 — 정상'); return true; };
+
+/* 자동 사이클 — 단계마다 조건(In-Position · 파트 센서)을 보고 넘어간다. 웨이퍼 로봇 12강의 WAIT 와 같다. */
+var SEQ=[
+  {n:'홈',      do:function(){ S.j1t=HOME.j1; S.rt=HOME.r; S.zt=HOME.z; }},
+  {n:'P1 위',   do:function(){ S.j1t=S.P[1].j1; S.rt=S.P[1].r; S.zt=Math.min(S.lim.zmax,S.P[1].z+120); }},
+  {n:'P1',      do:function(){ S.zt=S.P[1].z; }},
+  {n:'집기',    do:function(){ S.grip=true; var st=atStation(); if(st==='pallet'&&S.pallet.part){ S.part=S.pallet.part; S.pallet.part=null; }
+                  if(!(S.part&&S.gripSensorOk)){ S.auto.run=false; S.grip=S.part?true:false;
+                    fail('A-501','AUTO 정지 — P1 에서 집었으나 파트 센서 OFF (파트 없음 · 티칭 어긋남 · 센서 이상 중 하나).'); return false; }
+                  addLog('o','AUTO','파트 센서 ON — '+S.part); return true; }, inst:true},
+  {n:'P1 위',   do:function(){ S.zt=Math.min(S.lim.zmax,S.P[1].z+120); }},
+  {n:'P2 위',   do:function(){ S.j1t=S.P[2].j1; S.rt=S.P[2].r; S.zt=Math.min(S.lim.zmax,S.P[2].z+120); }},
+  {n:'P2',      do:function(){ S.zt=S.P[2].z; }},
+  {n:'놓기',    do:function(){ S.grip=false; var st=atStation();
+                  if(st==='jig'&&!S.jig.part){ S.jig.part=S.part; S.part=null; addLog('o','AUTO','지그 안착 — 파트 센서 OFF'); return true; }
+                  var lost=S.part; S.part=null; S.auto.run=false; fail('A-506','AUTO 정지 — P2 가 지그 위가 아니어서 파트를 떨어뜨렸습니다 ('+lost+').'); return false; }, inst:true},
+  {n:'P2 위',   do:function(){ S.zt=Math.min(S.lim.zmax,S.P[2].z+120); }},
+  {n:'홈',      do:function(){ S.j1t=HOME.j1; S.rt=HOME.r; S.zt=HOME.z; }},
+  {n:'완료',    do:function(){ S.cycles++; S.auto.run=false; ACT.push({a:'CYCLE_DONE'}); okmsg('AUTO','사이클 완료 — 누적 '+S.cycles); return true; }, inst:true}
+];
+function autoTick(dt){
+  var au=S.auto; if(!au.run) return;
+  if(busy()) return;
+  if(au.wait>0){ au.wait-=dt; return; }
+  var st=SEQ[au.step]; if(!st){ au.run=false; return; }
+  var r=st.do(); if(r===false) return;
+  au.step++; au.wait=st.inst?0.35:0.2;
+}
+
+/* ═══ F. 시간 루프 ═══ */
+function tick(dt){
+  S.t+=dt; var sp=SPD[S.mode];
+  var mv=function(cur,tgt,v){ var d=tgt-cur; var s=v*dt; return Math.abs(d)<=s?tgt:cur+Math.sign(d)*s; };
+  if(S.servo){ S.j1=mv(S.j1,S.j1t,sp.j1); S.r=mv(S.r,S.rt,sp.r); S.z=mv(S.z,S.zt,sp.z); }
+  // 리밋 스위치(하드) — 소프트 리밋을 풀고 170° 를 넘기면 스위치가 서보를 내린다
+  if(Math.abs(S.j1+S.mOff)>HARD+0.5&&S.servo){ S.servo=false; S.auto.run=false; S.j1t=S.j1; fail('A-402','리밋 스위치 작동 — 하드 리밋. 서보 OFF, 수동으로 범위 안으로 되돌리고 마스터링을 재확인하세요.'); }
+  autoTick(dt);
+  // 자동 사이클 중 펜스 개방·스위치 끊김 감시
+  if(S.mode==='AUTO'&&S.servo&&!fenceOk()){ S.servo=false; S.auto.run=false; S.j1t=S.j1; S.rt=S.r; S.zt=S.z; fail('A-301','펜스 도어 신호 OFF — 보호 정지 (문이 열렸거나 스위치 신호가 끊겼다).'); }
+  if(SC.kind==='proc'&&!SC.done) procWatch();
+}
+function loop(now){ var dt=Math.min((now-lastTick)/1000,0.05); lastTick=now; tick(dt); render(); requestAnimationFrame(loop); }
+
+/* ═══ G. I/O 모니터 — 웨이퍼 로봇 sensors() 와 같은 3상태 ═══ */
+function io(){
+  var limRecent=S.limHit&&(Date.now()-S.limHit)<2500, aj=Math.abs(S.j1);
+  var ip=inPos();
+  return [
+   ['서보 ON', S.servo, S.servo?'ON':'OFF', '<b>Initialize</b> 가 된 상태'],
+   ['원점 (마스터링)', S.master?(S.battLow?'warn':true):false, S.master?(S.battLow?'확립 — 배터리 LOW, 전원 차단 시 소실':'확립'):'미확립', '<b>Home Sensor</b>'],
+   ['소프트 리밋 J1 · Z', limRecent?'err':((aj>=S.lim.j1||S.z<=S.lim.zmin||S.z>=S.lim.zmax)?'warn':true),
+      limRecent?'A-401 — 범위 밖 이동 거부':(aj>=S.lim.j1?'J1 '+S.j1.toFixed(0)+'° · 한계에 섬 (±'+S.lim.j1+')':(S.z<=S.lim.zmin||S.z>=S.lim.zmax)?'Z '+S.z.toFixed(0)+' · 한계에 섬':'J1 '+S.j1.toFixed(0)+'° / ±'+S.lim.j1+' · Z '+S.z.toFixed(0)+' / '+S.lim.zmin+'~'+S.lim.zmax), '<b>Limit Sensor</b> (Z 1~5)'],
+   ['파트 센서 (그리퍼)', !!S.part&&S.gripSensorOk, S.part?(S.gripSensorOk?'ON — '+S.part:'신호 없음 (파트는 물려 있음)'):'OFF', '<b>Wafer Presence</b>'],
+   ['In-Position', ip.st, ip.txt, '<b>Position Sensor</b> (편차 3°)'],
+   ['엔코더 J1 (절대형)', S.battLow?'warn':true, S.j1.toFixed(1)+'° · 배터리 '+S.battV.toFixed(1)+' V'+(S.battLow?' LOW':''), '<b>Encoder (θ)</b>'],
+   ['펜스 도어 스위치', fenceOk()?true:(S.fence.closed?'err':false), S.fence.closed?(S.fence.switchOk?'닫힘 · 신호 ON':'닫힘인데 신호 OFF'):'열림', '<b>Door Sensor</b> (방향 반대)'],
+   ['팔레트 파트', !!S.pallet.part, S.pallet.part?'있음 — '+S.pallet.part:'없음', '<b>Slot Mapping</b>']
+  ];
+}
+var DOTC={true:'on',warn:'warn',err:'err',false:''};
+function dotClass(v){ return DOTC[v===true?'true':v===false?'false':v]||''; }
+
+/* ═══ H. 도면 ═══ */
+var CX=380, CY=230, K=0.2;
+function E(n,a,t){var e=document.createElementNS(NS,n);for(var k in a)if(a[k]!==null&&a[k]!==undefined)e.setAttribute(k,a[k]);if(t!==undefined)e.textContent=t;return e;}
+function pos(j1,r){ var a=j1*Math.PI/180; return {x:CX+Math.sin(a)*r*K, y:CY-Math.cos(a)*r*K}; }
+function arcPath(r,a0,a1){ var p0=pos(a0,r), p1=pos(a1,r); var big=(a1-a0)>180?1:0; return 'M'+p0.x.toFixed(1)+' '+p0.y.toFixed(1)+' A'+(r*K).toFixed(1)+' '+(r*K).toFixed(1)+' 0 '+big+' 1 '+p1.x.toFixed(1)+' '+p1.y.toFixed(1); }
+function buildSheet(){
+  var g=E('g',{});
+  // 펜스
+  g.appendChild(E('rect',{x:30,y:28,width:700,height:384,fill:'none',stroke:'#1A2026','stroke-width':2.2,'stroke-dasharray':'10 5'}));
+  g.appendChild(E('text',{class:'note',x:100,y:44},'SAFETY FENCE'));
+  // 펜스 문 (아래 가운데)
+  var gd=E('g',{class:'hit',id:'hit-fence',tabindex:'0',role:'button','aria-label':'DS-01 펜스 도어'});
+  gd.appendChild(E('rect',{x:300,y:396,width:160,height:40,fill:'transparent'}));
+  gd.appendChild(E('rect',{x:320,y:404,width:120,height:16,fill:'#fff',stroke:'#1A2026','stroke-width':1.6}));
+  gd.appendChild(E('line',{id:'door-leaf',x1:320,y1:412,x2:440,y2:412,stroke:'#1A2026','stroke-width':4}));
+  gd.appendChild(E('text',{class:'eqtag',x:380,y:433},'DOOR DS-01'));
+  gd.appendChild(E('circle',{class:'bub',id:'bub-ds',cx:470,cy:412,r:14}));
+  gd.appendChild(E('text',{class:'bubtag',x:470,y:409},'DS'));
+  gd.appendChild(E('text',{class:'bubval',id:'v-ds',x:470,y:419},'ON'));
+  g.appendChild(gd);
+  // 소프트 리밋 호
+  g.appendChild(E('path',{id:'lim-arc',d:arcPath(930,-HARD,HARD),fill:'none',stroke:'#C9D6E0','stroke-width':6,'stroke-linecap':'butt'}));
+  g.appendChild(E('text',{class:'note',id:'lim-txt',x:CX,y:CY-166},'SOFT LIMIT J1 ±170°'));
+  // 스테이션
+  function station(id,k,label,tag){ var p=pos(STN[k].j1,STN[k].r), gs=E('g',{class:'hit',id:id,tabindex:'0',role:'button','aria-label':tag+' '+label});
+    gs.appendChild(E('rect',{class:'eq',x:p.x-36,y:p.y-36,width:72,height:72,rx:1}));
+    gs.appendChild(E('text',{class:'eqtag',x:p.x,y:p.y-42},tag));
+    gs.appendChild(E('text',{class:'eqname',x:p.x,y:p.y+52},label));
+    gs.appendChild(E('rect',{id:id+'-part',x:p.x-26,y:p.y-14,width:52,height:28,rx:2,fill:'#2F6FB0','fill-opacity':.85,stroke:'#1A2026','stroke-width':1}));
+    gs.appendChild(E('text',{class:'note',id:id+'-ptxt',x:p.x,y:p.y+5,fill:'#fff'},'PART'));
+    g.appendChild(gs); }
+  station('hit-pallet','pallet','컨베이어 팔레트','PL-01');
+  station('hit-jig','jig','용접 지그','JG-01');
+  // 타깃 마커 (티칭 포인트)
+  ['1','2'].forEach(function(n){ var m=E('g',{id:'pt'+n,opacity:0});
+    m.appendChild(E('circle',{cx:0,cy:0,r:9,fill:'none',stroke:'#D9962B','stroke-width':2}));
+    m.appendChild(E('path',{d:'M-13 0 H13 M0 -13 V13',stroke:'#D9962B','stroke-width':1.5}));
+    m.appendChild(E('text',{class:'eqtag',x:0,y:-15,fill:'#D9962B'},'P'+n)); g.appendChild(m); });
+  // 로봇 팔 (실제 위치) — 베이스 · 링크 · 그리퍼
+  var ga=E('g',{id:'arm'});
+  ga.appendChild(E('line',{id:'link',x1:CX,y1:CY,x2:CX,y2:CY-60,stroke:'#1A2026','stroke-width':14,'stroke-linecap':'round'}));
+  ga.appendChild(E('line',{id:'link2',x1:CX,y1:CY,x2:CX,y2:CY-60,stroke:'#fff','stroke-width':6,'stroke-linecap':'round'}));
+  g.appendChild(ga);
+  var gb=E('g',{class:'hit',id:'hit-ctrl',tabindex:'0',role:'button','aria-label':'R-01 로봇 · 컨트롤러'});
+  gb.appendChild(E('circle',{class:'eq',cx:CX,cy:CY,r:30}));
+  gb.appendChild(E('circle',{cx:CX,cy:CY,r:8,fill:'#1A2026'}));
+  gb.appendChild(E('text',{class:'eqtag',x:CX,y:CY+46},'R-01 · J1'));
+  gb.appendChild(E('text',{class:'note',id:'v-j1',x:CX,y:CY+58},'0°'));
+  g.appendChild(gb);
+  var gg=E('g',{class:'hit',id:'hit-grip',tabindex:'0',role:'button','aria-label':'GR-01 그리퍼'});
+  gg.appendChild(E('rect',{id:'grip-box',x:-14,y:-10,width:28,height:20,rx:2,class:'eq'}));
+  gg.appendChild(E('rect',{id:'grip-part',x:-20,y:-6,width:40,height:12,rx:2,fill:'#2F6FB0','fill-opacity':.9,opacity:0}));
+  gg.appendChild(E('circle',{id:'grip-led',cx:0,cy:0,r:4,fill:'#8E9BA5'}));
+  g.appendChild(gg);
+  // Z 게이지
+  g.appendChild(E('rect',{x:690,y:70,width:14,height:200,fill:'#fff',stroke:'#1A2026','stroke-width':1.2}));
+  g.appendChild(E('rect',{id:'zbar',x:691,y:270,width:12,height:0,fill:'#2F6FB0','fill-opacity':.5}));
+  g.appendChild(E('rect',{id:'zlim',x:686,y:70,width:22,height:200,fill:'none',stroke:'#D9962B','stroke-width':1.2,'stroke-dasharray':'3 3'}));
+  g.appendChild(E('text',{class:'note',x:697,y:62},'Z'));
+  g.appendChild(E('text',{class:'note',id:'v-z',x:697,y:286},'400'));
+  // 비상정지
+  var ge=E('g',{class:'hit',id:'hit-es',tabindex:'0',role:'button','aria-label':'E-STOP'});
+  ge.appendChild(E('circle',{id:'es-btn',cx:62,cy:380,r:13,fill:'#CF2F27',stroke:'#1A2026','stroke-width':1.6}));
+  ge.appendChild(E('text',{class:'note',x:62,y:404},'E-STOP'));
+  g.appendChild(ge);
+  g.appendChild(E('text',{class:'note',x:716,y:372,style:'text-anchor:end'},'NOTE 1. 팔은 실제 기구 위치 — 제어기가 믿는 각도(I/O)와 다를 수 있다'));
+  g.appendChild(E('text',{class:'note',x:716,y:386,style:'text-anchor:end'},'NOTE 2. 주황 십자 = 티칭 포인트 · 주황 호 = 소프트 리밋 범위'));
+  svg.appendChild(g);
+}
+buildSheet();
+
+function render(){
+  var a=actualPose(), p=pos(a.j1,a.r);
+  var l1=$('link'), l2=$('link2'); l1.setAttribute('x2',p.x); l1.setAttribute('y2',p.y); l2.setAttribute('x2',p.x); l2.setAttribute('y2',p.y);
+  var gg=$('hit-grip'); gg.setAttribute('transform','translate('+p.x+','+p.y+') rotate('+a.j1+')');
+  $('grip-box').setAttribute('fill',S.grip?'#C9D6E0':'#fff');
+  $('grip-part').setAttribute('opacity',S.part?1:0);
+  $('grip-led').setAttribute('fill',S.part&&S.gripSensorOk?'#128A5E':'#8E9BA5');
+  $('v-j1').textContent=S.j1.toFixed(0)+'°'+(S.mOff?' (실제 '+(S.j1+S.mOff).toFixed(0)+'°)':'');
+  $('hit-pallet-part').setAttribute('opacity',S.pallet.part?1:0); $('hit-pallet-ptxt').setAttribute('opacity',S.pallet.part?1:0);
+  $('hit-jig-part').setAttribute('opacity',S.jig.part?1:0); $('hit-jig-ptxt').setAttribute('opacity',S.jig.part?1:0);
+  ['1','2'].forEach(function(n){ var m=$('pt'+n), q=S.P[+n]; if(!q){ m.setAttribute('opacity',0); return; } var pp=pos(q.j1,q.r); m.setAttribute('opacity',1); m.setAttribute('transform','translate('+pp.x+','+pp.y+')'); });
+  $('lim-arc').setAttribute('d',arcPath(930,-S.lim.j1,S.lim.j1)); $('lim-arc').setAttribute('stroke',S.lim.set?'#D9962B':'#C9D6E0');
+  $('lim-txt').textContent='SOFT LIMIT J1 ±'+S.lim.j1+'°'+(S.lim.set?'':' (공장 기본)');
+  $('zbar').setAttribute('height',S.z/500*200); $('zbar').setAttribute('y',270-S.z/500*200); $('v-z').textContent=S.z.toFixed(0);
+  $('zlim').setAttribute('y',270-S.lim.zmax/500*200); $('zlim').setAttribute('height',(S.lim.zmax-S.lim.zmin)/500*200);
+  $('door-leaf').setAttribute('transform',S.fence.closed?'':'rotate(-55 320 412)');
+  $('v-ds').textContent=fenceOk()?'ON':'OFF'; $('bub-ds').setAttribute('stroke',fenceOk()?'#1A2026':'#CF2F27');
+  $('es-btn').setAttribute('stroke-width',S.estop?4:1.6);
+  // 표제란 · KPI
+  $('tb-mode').textContent=S.mode; $('tb-servo').textContent=S.servo?'ON':'OFF'; $('tb-servo').className='v'+(S.servo?'':' alm');
+  $('tb-pose').textContent=S.j1.toFixed(0)+'° / '+S.r.toFixed(0)+' / '+S.z.toFixed(0);
+  $('tb-alm').textContent=C.alarm; $('tb-alm').className='v'+(C.alarm?' alm':''); $('tb-clk').textContent=stamp();
+  $('mode-t1').setAttribute('aria-pressed',S.mode==='T1'); $('mode-auto').setAttribute('aria-pressed',S.mode==='AUTO');
+  kpi('a',S.master?(S.battLow?'warn':'ok'):'bad',S.master?'확립':'미확립',S.master?(S.battLow?'배터리 LOW — 교체·재마스터링':'0점 등록됨 ≈ Home ON'):'포인트 이동·자동 거부 ≈ Home OFF');
+  kpi('b',S.lim.set?'ok':'warn','±'+S.lim.j1+'°',S.lim.set?'Z '+S.lim.zmin+'~'+S.lim.zmax+' · 간섭 영역 제외':'공장 기본 — 셋업에서 좁혀야 한다');
+  kpi('c',S.part&&S.gripSensorOk?'ok':(S.grip?'bad':''),S.part&&S.gripSensorOk?'ON':'OFF',S.part&&S.gripSensorOk?S.part:(S.grip?'닫혔는데 OFF — 파트 없음·어긋남·센서':'열림'));
+  kpi('d',S.cycles?'ok':'',String(S.cycles),S.auto.run?'진행 중 — '+(SEQ[S.auto.step]?SEQ[S.auto.step].n:''):'팔레트 → 지그 1사이클');
+  // I/O
+  var rows=io(), el=$('io');
+  if(el.children.length!==rows.length) el.innerHTML=rows.map(function(r){return '<div class="iorow"><span class="dot"></span><span class="n"></span><span class="v"></span><span class="eq2"></span></div>';}).join('');
+  rows.forEach(function(r,i){ var d=el.children[i]; d.children[0].className='dot '+dotClass(r[1]); d.children[1].textContent=r[0]; d.children[2].textContent=r[2]; d.children[3].innerHTML=r[3]; });
+  if(FP) renderFp(false);
+  if(SC.id) renderSc();
+}
+function kpi(k,cls,v,s){ $('kpi-'+k).className='kpi '+(cls||''); $('kv-'+k).textContent=v; $('ks-'+k).textContent=s; }
+
+/* ═══ I. 페이스플레이트 — 여는 것이 곧 점검 ═══ */
+var FPS={
+  ctrl:{tag:'R-01 / CTRL',name:'로봇 컨트롤러 — 마스터링 · 엔코더',body:function(){
+    return '<div class="state '+(S.master?(S.battLow?'tr':'on'):'er')+'">'+(S.master?'MASTERED':'NOT MASTERED')+'</div>'+
+      row('제어기가 믿는 J1',S.j1.toFixed(1)+'°')+row('실제 기구 J1',(S.j1+S.mOff).toFixed(1)+'°',S.mOff?'bad':'ok')+
+      row('엔코더 종류','절대형(멀티턴) + 백업 배터리')+row('배터리 전압',S.battV.toFixed(1)+' V (기준 3.0)',S.battLow?'bad':'ok')+
+      row('마지막 전원 차단 시 기록',S.battLow?'BZAL — 배터리 영전압 · 멀티턴 데이터 소실':'정상')+
+      row('소프트 리밋','J1 ±'+S.lim.j1+'° · Z '+S.lim.zmin+'~'+S.lim.zmax+(S.P[1]&&Math.abs(S.P[1].j1)>S.lim.j1?' — P1 이 범위 밖':''),S.P[1]&&Math.abs(S.P[1].j1)>S.lim.j1?'bad':'')+
+      '<div class="brow" style="margin-top:12px"><button class="btn" data-a="battReplace">배터리 교체</button><button class="btn" data-a="master">마스터링</button></div>'+
+      '<div class="hint"><b>왜 여기 있나</b> — 절대형 엔코더는 전원이 꺼져도 배터리로 멀티턴 수를 기억합니다. 배터리가 죽으면 "몇 바퀴 돌아 있었는지"를 잊어 제어기 각도와 실제가 어긋납니다. 증상은 포인트 재생 때 <b>엉뚱한 곳으로 가는 것</b>이고, 알람은 전원 투입 때 한 번 뜨고 지나갑니다. 6강 9장 증분형이 켤 때마다 Home 을 하는 이유와 같은 뿌리입니다.</div>'; }},
+  grip:{tag:'GR-01',name:'그리퍼 — 파트 센서(근접) · 공압',body:function(){
+    var on=S.part&&S.gripSensorOk;
+    return '<div class="state '+(on?'on':(S.grip?'er':''))+'">'+(S.grip?(on?'CLOSED · PART ON':'CLOSED · PART OFF'):'OPEN')+'</div>'+
+      row('파트 센서 신호',on?'ON':'OFF',on?'ok':(S.grip?'bad':''))+row('실제 물린 파트',S.part?S.part:'없음',S.part&&!on?'warn':'')+
+      row('센서 상태',S.gripSensorOk?'정상':'감지 불량 (오염·감지거리)',S.gripSensorOk?'ok':'bad')+
+      '<div class="brow" style="margin-top:12px"><button class="btn" data-a="gripClose">닫기</button><button class="btn" data-a="gripOpen">열기</button><button class="btn" data-a="sensorClean">센서 청소·조정</button></div>'+
+      '<div class="hint"><b>읽는 법</b> — "집었다"는 그리퍼가 닫힌 것이 아니라 <b>파트 센서가 ON 된 것</b>입니다. 센서가 OFF 인 채 물려 있으면(실제 파트 있음 · 신호 없음) 그다음 동작은 전부 틀린 전제로 돌아갑니다 — 웨이퍼 로봇의 ALM-503 과 같습니다.</div>'; }},
+  pallet:{tag:'PL-01',name:'컨베이어 팔레트 — 파트 공급',body:function(){
+    var d=inPos();
+    return '<div class="state '+(S.pallet.part?'on':'')+'">'+(S.pallet.part?'PART PRESENT':'EMPTY')+'</div>'+
+      row('팔레트 파트',S.pallet.part||'없음')+row('기준 위치','J1 −90° · R 700 · Z 120')+row('P1 기록값',S.P[1]?('J1 '+S.P[1].j1+'° · R '+S.P[1].r+' · Z '+S.P[1].z):'미기록',S.P[1]&&!near(S.P[1],STN.pallet)?'bad':'')+
+      row('지금 로봇 In-Position',d.txt)+
+      '<div class="brow" style="margin-top:12px"><button class="btn" data-a="refill">파트 보충 (컨베이어)</button></div>'+
+      '<div class="hint"><b>왜 보나</b> — 집기 전에 그 자리에 파트가 있는지 아는 것이 웨이퍼 로봇의 Slot Mapping 입니다. 파트 센서가 OFF 일 때 가장 먼저 지울 후보가 "애초에 없었다"입니다.</div>'; }},
+  jig:{tag:'JG-01',name:'용접 지그 — 플레이스 위치',body:function(){
+    return '<div class="state '+(S.jig.part?'on':'')+'">'+(S.jig.part?'LOADED':'EMPTY')+'</div>'+row('지그 위 파트',S.jig.part||'없음')+row('기준 위치','J1 +90° · R 650 · Z 200')+
+      row('P2 기록값',S.P[2]?('J1 '+S.P[2].j1+'° · R '+S.P[2].r+' · Z '+S.P[2].z):'미기록',S.P[2]&&!near(S.P[2],STN.jig)?'bad':'')+
+      '<div class="brow" style="margin-top:12px"><button class="btn" data-a="jigClear">용접 완료 — 지그 비우기</button></div>'+
+      '<div class="hint">P2 가 지그 허용 오차 밖이거나 지그에 이미 파트가 있으면 "놓기"에서 떨어뜨립니다(A-506). 실제 셀은 지그 쪽 파트 센서로 미리 막습니다 — 웨이퍼 로봇의 ALM-505 Double Place 와 같은 자리입니다. 다음 사이클 전에 지그를 비우고 팔레트에 파트를 보충하세요.</div>'; }},
+  fence:{tag:'DS-01',name:'안전 펜스 도어 스위치',body:function(){
+    return '<div class="state '+(fenceOk()?'on':'er')+'">'+(S.fence.closed?(S.fence.switchOk?'CLOSED · SIGNAL ON':'CLOSED · NO SIGNAL'):'OPEN')+'</div>'+
+      row('문(실물)',S.fence.closed?'닫힘':'열림')+row('스위치 신호',fenceOk()?'ON (안전)':'OFF',fenceOk()?'ok':'bad')+row('스위치 상태',S.fence.switchOk?'정상':'액추에이터 어긋남 — 문은 닫혔는데 키가 안 들어감',S.fence.switchOk?'ok':'bad')+
+      '<div class="brow" style="margin-top:12px"><button class="btn" data-a="fence">문 열기/닫기</button><button class="btn" data-a="switchFix">스위치 정렬</button></div>'+
+      '<div class="hint"><b>방향이 반대</b> — 웨이퍼 로봇은 문이 <b>열려야</b> 들어가고(ALM-301), 산업용 로봇은 펜스 문이 <b>닫혀야</b> AUTO 가 돕니다(A-301). 둘 다 "문 센서 신호가 허가 조건"입니다. 페일세이프라서 신호가 <b>끊기면 위험으로</b> 읽습니다 — 그래서 문이 닫혀 보여도 스위치가 어긋나면 서보가 떨어집니다(6강 13장).</div>'; }},
+  es:{tag:'E-STOP',name:'비상정지',body:function(){
+    return '<div class="state '+(S.estop?'er':'on')+'">'+(S.estop?'PRESSED':'RELEASED')+'</div>'+'<div class="brow" style="margin-top:12px"><button class="btn dgr" data-a="estop">'+(S.estop?'풀기':'누르기')+'</button><button class="btn" data-a="reset">알람 리셋</button></div>'+
+      '<div class="hint">눌리면 서보가 떨어지고 브레이크가 잡힙니다. 풀어도 자동으로 살아나지 않고 리셋 → 서보 ON 을 사람이 다시 해야 합니다 — 웨이퍼 로봇의 ALM-000 과 같습니다.</div>'; }}
+};
+function row(l,v,c){ return '<div class="r"><span class="l">'+l+'</span><span class="v '+(c||'')+'">'+v+'</span></div>'; }
+function openFp(k){ FP=k; $('scrim').hidden=false; if(SC.kind==='diag'&&!SC.done) noteInsp(k); renderFp(true); }
+function closeFp(){ FP=null; $('scrim').hidden=true; }
+function renderFp(full){ var f=FPS[FP]; if(!f) return; if(full){ $('fp-tag').textContent=f.tag; $('fp-name').textContent=f.name; }
+  var h=f.body(); if($('fp-body').innerHTML!==h) $('fp-body').innerHTML=h; }
+var INSPN={ctrl:'컨트롤러',grip:'그리퍼',pallet:'팔레트',jig:'지그',fence:'펜스 도어',es:'E-STOP'};
+function noteInsp(k){ var last=SC.insp[SC.insp.length-1]; if(last===k) return; SC.insp.push(k); }
+
+/* ═══ J. 시나리오 ═══ */
+var SOP=[
+  {code:'FENCE_CLOSE', txt:'펜스 문 닫힘 확인 (도어 스위치 신호 ON)', chk:function(){return fenceOk();}},
+  {code:'SERVO_ON',    txt:'T1 모드에서 서보 ON'},
+  {code:'MASTER',      txt:'기준 자세(J1 0° · R 300 · Z 400)에서 마스터링'},
+  {code:'LIM_SET',     txt:'소프트 리밋 설정 (J1 ±100° · Z 60~420)'},
+  {code:'REC1',        txt:'조그로 팔레트 위(J1 −90° · R 700 · Z 120)에 맞춰 P1 기록'},
+  {code:'REC2',        txt:'조그로 지그 위(J1 +90° · R 650 · Z 200)에 맞춰 P2 기록'},
+  {code:'GRIP_TEST',   txt:'P1 에서 그리퍼 테스트 — 닫아서 파트 센서 ON, 다시 열어 되돌림'},
+  {code:'MODE_AUTO',   txt:'펜스 밖으로 나가 문을 닫고 AUTO 로 전환'},
+  {code:'CYCLE_DONE',  txt:'사이클 시작 → 1사이클 완료 (지그에 파트 안착)'}
+];
+var CAUSES={batt:'엔코더 배터리 방전 — 마스터링(원점) 데이터 소실', lim:'소프트 리밋이 잘못 설정됨', sensor:'그리퍼 파트 센서 불량(오염·감지거리)',
+            fence:'펜스 도어 스위치 신호 없음(액추에이터 어긋남·단선)', empty:'팔레트에 파트가 없음(공급 누락)', teach:'P1 티칭 위치가 팔레트 기준에서 어긋남', estop:'비상정지 눌림', air:'그리퍼 공압 없음'};
+var SCENARIOS=[
+  {id:'setup',kind:'proc',k:'PROCEDURE',title:'신규 셀 셋업 — 9단계',lead:'작업 지시',
+   brief:'새 핸들링 셀입니다. 로봇은 마스터링이 안 돼 있고, 리밋은 공장 기본, 포인트는 비어 있습니다. 순서를 지켜 첫 자동 사이클까지 끝내세요. 순서를 어기면 인터록이 사유와 함께 거부합니다.',
+   setup:function(){},
+   why:['펜스 신호가 없으면 AUTO 는 애초에 서보가 안 선다. 그래서 첫 확인이 문이다.','서보가 켜져야 축이 통전되고, 마스터링은 축이 기준 자세에 서 있어야 뜻이 있다.','리밋은 포인트를 잡기 전에 좁힌다 — 포인트를 잡은 뒤 리밋을 좁히면 포인트가 리밋 밖으로 밀려날 수 있다.','P1·P2 는 마스터링 뒤에만 기록된다(A-102). 0점이 없는 좌표는 숫자일 뿐이다.','그리퍼 테스트로 "집었다 = 센서 ON" 을 자동운전 전에 확인한다.','AUTO 는 사람이 펜스 밖에 있다는 증거(문 닫힘 신호) 위에서만 돈다.'],
+   interview:'"펜스 신호 확인 → 서보 ON → 기준 자세에서 마스터링 → 소프트 리밋을 간섭 영역 밖으로 좁힌 뒤 → P1·P2 티칭 → 그리퍼 센서 확인 → AUTO 1사이클" 순서로 세팅하고, 각 단계의 허가 신호(도어 스위치 · 마스터링 플래그 · 파트 센서)를 I/O 에서 확인한다고 답합니다.'},
+  {id:'monday',kind:'diag',k:'DIAGNOSIS',title:'월요일 아침, P1 이동 중 팔이 팔레트 옆을 친다',lead:'현장 접수 증상',
+   brief:'주말 동안 전원이 내려가 있었습니다. 켜고 서보 ON, P1 이동을 시켰더니 팔이 팔레트 옆 허공으로 가서 그리퍼가 파트를 못 잡습니다. 포인트는 금요일 그대로입니다. 알람 로그에는 전원 투입 때 뜬 줄 하나뿐입니다.',
+   answer:'batt', reveal:'ctrl', opts:['batt','teach','lim','fence'],
+   setup:function(){ primeCell(); S.battLow=true; S.battV=2.8; S.mOff=14; S.servo=false; addLog('a','A-103','전원 투입 — 엔코더 배터리 영전압 경고(BZAL). 멀티턴 데이터 신뢰 불가.'); },
+   why:'절대형 엔코더는 전원이 꺼진 동안 배터리로 멀티턴(몇 바퀴째인지)을 기억합니다. 배터리가 2.8 V 로 떨어져 그 기억을 잃자 제어기는 J1 이 0° 라고 믿지만 실제 기구는 14° 돌아간 자리에 있습니다. 포인트 좌표(금요일 값)는 멀쩡해도 0점이 밀렸으니 재생 위치가 통째로 밀립니다. 컨트롤러 페이스플레이트의 "실제 J1 ≠ 제어기 J1" 과 배터리 전압이 결정적 관찰입니다. 조치는 배터리 교체 → 기준 자세에서 마스터링.',
+   interview:'"포인트부터 다시 찍지 않습니다. 전원 투입 시 알람(BZAL·배터리)을 먼저 보고, 기준 마크와 제어기 각도가 맞는지 확인한 뒤 배터리 교체와 마스터링을 하겠다"고 답합니다. 포인트를 다시 찍으면 다음 전원 차단 때 또 밀립니다.'},
+  {id:'nopart',kind:'diag',k:'DIAGNOSIS',title:'P1 에서 집었는데 파트 센서가 안 켜진다',lead:'현장 접수 증상',
+   brief:'자동 사이클이 "집기" 단계에서 A-501 로 멈춥니다. 원인은 셋 중 하나이고 증상(센서 OFF)만으로는 갈리지 않습니다 — 팔레트 · 그리퍼 · 로봇 위치를 보고 어느 쪽인지 좁히세요. 시작할 때마다 원인이 바뀝니다.',
+   answer:null, reveal:null, opts:['empty','teach','sensor','air'],
+   setup:function(){ primeCell(); var c=['empty','teach','sensor'][Math.floor(Math.random()*3)]; this.answer=c; this.reveal={empty:'pallet',teach:'pallet',sensor:'grip'}[c];
+     if(c==='empty') S.pallet.part=null; if(c==='teach') S.P[1]={j1:-90,r:640,z:120}; if(c==='sensor') S.gripSensorOk=false; S.mode='AUTO'; S.servo=true; },
+   why:'같은 "센서 OFF" 라도 ① 팔레트가 비었으면 팔레트 페이스플레이트가 EMPTY, ② 티칭이 어긋났으면 P1 기록값이 팔레트 기준(R 700)에서 60 mm 짧고 In-Position 이 "편차" 로 뜨며, ③ 센서 불량이면 그리퍼에 파트가 물려 있는데 신호만 없습니다(실물 ≠ 신호). 관찰 하나로 셋이 갈립니다. 알람 코드는 현상을 말하지 원인을 말하지 않습니다 — 웨이퍼 로봇 14강과 같은 훈련입니다.',
+   interview:'"A-501 은 결과이고, 팔레트 파트 유무 → P1 기록값과 기준 위치의 편차 → 그리퍼의 실물과 신호 일치 순으로 보겠다"고 답합니다. 센서를 먼저 교체하는 것은 근거 없는 부품 교체입니다.'},
+  {id:'mystery',kind:'diag',k:'DIAGNOSIS',title:'무엇인지 모르는 고장 하나',lead:'현장 접수 증상',
+   brief:'"로봇이 이상하다"는 말뿐, 증상을 알려 주지 않습니다. 여섯 가지 원인 중 하나가 몰래 들어 있습니다. 평소처럼 P1 이동 → 집기 → AUTO 사이클까지 해 보고, 어디서 막히는지와 어느 페이스플레이트의 신호가 실물과 다른지로 좁히세요. 시작할 때마다 원인이 바뀝니다.',
+   answer:null, reveal:null, opts:['batt','teach','sensor','fence','empty','lim'],
+   setup:function(){ primeCell(); var c=this.opts[Math.floor(Math.random()*this.opts.length)]; this.answer=c;
+     this.reveal={batt:'ctrl',teach:'pallet',sensor:'grip',fence:'fence',empty:'pallet',lim:'ctrl'}[c];
+     if(c==='batt'){ S.battLow=true; S.battV=2.8; S.mOff=14; }
+     if(c==='teach') S.P[1]={j1:-90,r:640,z:120};
+     if(c==='sensor') S.gripSensorOk=false;
+     if(c==='fence') S.fence.switchOk=false;
+     if(c==='empty') S.pallet.part=null;
+     if(c==='lim') S.lim={set:true,j1:80,zmin:60,zmax:420};
+     S.servo=false; this.why=MYWHY[c]; },
+   interview:'"증상을 모를 때는 평소 순서대로 운전해 막히는 지점을 찾고, 그 지점의 신호와 실물을 대조한다"고 답합니다. 알람 코드는 어디서 막혔는지를 말할 뿐 원인을 말하지 않습니다 — 웨이퍼 로봇 14강 ② 와 같은 훈련입니다.'},
+  {id:'autodrop',kind:'diag',k:'DIAGNOSIS',title:'AUTO 로 돌리면 서보가 바로 떨어진다',lead:'현장 접수 증상',
+   brief:'T1 에서는 조그도 포인트 이동도 멀쩡합니다. 키를 AUTO 로 돌리고 서보를 켜면 즉시 A-301 로 떨어집니다. 펜스 문은 분명히 닫혀 있습니다. 비상정지도 안 눌려 있다고 합니다.',
+   answer:'fence', reveal:'fence', opts:['fence','estop','batt','lim'],
+   setup:function(){ primeCell(); S.fence.switchOk=false; S.servo=false; },
+   why:'안전 회로는 페일세이프입니다 — 문이 닫혔다는 "신호"가 있어야 안전이고, 신호가 없으면 문이 열린 것으로 봅니다. 도어 스위치의 액추에이터(키)가 어긋나 문은 닫혔는데 접점이 안 붙으면 T1(인에이블 스위치 기반)에서는 멀쩡하고 AUTO 에서만 떨어집니다. DS-01 페이스플레이트의 "문 닫힘 · 신호 OFF" 가 결정적 관찰입니다.',
+   interview:'"AUTO 에서만 떨어지면 안전 회로부터 봅니다. 도어 스위치 신호(I/O)와 실물 문 상태를 대조해 스위치 정렬·배선을 확인하겠다"고 답합니다. 스위치를 바이패스하는 것은 사고입니다.'}
+];
+var MYWHY={
+  batt:'전원 투입 로그에 BZAL(배터리 영전압)이 있고, 컨트롤러 페이스플레이트에서 제어기 J1 과 실제 J1 이 14° 어긋나 있습니다. P1 재생이 허공으로 가는 것은 포인트가 아니라 0점이 밀린 것입니다. 배터리 교체 → 기준 자세에서 마스터링.',
+  teach:'P1 기록값(R 640)이 팔레트 기준(R 700)에서 60 mm 짧습니다. 로봇은 "P1 도달"이라고 믿지만 그리퍼는 파트 앞에서 멈춥니다. 팔레트 페이스플레이트의 P1 기록값이 빨갛게 뜹니다. 조그로 다시 맞춰 P1 재기록.',
+  sensor:'그리퍼를 닫으면 파트는 실제로 물리는데(그리퍼 페이스플레이트 "실제 물린 파트") 신호만 OFF 입니다. 실물 ≠ 신호 — 센서 오염·감지거리. 센서 청소·조정.',
+  fence:'T1 에서는 멀쩡하고 AUTO 에서만 A-301 로 서보가 떨어집니다. DS-01 이 "닫힘 · 신호 OFF" — 문은 닫혔는데 스위치 접점이 안 붙었습니다. 스위치 정렬.',
+  empty:'팔레트 페이스플레이트가 EMPTY 입니다. 집기에서 A-501 이 나는 가장 단순한 이유 — 공급이 안 된 것. 로봇은 멀쩡합니다. 파트 보충.',
+  lim:'P1 이동이 A-401 로 거부됩니다. 컨트롤러 페이스플레이트의 소프트 리밋이 ±80° 라 P1(−90°)이 범위 밖입니다. 누군가 리밋을 좁혀 놓은 것 — 리밋을 ±100° 로 재설정.'
+};
+function primeCell(){ S.servo=true; S.master=true; S.lim={set:true,j1:100,zmin:60,zmax:420}; S.P[1]={j1:-90,r:700,z:120}; S.P[2]={j1:90,r:650,z:200}; }
+function scStart(id){ var sc=SCENARIOS.filter(function(x){return x.id===id;})[0]; if(!sc) return;
+  hardReset(); SC={id:id,kind:sc.kind,insp:[],done:false,picked:null,t0:0,steps:[],hints:0,judged:false,revealed:0}; sc.setup();
+  addLog('o','SCN',sc.title+' 시작'); $('sc-idle').hidden=true; $('sc-active').hidden=false; $('judgebox').innerHTML='';
+  $('sc-brief').innerHTML='<b>'+sc.lead+'</b>'+sc.brief; $('sc-head').textContent=sc.title; $('sc-sub').textContent=sc.k; renderSc(true); render(); }
+function scAbort(){ SC={id:null,kind:null,insp:[],done:false,picked:null,t0:0}; $('sc-idle').hidden=false; $('sc-active').hidden=true; $('sc-head').textContent='실습 시나리오'; $('sc-sub').textContent='하나를 고르면 셀이 그 상황으로 세팅됩니다'; }
+function procWatch(){ // 절차형: 단계 완료를 ACT 로그로 판정한다
+  var got=SC.steps;
+  SOP.forEach(function(s){ if(got.indexOf(s.code)>=0) return;
+    var hit=false;
+    if(s.code==='FENCE_CLOSE') hit=fenceOk()&&ACT.some(function(a){return a.a==='FENCE_CLOSE'||a.a==='SERVO_ON';});   // 문이 닫힌 채 첫 조작을 했으면 확인한 것으로 본다
+    else if(s.code==='GRIP_TEST'){ var i=-1; ACT.forEach(function(a,k){ if(a.a==='GRIP_CLOSE'&&a.ok) i=k; }); hit=i>=0&&ACT.slice(i).some(function(a){return a.a==='GRIP_OPEN';}); }
+    else hit=ACT.some(function(a){return a.a===s.code;});
+    if(hit){ got.push(s.code); addLog('o','STEP','단계 완료 — '+s.txt); }
+  });
+  if(got.length>=SOP.length&&!SC.done){ SC.done=true; okmsg('SCN','9단계 완료 — 판정을 누르세요'); }
+}
+function renderSc(full){ var sc=SCENARIOS.filter(function(x){return x.id===SC.id;})[0]; if(!sc) return; var b=$('sc-body'), h='';
+  if(sc.kind==='proc'){ var nextIdx=SOP.findIndex(function(s){return SC.steps.indexOf(s.code)<0;});
+    var show=SC.judged;   // 순서는 학생이 알아야 한다 — 판정 뒤에만 전체 목록을 보여 준다. 그 전엔 힌트(기록됨)로만 연다
+    h='<ol class="steps">'+SOP.map(function(s,i){ var done=SC.steps.indexOf(s.code)>=0, open=done||show||i<SC.revealed;
+      return '<li class="'+(done?'done':(i===nextIdx&&open?'next':''))+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><span style="'+(open?'':'color:#3D4E59')+'">'+(open?s.txt:'?  (아직 안 한 단계)')+'</span></li>'; }).join('')+'</ol>'+
+      (show?'':'<div class="brow" style="margin-top:8px"><button class="btn" data-hint="1">힌트 — 다음 단계 보기 (기록에 남음 · '+SC.hints+'회)</button></div>'); }
+  else { h='<span class="sublbl">점검 기록 (페이스플레이트를 연 순서)</span><div class="insp">'+(SC.insp.length?SC.insp.map(function(k){return '<span>'+INSPN[k]+'</span>';}).join(''):'<span class="em">아직 아무것도 열지 않음</span>')+'</div>'+
+      '<span class="sublbl">원인은?</span><div class="chips">'+sc.opts.map(function(o){return '<button class="chip" data-pick="'+o+'" aria-pressed="'+(SC.picked===o)+'">'+CAUSES[o]+'</button>';}).join('')+'</div>'; }
+  if(b.innerHTML!==h) b.innerHTML=h; }
+function judge(){ var sc=SCENARIOS.filter(function(x){return x.id===SC.id;})[0]; if(!sc) return; var h='';
+  if(sc.kind==='proc'){ var n=SC.steps.length, inOrder=SC.steps.every(function(c,i){return SOP[i].code===c;});
+    var done=n>=SOP.length;
+    SC.judged=true;
+    h='<div class="vd"><h3>'+(done?(inOrder?(SC.hints?'<span class="g">통과</span> — 힌트 '+SC.hints+'회 보고 순서대로':'<span class="g">통과</span> — 힌트 없이 9단계를 순서대로'):'<span class="g">완료</span> — 그러나 순서가 섞였음'):'<span class="b">미완료</span> — '+n+' / '+SOP.length+' 단계')+'</h3>'+
+      '<div>알람 '+C.alarm+'회 · 경과 '+stamp()+' · 힌트 '+SC.hints+'회'+(inOrder?'':' · 실제 순서: '+SC.steps.join(' → '))+'</div><b>순서에 담긴 이유</b><ol>'+sc.why.map(function(w){return '<li>'+w+'</li>';}).join('')+'</ol><p style="margin:8px 0 0"><b>면접 답변으로</b> '+sc.interview+'</p></div>'; }
+  else { var right=SC.picked===sc.answer, saw=SC.insp.indexOf(sc.reveal)>=0;
+    h='<div class="vd"><h3>'+(right?'<span class="g">정답</span>':'<span class="b">오답</span>')+' — '+CAUSES[sc.answer]+'</h3>'+
+      (SC.picked?'':'<div class="b">원인을 고르지 않았습니다.</div>')+
+      '<div>'+(saw?'결정적 지점('+INSPN[sc.reveal]+')을 확인했습니다.':'결정적 지점('+INSPN[sc.reveal]+')을 열어 보지 않았습니다 — 근거 없이 고른 것입니다. 거기서 신호와 실물이 어긋나 있었습니다.')+(SC.insp.length?'':' 점검 없이 원인만 찍으면 현장에서는 근거 없는 부품 교체로 이어집니다.')+'</div>'+
+      '<p style="margin:8px 0 0"><b>왜</b> '+sc.why+'</p><p style="margin:8px 0 0"><b>면접 답변으로</b> '+sc.interview+'</p></div>'; SC.done=true; }
+  $('judgebox').innerHTML=h; }
+
+/* ═══ K. 이벤트 ═══ */
+function act(name,arg1,arg2){ var ok;
+  if(name==='jog') ok=A.jog(arg1,+arg2); else if(name==='rec') ok=A.rec(+arg1); else if(name==='go') ok=A.go(+arg1); else if(A[name]) ok=A[name](arg1);
+  if(name==='gripClose'&&ok) ACT[ACT.length-1].ok=true;
+  render(); return ok; }
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]'); if(b){ var p=b.getAttribute('data-a').split(':'); act(p[0],p[1],p[2]); return; }
+  var c=e.target.closest('[data-pick]'); if(c&&SC.kind==='diag'&&!SC.done){ SC.picked=c.getAttribute('data-pick'); renderSc(); return; }
+  var s=e.target.closest('[data-sc]'); if(s){ scStart(s.getAttribute('data-sc')); return; }
+  var hb=e.target.closest('[data-hint]'); if(hb&&SC.kind==='proc'&&!SC.judged){ var ni=SOP.findIndex(function(x){return SC.steps.indexOf(x.code)<0;});
+    if(ni>=0){ SC.hints++; SC.revealed=Math.max(SC.revealed,ni+1); addLog('w','HINT','힌트 사용 — 다음 단계: '+SOP[ni].txt); renderSc(); } return; }
+});
+$('mode-t1').onclick=function(){ A.setMode('T1'); render(); }; $('mode-auto').onclick=function(){ A.setMode('AUTO'); render(); };
+$('b-reset').onclick=function(){ hardReset(); addLog('o','RESET','셀 초기화 — 자유 연습'); render(); };
+$('b-judge').onclick=judge; $('b-abort').onclick=scAbort;
+$('fp-close').onclick=closeFp; $('scrim').addEventListener('click',function(e){ if(e.target===$('scrim')) closeFp(); });
+addEventListener('keydown',function(e){ if(e.key==='Escape'&&FP) closeFp(); });
+['ctrl','grip','pallet','jig','fence','es'].forEach(function(k){ var h=$('hit-'+k); h.addEventListener('click',function(){openFp(k);}); h.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openFp(k);} }); });
+$('sc-list').innerHTML=SCENARIOS.map(function(s){return '<button class="scbtn '+s.kind+'" data-sc="'+s.id+'"><div class="k">'+s.k+'</div><div class="t">'+s.title+'</div><div class="d">'+s.brief.slice(0,56)+'…</div></button>';}).join('');
+addLog('o','BOOT','셀 준비 — 시나리오를 고르거나 자유 연습을 시작하세요. 도면의 장치를 누르면 상세가 열립니다.');
+render(); requestAnimationFrame(loop);
+
+/* 헤드리스 검증용 */
+window.RS={get S(){return S;}, get C(){return C;}, get SC(){return SC;}, act:act, scStart:scStart, judge:judge, openFp:openFp, closeFp:closeFp, busy:busy, io:io, SEQ:SEQ, SOP:SOP};
+})();
+</script>
+</body>
+</html>

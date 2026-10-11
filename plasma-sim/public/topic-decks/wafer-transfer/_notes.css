@@ -1,0 +1,32 @@
+/* ═══ 강의자 메모 바 + 음성 플레이어 (6·7강) ═══
+   슬라이드 아래에 "말로 풀면 한 줄 · 키워드 · ▶ 재생" 을 둔다.
+   강의자는 제목을 읽고 키워드로 짚은 뒤 재생을 누른다. 학생용 인쇄본에도 메모는 남고 버튼만 숨긴다.
+   데이터는 각 데크의 <script id="wt-notes" type="application/json"> 에 들어 있고
+   scripts/narration/build.js 가 대본 JSON 에서 넣어 준다. */
+.slide.has-notes .wt-pad{ padding-bottom:150px; }
+.slide.has-notes .wt-pad::after{ display:none; }
+.wt-notes{ position:absolute; left:96px; right:96px; bottom:56px; height:76px;
+  display:flex; align-items:center; gap:22px; padding:0 22px 0 14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 48%),rgba(12,26,38,.88);
+  border:1px solid #2a4a63; border-left:3px solid var(--ac); border-radius:3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 2px 0 #060d13; }
+.wt-notes .nb{ display:flex; gap:8px; flex:none; }
+.wt-notes button{ appearance:none; width:56px; height:56px; border-radius:3px; cursor:pointer;
+  font-family:var(--mono); font-size:26px; font-weight:700; color:#eaf5ff;
+  background:linear-gradient(180deg,#1e3549,#152635); border:1px solid #45688a; border-bottom-width:3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
+.wt-notes button:hover{ background:linear-gradient(180deg,#25425b,#1a3042); }
+.wt-notes button.play{ width:72px; background:var(--ac); color:#03231e; border-color:var(--ac); }
+.wt-notes button.play.playing{ background:var(--wn); border-color:var(--wn); color:#2a1a00; }
+.wt-notes button:disabled{ opacity:.35; cursor:not-allowed; }
+.wt-notes .nt{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:6px; }
+.wt-notes .nk{ font-family:var(--sans); font-size:23px; line-height:1.3; color:var(--t1); font-weight:700;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wt-notes .nk b{ color:var(--ac); }
+.wt-notes .nw{ display:flex; gap:8px; flex-wrap:nowrap; overflow:hidden; }
+.wt-notes .nw span{ font-family:var(--mono); font-size:16px; letter-spacing:.04em; color:#bfe9e1;
+  background:rgba(53,224,200,.10); border:1px solid #2c6d63; border-radius:3px; padding:3px 10px; white-space:nowrap; }
+.wt-notes .nm{ flex:none; text-align:right; font-family:var(--mono); font-size:15px; letter-spacing:.14em; color:var(--t4); line-height:1.5; }
+.wt-notes .nm b{ display:block; font-size:20px; letter-spacing:.04em; color:var(--t2); font-weight:600; }
+.wt-notes .nm.err b{ color:var(--bd); }
+@media print{ .wt-notes .nb, .wt-notes .nm{ display:none !important; } }
