@@ -17,6 +17,17 @@ const WaferTransferSim = lazy(() => import('./simulators/WaferTransferSim'))
 function App() {
   const [selectedSimulator, setSelectedSimulator] = useState('oes');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // 데스크톱 사이드바 접기 — 접으면 아이콘 줄만 남아 본문(교재·시뮬)이 넓어진다. 이 브라우저에만 기억한다.
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('sidebarCollapsed') === '1'; } catch { return false; }
+  });
+  const toggleCollapsed = () => setCollapsed(c => {
+    const next = !c;
+    try { localStorage.setItem('sidebarCollapsed', next ? '1' : '0'); } catch { /* 저장 못 해도 화면은 동작 */ }
+    return next;
+  });
+  // 접힘은 데스크톱(lg)에서만 — 모바일은 기존 열기/닫기 그대로
+  const hideWhenCollapsed = collapsed ? 'lg:hidden' : '';
 
   const simulators = [
     {
@@ -182,35 +193,49 @@ function App() {
 
       {/* Left Sidebar */}
       <aside className={`
-        fixed lg:relative z-40 h-full w-80
+        fixed lg:relative z-40 h-full w-80 ${collapsed ? 'lg:w-20' : ''}
         bg-gradient-to-b from-gray-900 via-indigo-950 to-gray-900
         text-white shadow-2xl flex flex-col
-        transform transition-transform duration-300 ease-in-out
+        transform transition-all duration-300 ease-in-out
         border-r border-gray-700/50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-white/10">
+        <div className={`relative border-b border-white/10 ${collapsed ? 'p-6 lg:px-2 lg:py-4' : 'p-6'}`}>
+          {/* 접기/펼치기 (데스크톱) */}
+          <button
+            onClick={toggleCollapsed}
+            className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 text-cyan-300 hover:bg-white/20 transition-colors
+              ${collapsed ? 'mx-auto' : 'absolute top-4 right-4'}`}
+            aria-label={collapsed ? '메뉴 펼치기' : '메뉴 접기'}
+            title={collapsed ? '메뉴 펼치기' : '메뉴 접기'}
+          >
+            {collapsed ? '»' : '«'}
+          </button>
+          <div className={hideWhenCollapsed}>
           <h1 className="text-2xl font-bold mb-2 text-cyan-400">진단기술</h1>
           <h2 className="text-xl font-semibold mb-3 text-gray-200">실습센터</h2>
           <p className="text-sm text-gray-400">Plasma Diagnostic Training Center</p>
           <span className="text-xs text-gray-500 mt-2 inline-block">ver 1.4</span>
+          </div>
         </div>
 
         {/* Simulator Navigation */}
-        <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
-          <div className="text-xs font-bold text-cyan-500 mb-3 px-2">
+        <nav className={`flex-1 space-y-3 overflow-y-auto ${collapsed ? 'p-4 lg:p-2' : 'p-4'}`}>
+          <div className={`text-xs font-bold text-cyan-500 mb-3 px-2 ${hideWhenCollapsed}`}>
             진단 모듈 선택
           </div>
           {simulators.map((sim) => (
             <button
               key={sim.id}
+              title={collapsed ? sim.name : undefined}
               onClick={() => {
                 setSelectedSimulator(sim.id);
                 setSidebarOpen(false);
               }}
               className={`
-                w-full text-left p-4 rounded-xl transition-all duration-300 transform
+                w-full text-left rounded-xl transition-all duration-300 transform
+                ${collapsed ? 'p-4 lg:p-2 lg:flex lg:justify-center' : 'p-4'}
                 min-h-[56px] touch-manipulation
                 active:scale-95
                 ${selectedSimulator === sim.id
@@ -221,7 +246,7 @@ function App() {
             >
               <div className="flex items-start gap-3">
                 <span className="text-3xl">{sim.icon}</span>
-                <div className="flex-1">
+                <div className={`flex-1 ${hideWhenCollapsed}`}>
                   <div className="font-bold text-sm mb-1">{sim.name}</div>
                   <div className={`text-xs ${selectedSimulator === sim.id ? 'text-cyan-400' : 'text-gray-500'}`}>
                     {sim.description}
@@ -233,7 +258,7 @@ function App() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-white/10">
+        <div className={`p-4 border-t border-white/10 ${hideWhenCollapsed}`}>
           <div className="text-xs text-gray-500">
             <div className="font-semibold mb-1 text-gray-400">확장 가능한 구조</div>
             <div>각 시뮬레이터는 독립적으로 관리됩니다</div>
