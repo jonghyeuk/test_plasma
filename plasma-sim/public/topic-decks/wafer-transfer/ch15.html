@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.15 종합 실습 2 — 전 구간 자동 이송과 복구</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="15-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 15</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">종합 실습 2<br/>전 구간 자동 이송과 오류 복구</h1>
+    <div class="wt-lead" style="margin-top:26px">마지막입니다. <b>시퀀스로 FOUP → 공정 챔버 전 구간</b>을 자동 이송하고,
+     도중에 생긴 오류를 <b>스스로 진단·복구</b>합니다.</div>
+    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>이 강의는 실습 가이드</b> —
+     1~14강 전부를 하나의 흐름으로 합칩니다. 새 개념은 없고, 통합과 응용입니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="10 114 540 196">
+     <rect class="fx-box" x="20" y="170" width="60" height="110" rx="6"/><text class="fx-sub" x="28" y="160">FOUP</text>
+     <rect class="fx-box" x="150" y="150" width="120" height="150" rx="8"/><text class="fx-sub" x="166" y="140">EFEM</text>
+     <rect class="fx-box" x="300" y="190" width="80" height="90" rx="6" stroke="#6f63c9"/><text class="fx-sub" x="312" y="180">LL</text>
+     <rect class="fx-vac" x="410" y="150" width="130" height="150" rx="8"/><text class="fx-sub" x="426" y="140" fill="#bcaeff">TM+PM</text>
+     <path class="fx-ln" d="M80 225 H150" marker-end="url(#mA)"/><path class="fx-ln" d="M270 225 H300" marker-end="url(#mA)"/>
+     <path class="fx-ln v" d="M380 235 H410" marker-end="url(#mV)"/></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="15-02" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">목표</div><h2 class="h-title">이번 실습의 성공 기준</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>시퀀스로 Load Lock까지</b> 자동 실행으로 웨이퍼를 보낸다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>진공 이송</b> Pump Down·Gate Valve를 거쳐 공정 챔버까지.</div></div></div>
+   <div class="wt-col"><div class="wt-num warn"><i>3</i><div><b>오류 대응</b> 도중 발생한 알람을 진단·복구해 완주한다.</div></div>
+    <div class="wt-num"><i>4</i><div><b>보고</b> 고장을 하나 주입해 진단하고, 6칸 보고서로 채점받는다.</div></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="15-03" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">순서표</div><h2 class="h-title">전 구간 체크리스트</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1600px;margin:0 auto"><table class="wt-tbl"><tr><th>구간</th><th>핵심 동작</th><th>확인</th></tr>
+    <tr><td>준비</td><td>SELECT efem → Initialize → Home</td><td>상태바 INIT · HOME</td></tr>
+    <tr><td>대기</td><td>Dock → Door Open → Map → Slot → Move FOUP → Extend → Pick → Retract</td><td>Wafer Presence ON</td></tr>
+    <tr><td>정렬</td><td>Move Aligner → Extend → Place → Retract → Align → Extend → Pick → Retract</td><td>"정렬 완료" 로그 (도중 Pick은 602)</td></tr>
+    <tr><td>관문</td><td>ATM VALVE 열기 → Move LL → Extend → Place → Retract → ATM VALVE 닫기 → PUMP</td><td>CHECK vacuum · 1.0E-2 Torr</td></tr>
+    <tr><td>진공</td><td>TM VALVE 열기 → <b>SELECT vac → Initialize → Home</b> → Move LL → Extend → Pick → Retract</td><td>Wafer Presence ON</td></tr>
+    <tr><td>공정</td><td>Move PM1/PM2 → Extend → Place → Retract</td><td>PM Status 공정 중</td></tr></table></div>
+   <div class="wt-note v" style="margin-top:0"><b>밸브 블록은 토글</b> — ATM VALVE를 한 번 누르면 열리고 한 번 더 누르면 닫힙니다. 12강 예시 시퀀스(26블록)는 <b>관문</b>까지이고, 여기에 진공 구간을 이어 붙이면 전 구간입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="15-04" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">응용</div><h2 class="h-title">막히면 — 코드로 어느 강인지 찾는다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1560px;margin:0 auto"><table class="wt-tbl"><tr><th>알람</th><th>증상</th><th>어느 강</th><th>조치</th></tr>
+    <tr><td>ALM-101 / 102</td><td>진공 로봇이 안 움직임</td><td>3 · 11강</td><td>SELECT vac 후 Initialize → Home</td></tr>
+    <tr><td>ALM-201</td><td>회전 거부</td><td>3 · 4 · 13강</td><td>Retract 후 회전</td></tr>
+    <tr><td>ALM-303 / 304</td><td>Load Lock으로 못 뻗음</td><td>10 · 11강</td><td>해당 쪽 밸브 먼저 열기</td></tr>
+    <tr><td>ALM-311 / 314</td><td>밸브 거부</td><td>10 · 13강</td><td>Vent / Pump Down 완료 후</td></tr>
+    <tr><td>ALM-502 / 503 / 505</td><td>Pick 실패 · 웨이퍼 분실</td><td>5 · 6 · 14강</td><td>겨냥 · Presence · 흡착 확인</td></tr>
+    <tr><td>ALM-601 / 602</td><td>꺼내기 거부</td><td>9 · 11강</td><td>공정 · 정렬 완료 기다리기</td></tr>
+    <tr><td>ALM-701</td><td>Pump Timeout</td><td>10 · 14강</td><td>펌프 / 누설 가르고 조치</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>이게 이 과정의 목적</b> — 알람 앞에서 당황하지 않고
+    <b>어느 강의 지식</b>으로 풀지 아는 것.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="15-05"><div class="wt-pad"><div class="wt-eye">준비</div>
+ <h2 class="h-title">전 구간 자동 이송 — 시작 전 점검</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>초기화</b> 알람 0 · EFEM 로봇 Home. 진공 로봇은 전환 뒤 따로 Init/Home.</div></div>
+  <div class="wt-num"><i>2</i><div><b>FOUP</b> 웨이퍼 적재 확인.</div></div>
+  <div class="wt-num v"><i>3</i><div><b>시퀀스</b> FOUP→Chamber 블록 준비.</div></div>
+  <div class="wt-num"><i>4</i><div><b>Load Lock</b> 대기압(760 Torr) · 양쪽 밸브 닫힘에서 시작.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>목표</b> — 자동으로 전 구간을 돌리고, 도중 오류를 진단·복구해 완주.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-06"><div class="wt-pad"><div class="wt-eye">01 · 시퀀스</div>
+ <h2 class="h-title">전 구간 블록 구성</h2>
+ <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1500px;margin:0 auto"><table class="wt-tbl"><tr><th>구간</th><th>블록</th></tr>
+   <tr><td>준비</td><td>SELECT efem · INIT · HOME</td></tr>
+   <tr><td>대기</td><td>DOCK · DOOR OPEN · MAP · SLOT 1 · MOVE foup · EXTEND · PICK · RETRACT · CHECK wafer</td></tr>
+   <tr><td>정렬</td><td>MOVE aligner · EXTEND · PLACE · RETRACT · ALIGN · EXTEND · PICK · RETRACT</td></tr>
+   <tr><td>관문</td><td>ATM VALVE · MOVE ll · EXTEND · PLACE · RETRACT · ATM VALVE · PUMP · CHECK vacuum</td></tr>
+   <tr><td>진공</td><td>TM VALVE · SELECT vac · INIT · HOME · MOVE ll · EXTEND · PICK · RETRACT · MOVE pm2 · EXTEND · PLACE · RETRACT</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>포인트</b> — 블록 사이 기다림은 시퀀스가 알아서 합니다(정렬·배기 끝까지 최대 12초). CHECK wafer · CHECK vacuum은 조건이 틀리면 그 자리에서 멈춥니다.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-07"><div class="wt-pad"><div class="wt-eye">02 · 실행</div>
+ <h2 class="h-title">돌리며 지켜보기</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>진행 관찰</b> 어느 블록을 수행 중인지 본다.</div></div>
+  <div class="wt-num"><i>2</i><div><b>상태바</b> 압력·좌표·알람 수를 주시.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>멈추면</b> — 멈춘 블록과 로그를 즉시 확인(14강 방식).</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-08"><div class="wt-pad"><div class="wt-eye">03 · 오류 대응</div>
+ <h2 class="h-title">주입된 고장을 풀어낸다 — 채점은 Reset 전에</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-num"><i>1</i><div><b>주입</b> 고장 진단 탭에서 고장 하나(또는 무작위 고장)를 넣고 전 구간을 돌립니다.</div></div>
+  <div class="wt-num"><i>2</i><div><b>관찰</b> 멈춘 블록 · [E] 코드 · 센서 값을 적습니다(14강 방식).</div></div>
+  <div class="wt-num v"><i>3</i><div><b>보고서 채점</b> 원인을 고르고 다섯 칸을 채워 <b>채점</b>.</div></div>
+  <div class="wt-num v"><i>4</i><div><b>Reset → 재시도</b> 고장이 해제되고, Init/Home부터 다시 완주.</div></div></div>
+  <div class="wt-col">
+   <div class="wt-note warn" style="margin-top:0;flex:none"><b>순서 주의</b> — 보고서 채점은 <b>주입된 고장이 살아 있을 때</b>만 됩니다. Reset을 먼저 누르면 "먼저 고장을 주입하고 관찰하세요"가 뜹니다.</div>
+   <div class="wt-card" style="flex:none"><h3>무작위 고장</h3><p>어떤 고장인지 모르는 상태로 시작하면 14강 훈련 ②와 같은 진짜 진단이 됩니다. 편차 각도·어긋난 칸은 넣을 때마다 바뀝니다.</p></div></div></div></div>
+</section>
+<section class="slide" data-nid="15-09"><div class="wt-pad"><div class="wt-eye">04 · 보고</div>
+ <h2 class="h-title">겪은 오류를 6칸으로 정리</h2>
+ <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1400px;margin:0 auto"><table class="wt-tbl"><tr><th>칸</th><th>내용</th></tr>
+   <tr><td>Problem</td><td>무슨 일 — 어느 블록에서 무엇이 멈췄나</td></tr>
+   <tr><td>Observed Sensor</td><td>센서 탭 값 (Pressure · Wafer Presence · Position …)</td></tr>
+   <tr><td>Observed Log</td><td>알람 코드 (ALM-701 · 503 · 505 · 405 …)</td></tr>
+   <tr><td>Possible Cause</td><td>선택지에서 원인 고르기 — 정답이어야 합격</td></tr>
+   <tr><td>Corrective Action</td><td>조치 (교체 · 보정 · 점검 · Reset)</td></tr>
+   <tr><td>Result</td><td>복구 여부 (재시도 통과)</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>합격</b> — 원인 정답 + 다섯 칸 중 4칸 이상. 현장 양식엔 <b>Prevent(재발 방지)</b>까지 적고 로그 캡처를 곁들입니다.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-10"><div class="wt-pad"><div class="wt-eye">05 · 완주</div>
+ <h2 class="h-title">성공 기준 재확인</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>공정 챔버 도착</b> 웨이퍼가 PM에 안착.</div></div>
+  <div class="wt-num v"><i>2</i><div><b>오류 복구</b> 발생한 알람을 모두 해결.</div></div>
+  <div class="wt-num"><i>3</i><div><b>보고 완료</b> 6칸 보고서 채점 합격.</div></div>
+  <div class="wt-num v"><i>4</i><div><b>프로그래밍</b> 과제 ① 무인 자동 · ③ 처리량 통과.</div></div></div></div>
+   <div class="wt-note v" style="margin-top:0"><b>이 셋을 채우면</b> — 과정 수료.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="15-11"><div class="wt-pad"><div class="wt-eye">되돌아보기</div>
+ <h2 class="h-title">이 과정이 준 세 가지 눈</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>구조를 보는 눈</b> 웨이퍼의 여정과 장치 배치.</div></div>
+  <div class="wt-num"><i>2</i><div><b>신호를 읽는 눈</b> 센서·로그로 상태 판단.</div></div>
+  <div class="wt-num v"><i>3</i><div><b>문제를 푸는 눈</b> 인터록·고장을 순서로 해결.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>이제</b> — 실제 장비 화면을 봐도 "무엇이·왜·어떻게"가 읽힙니다.</div>
+  </div></div>
+</section>
+
+
+<section class="slide" data-nid="15-12"><div class="wt-pad"><div class="wt-eye">개념 · 위치</div>
+ <h2 class="h-title">전체 공정에서 이송의 자리</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>이송은 혈관</h3><p>산화·리소·식각·증착… 모든 공정 사이를 웨이퍼가 오갑니다. 그 이동을 책임지는 게 이송.</p></div>
+  <div class="wt-card v"><h3>멈추면 다 멈춘다</h3><p>이송이 서면 뒤의 모든 공정이 굶습니다. 그래서 신뢰성이 생명.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>큰 그림</b> — 이송은 눈에 안 띄지만 팹 전체의 흐름을 좌우합니다.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-13"><div class="wt-pad"><div class="wt-eye">개념 · 지표</div>
+ <h2 class="h-title">수율과 가동률로 말한다</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>수율</b> 이송의 오염·정렬 오차가 곧 불량률.</div></div>
+  <div class="wt-num v"><i>2</i><div><b>가동률</b> 알람·정지가 적을수록 생산 시간↑.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>엔지니어의 언어</b> — "잘한다"는 결국 수율·가동률 숫자로 증명됩니다.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-14"><div class="wt-pad"><div class="wt-eye">개념 · 역할</div>
+ <h2 class="h-title">현장 엔지니어는 무엇을 하나</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>운전·감시</b> 레시피대로 도는지, 알람은 없는지.</div></div>
+  <div class="wt-num"><i>2</i><div><b>진단·복구</b> 이상 시 로그로 원인 찾고 복구.</div></div>
+  <div class="wt-num v"><i>3</i><div><b>개선</b> 재발 방지·절차 보완.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>이 과정</b>이 그 세 가지를 축소판으로 연습시킨 것입니다.</div>
+  </div></div>
+</section>
+<section class="slide" data-nid="15-15"><div class="wt-pad"><div class="wt-eye">개념 · 다음</div>
+ <h2 class="h-title">여기서 어디로 더 갈까</h2>
+ <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>실장비 매뉴얼</b> 실제 장비 매뉴얼과 알람 리스트를 이 틀(코드 계열 → 센서 → 원인)로 읽으면 빠르게 익힙니다.</div></div>
+  <div class="wt-num"><i>2</i><div><b>공정 과목</b> 각 챔버 안에서 무슨 일이 일어나는지.</div></div>
+  <div class="wt-num v"><i>3</i><div><b>자동화·SW</b> 시퀀스·호스트 통신 심화.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>수고하셨습니다</b> — 웨이퍼 한 장의 여정을 처음부터 끝까지 익혔습니다.</div>
+  </div></div>
+</section>
+
+
+
+
+
+
+<!-- ══ 실습 미션 ══ -->
+<section class="slide" data-nid="15-16" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">15강에서 직접 해볼 것</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Load Lock까지</b> 시퀀스로 웨이퍼를 보낸다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>Process Chamber까지</b> 진공 로봇으로 이송을 마친다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>알람 복구와 보고서</b> 발생한 알람을 풀고, 원인을 골라 보고서를 채점받는다.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>전 구간 무인 자동</b>
+      사람 손을 대지 않고 FOUP에서 Chamber까지 보내는 프로그램을 완성한다.</div></div>
+    <div class="wt-note" style="margin-top:0"><b>완료 기준</b> — Chamber 도착 · 보고서 채점 합격 ·
+     <b>과제 ①과 ③ 통과.</b> ②는 75초 이내면 통과, 그 뒤는 기록 도전. 세 과제 모두 알람 0건이어야 합니다.</div>
+   </div>
+   <div class="wt-col">
+    <div class="wt-card v"><h3>과제 ① 전 구간 무인 자동</h3>
+     <p>대기 로봇이 Load Lock에 놓고 → 대기측 밸브를 닫고 → 배기하고 →
+      진공측 밸브를 열고 → <b>SELECT vac</b> 으로 로봇을 바꿉니다.
+      압력이 내려갈 때까지 기다려야 하므로 <b>WHILE</b> 과 <b>pressure()</b> 를 씁니다.</p></div>
+    <div class="wt-card"><h3>과제 ② 사이클 타임</h3>
+     <p>①과 <b>같은 결과를 더 짧은 시간에</b> 냅니다. 필요 없는 이동과 대기를 지우는 것이
+      과제입니다. 시간이 기록으로 남으므로 여러 번 도전해 줄여 보세요.</p></div>
+    <div class="wt-card v"><h3>과제 ③ 처리량 — 두 장을 겹쳐 돌린다</h3>
+     <p>두 장을 공정까지 마치고 FOUP으로 되돌립니다. 한 장을 끝까지 처리하고 다음을 시작하면
+      챔버가 놉니다. <b>PM1은 10초, PM2는 22초</b> — <b>긴 챔버를 먼저</b> 채우고 그동안
+      둘째 장을 올리면 두 공정이 겹칩니다. <b>pmBusy(n)·pmDone(n)·pmLeft(n)</b>으로 챔버를 읽으세요.</p></div>
+    
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-nid="15-17" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">마무리</div><h2 class="h-title">이 과정에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>웨이퍼의 여정</b> FOUP에서 공정 챔버까지 전 구간을 안다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>구동·감지·제어</b> 로봇·센서·인터록을 손으로 다뤘다.</div></div></div>
+   <div class="wt-col"><div class="wt-num v"><i>3</i><div><b>자동화와 진단</b> 시퀀스를 짜고, 로그로 고장을 푼다.</div></div>
+    <div class="wt-note"><b>수고하셨습니다.</b> 이제 실제 장비의 이송 화면을 봐도
+     "무엇이·왜·어떻게"가 읽힐 것입니다.</div></div></div></div>
+</section>
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"15-01":{"key":"마지막 — 시퀀스로 <b>FOUP → 공정 챔버 전 구간</b>을 자동 이송하고, 오류를 스스로 진단·복구","kw":["FOUP → EFEM → LL → TM+PM","1~14강 통합","새 개념 없음","자동 + 진단 + 복구"],"sec":64,"audio":true},"15-02":{"key":"성공 기준 넷 — LL까지 자동 · 챔버까지 진공 이송 · <b>오류 진단·복구 완주</b> · 보고서","kw":["시퀀스 → Load Lock","Pump Down · Gate Valve → PM","알람 진단·복구","6칸 보고서 채점"],"sec":51,"audio":true},"15-03":{"key":"전 구간 체크리스트 — 준비 · 대기 · 정렬 · 관문 · 진공 · 공정. <b>밸브 블록은 토글</b>","kw":["SELECT efem → Init → Home","Dock→Door→Map→Pick","Align 도중 Pick은 602","ATM 닫기 → PUMP → CHECK vacuum","TM 열기 → SELECT vac"],"sec":72,"audio":true},"15-04":{"key":"막히면 코드로 <b>어느 강인지</b> 찾는다 — 1xx · 201 · 3xx · 5xx · 6xx · 701 표","kw":["101/102 → SELECT vac 후 Init·Home","303/304 → 밸브 먼저","311/314 → Vent/Pump 완료 후","601/602 → 완료 기다리기","701 → 펌프/누설 가르기"],"sec":63,"audio":true},"15-05":{"key":"시작 전 점검 — 알람 0 · EFEM Home · FOUP 적재 · <b>LL 760 Torr · 밸브 닫힘</b>","kw":["진공 로봇은 전환 뒤 따로 Init/Home","FOUP 웨이퍼 확인","FOUP→Chamber 블록","760 Torr · 밸브 닫힘"],"sec":58,"audio":true},"15-06":{"key":"전 구간 블록 — 준비 · 대기 · 정렬 · 관문 · 진공. <b>CHECK는 조건이 틀리면 그 자리에서 멈춘다</b>","kw":["CHECK wafer","ATM VALVE · PUMP · CHECK vacuum","TM VALVE · SELECT vac · INIT · HOME","MOVE pm2 · PLACE","기다림은 시퀀스가(최대 12초)"],"sec":74,"audio":true},"15-07":{"key":"돌리며 지켜보기 — 어느 블록을 수행 중인지, 상태바의 <b>압력·좌표·알람 수</b>. 멈추면 블록과 로그를 즉시","kw":["진행 관찰","상태바 압력·좌표·알람","멈춘 블록 + 로그","14강 방식"],"sec":52,"audio":true},"15-08":{"key":"고장 진단 탭 주입 → 관찰 → <b>보고서 채점은 Reset 전</b> → Reset → 재시도","kw":["고장 하나 또는 무작위","멈춘 블록 · [E] · 센서 값","채점은 고장이 살아 있을 때","Reset → Init/Home부터"],"sec":66,"audio":true},"15-09":{"key":"6칸 — Problem은 <b>어느 블록에서 멈췄나</b> · 센서 칸은 값 · 로그 칸은 코드 · 원인은 정답","kw":["Problem = 멈춘 블록","Sensor = Pressure·Presence·Position","Log = ALM 코드","원인 정답 + 4칸"],"sec":56,"audio":true},"15-10":{"key":"완주 기준 — PM 안착 · 알람 해결 · 보고서 합격 · <b>과제 ① 무인 자동 · ③ 처리량</b>","kw":["웨이퍼가 PM에","알람 0","6칸 합격","과제 ① · ③"],"sec":47,"audio":true},"15-11":{"key":"이 과정이 준 세 가지 눈 — <b>구조를 보는 눈 · 신호를 읽는 눈 · 문제를 푸는 눈</b>","kw":["여정과 배치","센서·로그로 판단","인터록·고장을 순서로","무엇이·왜·어떻게"],"sec":52,"audio":true},"15-12":{"key":"이송은 <b>혈관</b> — 모든 공정 사이를 잇고, 멈추면 뒤의 공정이 전부 굶는다. 그래서 신뢰성","kw":["산화·리소·식각·증착 사이","멈추면 다 멈춘다","신뢰성이 생명","팹 전체의 흐름"],"sec":51,"audio":true},"15-13":{"key":"엔지니어의 언어 — <b>수율</b>(오염·정렬 오차 = 불량률)과 <b>가동률</b>(알람·정지가 적을수록)","kw":["수율 = 불량률의 반대","가동률 = 생산 시간","숫자로 증명"],"sec":46,"audio":true},"15-14":{"key":"현장 엔지니어의 세 가지 일 — <b>운전·감시 · 진단·복구 · 개선</b>. 이 과정이 그 축소판","kw":["레시피대로 도는지","로그로 원인 · 복구","재발 방지 · 절차 보완"],"sec":50,"audio":true},"15-15":{"key":"여기서 어디로 — <b>실장비 매뉴얼</b>을 코드 계열 → 센서 → 원인 틀로 · 공정 과목 · 자동화·SW","kw":["알람 리스트 읽기","챔버 안의 일","시퀀스 · 호스트 통신","수고하셨습니다"],"sec":54,"audio":true},"15-16":{"key":"미션 — LL까지 · PM까지 · 복구+보고서 · <b>과제 ① 무인 · ② 75초 · ③ 처리량</b>","kw":["WHILE + pressure()","② 75초 이내 통과","③ PM2 22초 먼저, PM1 10초","pmBusy·pmDone·pmLeft","알람 0건"],"sec":72,"audio":true},"15-17":{"key":"남길 것 — <b>웨이퍼의 여정 · 구동·감지·제어 · 자동화와 진단</b>. 수고하셨습니다","kw":["FOUP → PM 전 구간","로봇·센서·인터록","시퀀스 · 로그","무엇이·왜·어떻게"],"sec":56,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

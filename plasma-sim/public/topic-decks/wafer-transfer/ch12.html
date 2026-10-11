@@ -1,0 +1,480 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.12 시퀀스 — 블록형 자동 이송</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+<style>/* 표지 그림(viewBox 420×460, 세로가 긴 SVG)이 메모 바와 겹친다 — 그림 높이만 줄인다 */
+section[data-nid="12-01"] .wt-fig svg{ max-height:500px; }</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="12-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 12</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">시퀀스<br/>블록형 자동 이송</h1>
+    <div class="wt-lead" style="margin-top:26px">사람이 버튼을 누르던 동작을 <b>블록으로 적어</b> 장비가 스스로 실행하게 합니다.
+     블록 하나는 버튼 하나 — MOVE · EXTEND · PICK · RETRACT · WAIT · CHECK 를 차례로 쌓습니다.</div>
+    <div class="wt-note" style="margin-top:40px;max-width:960px"><b>이 강의</b> — 블록 시퀀스로 FOUP → Load Lock 을 자동으로 돌리고,
+     반복 · 조건 · 변수가 필요한 일은 <b>로봇 프로그래밍</b>으로 넘어갑니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="0 0 420 460">
+     <g font-family="ui-monospace,monospace" font-size="16">
+      <rect x="90" y="20" width="240" height="46" rx="8" fill="#12283a" stroke="#4a7ea6"/><text x="120" y="49" fill="#cfe4f2">MOVE foup</text>
+      <rect x="90" y="86" width="240" height="46" rx="8" fill="#12283a" stroke="#4a7ea6"/><text x="120" y="115" fill="#cfe4f2">SLOT 1</text>
+      <rect x="90" y="152" width="240" height="46" rx="8" fill="#12283a" stroke="#4a7ea6"/><text x="120" y="181" fill="#cfe4f2">EXTEND</text>
+      <rect x="90" y="218" width="240" height="46" rx="8" fill="#12283a" stroke="#4a7ea6"/><text x="120" y="247" fill="#cfe4f2">PICK</text>
+      <rect x="90" y="284" width="240" height="46" rx="8" fill="#12283a" stroke="#4a7ea6"/><text x="120" y="313" fill="#cfe4f2">RETRACT</text>
+      <rect x="90" y="350" width="240" height="46" rx="8" fill="#161a35" stroke="#8a7dff"/><text x="120" y="379" fill="#cdbcff">CHECK wafer</text>
+      <path class="fx-ln" d="M210 66 V86" marker-end="url(#mA)"/><path class="fx-ln" d="M210 132 V152" marker-end="url(#mA)"/>
+      <path class="fx-ln" d="M210 198 V218" marker-end="url(#mA)"/><path class="fx-ln" d="M210 264 V284" marker-end="url(#mA)"/>
+      <path class="fx-ln" d="M210 330 V350" marker-end="url(#mA)"/></g></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-02" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">00 · 목표</div><h2 class="h-title">이 강의가 끝나면</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>블록으로 옮긴다</b> 자동 시퀀스 탭에서 블록을 쌓아 웨이퍼를 Load Lock 까지 사람 손 없이 보낸다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>블록 = 버튼</b> MOVE 는 회전만, PICK 은 집기만 한다는 것을 알고, 사이에 EXTEND · RETRACT 를 빠뜨리지 않는다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-num v"><i>3</i><div><b>멈춘 곳을 읽는다</b> 시퀀스가 선 블록과 알람 코드로 원인을 찾아 블록을 고친다.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>프로그램으로 넘어간다</b> 반복(REPEAT) · 조건(IF) · 변수($slot)로 과제 세 개를 푼다.</div></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-03" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">01 · 왜</div><h2 class="h-title">동작을 글로 적어 두는 것</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-num"><i>1</i><div><b>재현성</b> 사람마다 다른 순서가 아니라, 적힌 대로 <b>항상 같게</b> 실행됩니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>무인 운전</b> 한 번 짜두면 사람 없이 반복합니다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>기록</b> 무슨 순서로 했는지 그대로 남습니다.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>수동을 먼저 한 이유</b> 각 블록이 곧 1~11강에서 손으로 하던 그 동작입니다.</div></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>연결</b> — 수동으로 "언제 되고 안 되는지"를 익혔기에, 시퀀스가 멈춰도 어디가 문제인지 압니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="12-04" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">02 · 블록</div><h2 class="h-title">시뮬레이터의 블록 — 전부</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:21px"><tr><th>묶음</th><th>블록</th><th>하는 일</th></tr>
+    <tr><td>준비</td><td><b>INIT · HOME · SELECT efem|vac</b></td><td>로봇 초기화 · 원점 · 어느 로봇을 움직일지</td></tr>
+    <tr><td>Load Port</td><td><b>DOCK · DOOR OPEN · MAP</b></td><td>도킹 · 문 열기 · 매핑</td></tr>
+    <tr><td>이동</td><td><b>MOVE foup|aligner|ll|pm1|pm2 · SLOT n</b></td><td>그 스테이션으로 <b>회전만</b> · 높이(Z) 선택</td></tr>
+    <tr><td>팔 · 웨이퍼</td><td><b>EXTEND · RETRACT · PICK · PLACE · ALIGN</b></td><td>수동조작 버튼과 같다</td></tr>
+    <tr><td>진공</td><td><b class="v">ATM VALVE · TM VALVE · PUMP · VENT</b></td><td>밸브는 <b>누를 때마다 열림/닫힘이 바뀐다</b>(토글)</td></tr>
+    <tr><td>흐름</td><td><b>WAIT 2 · CHECK wafer|vacuum|door</b></td><td>2초 대기 · 조건이 아니면 시퀀스를 멈춘다</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>블록 시퀀스에는 IF 가 없습니다.</b> 블록은 위에서 아래로 한 번씩만 흐릅니다.
+    "웨이퍼가 있는 칸만" · "세 번 반복" 같은 판단은 뒤의 <b>로봇 프로그래밍</b>(REPEAT · WHILE · IF)으로 씁니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="12-05" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">03 · 블록 = 버튼</div><h2 class="h-title">MOVE 는 돌기만, PICK 은 집기만</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <table class="wt-tbl"><tr><th>수동조작에서 한 일</th><th>블록</th></tr>
+     <tr><td>Rotate ◀ ▶ 로 스테이션 고르기</td><td><b>MOVE aligner</b> (몇 칸 도는지는 장비가 계산)</td></tr>
+     <tr><td>▲ ▼ 로 칸 고르기</td><td><b>SLOT 1</b></td></tr>
+     <tr><td>Extend</td><td><b>EXTEND</b></td></tr>
+     <tr><td>Pick</td><td><b>PICK</b></td></tr>
+     <tr><td>Retract</td><td><b>RETRACT</b></td></tr></table>
+    <div class="wt-note warn"><b>그래서</b> — FOUP 에서 한 장 집으려면 블록이 네다섯 개입니다: MOVE foup → SLOT 1 → EXTEND → PICK → RETRACT.
+     MOVE 가 팔을 뻗어 주지도, PICK 이 팔을 넣어 주지도 않습니다.</div></div>
+   <div class="wt-col">
+    <div class="wt-card warn"><h3>RETRACT 를 빠뜨리면</h3><p>다음 MOVE 가 편 채 회전이 되어 <b>ALM-201</b> 로 멈춥니다. 블록에서도 "접고 → 돌고 → 편다"는 그대로입니다.</p></div>
+    <div class="wt-card warn"><h3>EXTEND 를 빠뜨리면</h3><p>PICK · PLACE 가 <b>ALM-203</b>(팔이 전진하지 않았습니다)으로 멈춥니다.</p></div>
+    <div class="wt-card"><h3>DOCK · DOOR OPEN 은 이미 되어 있으면 건너뛴다</h3><p>두 번 넣어도 알람이 나지 않습니다. 밸브 블록은 다릅니다 — 토글이라 두 번 넣으면 닫힙니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-06" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">04 · 기다림과 확인</div><h2 class="h-title">누가 기다리고, 누가 확인하나</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-card ac"><h3>동작 블록은 끝날 때까지 스스로 기다린다</h3><p>팔 이동 · 회전 · <b>ALIGN</b>(정렬 완료까지) · <b>PUMP</b>(목표 진공까지) · <b>VENT</b>(대기압까지)는
+     끝나야 다음 블록으로 넘어갑니다. 한 블록당 최대 12초까지 기다립니다.</p></div>
+    <div class="wt-card"><h3>WAIT 2 — 시간만 센다</h3><p>조건이 아니라 <b>2초</b>를 기다립니다. 장비가 스스로 기다리는 곳에 또 넣으면 시간만 늘어납니다.</p></div></div>
+   <div class="wt-col">
+    <div class="wt-card v"><h3>CHECK — 조건이 아니면 멈춘다</h3><p><b>CHECK wafer</b>(손에 웨이퍼) · <b>CHECK vacuum</b>(Load Lock 1 Torr 미만) · <b>CHECK door</b>(문 열림).
+     조건이 맞으면 통과, 아니면 <b>SEQ-002</b> 로 시퀀스를 세웁니다.</p></div>
+    <div class="wt-note"><b>왜 멈추는 게 좋은가</b> — 조건이 틀린 채 다음 동작을 하면 더 큰 알람이나 사고가 됩니다.
+     예시 시퀀스는 PUMP 뒤에 <b>CHECK vacuum</b> 으로 끝나, 진공이 안 됐으면 거기서 섭니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-07" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">05 · 예시</div><h2 class="h-title">예시 시퀀스 — FOUP 에서 Load Lock 까지 26블록</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.3"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 520">
+     <g font-family="var(--mono)" font-size="17">
+      <g fill="#12283a" stroke="#4a7ea6" stroke-width="1.5">
+       <rect x="10" y="10" width="270" height="34" rx="5"/><rect x="10" y="48" width="270" height="34" rx="5"/><rect x="10" y="86" width="270" height="34" rx="5"/><rect x="10" y="124" width="270" height="34" rx="5"/><rect x="10" y="162" width="270" height="34" rx="5"/>
+       <rect x="10" y="210" width="270" height="34" rx="5"/><rect x="10" y="248" width="270" height="34" rx="5"/><rect x="10" y="286" width="270" height="34" rx="5"/><rect x="10" y="324" width="270" height="34" rx="5"/><rect x="10" y="362" width="270" height="34" rx="5"/>
+       <rect x="310" y="10" width="270" height="34" rx="5"/><rect x="310" y="48" width="270" height="34" rx="5"/><rect x="310" y="86" width="270" height="34" rx="5"/><rect x="310" y="124" width="270" height="34" rx="5"/><rect x="310" y="162" width="270" height="34" rx="5"/>
+       <rect x="310" y="200" width="270" height="34" rx="5"/><rect x="310" y="238" width="270" height="34" rx="5"/><rect x="310" y="276" width="270" height="34" rx="5"/>
+       <rect x="610" y="48" width="270" height="34" rx="5"/><rect x="610" y="86" width="270" height="34" rx="5"/><rect x="610" y="124" width="270" height="34" rx="5"/><rect x="610" y="162" width="270" height="34" rx="5"/></g>
+      <g fill="#161a35" stroke="#8a7dff" stroke-width="1.5"><rect x="610" y="10" width="270" height="34" rx="5"/><rect x="610" y="200" width="270" height="34" rx="5"/><rect x="610" y="238" width="270" height="34" rx="5"/><rect x="610" y="276" width="270" height="34" rx="5"/></g>
+      <g fill="#cfe4f2">
+       <text x="22" y="33">1 INIT</text><text x="22" y="71">2 HOME</text><text x="22" y="109">3 DOCK</text><text x="22" y="147">4 DOOR OPEN</text><text x="22" y="185">5 MAP</text>
+       <text x="22" y="233">6 MOVE foup</text><text x="22" y="271">7 SLOT 1</text><text x="22" y="309">8 EXTEND</text><text x="22" y="347">9 PICK</text><text x="22" y="385">10 RETRACT</text>
+       <text x="322" y="33">11 MOVE aligner</text><text x="322" y="71">12 EXTEND</text><text x="322" y="109">13 PLACE</text><text x="322" y="147">14 RETRACT</text><text x="322" y="185">15 ALIGN</text>
+       <text x="322" y="223">16 EXTEND</text><text x="322" y="261">17 PICK</text><text x="322" y="299">18 RETRACT</text>
+       <text x="622" y="71">20 MOVE ll</text><text x="622" y="109">21 EXTEND</text><text x="622" y="147">22 PLACE</text><text x="622" y="185">23 RETRACT</text></g>
+      <g fill="#cdbcff"><text x="622" y="33">19 ATM VALVE (열림)</text><text x="622" y="223">24 ATM VALVE (닫힘)</text><text x="622" y="261">25 PUMP</text><text x="622" y="299">26 CHECK vacuum</text></g>
+      <g class="fx-sub" font-size="16"><text x="10" y="426">1–5 준비 · 6–10 FOUP 에서 집기</text><text x="310" y="336">11–18 정렬 (ALIGN 은</text><text x="310" y="358">끝날 때까지 기다린다)</text><text x="610" y="336">19–26 관문 (밸브는 토글,</text><text x="610" y="358">진공 확인으로 끝)</text></g>
+     </g></svg></div>
+    <div class="wt-figc">자동 시퀀스 탭의 [예시 시퀀스 불러오기] 그대로 — 실행하면 알람 0건으로 끝납니다</div></div>
+   <div class="wt-col" style="flex:.7">
+    <div class="wt-card"><h3>블록 색 = 종류</h3>
+     <p><span class="wt-key" style="border-color:#4a7ea6">동작</span> 로봇 · Load Port<br/>
+      <span class="wt-key" style="border-color:#8a7dff">진공 · 확인</span> 밸브 · PUMP · CHECK</p></div>
+    <div class="wt-note"><b>읽는 법</b> — 위에서 아래로 한 줄씩. 수동으로 8강에서 했던 순서와 같고,
+     정렬 뒤 다시 집기(16~18)와 밸브 토글 두 번(19 · 24)이 핵심입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-08" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">06 · 안전</div><h2 class="h-title">자동이라도 인터록은 그대로</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl"><tr><th>블록에서 흔한 실수</th><th>멈추는 알람</th><th>고치기</th></tr>
+    <tr><td>RETRACT 없이 MOVE</td><td><b>ALM-201</b></td><td>MOVE 앞에 RETRACT</td></tr>
+    <tr><td>EXTEND 없이 PICK · PLACE</td><td><b>ALM-203</b></td><td>앞에 EXTEND</td></tr>
+    <tr><td>ATM VALVE 안 열고 Load Lock 으로 EXTEND</td><td><b>ALM-303</b></td><td>MOVE ll 전후에 ATM VALVE</td></tr>
+    <tr><td>ATM VALVE 를 한 번만 넣고 PUMP</td><td><b>ALM-308</b></td><td>배기 전에 한 번 더 넣어 닫는다(토글)</td></tr>
+    <tr><td>CHECK 조건 불만족</td><td><b>SEQ-002</b></td><td>앞 블록이 정말 끝났는지 — 압력 · 손 · 문</td></tr>
+    <tr><td>로봇이 갈 수 없는 스테이션으로 MOVE</td><td><b>SEQ-001</b></td><td>SELECT 로 로봇을 먼저 바꾼다 (pm1 · pm2 는 진공 로봇)</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>좋은 시퀀스</b> = 사람이 손으로 지키던 순서를 블록에서도 그대로 지킨 시퀀스. 블록도 수동과 똑같이 인터록에 막힙니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="12-09" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">07 · 디버깅</div><h2 class="h-title">시퀀스가 멈추면</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>멈춘 블록</b> 시퀀스 목록에서 빨갛게 표시된 블록이 거부된 곳입니다. 그 앞은 초록(완료)입니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>알람 로그</b> 그 순간의 코드와 이유. 앞자리로 계통을 정합니다.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>블록 보강</b> 빠진 RETRACT · EXTEND · 밸브, 또는 확인 블록(CHECK)을 앞에 넣습니다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>다시 돌리기 전에</h3><p>시퀀스는 처음 블록부터 다시 돕니다. 장비는 멈춘 그 상태 그대로이므로,
+     필요하면 챕터를 다시 눌러 초기화하거나 수동으로 되돌린 뒤 실행하세요. DOCK · DOOR OPEN 은 이미 되어 있으면 건너뛰지만, 밸브 블록은 토글이라 상태에 따라 결과가 달라집니다.</p></div>
+    <div class="wt-note warn"><b>대개</b> — 멈춤은 "조건이 아직 안 됐는데 다음을 시도"해서입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-10" data-level="pro">
+ <div class="wt-pad"><div class="wt-eye">08 · 상태와 예외</div><h2 class="h-title">시퀀스는 상태를 따라 흐른다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>지금 상태 → 다음 상태</h3><p>"웨이퍼 집음" → "정렬 완료" → "LL 안착"처럼, 각 블록이 상태를 한 칸 전진시킵니다.</p></div>
+    <div class="wt-card v"><h3>조건이 전이의 열쇠</h3><p>다음 상태로 가려면 센서 조건이 충족돼야 합니다 — CHECK 블록이 그 문지기입니다.</p></div>
+    <div class="wt-num"><i>1</i><div><b>정상 경로</b> 조건 충족 시 다음으로.</div></div>
+    <div class="wt-num warn"><i>2</i><div><b>예외 경로</b> 조건 실패 시 멈춤 · 알람 · 복구로. 블록 시퀀스는 멈추는 데까지만 하고, 복구 분기는 13강 프로그램(IF)으로 씁니다.</div></div></div></div>
+   <div class="wt-note warn" style="margin-top:0"><b>실무</b> — 예외 처리 없는 시퀀스는 작은 이상에도 통째로 멈춥니다. 좋은 시퀀스 = 상태와 전이 조건이 분명한 시퀀스.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="12-11" data-level="pro">
+ <div class="wt-pad"><div class="wt-eye">09 · 현장 개념</div><h2 class="h-title">레시피와 병렬 — 시퀀스 너머</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-num"><i>1</i><div><b>레시피</b> 어떤 공정을 어떤 조건으로 할지의 설정.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>시퀀스</b> 그 레시피대로 웨이퍼를 옮기고 처리하는 순서.</div></div>
+    <div class="wt-card"><h3>겹쳐서 일한다 — 듀얼 암</h3><p>한 손이 새 웨이퍼를 집는 사이 다른 손이 완료품을 빼내, 시간을 겹칩니다(5강 "손이 둘"의 자동화 버전).</p></div>
+    <div class="wt-card v"><h3>시뮬레이터에서는</h3><p>팔이 하나라 손을 겹칠 수는 없지만, 챔버 두 개를 겹쳐 돌리는 것은 15강 과제 ③에서 프로그램으로 합니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>역할 분담</b> — 이송 시퀀스는 "웨이퍼를 제때 제자리에" 두는 데 집중합니다.</div>
+  </div></div>
+</section>
+
+<!-- ══ 로봇 프로그래밍 ① 형식 ══ -->
+<section class="slide" data-nid="12-12" data-level="standard pro">
+ <div class="wt-pad">
+  <div class="wt-eye">로봇 프로그래밍 ①</div>
+  <h2 class="h-title">블록 나열에서 프로그램으로</h2>
+  <div class="wt-lead">블록을 일렬로 쌓는 것만으로는 <b>"웨이퍼가 있는 칸만"</b> 이나
+   <b>"세 번 반복"</b> 을 표현할 수 없습니다. 실제 장비의 이송 프로그램에는
+   반복과 조건과 변수가 있습니다. 시뮬레이터의 <b>로봇 프로그래밍 탭</b>에서 같은 것을 씁니다.</div>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-card"><h3>프로그램은 JSON 한 덩어리</h3>
+     <p><b>name</b> 이름 · <b>vars</b> 변수의 처음 값 · <b>body</b> 실행할 줄의 목록.
+      줄 하나는 <b>{"op": "명령"}</b> 이고, 인자가 있으면 <b>arg</b> 를 붙입니다.</p></div>
+    <div class="wt-card v"><h3>변수는 $이름</h3>
+     <p><b>vars</b> 에 <b>{"slot": 1}</b> 로 만들어 두면 <b>"$slot"</b> 으로 씁니다.
+      <b>SET</b> 으로 값을 바꿉니다 — <b>{"op":"SET","var":"slot","value":"$slot + 1"}.</b></p></div>
+    <div class="wt-note"><b>검증 버튼이 먼저입니다.</b> 실행 전에 오타와 잘못된 명령을
+     줄 위치까지 짚어 줍니다. 실행 중 막히면 <b>body[3].body[1]</b> 처럼 어느 줄인지 알려 줍니다.</div>
+   </div>
+   <div class="wt-col">
+    <table class="wt-tbl">
+     <tr><th>구분</th><th>쓰는 것</th></tr>
+     <tr><td><b>준비</b></td><td>INIT · HOME · DOCK · DOOR OPEN|CLOSE · MAP</td></tr>
+     <tr><td><b>이동</b></td><td>SLOT n · MOVE foup|aligner|ll|pm1|pm2 · EXTEND · RETRACT</td></tr>
+     <tr><td><b>취급</b></td><td>PICK · PLACE · ALIGN</td></tr>
+     <tr><td><b>진공</b></td><td>VALVE ATM|TM OPEN|CLOSE · PUMP · VENT</td></tr>
+     <tr><td><b>흐름</b></td><td><b class="v">REPEAT · WHILE · IF · SET · BREAK</b></td></tr>
+     <tr><td><b>읽기</b></td><td>slotHas(n) · pressure() · door() · wafer() · extended() …</td></tr>
+    </table>
+    <div class="wt-note v" style="margin-top:14px"><b>읽기 함수가 핵심입니다.</b>
+     프로그램은 장비를 눈으로 보지 못합니다. 조건을 쓰려면 센서를 숫자로 읽어야 합니다.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ══ 로봇 프로그래밍 ② 예시 ══ -->
+<section class="slide" data-nid="12-13" data-level="standard pro">
+ <div class="wt-pad">
+  <div class="wt-eye">로봇 프로그래밍 ②</div>
+  <h2 class="h-title">같은 일을 세 번 — 복사가 아니라 반복으로</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-card"><h3>이렇게 쓰지 않습니다</h3>
+     <p>슬롯 1 이송 열여덟 줄 · 슬롯 2 이송 열여덟 줄 · 슬롯 3 이송 열여덟 줄.
+      쉰네 줄이고, 한 곳을 고치면 세 곳을 고쳐야 합니다. <b>스텝 수로 드러납니다.</b></p></div>
+    <div class="wt-card v"><h3>이렇게 씁니다</h3>
+     <p>몸통은 <b>한 벌</b>만 쓰고 <b>REPEAT</b> 으로 감쌉니다.
+      칸 번호는 <b>$slot</b> 이 들고 있다가 한 바퀴 끝에서 <b>SET</b> 으로 하나 올립니다.</p></div>
+    <div class="wt-note"><b>과제 ③은 한 걸음 더 갑니다.</b> 어느 칸에 웨이퍼가 들었는지
+     <b>실행할 때마다 달라지므로,</b> 번호를 적어 두면 통과하지 못합니다.
+     <b>MAP</b> 으로 읽고 <b>IF slotHas($slot)</b> 로 걸러야 합니다.</div>
+   </div>
+   <div class="wt-col">
+    <table class="wt-tbl">
+     <tr><th>줄</th><th>뜻</th></tr>
+     <tr><td><b>"vars": {"slot": 1}</b></td><td>슬롯 번호를 1에서 시작</td></tr>
+     <tr><td><b>{"op":"REPEAT", "count":3,</b></td><td>아래 몸통을 세 번</td></tr>
+     <tr><td>&nbsp;&nbsp;<b>"body":[ … ]}</b></td><td>반복할 내용 한 벌</td></tr>
+     <tr><td>&nbsp;&nbsp;<b>{"op":"SLOT","arg":"$slot"}</b></td><td>지금 칸을 겨냥</td></tr>
+     <tr><td>&nbsp;&nbsp;<b class="v">{"op":"SET","var":"slot",</b></td><td rowspan="2">한 바퀴 끝에 칸을 하나 올림</td></tr>
+     <tr><td>&nbsp;&nbsp;<b class="v">&nbsp;"value":"$slot + 1"}</b></td></tr>
+    </table>
+    <div class="wt-note v" style="margin-top:14px"><b>▷ 한 줄씩</b> 버튼으로 한 줄씩 돌려
+     보세요. 지금 어느 줄에 있고 장비가 어떻게 바뀌는지 나란히 보입니다.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-nid="12-14" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">12강에서 직접 해볼 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>블록 6개 이상</b>으로 이송 시퀀스를 구성한다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>끝까지 실행</b>해 오류 없이 완주한다.</div></div></div>
+   <div class="wt-col"><div class="wt-num v"><i>3</i><div><b>자동으로 Load Lock까지</b> 웨이퍼를 보낸다.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>프로그래밍 과제 3개</b>
+      ① 첫 프로그램 · ② 반복문 · ③ 조건문 — 로봇 프로그래밍 탭.</div></div>
+    <div class="wt-note"><b>완료 기준</b> — 웨이퍼가 자동으로 Load Lock에 도착하고,
+     <b>프로그래밍 과제 ①②③을 모두 통과</b>하면 12강 종료.
+     과제는 <b>스텝 수로 채점</b>하고 기록이 남으므로, 통과한 뒤에도 더 짧게 줄여볼 수 있습니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="12-15" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">12강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>블록 = 버튼</b> MOVE 는 회전만, PICK 은 집기만. EXTEND · RETRACT 를 따로 적는다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>기다림은 장비가, 확인은 CHECK 가</b> PUMP · VENT · ALIGN 은 끝날 때까지 기다리고, CHECK 는 조건이 아니면 멈춘다.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>판단은 프로그램으로</b> 반복 · 조건 · 변수가 필요하면 로봇 프로그래밍(REPEAT · WHILE · IF).</div></div></div>
+   <div class="wt-col"><div class="wt-card"><h3>Q1</h3><p>동작 블록 사이에 CHECK 를 넣는 이유는?
+     <br/><span style="color:var(--t4)">→ 앞 동작이 정말 끝났는지(손 · 압력 · 문) 확인하고, 아니면 거기서 멈춰 더 큰 사고를 막으려고.</span></p></div>
+    <div class="wt-card v"><h3>Q2</h3><p>MOVE aligner 바로 뒤에 PLACE 를 넣었더니 멈췄습니다. 빠진 블록은?
+     <br/><span style="color:var(--t4)">→ <b>EXTEND</b>. 없으면 ALM-203.</span></p></div>
+    <div class="wt-card"><h3>Q3</h3><p>ATM VALVE 블록을 두 번 넣는 이유는?
+     <br/><span style="color:var(--t4)">→ 토글이라 한 번은 열고 한 번은 닫는다. 닫지 않으면 PUMP 가 <b>ALM-308</b>.</span></p></div>
+    <div class="wt-note"><b>다음 강</b> — 13강 <b>인터록</b>: 안전을 지키는 거부 장치를 한데 모아 봅니다.</div></div></div></div>
+</section>
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"12-01":{"key":"버튼을 누르던 동작을 블록으로 적는다 — <b>블록 하나는 버튼 하나</b>, 판단은 프로그래밍으로","kw":["블록 = 버튼","FOUP → Load Lock 자동","반복·조건·변수 → 프로그래밍"],"sec":57,"audio":true},"12-02":{"key":"목표 — 블록으로 LL 까지 · <b>MOVE 는 회전만, PICK 은 집기만</b> · 멈춘 곳 읽기 · 프로그램","kw":["자동 시퀀스 탭","EXTEND·RETRACT 빠뜨리지 않기","선 블록 + 알람 코드","REPEAT · IF · $slot"],"sec":59,"audio":true},"12-03":{"key":"동작을 글로 적는 이유 — <b>재현성 · 무인 운전 · 기록</b>. 각 블록은 1~11강에서 손으로 하던 그 동작","kw":["적힌 대로 항상 같게","사람 없이 반복","순서가 남는다","수동을 먼저 한 이유"],"sec":60,"audio":true},"12-04":{"key":"블록 전부 — 준비·Load Port·이동·팔·진공·흐름. <b>밸브는 토글</b>, 블록엔 IF 가 없다","kw":["INIT·HOME·SELECT","MOVE·SLOT","EXTEND·RETRACT·PICK·PLACE·ALIGN","ATM/TM VALVE·PUMP·VENT 토글","WAIT 2 · CHECK"],"sec":62,"audio":true},"12-05":{"key":"<b>MOVE 는 돌기만, PICK 은 집기만</b> — RETRACT 빠지면 201, EXTEND 빠지면 203","kw":["한 장 = MOVE·SLOT·EXTEND·PICK·RETRACT","RETRACT 없이 MOVE → 201","EXTEND 없이 PICK → 203","DOCK·DOOR 는 건너뜀 · 밸브는 토글"],"sec":58,"audio":true},"12-06":{"key":"동작 블록은 스스로 기다린다(최대 12초) · WAIT 는 시간만 · <b>CHECK 는 아니면 SEQ-002</b>","kw":["ALIGN·PUMP·VENT 자동 대기","WAIT 2 = 2초만","CHECK wafer·vacuum·door","SEQ-002"],"sec":61,"audio":true},"12-07":{"key":"예시 26블록 — 준비·집기·정렬(다시 Pick)·관문(<b>밸브 토글 두 번</b>·CHECK vacuum)","kw":["[예시 시퀀스 불러오기]","알람 0건","16~18 정렬 뒤 재Pick","19 · 24 ATM VALVE 토글","26 CHECK vacuum"],"sec":52,"audio":true},"12-08":{"key":"자동이라도 인터록은 그대로 — 201·203·303·308 · <b>SEQ-002 조건 · SEQ-001 로봇</b>","kw":["RETRACT 없이 MOVE 201","EXTEND 없이 PICK 203","ATM 안 열고 LL EXTEND 303","밸브 한 번만 넣고 PUMP 308","SEQ-001 → SELECT"],"sec":57,"audio":true},"12-09":{"key":"멈추면 — <b>빨간 블록 · 알람 로그 · 블록 보강</b>. 다시 돌리면 처음부터, 장비는 멈춘 상태 그대로","kw":["빨강 = 거부, 초록 = 완료","앞자리로 계통","빠진 RETRACT·EXTEND·밸브·CHECK","초기화 또는 수동 복귀 후 재실행"],"sec":62,"audio":true},"12-10":{"key":"시퀀스는 <b>상태를 따라 흐른다</b> — 조건이 전이의 열쇠, CHECK 가 문지기. 복구 분기는 13강 IF","kw":["상태 → 다음 상태","센서 조건 = 전이","정상 경로 · 예외 경로","복구는 프로그램(IF)"],"sec":65,"audio":true},"12-11":{"key":"현장 개념 — <b>레시피</b>(무엇을 어떤 조건으로) vs <b>시퀀스</b>(어떤 순서로). 듀얼 암은 시간을 겹친다","kw":["레시피 = 공정 조건","시퀀스 = 이송 순서","듀얼 암 = 5강 손 둘의 자동화","15강 과제 ③ 챔버 겹치기"],"sec":64,"audio":true},"12-12":{"key":"프로그램은 JSON — <b>name · vars · body</b>, 변수는 $이름, SET 으로 바꾼다. 검증 먼저","kw":["{\"op\":\"명령\",\"arg\"}","vars → $slot","SET $slot + 1","검증 → 줄 위치","읽기 함수 slotHas·pressure"],"sec":65,"audio":true},"12-13":{"key":"세 번은 복사가 아니라 <b>REPEAT + $slot + SET</b>. 과제 ③은 MAP 뒤 IF slotHas","kw":["54줄 복사 금지","REPEAT count 3","SLOT $slot","SET slot = $slot + 1","▷ 한 줄씩"],"sec":62,"audio":true},"12-14":{"key":"실습 — 블록 6개 이상 · 완주 · 자동으로 LL · 과제 <b>① 첫 프로그램 ② 반복문 ③ 조건문</b>","kw":["자동 시퀀스 탭","오류 없이 완주","로봇 프로그래밍 탭 과제 3개","스텝 수 채점 · 기록"],"sec":72,"audio":true},"12-15":{"key":"남길 것 — <b>블록 = 버튼 · 기다림은 장비, 확인은 CHECK · 판단은 프로그램</b>. Q 203 · 308","kw":["MOVE 회전만 · PICK 집기만","PUMP·VENT·ALIGN 자동 대기","REPEAT · WHILE · IF","Q2 EXTEND 203 · Q3 토글 308","다음 13강 인터록"],"sec":67,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

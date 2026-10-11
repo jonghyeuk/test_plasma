@@ -1,0 +1,814 @@
+<!DOCTYPE html><html lang="ko" class="nobase"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ch.6 센서 — 이송장치의 주요 센서</title>
+<style>
+/* ═══ 디자인 토큰 (본 챕터 데크는 wafer-transfer.html 과 동일 시스템) ═══
+   청록 = 대기 영역(760 Torr) · 보라 = 진공 영역 · 호박 = 경고 · 적 = 금지 */
+:root{
+  --ac:#35e0c8; --vc:#9b8cff; --wn:#ffb340; --bd:#ff5e5e;
+  --t1:#f2f9ff; --t2:#a9c4d8; --t3:#7fa3bd; --t4:#4f7590;
+  --bx:#132433; --ln:#3a6b8c; --ln2:#294357;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+}
+.slide{ color:var(--t2); font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  /* 한글은 기본값이면 어절 한가운데서도 줄이 바뀐다 ("없 / 습니다", 마침표만 다음 줄로).
+     keep-all 은 띄어쓰기에서만 끊고, break-word 는 끊을 수 없는 긴 문자열의 넘침을 막는다. */
+  word-break:keep-all; overflow-wrap:break-word; }
+.wt-pad{ padding:74px 96px 66px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; }
+.wt-eye{ font-family:var(--mono); font-size:21px; letter-spacing:.26em; color:var(--ac);
+  margin-bottom:12px; text-transform:uppercase; }
+.wt-eye.v{ color:var(--vc); }
+.h-title{ font-family:var(--cond); font-size:66px; line-height:1.1; font-weight:700;
+  letter-spacing:-.015em; margin:0; color:var(--t1); }
+h2.h-title{ font-size:56px; }
+.wt-lead{ font-size:29px; line-height:1.6; color:var(--t2); max-width:1420px; margin-top:16px; }
+.wt-lead b{ color:var(--ac); font-weight:700; }
+.wt-lead b.v{ color:var(--vc); }
+.wt-body{ flex:1; display:flex; gap:40px; min-height:0;
+  margin-top:30px; padding-top:30px; border-top:1px solid var(--ln2); }
+.wt-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+/* 그림이 허공에 뜬 것처럼 보이던 것 — Drafting Room 의 "도면" 처럼 판 위에 올린다.
+   안쪽에 22px 모눈을 깔아 제도판 느낌을 준다. */
+.wt-fig{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; margin-top:0;
+  padding:26px; border:1px solid var(--ln2); border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.045) 0 1px,transparent 1px 22px),
+    rgba(8,17,24,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.wt-fig svg{ width:100%; height:100%; max-height:100%; }
+.wt-figc{ font-family:var(--mono); font-size:20px; color:var(--t4); text-align:center; margin-top:10px; letter-spacing:.04em; }
+/* Drafting Room 규칙 — 모서리 2~3px, 평상시엔 무채색. 색은 의미가 있을 때만.
+   위쪽 1px 하이라이트와 아래 그림자로 판(plate) 느낌만 준다. */
+.wt-card{ background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 42%),rgba(19,36,51,.72);
+  border:1px solid var(--ln2); border-left:3px solid #35506a; border-radius:3px;
+  padding:22px 26px; margin-bottom:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 1px 0 #070f16;
+  /* 남는 세로 공간을 카드가 나눠 가진다. 글은 위에 붙고 판만 커지므로
+     아래쪽에 큰 여백이 남는 대신 판이 칸을 채운다. 줄어들지는 않게(0) 해서
+     내용이 잘리는 일은 없다. */
+  flex:1 0 auto; }
+.wt-card > *{ flex:none; }
+.wt-card h3{ font-family:var(--cond); font-size:30px; margin:0 0 9px; color:var(--t1);
+  font-weight:700; letter-spacing:-.005em; }
+.wt-card p{ font-size:24px; line-height:1.6; color:var(--t2); margin:0; }
+.wt-card.v{ border-left-color:var(--vc); }
+.wt-card.ac{ border-left-color:var(--ac); }
+.wt-card.warn{ border-left-color:var(--bd); }
+.wt-num{ display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+.wt-num i{ flex:none; width:48px; height:48px; border-radius:3px; background:var(--ac); color:#03231e;
+  font-family:var(--mono); font-size:24px; font-weight:700; font-style:normal;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #070f16; }
+.wt-num.v i{ background:var(--vc); color:#140f2e; }
+.wt-num div{ font-size:25px; line-height:1.5; color:var(--t2); padding-top:6px; }
+/* 항목의 '첫' <b> 만 제목으로 줄을 차지한다.
+   문장 중간의 강조까지 display:block 이면 "실제 FOUP 은 / 25칸 · 간격 10 mm / 이고," 처럼
+   한 문장이 세 줄로 갈라진다. 데크 전체에서 42개 항목이 그 상태였다. */
+.wt-num div b{ color:var(--t1); font-weight:700; }
+.wt-num div > b:first-child{ font-family:var(--cond); display:block; font-size:29px;
+  margin-bottom:3px; }
+.wt-tbl{ width:100%; border-collapse:collapse; font-size:23px; }
+.wt-tbl th,.wt-tbl td{ text-align:left; padding:13px 15px; border-bottom:1px solid var(--ln2); vertical-align:top; }
+.wt-tbl th{ font-family:var(--mono); font-size:17px; letter-spacing:.2em; color:var(--t4);
+  font-weight:500; text-transform:uppercase; border-bottom-color:var(--ln); }
+.wt-tbl td b{ color:var(--ac); white-space:nowrap; }   /* ALM-101 이 하이픈에서 갈라지지 않게 */
+.wt-tbl td b.v{ color:var(--vc); }
+.wt-tbl.wt-tight{ font-size:21px; } .wt-tbl.wt-tight th,.wt-tbl.wt-tight td{ padding:9px 13px; }
+/* margin-top:auto 였다. 칸 안에서 note 를 바닥으로 밀어붙이는데, 두 칸의 내용 길이가
+   다르면 짧은 칸 한가운데에 400px 넘는 구멍이 뚫린다. 내용 바로 아래에 두고
+   남는 공간은 칸 아래쪽에 모이게 한다. */
+.wt-note{ margin-top:18px; padding:18px 22px; background:rgba(53,224,200,.085);
+  border:1px solid #2c6d63; border-left:3px solid var(--ac); border-radius:3px;
+  font-size:24px; line-height:1.55; color:#bfe9e1; }
+.wt-note b{ color:var(--ac); }
+.wt-note.warn{ background:rgba(255,94,94,.085); border-color:#7a3232;
+  border-left-color:var(--bd); color:#ffc4c4; }
+.wt-note.warn b{ color:#ff8a8a; }
+.wt-note.v{ background:rgba(155,140,255,.095); border-color:#4d3f8c;
+  border-left-color:var(--vc); color:#d5cdff; }
+.wt-note.v b{ color:var(--vc); }
+.wt-key{ display:inline-block; font-family:var(--mono); font-size:20px; padding:2px 10px;
+  border:1px solid #45688a; border-bottom-width:3px; border-radius:2px;
+  background:linear-gradient(180deg,#1e3549,#152635); color:#dceaf5; margin:0 3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-pad::after{ content:""; position:absolute; left:96px; right:96px; bottom:40px; height:1px;
+  background:linear-gradient(90deg,var(--ln2),rgba(41,67,87,0) 78%); }
+.wt-map{ position:absolute; top:74px; right:96px; display:flex; align-items:center; gap:0; }
+.wt-map .n{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.wt-map .d{ width:13px; height:13px; border-radius:50%; background:#24425c; }
+.wt-map .n.on .d{ background:var(--ac); box-shadow:0 0 0 6px rgba(53,224,200,.16); }
+.wt-map .n.vac .d{ background:#2f2a52; }
+.wt-map .n.vac.on .d{ background:var(--vc); box-shadow:0 0 0 6px rgba(155,140,255,.18); }
+.wt-map .n span{ font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:#3f6480; }
+.wt-map .n.on span{ color:var(--t1); }
+.wt-map .b{ width:30px; height:2px; background:#24425c; margin:0 5px 21px; }
+.fx-box{ fill:var(--bx); stroke:var(--ln); stroke-width:2.5; }
+.fx-vac{ fill:#161a35; stroke:#6f63c9; stroke-width:2.5; }
+.fx-w{ fill:#c9dced; stroke:#eef6ff; stroke-width:1.5; }
+.fx-lbl{ font-family:var(--mono); font-size:21px; fill:#9fc0d6; }
+.fx-sub{ font-family:var(--mono); font-size:17px; fill:#5d829c; }
+.fx-cap{ font-family:var(--mono); font-size:19px; fill:var(--ac); }
+.fx-cap.v{ fill:var(--vc); }
+.fx-arm{ fill:#2c4b66; stroke:#4a7ea6; stroke-width:2.5; }
+.fx-arm.v{ fill:#2f2a52; stroke:#8a7dff; }
+.fx-ln{ stroke:#35e0c8; stroke-width:3; fill:none; }
+.fx-ln.v{ stroke:#9b8cff; }
+.fx-bad{ stroke:var(--bd); stroke-width:4; fill:none; }
+.fx-dim{ opacity:.3; }
+.fx-panel{ fill:#0e1d29; stroke:#274357; stroke-width:2; }
+/* 체험 슬라이드 — 1920 기준이라 버튼·글자가 커야 손에 잡힌다 */
+.wt-btn{ appearance:none; font-family:var(--sans); font-weight:700; font-size:25px; color:#eaf5ff;
+  background:linear-gradient(180deg,#1e3549,#152635); border:1px solid #45688a; border-bottom-width:3px; border-radius:3px;
+  padding:14px 26px; cursor:pointer; min-height:62px; box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.wt-btn:hover{ background:linear-gradient(180deg,#25425b,#1a3042); }
+.wt-btn.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.wt-btn.v{ border-color:#6f63c9; } .wt-btn.v.on{ background:var(--vc); color:#140f2e; border-color:var(--vc); }
+a.wt-btn{ text-decoration:none; display:inline-flex; align-items:center; gap:14px; }
+.wt-ctl{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:14px 0; }
+.wt-range{ width:100%; height:44px; accent-color:var(--ac); margin:8px 0 0; }
+.wt-read{ display:grid; grid-template-columns:1fr auto; gap:8px 22px; font-size:24px; color:var(--t2);
+  border-top:1px solid var(--ln2); padding-top:12px; }
+.wt-read b{ font-family:var(--mono); color:var(--t1); font-weight:600; text-align:right; }
+.wt-read b.ok{ color:var(--ac); } .wt-read b.no{ color:var(--t4); } .wt-read b.bad{ color:var(--bd); } .wt-read b.wn{ color:var(--wn); }
+.wt-led{ display:inline-block; width:22px; height:22px; border-radius:50%; background:#24425c; vertical-align:middle; margin-right:10px; }
+.wt-led.on{ background:var(--ac); box-shadow:0 0 0 7px rgba(53,224,200,.16); }
+.wt-led.bad{ background:var(--bd); box-shadow:0 0 0 7px rgba(255,94,94,.16); }
+/* 베이스리스 표시 (단독/서랍 공통) */
+.nobase body{ margin:0; background:#0a141c; overflow:hidden; }
+.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+.nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
+/* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
+   transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
+   창 너비로 조판되고, 16:9 가 깨지면서 칸이 좁아지고 글이 겹친다.
+   창이 1920 보다 좁으면 언제나 일어난다 — 즉 거의 항상. */
+.nobase .slide{ position:absolute; inset:0; display:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(74,168,255,.030) 0 1px,transparent 1px 44px),
+    radial-gradient(1400px 800px at 18% -12%,#17293a 0%,transparent 62%),#0a141c; }
+.nobase .slide.on{ display:block; }
+.nobase #fbnav{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+  z-index:9; font-family:var(--mono); font-size:13px; align-items:center; }
+.nobase #fbnav button{ background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:6px; padding:7px 13px; cursor:pointer; }
+.nobase #fbnav button.on{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.nobase #fbnav span{ color:#6d90aa; padding:0 6px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_print.css"/>
+<link rel="stylesheet" href="_notes.css"/>
+</head><body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+ <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
+ <marker id="mV" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#9b8cff"/></marker>
+ <marker id="mW" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ffb340"/></marker>
+ <marker id="mR" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#ff5e5e"/></marker>
+ <radialGradient id="wg" cx="34%" cy="28%">
+  <stop offset="0%" stop-color="#e8f3fd"/><stop offset="55%" stop-color="#b8cddf"/><stop offset="100%" stop-color="#7d97ad"/></radialGradient>
+</defs></svg>
+
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<section class="slide" data-nid="06-01" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 6</div>
+  <div class="wt-body" style="margin-top:10px;align-items:center">
+   <div class="wt-col" style="flex:1.05"><h1 class="h-title">센서<br/>로봇의 눈</h1>
+    <div class="wt-lead" style="margin-top:26px">로봇은 스스로 보지 못합니다. <b>지금 어떤 상태인지</b>는 전부 센서 신호로 압니다.
+     이송장치의 핵심 센서 다섯 종 — Presence · Home · Limit · Position · Encoder — 과
+     문·압력 센서까지, 각각 <b>무엇을 어떤 원리로 재고, 그 신호로 무엇을 막는지</b> 봅니다.</div>
+    <div class="wt-note" style="margin-top:40px;max-width:960px"><b>이 강의</b> — Pick 전후 신호 변화, Home 조건,
+     Limit 알람을 직접 발생시키며 "신호가 곧 진실"임을 확인합니다.</div></div>
+   <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
+    <svg viewBox="140 156 348 214">
+     <circle cx="260" cy="230" r="30" fill="#16283a" stroke="#4f8bb5" stroke-width="3"/><rect class="fx-arm" x="260" y="220" width="120" height="20" rx="8"/>
+     <ellipse class="fx-w" cx="380" cy="230" rx="26" ry="7"/>
+     <circle cx="380" cy="200" r="9" fill="#35e0c8"/><text class="fx-sub" x="396" y="196">Presence</text>
+     <circle cx="260" cy="192" r="9" fill="#35e0c8"/><text class="fx-sub" x="200" y="182">Home</text>
+     <circle cx="200" cy="330" r="9" fill="#ffb340"/><text class="fx-sub" x="150" y="356">Limit</text>
+     <circle cx="330" cy="300" r="9" fill="#9b8cff"/><text class="fx-sub" x="346" y="306">Encoder</text></svg></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-02" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">00 · 목표</div><h2 class="h-title">이 강의가 끝나면</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>센서마다 한 문장</b> 다섯 센서가 각각 무엇을 재고, 신호가 언제 바뀌는지 말할 수 있다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>원리</b> 광 센서(투과·반사·포토인터럽터), 흡착 압력, 엔코더 A/B 펄스가 어떻게 "예/아니오"와 "숫자"를 만드는지 안다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>신호 → 허가/거부</b> 인터록이 센서 신호의 AND 조건이라는 것을 알고, 알람 코드를 보고 어느 센서가 막았는지 찾는다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card ac"><h3>실습으로 확인하는 것</h3>
+     <p><b>①</b> Pick 전후 <b>Wafer Presence</b> OFF → ON<br/>
+      <b>②</b> Extend 하면 <b>Home</b> 이 꺼지고, 접으면 다시 켜진다<br/>
+      <b>③</b> Z 를 범위 밖으로 보내 <b>ALM-401</b> (Limit)<br/>
+      <b>④</b> 훈련 4개 — 신호 만들기 · 한계 신호 3종 · 무알람 순회 · <b>신호 예측</b></p></div>
+    <div class="wt-note"><b>한 줄 요약</b> — 장비에는 눈이 없다. 판단은 전부 <b>신호</b>로 한다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-03" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">01 · 왜 센서</div><h2 class="h-title">센서가 없으면 자동화도 없다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center">
+    <div class="wt-card"><h3>판단의 근거</h3><p>모든 다음 동작의 허가/거부는 센서 신호에서 나옵니다. 인터록도, 알람도,
+     자동 시퀀스의 "기다렸다가 다음으로"(WAIT)도 전부 센서 하나하나로 판정합니다. 센서 = 장비의 감각기관.</p></div>
+    <div class="wt-card v"><h3>두 종류</h3><p><b>디지털(예/아니오)</b> — Presence · Home · Limit · Door. 문턱을 넘으면 ON.<br/>
+     <b>아날로그(숫자)</b> — 압력 · 위치 · 엔코더. 값 자체를 읽고, 제어기가 기준과 비교해 판정합니다.</p></div></div></div>
+   <div class="wt-col" style="flex:none;width:100%;max-width:1240px;margin:0 auto"><table class="wt-tbl"><tr><th>센서</th><th>무엇을 아나</th><th>신호</th></tr>
+    <tr><td><b>Wafer Presence</b></td><td>손/스테이션에 웨이퍼가 있는가</td><td>예/아니오</td></tr>
+    <tr><td><b>Home</b></td><td>원점 복귀를 마쳤고 팔이 들어와 있는가</td><td>예/아니오</td></tr>
+    <tr><td><b>Limit</b></td><td>축이 이동 한계에 닿았는가</td><td>예/아니오</td></tr>
+    <tr><td><b>Position</b></td><td>지금 θ·R·Z 가 목표와 맞는가</td><td>숫자 → 판정</td></tr>
+    <tr><td><b class="v">Encoder</b></td><td>모터가 실제로 얼마나 돌았는가</td><td>펄스 수(숫자)</td></tr></table></div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="06-04" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">02 · 센서 모니터 탭</div><h2 class="h-title">시뮬레이터가 보여 주는 신호 — 전부</h2>
+  <div class="wt-body" style="flex-direction:column;gap:16px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:21px">
+    <tr><th>신호</th><th>ON(초록)이 뜻하는 것</th><th>이렇게 하면 바뀐다</th></tr>
+    <tr><td><b>Wafer Presence</b></td><td>로봇 손(End Effector)에 웨이퍼가 있다</td><td>Pick → ON · Place → OFF</td></tr>
+    <tr><td><b>Home Sensor</b></td><td>원점 복귀 완료 <b>그리고</b> 팔 수축</td><td>Extend → OFF · Retract → ON</td></tr>
+    <tr><td><b>Limit Sensor (Z)</b></td><td>Z 가 1~5 범위 안</td><td>범위 밖으로 보내면 ALM-401</td></tr>
+    <tr><td><b>Position Sensor</b></td><td>멈춰 있고 θ 편차 3° 이내 — "정위치"</td><td>이동 중 · 편차 3° 초과면 OFF</td></tr>
+    <tr><td><b class="v">Encoder (θ)</b></td><td>실제 회전 각도를 숫자로 표시</td><td>회전할 때마다 값이 바뀐다</td></tr>
+    <tr><td><b>Door · Slot Mapping</b></td><td>Load Port 문 열림 · 매핑 완료</td><td>Load Port 탭에서 조작</td></tr>
+    <tr><td><b class="v">Pressure · Vacuum</b></td><td>Load Lock 700 Torr 미만 · 1 Torr 미만</td><td>Load Lock 탭(10강)</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>보는 법</b> — 조작하기 전에 이 탭을 열어 두고, 버튼 하나 누를 때마다 <b>어느 줄이 바뀌었는지</b> 보세요.
+    Collision · PM 상태 줄도 있지만 이 강의에서는 위의 신호가 주인공입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="06-05" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">03 · 원리 — 빛</div><h2 class="h-title">광 센서 세 가지 — 빛이 막히면 신호가 바뀐다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.25"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 520">
+     <text class="fx-lbl" x="20" y="40">① 투과형 (Through-beam)</text>
+     <rect class="fx-box" x="40" y="70" width="70" height="60" rx="4"/><text class="fx-sub" x="48" y="152">송광부</text>
+     <rect class="fx-box" x="360" y="70" width="70" height="60" rx="4"/><text class="fx-sub" x="368" y="152">수광부</text>
+     <path class="fx-ln" d="M110 100 H355" marker-end="url(#mA)" stroke-dasharray="10 6"/>
+     <ellipse class="fx-w" cx="235" cy="100" rx="12" ry="40" opacity=".9"/><text class="fx-sub" x="190" y="165">웨이퍼가 빛을 막음</text>
+     <text class="fx-cap" x="470" y="95">빛이 끊기면 → "있음"</text>
+     <text class="fx-sub" x="470" y="125">가장 확실 · 두 부품을 마주 보게 설치</text>
+     <text class="fx-sub" x="470" y="150">예) FOUP 슬롯 매핑 (7강)</text>
+     <text class="fx-lbl" x="20" y="230">② 반사형 (Diffuse)</text>
+     <rect class="fx-box" x="40" y="260" width="70" height="60" rx="4"/><text class="fx-sub" x="30" y="342">송·수광 한 몸</text>
+     <path class="fx-ln" d="M110 280 L300 280" marker-end="url(#mA)" stroke-dasharray="10 6"/>
+     <path class="fx-ln" d="M300 300 L115 300" marker-end="url(#mA)" stroke-dasharray="10 6"/>
+     <rect x="305" y="265" width="14" height="50" fill="#c9dced"/><text class="fx-sub" x="290" y="342">웨이퍼</text>
+     <text class="fx-cap" x="470" y="285">반사광이 돌아오면 → "있음"</text>
+     <text class="fx-sub" x="470" y="315">한쪽에만 설치 · 표면·색에 영향 받음</text>
+     <text class="fx-sub" x="470" y="340">예) 스테이션 위 웨이퍼 유무</text>
+     <text class="fx-lbl" x="20" y="410">③ 포토인터럽터 (ㄷ자형)</text>
+     <path d="M40 440 h120 v70 h-30 v-45 h-60 v45 h-30 z" class="fx-box"/>
+     <rect x="92" y="430" width="16" height="50" fill="#ffb340"/><text class="fx-sub" x="175" y="470">움직이는 축에 붙은 차광판(도그)</text>
+     <text class="fx-cap" x="470" y="455">틈을 가리면 → ON</text>
+     <text class="fx-sub" x="470" y="485">작고 반복 정확 · 예) Home · Limit</text>
+    </svg></div></div>
+   <div class="wt-col" style="flex:.75">
+    <div class="wt-card ac"><h3>공통 원리</h3><p>빛을 쏘고 받는 양이 <b>문턱</b>을 넘느냐로 예/아니오를 냅니다. 그래서 출력은 늘 두 값뿐입니다.</p></div>
+    <div class="wt-card warn"><h3>약점도 같다</h3><p>렌즈 오염, 정렬 틀어짐, 투명·경면 웨이퍼는 빛을 제대로 막거나 반사하지 못해 <b>있는데 없다</b>고 말합니다.</p></div>
+    <div class="wt-note"><b>현장 습관</b> — 센서가 이상하면 먼저 렌즈를 닦고 광축을 봅니다. 고장보다 오염이 훨씬 흔합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-06" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">03 ½ · 쉽게 말하면</div><h2 class="h-title">생활 속에 같은 센서가 있다 — 원리는 하나씩만 기억하면 된다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.45">
+    <table class="wt-tbl wt-tight"><tr><th style="width:21%">센서</th><th style="width:44%">생활 속 같은 것</th><th>한 줄 원리</th></tr>
+     <tr><td><b>Presence</b><br/><span style="font-size:19px;color:var(--t4)">진공 흡착</span></td><td>빨대로 종이를 들어 올리기 — 종이가 빨대 끝을 막으면 <b>빨기가 뻑뻑</b>해진다</td><td>패드가 막히면 배관 압력이 떨어진다 → 압력 스위치 ON</td></tr>
+     <tr><td><b>투과형 광</b><br/><span style="font-size:19px;color:var(--t4)">매핑</span></td><td>엘리베이터 문 안전 센서 · 매장 입구의 손님 카운터</td><td>마주 보는 빛이 <b>끊기면</b> "있음"</td></tr>
+     <tr><td><b>반사형 광</b></td><td>자동 수도꼭지 · 자동문</td><td>쏜 빛이 <b>되돌아오면</b> "있음"</td></tr>
+     <tr><td><b>포토인터럽터</b><br/><span style="font-size:19px;color:var(--t4)">Home · Limit</span></td><td>프린터를 켤 때 헤드가 끝까지 가서 '툭' 멈추는 것 · 복사기 용지 센서</td><td>ㄷ자 틈을 <b>차광판이 가리면</b> ON</td></tr>
+     <tr><td><b>Home</b></td><td>자(ruler)의 <b>0 눈금</b> — 0 을 맞춰야 뒤의 숫자가 뜻이 있다</td><td>원점 복귀 완료 <b>그리고</b> 팔 수축</td></tr>
+     <tr><td><b>Limit</b></td><td>서랍 끝 스토퍼 · 꼭대기 층에서 ▲ 를 눌러도 안 가는 엘리베이터</td><td>범위 끝 → 거부(소프트) → 스위치(하드) → 기구 스토퍼</td></tr>
+     <tr><td><b>Encoder</b></td><td>자전거 속도계 자석(바퀴 한 바퀴 = 펄스 하나) · 마우스 휠의 '딸깍'</td><td>펄스 수 × 한 펄스 각도 = <b>돌아간 양</b></td></tr>
+     <tr><td><b>Position</b><br/><span style="font-size:19px;color:var(--t4)">폐루프</span></td><td>내비게이션 — 목표와 현재 위치의 <b>차이</b>로 다음 안내를 정한다</td><td>목표 − 실제 → 모터 명령</td></tr></table></div>
+   <div class="wt-col" style="flex:.7">
+    <div class="wt-card ac"><h3>두 종류뿐</h3><p><b>예/아니오</b>(Presence · Home · Limit · Door)는 문턱을 넘느냐로 정하고, <b>숫자</b>(압력 · 엔코더 · 위치)는 값을 재서 기준과 비교합니다.</p></div>
+    <div class="wt-card"><h3>이렇게 외우세요</h3><p>"<b>빛이 막히면 있음</b>, <b>0 을 잡아야 Home</b>, <b>끝에서 멈추면 Limit</b>, <b>딸깍을 세면 각도</b>." 네 문장이면 6강의 센서 원리가 끝납니다.</p></div>
+    <div class="wt-note"><b>다음 두 장</b>은 손으로 만져 보는 체험입니다. 빛을 막아 보고, 원판을 돌려 보세요.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-07" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">체험 ① · 광 센서</div><h2 class="h-title">빛을 막아 보자 — "문턱"이 예/아니오를 만든다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.25"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 460" id="xb-svg">
+     <text class="fx-lbl" x="24" y="44">투과형 — 송광부가 쏜 빛을 수광부가 얼마나 받는가</text>
+     <rect class="fx-box" x="60" y="120" width="90" height="80" rx="4"/><text class="fx-sub" x="64" y="226">송광부</text>
+     <rect class="fx-box" x="690" y="120" width="90" height="80" rx="4"/><text class="fx-sub" x="694" y="226">수광부</text>
+     <rect id="xb-dirt" x="690" y="120" width="90" height="80" rx="4" fill="#8a7566" opacity="0"/>
+     <path id="xb-beam" d="M150 160 H685" stroke="#35e0c8" stroke-width="6" stroke-dasharray="14 10" fill="none"/>
+     <path id="xb-beam2" d="M150 160 H685" stroke="#ff5e5e" stroke-width="6" fill="none" opacity="0"/>
+     <g id="xb-wafer" opacity="0"><ellipse class="fx-w" cx="420" cy="160" rx="16" ry="70"/><text class="fx-sub" x="372" y="258">웨이퍼</text></g>
+     <text class="fx-lbl" x="24" y="330">수광량</text>
+     <rect x="130" y="306" width="560" height="34" fill="#0e1d29" stroke="#294357"/>
+     <rect id="xb-bar" x="130" y="306" width="560" height="34" fill="#35e0c8"/>
+     <line id="xb-thr" x1="354" y1="292" x2="354" y2="354" stroke="#ffb340" stroke-width="4"/>
+     <text class="fx-sub" x="300" y="384" fill="#ffb340">문턱 40 %</text>
+     <text id="xb-pct" class="fx-cap" x="710" y="331">100 %</text>
+     <text class="fx-sub" x="24" y="436">문턱 아래로 떨어지면 "막혔다 = 있음", 위면 "비었다 = 없음"</text>
+    </svg></div></div>
+   <div class="wt-col" style="flex:.75">
+    <div class="wt-ctl"><button class="wt-btn" id="xb-tog">웨이퍼 넣기</button><button class="wt-btn" id="xb-clean" style="display:none">렌즈 닦기</button></div>
+    <label style="font-size:23px;color:var(--t3)">렌즈 오염 <b id="xb-dv" style="color:var(--t1);font-family:var(--mono)">0 %</b></label>
+    <input class="wt-range" type="range" id="xb-dirtr" min="0" max="100" value="0" step="5"/>
+    <div class="wt-read" style="margin-top:14px">
+     <span>실제 웨이퍼</span><b id="xb-real" class="no">없음</b>
+     <span>센서 판정</span><b id="xb-judge" class="no">없음</b>
+     <span>맞았나</span><b id="xb-ok" class="ok">일치</b></div>
+    <div class="wt-note warn" id="xb-note" style="display:none"><b>거짓말</b> — 웨이퍼가 없는데 "있음". 렌즈 오염으로 수광량이 문턱 아래로 내려가 <b>막힌 것처럼</b> 보입니다. 14장의 "센서가 거짓말할 때"가 이것입니다.</div>
+    <div class="wt-note" id="xb-tip"><b>해 보기</b> — ① 웨이퍼를 넣고 빼며 막대를 보세요. ② 웨이퍼를 뺀 채 오염을 70 % 넘게 올려 보세요.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-08" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">04 · Presence</div><h2 class="h-title">Wafer Presence — 집었나, 놓았나</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-fig" style="margin-top:0;flex:none;height:270px">
+     <svg viewBox="50 44 438 150">
+      <g transform="translate(0,40)"><text class="fx-sub" x="60" y="30">Pick 전</text>
+       <rect class="fx-arm" x="60" y="80" width="100" height="18" rx="6"/><circle cx="160" cy="60" r="8" fill="#2a3b2a" stroke="#3a5a3a"/><text class="fx-sub" x="60" y="140">OFF</text>
+       <path class="fx-ln" d="M210 89 H300" marker-end="url(#mA)"/><text class="fx-sub" x="228" y="78">Pick</text>
+       <text class="fx-sub" x="360" y="30">Pick 후</text>
+       <rect class="fx-arm" x="360" y="80" width="100" height="18" rx="6"/><ellipse class="fx-w" cx="460" cy="82" rx="18" ry="5"/>
+       <circle cx="460" cy="58" r="8" fill="#35e0c8"/><text class="fx-cap" x="360" y="140" style="font-size:16px">ON</text></g></svg></div>
+    <div class="wt-num" style="margin-top:22px"><i>1</i><div><b>성공 판정의 근거</b> Pick 하면 OFF→ON, Place 하면 ON→OFF.</div></div>
+    <div class="wt-num warn"><i>2</i><div><b>불일치는 알람</b> Place 명령인데 여전히 ON, Pick 인데 OFF 면 인터록/알람으로 이어집니다.</div></div></div>
+   <div class="wt-col">
+    <table class="wt-tbl" style="font-size:21px"><tr><th>감지 방식</th><th>원리</th><th>특징</th></tr>
+     <tr><td><b>진공 흡착</b></td><td>손의 흡착 패드가 웨이퍼로 막히면 배관 압력이 떨어진다 → 압력 스위치 ON</td><td>잡는 힘과 감지를 한 번에 · 대기 로봇에 흔함</td></tr>
+     <tr><td><b>광학</b></td><td>손 끝 광 센서가 웨이퍼를 본다</td><td>진공이 없는 곳에서도 · 오염에 약함</td></tr>
+     <tr><td><b class="v">정전용량</b></td><td>웨이퍼가 다가오면 전극 용량이 변한다</td><td>접촉 없이 · 투명 기판도 감지</td></tr></table>
+    <div class="wt-note"><b>어디에나 있다</b> — 로봇 손뿐 아니라 <b>Pre-aligner</b>, <b>Load Lock · 챔버</b> 각 위치에도
+     유무 센서가 있어 "지금 웨이퍼가 어디 있나"를 장비가 늘 압니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-09" data-level="standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">05 · 타이밍</div><h2 class="h-title">Pick 한 번 — 신호는 이 순서로 바뀐다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.35"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 1000 470">
+     <g font-family="var(--mono)">
+      <text class="fx-sub" x="10" y="40">명령</text>
+      <text class="fx-sub" x="190" y="40">Extend</text><text class="fx-sub" x="420" y="40">Pick (살짝 떠올림)</text><text class="fx-sub" x="690" y="40">Retract</text>
+      <line x1="170" y1="55" x2="170" y2="450" stroke="#294357" stroke-dasharray="4 6"/>
+      <line x1="400" y1="55" x2="400" y2="450" stroke="#294357" stroke-dasharray="4 6"/>
+      <line x1="670" y1="55" x2="670" y2="450" stroke="#294357" stroke-dasharray="4 6"/>
+      <line x1="900" y1="55" x2="900" y2="450" stroke="#294357" stroke-dasharray="4 6"/>
+      <text class="fx-lbl" x="10" y="115">Home</text>
+      <path d="M110 90 H200 L230 140 H700 L730 90 H990" fill="none" stroke="#35e0c8" stroke-width="3"/>
+      <text class="fx-sub" x="240" y="165">팔이 나가면 OFF</text>
+      <text class="fx-lbl" x="10" y="225">팔 위치 R</text>
+      <path d="M110 250 H170 L240 200 H670 L740 250 H990" fill="none" stroke="#9b8cff" stroke-width="3"/>
+      <text class="fx-lbl" x="10" y="325">Presence</text>
+      <path d="M110 330 H440 L460 290 H990" fill="none" stroke="#35e0c8" stroke-width="3"/>
+      <text class="fx-sub" x="470" y="280">웨이퍼가 손에 얹히는 순간 ON</text>
+      <text class="fx-lbl" x="10" y="420">Position</text>
+      <path d="M110 400 H170 L180 440 H240 L250 400 H670 L680 440 H740 L750 400 H990" fill="none" stroke="#ffb340" stroke-width="3"/>
+      <text class="fx-sub" x="180" y="462">이동 중 OFF</text><text class="fx-sub" x="680" y="462">이동 중 OFF</text>
+     </g></svg></div>
+    <div class="wt-figc">가로축 = 시간 · 위 = ON · 아래 = OFF</div></div>
+   <div class="wt-col" style="flex:.65">
+    <div class="wt-card ac"><h3>읽는 법</h3><p>명령 하나에 신호 여러 개가 <b>정해진 순서</b>로 움직입니다. 순서가 어긋나면 그 자리가 고장 지점입니다.</p></div>
+    <div class="wt-card warn"><h3>Pick 했는데 Presence 가 OFF 그대로면</h3><p>웨이퍼 없는 칸을 겨냥했거나(4강 — 빈 칸), 센서·흡착 이상입니다.
+     로봇은 멀쩡히 움직였는데 <b>결과가 없는</b> 상태입니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-10" data-level="standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">06 · Presence 가 막는 것</div><h2 class="h-title">유무 센서가 거부하는 동작 — 5xx 계통</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl"><tr><th>코드</th><th>언제</th><th>센서가 본 것</th></tr>
+    <tr><td><b>ALM-203</b></td><td>팔을 뻗지 않고 Pick/Place</td><td>손이 스테이션 안에 없다</td></tr>
+    <tr><td><b>ALM-501</b></td><td>이미 들고 있는데 또 Pick</td><td>손 Presence 가 이미 ON</td></tr>
+    <tr><td><b>ALM-502</b></td><td>빈 곳에서 Pick</td><td>그 위치 Presence 가 OFF</td></tr>
+    <tr><td><b>ALM-503</b></td><td>웨이퍼가 있는데 Pick 이 완료되지 않음</td><td>손 Presence 가 ON 되지 않음 — 센서·흡착 이상</td></tr>
+    <tr><td><b>ALM-504</b></td><td>빈손으로 Place</td><td>손 Presence 가 OFF</td></tr>
+    <tr><td><b>ALM-505</b></td><td>놓을 곳에 이미 있음 (Double Place)</td><td>대상 위치 Presence 가 ON</td></tr>
+    <tr><td><b>ALM-506</b></td><td>이송 중 웨이퍼가 사라짐 (Wafer Lost)</td><td>이동 중 손 Presence 가 ON→OFF</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>ALM-506 이송 중 낙하</b>가 가장 무섭습니다. 흡착이 약하면 회전하다 웨이퍼를 떨어뜨리고,
+    장비는 그 순간 Presence 가 꺼지는 것으로만 압니다. 14강에서 이 고장을 직접 진단합니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="06-11" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">07 · Home</div><h2 class="h-title">Home 센서 — 기준을 잡았다는 증거</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <table class="wt-tbl"><tr><th>Home 실행했나</th><th>팔</th><th>Home Sensor</th></tr>
+     <tr><td>안 함 (Initialize 만)</td><td>—</td><td>OFF</td></tr>
+     <tr><td>함</td><td>수축 (R = 0)</td><td><b>ON</b></td></tr>
+     <tr><td>함</td><td>전진 (Extend)</td><td>OFF — "전진중"</td></tr>
+     <tr><td>함</td><td>수축한 채 회전 · Z 이동</td><td><b>ON 유지</b></td></tr></table>
+    <div class="wt-note"><b>정확한 조건</b> — Home 센서는 <b>원점 복귀를 마쳤고 그리고 팔이 들어와 있을 때</b>만 ON 입니다.
+     그래서 램프 하나가 두 가지를 동시에 증명합니다(4강).</div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>좌표계의 원점</h3><p>Home ON 은 "지금 기준 위치를 안다"는 증거. 이게 있어야 θ·R·Z 숫자가 실제 위치를 뜻합니다(3강 "Home 이 기준점"을 신호로 확인하는 셈).</p></div>
+    <div class="wt-card warn"><h3>없으면</h3><p>Home 미확립 상태의 축 이동은 거부됩니다 — <b>ALM-102</b>. Initialize 도 안 했으면 <b>ALM-101</b>.</p></div>
+    <div class="wt-card v"><h3>왜 매번 Home 을 하나</h3><p>다음 장의 <b>증분형 엔코더</b>는 전원이 꺼지면 위치를 잊습니다. 켤 때마다 원점에서 다시 세어야 합니다.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-12" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">08 · Limit</div><h2 class="h-title">Limit — 여기서 멈추라는 신호</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.1"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 800 460">
+     <rect x="300" y="30" width="60" height="400" class="fx-panel"/>
+     <text class="fx-sub" x="372" y="24">Z 축</text>
+     <g font-family="var(--mono)">
+      <line x1="280" y1="80" x2="380" y2="80" stroke="#35e0c8" stroke-width="3" stroke-dasharray="8 6"/>
+      <line x1="280" y1="380" x2="380" y2="380" stroke="#35e0c8" stroke-width="3" stroke-dasharray="8 6"/>
+      <text class="fx-cap" x="395" y="86">① 소프트 리밋 — Z1 · Z5</text>
+      <text class="fx-sub" x="395" y="112">제어기 숫자 범위. 넘기려 하면 ALM-401</text>
+      <rect x="270" y="52" width="120" height="14" fill="#ffb340"/><rect x="270" y="394" width="120" height="14" fill="#ffb340"/>
+      <text class="fx-cap" x="405" y="400" style="fill:#ffb340">② 하드 리밋 — Limit 센서</text>
+      <text class="fx-sub" x="405" y="426">소프트가 뚫렸을 때 물리적으로 감지</text>
+      <rect x="260" y="30" width="140" height="10" fill="#ff5e5e"/><rect x="260" y="420" width="140" height="10" fill="#ff5e5e"/>
+      <text class="fx-cap" x="20" y="36" style="fill:#ff5e5e">③ 기구 스토퍼</text>
+      <text class="fx-sub" x="20" y="60">마지막 벽 — 부딪혀서 멈춘다</text>
+      <rect x="310" y="200" width="40" height="40" rx="4" fill="#2c4b66" stroke="#4a7ea6" stroke-width="2.5"/>
+      <text class="fx-sub" x="130" y="226">지금 위치</text><path class="fx-ln" d="M220 220 H300" marker-end="url(#mA)"/>
+     </g></svg></div></div>
+   <div class="wt-col" style="flex:.9">
+    <div class="wt-num warn"><i>!</i><div><b>ALM-401 이 뜨는 조건</b> Z 는 1~5 만 갈 수 있습니다. <b>Z1 에서 ▲ Z Up</b>, 또는 <b>Z5 에서 ▼ Z Down</b> 을 누르면 거부됩니다.</div></div>
+    <div class="wt-card"><h3>보호의 세 겹</h3><p>소프트 리밋이 먼저 막고, 뚫리면 Limit 센서(하드)가, 그마저 넘으면 기구가 막습니다(3강 리밋 세 겹). 시뮬레이터의 Limit 줄은 첫 겹을 보여 줍니다.</p></div>
+    <div class="wt-note warn"><b>실습</b> — Z 를 범위 밖으로 보내 Limit 알람을 <b>고의로</b> 발생시켜 보세요.
+     조건과 로그 메시지를 기억하게 됩니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-13" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">09 · Encoder 원리</div><h2 class="h-title">Encoder — 구멍 난 원판이 각도를 센다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.2"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 480">
+     <circle cx="170" cy="200" r="130" fill="#0e1d29" stroke="#4a7ea6" stroke-width="3"/>
+     <g stroke="#9b8cff" stroke-width="10">
+      <line x1="170" y1="80" x2="170" y2="100"/><line x1="255" y1="115" x2="241" y2="129"/><line x1="290" y1="200" x2="270" y2="200"/>
+      <line x1="255" y1="285" x2="241" y2="271"/><line x1="170" y1="320" x2="170" y2="300"/><line x1="85" y1="285" x2="99" y2="271"/>
+      <line x1="50" y1="200" x2="70" y2="200"/><line x1="85" y1="115" x2="99" y2="129"/></g>
+     <circle cx="170" cy="200" r="16" fill="#2c4b66"/><text class="fx-sub" x="100" y="370">슬릿 원판 (모터 축에)</text>
+     <rect x="150" y="60" width="40" height="18" fill="#ffb340"/><text class="fx-sub" x="200" y="50">광 센서 A · B</text>
+     <g font-family="var(--mono)">
+      <text class="fx-lbl" x="380" y="120">A 상</text>
+      <path d="M440 130 h40 v-40 h40 v40 h40 v-40 h40 v40 h40 v-40 h40 v40 h40 v-40 h40" fill="none" stroke="#35e0c8" stroke-width="3"/>
+      <text class="fx-lbl" x="380" y="210">B 상</text>
+      <path d="M440 220 h60 v-40 h40 v40 h40 v-40 h40 v40 h40 v-40 h40 v40 h40 v-40 h20" fill="none" stroke="#9b8cff" stroke-width="3"/>
+      <text class="fx-sub" x="440" y="260">B 가 A 보다 1/4 늦다 → 정방향</text>
+      <text class="fx-sub" x="440" y="288">B 가 A 보다 1/4 빠르다 → 역방향</text>
+      <text class="fx-cap" x="380" y="350">펄스 수 × 한 펄스의 각도 = 회전량</text>
+      <text class="fx-sub" x="380" y="385">예) 한 바퀴 10,000 펄스 → 1 펄스 = 0.036°</text>
+      <text class="fx-sub" x="380" y="413">    90° 회전 = 2,500 펄스</text></g></svg></div></div>
+   <div class="wt-col" style="flex:.8">
+    <div class="wt-card v"><h3>증분형 (Incremental)</h3><p>펄스를 <b>세기만</b> 합니다. 전원이 꺼지면 숫자를 잃으므로 켤 때마다 Home 에서 0 을 다시 잡아야 합니다.</p></div>
+    <div class="wt-card"><h3>절대형 (Absolute)</h3><p>원판 무늬가 위치마다 다른 코드라 켜자마자 지금 각도를 압니다. 비싸지만 Home 을 덜 합니다.</p></div>
+    <div class="wt-note v"><b>핵심</b> — 엔코더는 <b>명령이 아니라 실제</b>를 읽습니다. 그래서 반복도(매번 같은 자리)를 보장합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-14" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">체험 ② · 엔코더</div><h2 class="h-title">원판을 돌려 보자 — 딸깍을 세면 각도가 된다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.2"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 460">
+     <g id="xe-disk" transform="rotate(0 200 230)">
+      <circle cx="200" cy="230" r="150" fill="#0e1d29" stroke="#4a7ea6" stroke-width="3"/>
+      <g stroke="#9b8cff" stroke-width="14" stroke-linecap="butt">
+       <line x1="200" y1="90" x2="200" y2="120"/><line x1="299" y1="131" x2="278" y2="152"/><line x1="340" y1="230" x2="310" y2="230"/>
+       <line x1="299" y1="329" x2="278" y2="308"/><line x1="200" y1="370" x2="200" y2="340"/><line x1="101" y1="329" x2="122" y2="308"/>
+       <line x1="60" y1="230" x2="90" y2="230"/><line x1="101" y1="131" x2="122" y2="152"/></g>
+      <circle cx="200" cy="230" r="18" fill="#2c4b66"/>
+      <path d="M200 230 L200 100" stroke="#ffb340" stroke-width="3" opacity=".7"/></g>
+     <rect x="178" y="56" width="44" height="22" fill="#ffb340"/><text class="fx-sub" x="112" y="74">센서 A</text>
+     <rect x="178" y="56" width="44" height="22" fill="#35e0c8" transform="rotate(11.25 200 230)"/><text class="fx-sub" x="300" y="112">센서 B (1/4 슬릿 뒤)</text>
+     <text class="fx-sub" x="110" y="420">슬릿 8개 원판 — 45° 마다 펄스 하나</text>
+     <text class="fx-lbl" x="440" y="70">A 상</text><path id="xe-a" d="M510 80 h300" fill="none" stroke="#35e0c8" stroke-width="4"/>
+     <text class="fx-lbl" x="440" y="150">B 상</text><path id="xe-b" d="M510 160 h300" fill="none" stroke="#9b8cff" stroke-width="4"/>
+     <text id="xe-dir" class="fx-cap" x="440" y="220">멈춤</text>
+     <text class="fx-sub" x="440" y="280">한 바퀴 10,000 펄스 원판이라면</text>
+     <text id="xe-big" class="fx-cap" x="440" y="318" style="font-size:30px">0 펄스</text>
+     <text class="fx-sub" x="440" y="372">펄스 수 × 0.036° = 각도</text>
+     <text class="fx-sub" x="440" y="400">엔코더는 '명령'이 아니라 '실제 돌아간 양'을 센다</text>
+    </svg></div></div>
+   <div class="wt-col" style="flex:.8">
+    <label style="font-size:23px;color:var(--t3)">모터를 돌려 보세요 — 실제 각도 <b id="xe-ang" style="color:var(--t1);font-family:var(--mono)">0°</b></label>
+    <input class="wt-range" type="range" id="xe-r" min="0" max="360" value="0" step="1"/>
+    <div class="wt-ctl"><button class="wt-btn on" id="xe-inc">증분형</button><button class="wt-btn v" id="xe-abs">절대형</button><button class="wt-btn" id="xe-pwr">전원 껐다 켜기</button><button class="wt-btn" id="xe-home" style="display:none">Home (0 잡기)</button></div>
+    <div class="wt-read">
+     <span>제어기가 아는 각도</span><b id="xe-know" class="ok">0°</b>
+     <span>세어 둔 펄스 (8슬릿)</span><b id="xe-cnt">0</b>
+     <span>방향</span><b id="xe-d2" class="no">—</b></div>
+    <div class="wt-note" id="xe-note"><b>해 보기</b> — 슬라이더를 오른쪽·왼쪽으로 움직여 A·B 순서가 바뀌는 것을 보고, <b>전원을 껐다 켜</b> 보세요. 증분형은 숫자를 잃고(Home 필요), 절대형은 그대로입니다 — 그래서 로봇은 켤 때마다 Home 을 합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-15" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">10 · Position · 폐루프</div><h2 class="h-title">명령과 실제를 비교한다 — 그래서 정확하다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.2"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 420">
+     <rect class="fx-box" x="30" y="150" width="170" height="90" rx="4"/><text class="fx-lbl" x="55" y="190">제어기</text><text class="fx-sub" x="45" y="220">목표 − 실제</text>
+     <rect class="fx-box" x="330" y="150" width="170" height="90" rx="4"/><text class="fx-lbl" x="370" y="200">모터</text>
+     <rect class="fx-box" x="630" y="150" width="200" height="90" rx="4"/><text class="fx-lbl" x="660" y="190">로봇 축</text><text class="fx-sub" x="655" y="220">θ · R · Z</text>
+     <path class="fx-ln" d="M200 195 H325" marker-end="url(#mA)"/><text class="fx-sub" x="215" y="180">구동 명령</text>
+     <path class="fx-ln" d="M500 195 H625" marker-end="url(#mA)"/>
+     <path class="fx-ln v" d="M730 240 V330 H115 V245" marker-end="url(#mV)"/>
+     <text class="fx-cap v" x="330" y="360">Encoder — 실제 위치를 되돌려 준다</text>
+     <text class="fx-cap" x="30" y="80">목표 θ</text><path class="fx-ln" d="M115 90 V145" marker-end="url(#mA)"/>
+     <rect x="560" y="40" width="300" height="70" rx="4" fill="rgba(255,179,64,.1)" stroke="#ffb340"/>
+     <text class="fx-sub" x="575" y="70">미끄러짐 · 부하 · 백래시</text><text class="fx-sub" x="575" y="96">→ 명령 ≠ 실제</text>
+     <path d="M700 110 V145" stroke="#ffb340" stroke-width="3" marker-end="url(#mW)"/></svg></div></div>
+   <div class="wt-col" style="flex:.8">
+    <div class="wt-card"><h3>실시간 좌표 · 도착 판정</h3><p>Position 은 θ·R·Z 현재값을 상태바에 계속 띄우고, 목표와 맞으면 "도착". 자동 시퀀스의 <b>WAIT 조건</b>으로도 쓰입니다.</p></div>
+    <div class="wt-num warn"><i>!</i><div><b>ALM-405 Position Interlock</b> θ 가 목표에서 <b>3° 넘게</b> 어긋난 채 Extend 하면 거부됩니다. 센서 탭에는 "편차 N°"로 뜹니다.<br/><span style="font-size:21px;color:var(--t3)">6강의 로봇은 정상이라 편차가 나지 않습니다 — 이 알람은 <b>14강 고장 진단</b>에서 엔코더 편차를 주입해 직접 봅니다. 여기서는 "멈추면 정위치, 움직이면 이동중"만 확인하세요.</span></div></div>
+    <div class="wt-note"><b>습관</b> — 명령 후 숫자가 <b>안 변하면</b> 정지·인터록을, 변했는데 <b>목표와 다르면</b> 엔코더·티칭을 의심합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-16" data-level="standard pro" data-here="port">
+ <div class="wt-pad"><div class="wt-eye">11 · 인터록 = 센서의 AND</div><h2 class="h-title">FOUP 으로 Extend — 네 가지 조건이 모두 "예"여야 한다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.15"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 420">
+     <g font-family="var(--mono)">
+      <rect class="fx-box" x="20" y="40" width="280" height="64" rx="4"/><text class="fx-lbl" x="40" y="80">Docking 완료</text>
+      <rect class="fx-box" x="20" y="140" width="280" height="64" rx="4"/><text class="fx-lbl" x="40" y="180">Door 센서 OPEN</text>
+      <rect class="fx-box" x="20" y="240" width="280" height="64" rx="4"/><text class="fx-lbl" x="40" y="280">Home 완료 (Init·Home)</text>
+      <rect class="fx-box" x="20" y="340" width="280" height="64" rx="4"/><text class="fx-lbl" x="40" y="380">Position θ 편차 ≤ 3°</text>
+      <path class="fx-ln" d="M300 72 H420 V200" /><path class="fx-ln" d="M300 172 H420"/><path class="fx-ln" d="M300 272 H420 V230"/><path class="fx-ln" d="M300 372 H420 V230"/>
+      <path d="M420 160 h70 a60 60 0 0 1 0 120 h-70 z" fill="#132433" stroke="#35e0c8" stroke-width="3"/><text class="fx-lbl" x="445" y="228">AND</text>
+      <path class="fx-ln" d="M550 220 H650" marker-end="url(#mA)"/>
+      <rect x="655" y="185" width="220" height="70" rx="4" fill="rgba(53,224,200,.12)" stroke="#35e0c8" stroke-width="2.5"/><text class="fx-cap" x="680" y="228">Extend 허가</text></g></svg></div></div>
+   <div class="wt-col" style="flex:.85">
+    <table class="wt-tbl" style="font-size:21px"><tr><th>빠진 조건</th><th>코드</th></tr>
+     <tr><td>Docking 안 함</td><td><b>ALM-302</b></td></tr>
+     <tr><td>Door 닫힘</td><td><b>ALM-301</b></td></tr>
+     <tr><td>Init · Home 안 함</td><td><b>ALM-101 · 102</b></td></tr>
+     <tr><td>θ 편차 3° 초과</td><td><b>ALM-405</b></td></tr></table>
+    <div class="wt-note"><b>반대 방향도</b> — 팔이 FOUP 안에 있으면 Door 를 닫을 수 없습니다(<b>ALM-306</b>).
+     Docking 전 Door Open 은 <b>ALM-305</b>. 인터록은 양방향입니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-17" data-level="standard pro" data-here="lock">
+ <div class="wt-pad"><div class="wt-eye">12 · 압력</div><h2 class="h-title">압력 센서 — 진공의 눈</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.2"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 900 380">
+     <g font-family="var(--mono)">
+      <line x1="60" y1="120" x2="860" y2="120" stroke="#3a6b8c" stroke-width="3"/>
+      <text class="fx-sub" x="40" y="160">760</text><text class="fx-sub" x="215" y="160">1</text><text class="fx-sub" x="365" y="160">10⁻³</text><text class="fx-sub" x="545" y="160">10⁻⁶</text><text class="fx-sub" x="760" y="160">10⁻⁹ Torr</text>
+      <text class="fx-sub" x="40" y="100">대기</text><text class="fx-sub" x="760" y="100">초고진공</text>
+      <rect x="60" y="190" width="330" height="40" rx="3" fill="rgba(53,224,200,.18)" stroke="#35e0c8"/><text class="fx-sub" x="70" y="217">피라니·컨벡트론 (열전도)</text>
+      <rect x="60" y="245" width="300" height="40" rx="3" fill="rgba(155,140,255,.18)" stroke="#9b8cff"/><text class="fx-sub" x="70" y="272">정전용량 마노미터 (격막)</text>
+      <rect x="360" y="300" width="480" height="40" rx="3" fill="rgba(255,179,64,.16)" stroke="#ffb340"/><text class="fx-sub" x="370" y="327">이온 게이지 (이온화 전류)</text>
+      <line x1="80" y1="60" x2="80" y2="120" stroke="#35e0c8" stroke-width="2" stroke-dasharray="4 4"/><text class="fx-cap" x="90" y="58">Pressure ON</text><text class="fx-sub" x="90" y="84">700 Torr 미만</text>
+      <line x1="225" y1="30" x2="225" y2="120" stroke="#9b8cff" stroke-width="2" stroke-dasharray="4 4"/><text class="fx-cap v" x="235" y="30">Vacuum ON: 1 Torr 미만</text></g></svg></div>
+    <div class="wt-figc">게이지 하나로 대기부터 초고진공까지 못 잰다 — 구간마다 다른 원리</div></div>
+   <div class="wt-col" style="flex:.8">
+    <div class="wt-card v"><h3>Load Lock · 챔버</h3><p>목표 진공에 도달했는지 판정합니다. <b>밸브 개방 허가</b>의 조건입니다. 대기측 게이트가 닫혀 있으면 <b>ALM-303</b>, 진공측이면 <b>ALM-304</b>.</p></div>
+    <div class="wt-card"><h3>단위</h3><p>Torr 로 표시. 760(대기) ↔ 0.01 이하(진공). 한 자리 내려갈 때마다 10배 — 그래서 로그 눈금으로 봅니다.</p></div>
+    <div class="wt-note v"><b>10강 연결</b> — Pump Down 이 목표 압력에 닿아야만 진공측 밸브가 열립니다. 목표에 못 닿으면 타임아웃 알람(펌프·누설, 14강).</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-18" data-level="pro">
+ <div class="wt-pad"><div class="wt-eye">13 · 신호의 전기적 모습</div><h2 class="h-title">ON 이 안전일까, OFF 가 안전일까</h2>
+  <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 30px;align-content:center">
+    <div class="wt-card"><h3>NO · NC 접점</h3><p><b>NO</b>(평소 열림)는 감지하면 닫히고, <b>NC</b>(평소 닫힘)는 감지하면 열립니다. 같은 센서라도 배선에 따라 "ON 의 뜻"이 반대입니다.</p></div>
+    <div class="wt-card warn"><h3>페일세이프</h3><p>안전 신호(문 닫힘·비상정지)는 <b>선이 끊기면 "위험"으로 읽히게</b> 배선합니다. 단선이 "안전"으로 보이면 사고가 납니다.</p></div>
+    <div class="wt-card v"><h3>채터링 · 디바운스</h3><p>경계에서 신호가 ON/OFF 를 빠르게 튑니다. 제어기는 <b>일정 시간 같은 값</b>이 이어져야 인정합니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>현장 한 줄</b> — "램프가 켜졌다"는 말보다 <b>"그 신호가 무엇을 뜻하도록 배선됐는가"</b>를 먼저 확인합니다. 도면의 NO/NC 표기가 그 답입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="06-19" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">14 · 센서가 거짓말할 때</div><h2 class="h-title">신호와 실물이 다를 때 — 흔한 고장 모드</h2>
+  <div class="wt-body" style="flex-direction:column;gap:18px">
+   <div class="wt-col" style="flex:none;width:100%"><table class="wt-tbl" style="font-size:21px"><tr><th>원인</th><th>증상</th><th>시뮬레이터에서 보이는 모습</th></tr>
+    <tr><td><b>Presence 센서 불량</b></td><td>웨이퍼가 있는데 "없음"</td><td>Pick 이 완료되지 않음 — <b>ALM-503</b></td></tr>
+    <tr><td><b>흡착 불량</b></td><td>집었는데 이동 중 놓침</td><td>회전 중 손 ON→OFF — <b>ALM-506</b></td></tr>
+    <tr><td><b class="v">엔코더 편차</b></td><td>도착했다는데 실제 각도가 다름</td><td>센서 탭 "편차 N°", Extend 거부 — <b>ALM-405</b></td></tr>
+    <tr><td><b>매핑 센서 불일치</b></td><td>빈 칸을 "있음"으로</td><td>Load Port 표에서 신호 ≠ 실제 (7강)</td></tr>
+    <tr><td><b>렌즈 오염 · 광축 틀어짐</b></td><td>간헐적으로 신호가 튐</td><td>—  (현장에서 가장 흔함)</td></tr></table></div>
+   <div class="wt-note warn" style="margin-top:0"><b>진단의 출발</b> — 이상 신호를 먼저 찾고, 로그의 코드와 맞춰 봅니다.
+    신호가 틀렸는지, 실물이 틀렸는지를 가르는 것이 14강 고장 진단의 핵심입니다.</div>
+  </div></div>
+</section>
+
+<section class="slide" data-nid="06-20" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">15 · 흔한 오해</div><h2 class="h-title">"움직였으니 됐다"는 착각</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-card warn"><h3>동작 ≠ 성공</h3><p>팔이 움직여도 웨이퍼를 못 집었을 수 있습니다. 성공은 <b>Presence</b> 가 증명합니다.</p></div>
+    <table class="wt-tbl" style="font-size:21px"><tr><th>센서</th><th>정상</th><th>이상 예</th></tr>
+     <tr><td>Presence</td><td>동작과 일치</td><td>Place 인데 계속 ON</td></tr>
+     <tr><td>Home</td><td>Home 후 수축 상태에서 ON</td><td>Home 했는데 계속 OFF</td></tr>
+     <tr><td>Position</td><td>멈추면 "정위치"</td><td>멈췄는데 "편차 8°"</td></tr>
+     <tr><td>Pressure</td><td>목표 도달</td><td>Timeout</td></tr></table></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>자주 하는 실수</h3><p><b>·</b> 센서 탭을 안 열고 조작한다 → 무엇이 바뀌었는지 모른다<br/>
+     <b>·</b> Home 이 켜졌다고 팔이 제자리인 줄 안다 → 회전 뒤엔 Position 도 본다<br/>
+     <b>·</b> 알람을 Reset 부터 한다 → 원인 신호를 지워 버린다<br/>
+     <b>·</b> "신호 없음"을 "웨이퍼 없음"으로 읽는다 → 센서 불량일 수 있다</p></div>
+    <div class="wt-note"><b>한 줄</b> — 눈을 믿지 말고 신호를 믿어라. 신호가 곧 진실. 단, 신호가 <b>이상하면</b> 센서부터 의심하라.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-21" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">16 · 실습 준비</div><h2 class="h-title">시뮬레이터 화면 지도 — 어디에 무엇이 있나</h2>
+  <div class="wt-lead">6강에서는 <b>센서 모니터</b>와 <b>알람 로그</b> 탭이 주인공입니다.</div>
+  <div class="wt-body">
+   <div class="wt-col">
+    <table class="wt-tbl"><tr><th>탭</th><th>여기서 하는 일</th></tr>
+     <tr><td><b>학습</b></td><td>이번 강의 미션 4개와 "지금 할 일"</td></tr>
+     <tr><td><b>수동조작</b></td><td>Initialize · Home · 회전 · Z · Extend · Retract · Pick · Place</td></tr>
+     <tr><td><b>Load Port</b></td><td>Docking · Door Open · Mapping</td></tr>
+     <tr><td><b>훈련</b></td><td>드릴 3개 — 지시만 뜨는 곳</td></tr>
+     <tr><td><b>센서 모니터</b></td><td>신호 ON/OFF 와 값 — <b>늘 열어 둘 탭</b></td></tr>
+     <tr><td><b>알람 로그</b></td><td>코드와 이유 — 최근 줄부터 위로 읽는다</td></tr></table></div>
+   <div class="wt-col">
+    <div class="wt-card v"><h3>화면 두 개를 함께 보는 요령</h3><p>수동조작 탭에서 버튼을 누르고, 바로 센서 모니터 탭으로 넘어가 <b>바뀐 줄</b>을 찾습니다.
+     화면 맨 아래 <b>상태줄</b>에는 STATION · R · θ · Z · HAND 가 늘 떠 있어 탭을 오가도 위치를 잃지 않습니다.</p></div>
+    <div class="wt-note warn"><b>기억할 것</b> — 훈련 탭에는 움직이는 버튼이 없습니다. 조작은 수동조작 · Load Port 탭에서 합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-22" data-level="intro standard pro" data-here="efem">
+ <div class="wt-pad"><div class="wt-eye">17 · 실습 절차</div><h2 class="h-title">6강에서 직접 해볼 것 — 순서대로</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>Presence ON/OFF</b> Docking · Door Open 후 웨이퍼가 있는 칸(1~3번)에서 Pick. 센서 탭에서 OFF → ON 을 확인하고, Place 로 다시 OFF. <span style="color:var(--t3)">(현장에서는 Mapping 으로 목록을 만든 뒤 집습니다 — 7강. 이 시뮬은 매핑 없이도 집히지만, 습관은 "매핑 먼저".)</span></div></div>
+    <div class="wt-num"><i>2</i><div><b>Home OFF → ON</b> Home 상태에서 Extend 하면 꺼지고, Retract 하면 켜지는 것을 확인.</div></div>
+    <div class="wt-num warn"><i>3</i><div><b>Limit 알람</b> Z1 에서 ▲ Up (또는 Z5 에서 ▼ Down) 으로 <b>ALM-401</b> 발생.</div></div>
+    <div class="wt-num v"><i>4</i><div><b>훈련 탭 4개</b> ① 신호 만들기(조작 14회 · 알람 0) · ② 한계 신호 3종(60초 · 다른 알람 금지) · ③ 무알람 순회(10개 · 조작 여유 6) · ④ 신호 예측(누르기 전에 고른다 · 오답 3회까지).</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>막혔을 때 보는 순서</h3><p><b>1.</b> 신호가 안 바뀐다 → 제어 대상이 <b>EFEM Robot</b> 인지, Initialize · Home 했는지.<br/>
+     <b>2.</b> Pick 이 거부된다 → 팔을 뻗었는지(203), 빈 칸은 아닌지(502), 이미 들고 있지 않은지(501).<br/>
+     <b>3.</b> Extend 가 거부된다 → Door(301) · θ 편차(405).<br/>
+     <b>4.</b> 그래도 모르겠다 → <b>알람 로그</b>. 앞자리가 계통 — 1xx 준비 · 2xx 자세 · 3xx 문 · 4xx 센서·한계 · 5xx 웨이퍼 유무.</p></div>
+    <div class="wt-note"><b>완료 기준</b> — 학습 탭 미션 4개가 모두 체크되면 6강 완료(훈련 4개 포함). 훈련에는 실패 조건이 있습니다 — 조작 수·시간·엉뚱한 알람·오답이 넘으면 그 자리에서 실패하고 처음부터 다시입니다. 기록이 남으니 줄이며 다시 도전하세요.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-23" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">18 · 훈련</div><h2 class="h-title">드릴 4개 — 무엇을 보는 훈련인가 · 실패 조건이 있다</h2>
+  <div class="wt-body" style="flex-direction:column;gap:14px">
+   <div class="wt-col" style="flex:none;width:100%">
+    <table class="wt-tbl wt-tight"><tr><th>드릴</th><th>완료 조건</th><th>제한</th><th>무엇을 보는가</th></tr>
+     <tr><td><b>① 신호 만들기</b></td><td>Pick(Presence ON) → Retract(Home ON) → Extend(Home OFF) → Place(Presence OFF) → Retract(Home ON) 을 <b>순서대로</b></td><td><b>조작 14회</b>(최단 12) · <b>알람 0</b></td><td>어떤 조작이 어떤 신호를 바꾸나</td></tr>
+     <tr><td><b>② 한계와 조건<br/>신호 3종</b></td><td><b>ALM-401 · 301 · 203</b> 을 각각 한 번씩</td><td><b>60초</b> · 그 밖의 알람이 나면 실패(101·102 포함)</td><td>센서가 "안 된다"고 말하는 세 경우</td></tr>
+     <tr><td><b>③ 무알람 순회</b></td><td>목표 자세 <b>10개</b> 를 차례로 만들기</td><td><b>알람 0회</b> · 조작 최단 + 6회</td><td>누르기 전에 조건을 읽는 습관 · 짧은 회전 방향 고르기</td></tr>
+     <tr><td><b>④ 신호 예측</b></td><td>장비가 자세를 잡아 주면 "이 버튼을 누르면 <b>어떤 신호가 바뀌나</b>"를 먼저 고르고 실행해 맞히기 — 10문항</td><td><b>오답 3회</b> · 수동 조작 금지</td><td>보고 따라 하기가 아니라 <b>머릿속으로 신호를 먼저 그리기</b></td></tr></table></div>
+   <div class="wt-col" style="flex:1;width:100%;flex-direction:row;gap:16px">
+    <div class="wt-card warn" style="flex:1 1 0;margin-bottom:0"><h3>①에서 막히는 곳 — Home OFF</h3><p>Home 센서는 <b>회전으로는 꺼지지 않습니다</b>. 웨이퍼를 든 채 한 번 넣었다가(Home ON) 다시 <b>Extend</b> 해야 꺼집니다. 뻗을 곳은 빈 스테이션(Pre-aligner) 앞이 편합니다. FOUP 에서 집으려면 Load Port 탭에서 Docking · Door Open 부터.</p></div>
+    <div class="wt-card warn" style="flex:1 1 0;margin-bottom:0"><h3>④에서 막히는 곳 — "바뀜"의 뜻</h3><p>Position 은 이동 중에만 OFF 였다가 도착하면 다시 정위치라 <b>바뀜이 아닙니다</b>. 거부되는 조작(201 · 301 · 401)은 <b>거부만</b> 고릅니다 — 거부되면 아무 신호도 안 바뀝니다(401 은 Limit 줄이 빨개지므로 예외). 회전은 Encoder <b>값</b>만 바꿉니다.</p></div>
+    <div class="wt-card warn" style="flex:1 1 0;margin-bottom:0"><h3>③에서 막히는 곳 — 뻗은 채 이동</h3><p>목표 자세는 <b>팔을 수축한 상태</b>로 인정됩니다. 뻗은 채 회전(201)이나 Z 이동(202)을 하면 그 자리에서 실패. 매번 상태줄의 R 이 0 인지 보고 누르세요.</p></div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-24" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">같은 개념 · 다른 현장</div><h2 class="h-title">자동차 공장 핸들링 로봇도 같은 다섯 신호로 돈다</h2>
+  <div class="wt-body">
+   <div class="wt-col" style="flex:1.35">
+    <table class="wt-tbl"><tr><th style="width:27%">웨이퍼 이송 로봇</th><th style="width:33%">자동차 공장 로봇 (셋업 용어)</th><th>같은 것</th></tr>
+     <tr><td><b>Initialize · Home</b></td><td>서보 ON · <b>마스터링</b>(원점 맞추기)</td><td>0 점을 잡아야 좌표가 뜻이 있다</td></tr>
+     <tr><td><b>Limit</b> (Z 1~5, ALM-401)</td><td><b>소프트 리밋</b> → 리밋 스위치 → 기구 스토퍼</td><td>범위 끝에서 거부 — 세 겹 보호</td></tr>
+     <tr><td><b>Wafer Presence</b></td><td>그리퍼 <b>파트 센서</b>(근접·공압 확인)</td><td>"집었다"는 팔이 아니라 센서가 증명</td></tr>
+     <tr><td><b>Position</b> (θ 편차 3°)</td><td>티칭 포인트 <b>In-Position</b> 허용 오차</td><td>목표 − 실제가 허용 안이어야 다음 동작</td></tr>
+     <tr><td><b>Encoder</b> (증분형 → 매번 Home)</td><td><b>절대형 엔코더 + 배터리</b> — 배터리가 죽으면 마스터링 소실</td><td>실제 돌아간 양을 센다</td></tr>
+     <tr><td><b>Door Interlock</b> (문이 <b>열려야</b> 진입)</td><td><b>안전 펜스 도어</b> (문이 <b>닫혀야</b> 자동 운전)</td><td>방향은 반대, "문 신호가 조건"은 같다</td></tr>
+     <tr><td><b>Slot Mapping</b></td><td>팔레트 <b>파트 유무 확인</b>(비전·센서)</td><td>집기 전에 목록을 만든다</td></tr></table></div>
+   <div class="wt-col" style="flex:.65">
+    <div class="wt-card ac"><h3>셋업 순서도 닮았다</h3><p>펜스 닫힘 확인 → 서보 ON → 마스터링 → 소프트 리밋 → 포인트 티칭 → 그리퍼 테스트 → 자동 1사이클. 반도체 로봇의 Initialize → Home → 티칭 → 인터록 확인 → 자동 시퀀스와 같은 뼈대입니다.</p></div>
+    <a class="wt-btn on" href="/topic-sims/robot-setup-analogy.html" target="_blank" rel="noopener" style="justify-content:center">🏭 자동차 공장 로봇 셋업 시뮬 열기 →</a>
+    <div class="wt-note" style="margin-top:18px"><b>시뮬 안에서는</b> 학습 탭의 🏭 버튼으로도 열립니다. 시나리오 — 신규 셀 셋업 9단계(단계는 판정 전까지 숨김) · 월요일 아침 충돌 사고(엔코더 배터리) · 파트 센서가 안 켜질 때 · 무엇인지 모르는 고장 하나(원인 6개 중 무작위) · AUTO 가 바로 멈출 때.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="06-25" data-level="intro standard pro" data-here="all">
+ <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">6강에서 남길 것</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>다섯 센서</b> Presence · Home · Limit · Position · Encoder — 그리고 문 · 압력.</div></div>
+    <div class="wt-num"><i>2</i><div><b>원리는 두 갈래</b> 문턱을 넘으면 ON(디지털), 값을 재서 비교(아날로그).</div></div>
+    <div class="wt-num v"><i>3</i><div><b>인터록 = 센서의 AND</b> 하나라도 "아니오"면 거부. 코드가 어느 센서인지 알려 준다.</div></div>
+    <div class="wt-num warn"><i>4</i><div><b>신호가 진실, 단 센서도 고장 난다</b> 신호와 실물이 다르면 센서부터 의심.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card"><h3>Q1</h3><p>로봇이 "웨이퍼를 집었다"고 확신하는 근거는 무엇인가요?
+     <br/><span style="color:var(--t4)">→ 팔이 움직인 것이 아니라 손의 <b>Wafer Presence 가 OFF → ON</b> 으로 바뀐 것.</span></p></div>
+    <div class="wt-card v"><h3>Q2</h3><p>Home 을 마친 뒤 수축한 채 회전했습니다. Home 센서는?
+     <br/><span style="color:var(--t4)">→ <b>ON 그대로</b>. Extend 해야 꺼집니다.</span></p></div>
+    <div class="wt-card"><h3>Q3</h3><p>한 바퀴 10,000 펄스 엔코더로 45° 돌면 몇 펄스?
+     <br/><span style="color:var(--t4)">→ 10,000 × 45 / 360 = <b>1,250 펄스</b>.</span></p></div>
+    <div class="wt-note"><b>다음 강</b> — 7강 <b>Load Port</b>: 투과형 매핑 센서로 FOUP 칸마다 웨이퍼 유무를 판정합니다.</div></div></div></div>
+</section>
+</div></div>
+
+<script>
+/* data-here 미니 경로 지도 생성 (wafer-transfer.html 과 동일) */
+(function(){
+  var NODES=[['foup','FOUP',0],['port','PORT',0],['efem','EFEM',0],['align','ALIGN',0],
+             ['lock','LOCK',0],['tm','TM',1],['pm','PM',1]];
+  document.querySelectorAll('.slide[data-here]').forEach(function(sl){
+    var here=sl.getAttribute('data-here'), pad=sl.querySelector('.wt-pad');
+    if(!pad) return;
+    var wrap=document.createElement('div'); wrap.className='wt-map';
+    NODES.forEach(function(n,i){
+      if(i) wrap.insertAdjacentHTML('beforeend','<div class="b"></div>');
+      var on=(here==='all'||here===n[0])?' on':'';
+      wrap.insertAdjacentHTML('beforeend',
+        '<div class="n'+(n[2]?' vac':'')+on+'"><div class="d"></div><span>'+n[1]+'</span></div>');
+    });
+    pad.appendChild(wrap);
+  });
+})();
+/* 발표 네비게이션 (Next/Prev · 화살표 · intro/standard/pro 레벨) */
+(function(){
+  var stage=document.getElementById('stage'),
+      all=[].slice.call(stage.querySelectorAll('.slide')),
+      lv='standard', list=[], i=0;
+  function build(){ list=all.slice();
+    all.forEach(function(s){s.classList.remove('on');}); i=Math.min(Math.max(i,0),list.length-1); show(); }
+  function show(){ list.forEach(function(s,k){s.classList.toggle('on',k===i);});
+    document.getElementById('pos').textContent=(i+1)+' / '+list.length;
+    var h=list[i].querySelector('.h-title');
+    document.getElementById('ttl').textContent=h?h.textContent:''; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  var nav=document.createElement('div'); nav.id='fbnav';
+  nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
+    '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
+  document.body.appendChild(nav);
+  nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.d){ i=Math.max(0,Math.min(list.length-1,i+ +b.dataset.d)); show(); }
+  });
+  addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '){i=Math.min(list.length-1,i+1);show();}
+    if(e.key==='ArrowLeft'){i=Math.max(0,i-1);show();} });
+  addEventListener('resize',fit);
+  build(); fit();
+})();
+</script>
+<script>
+/* 체험 ① 광 센서 — 수광량이 문턱(40 %)을 넘느냐로 예/아니오. 렌즈 오염은 수광량을 깎아 "없는데 있음" 을 만든다. */
+(function(){
+  var tog=document.getElementById('xb-tog'); if(!tog) return;
+  var W=false, dirt=0, THR=40;
+  var $=function(id){return document.getElementById(id);};
+  function render(){
+    var light=(W?6:100)*(1-dirt/100*0.92);           // 웨이퍼가 가리면 6 %, 오염은 최대 92 % 까지 깎는다
+    var said=light<THR;                                // 문턱 아래 = "막혔다 = 있음"
+    $('xb-wafer').setAttribute('opacity',W?1:0);
+    $('xb-beam').setAttribute('opacity',W?0.25:1);
+    $('xb-dirt').setAttribute('opacity',dirt/100*0.85);
+    $('xb-bar').setAttribute('width',Math.max(0,560*light/100));
+    $('xb-bar').setAttribute('fill',said?'#ff5e5e':'#35e0c8');
+    $('xb-pct').textContent=Math.round(light)+' %';
+    $('xb-real').textContent=W?'있음':'없음'; $('xb-real').className=W?'ok':'no';
+    $('xb-judge').textContent=said?'있음':'없음'; $('xb-judge').className=said?'ok':'no';
+    var okv=(said===W); $('xb-ok').textContent=okv?'일치':'불일치 — 거짓말'; $('xb-ok').className=okv?'ok':'bad';
+    $('xb-note').style.display=okv?'none':''; $('xb-tip').style.display=okv?'':'none';
+    $('xb-clean').style.display=dirt>0?'':'none';
+    tog.textContent=W?'웨이퍼 빼기':'웨이퍼 넣기'; tog.className='wt-btn'+(W?' on':'');
+    $('xb-dv').textContent=dirt+' %';
+  }
+  tog.onclick=function(){W=!W;render();};
+  $('xb-dirtr').oninput=function(){dirt=+this.value;render();};
+  $('xb-clean').onclick=function(){dirt=0;$('xb-dirtr').value=0;render();};
+  render();
+})();
+/* 체험 ② 엔코더 — 8슬릿 원판. 45° 마다 펄스 하나, B 는 A 보다 1/4 슬릿 뒤에 있어 순서로 방향을 안다.
+   증분형은 전원이 꺼지면 세어 둔 수를 잃고(Home 필요), 절대형은 원판 무늬가 곧 각도라 잃지 않는다. */
+(function(){
+  var r=document.getElementById('xe-r'); if(!r) return;
+  var $=function(id){return document.getElementById(id);};
+  var ang=0, last=0, cnt=0, abs=false, lost=false, dir=0;
+  function wave(id,phase,shift){ var d='M510 '+(phase?80:160); var x=510;
+    for(var k=0;k<6;k++){ var hi=((k+shift)%2===0); d+=' h50'+(k<5?(hi?' v-30':' v30'):''); x+=50; }
+    $(id).setAttribute('d',d); }
+  function render(){
+    $('xe-disk').setAttribute('transform','rotate('+ang+' 200 230)');
+    $('xe-ang').textContent=ang+'°';
+    var p8=Math.round(ang/45), p10k=Math.round(ang/360*10000);
+    $('xe-cnt').textContent=lost?'?':p8;
+    $('xe-big').textContent=(lost?'?':p10k.toLocaleString())+' 펄스';
+    var know=$('xe-know');
+    if(lost){ know.textContent='모름 — Home 필요'; know.className='bad'; }
+    else { know.textContent=ang+'°'; know.className='ok'; }
+    $('xe-dir').textContent=dir>0?'정방향 (A 먼저, B 나중)':dir<0?'역방향 (B 먼저, A 나중)':'멈춤';
+    $('xe-d2').textContent=dir>0?'정방향':dir<0?'역방향':'—'; $('xe-d2').className=dir?'ok':'no';
+    wave('xe-a',1,0); wave('xe-b',0,dir<0?0:1);
+    $('xe-inc').className='wt-btn'+(abs?'':' on'); $('xe-abs').className='wt-btn v'+(abs?' on':'');
+    $('xe-home').style.display=lost?'':'none';
+    $('xe-note').innerHTML=lost
+      ? '<b>증분형이 전원을 잃었습니다</b> — 원판은 그대로인데 제어기는 몇 번 딸깍했는지 잊었습니다. 지금 각도를 모르니 <b>Home</b> 으로 0 을 다시 잡아야 합니다. 6강 7장 "왜 매번 Home 을 하나"가 이것입니다.'
+      : (abs ? '<b>절대형</b> — 원판 무늬가 위치마다 다른 코드라 켜자마자 각도를 압니다. 전원을 껐다 켜 보세요. 비싸지만 Home 을 덜 합니다.'
+             : '<b>해 보기</b> — 슬라이더를 오른쪽·왼쪽으로 움직여 A·B 순서가 바뀌는 것을 보고, <b>전원을 껐다 켜</b> 보세요. 증분형은 숫자를 잃고(Home 필요), 절대형은 그대로입니다 — 그래서 로봇은 켤 때마다 Home 을 합니다.');
+  }
+  r.oninput=function(){ var v=+this.value; dir=v>last?1:v<last?-1:0; last=v; ang=v; render(); };
+  $('xe-inc').onclick=function(){abs=false;render();};
+  $('xe-abs').onclick=function(){abs=true;lost=false;render();};
+  $('xe-pwr').onclick=function(){ dir=0; if(!abs) lost=true; render(); };
+  $('xe-home').onclick=function(){ ang=0; last=0; r.value=0; lost=false; dir=0; render(); };
+  render();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"06-01":{"key":"로봇은 눈이 없다 — <b>신호가 곧 진실</b>이다","kw":["센서 = 감각기관","다섯 신호","신호가 진실"],"sec":47,"audio":true},"06-02":{"key":"센서마다 한 문장 · 원리 두 갈래 · 인터록은 신호의 AND","kw":["한 문장","예/아니오 vs 숫자","AND 조건"],"sec":46,"audio":true},"06-03":{"key":"모든 허가와 거부는 센서 신호에서 나온다 — <b>디지털</b>과 <b>아날로그</b> 두 종류","kw":["허가/거부의 근거","디지털 ON/OFF","아날로그 값 비교"],"sec":57,"audio":true},"06-04":{"key":"조작하기 전에 센서 모니터 탭을 열어 두고 <b>어느 줄이 바뀌는지</b> 본다","kw":["센서 모니터 탭","Pick→ON · Place→OFF","Extend→Home OFF"],"sec":51,"audio":true},"06-05":{"key":"빛이 <b>막히거나 되돌아오는 양</b>이 문턱을 넘느냐로 예/아니오","kw":["투과형 = 매핑","반사형","포토인터럽터 = Home·Limit","오염이 고장보다 흔함"],"sec":55,"audio":true},"06-06":{"key":"생활 속 같은 센서 — <b>빛이 막히면 있음, 0을 잡아야 Home, 끝에서 멈추면 Limit, 딸깍을 세면 각도</b>","kw":["빨대와 종이","엘리베이터 문 센서","자의 0눈금","자전거 속도계"],"sec":59,"audio":true},"06-07":{"key":"직접 막아 보기 — 문턱 40%가 예/아니오를 가르고, <b>렌즈 오염은 거짓말</b>을 만든다","kw":["웨이퍼 넣기/빼기","문턱 40 %","오염 70 % 이상 → 없는데 있음"],"sec":52,"audio":true},"06-08":{"key":"Pick 성공의 증거는 팔이 아니라 <b>Presence OFF→ON</b>","kw":["Pick → ON","Place → OFF","흡착·광학·정전용량","어디에나 있다"],"sec":62,"audio":true},"06-09":{"key":"명령 하나에 신호 여러 개가 <b>정해진 순서</b>로 움직인다 — 순서가 어긋나는 자리가 고장 지점","kw":["Extend → Home OFF","Pick → Presence ON","Retract → Home ON","Presence 안 켜지면 빈 칸 또는 센서"],"sec":51,"audio":true},"06-10":{"key":"5xx 는 전부 <b>유무 센서가 거부</b>한 것 — 203 팔 안 뻗음 · 502 빈 곳 · 504 빈손 · 505 이중 · 506 낙하","kw":["ALM-203","501~505","506 Wafer Lost = 가장 무섭다"],"sec":59,"audio":true},"06-11":{"key":"Home ON = <b>원점 복귀 완료 그리고 팔 수축</b> — 이게 있어야 좌표가 뜻이 있다","kw":["Init만 → OFF","회전·Z는 ON 유지","Extend → OFF","증분형이라 매번 Home"],"sec":57,"audio":true},"06-12":{"key":"보호는 세 겹 — <b>소프트 리밋 → 리밋 스위치 → 기구 스토퍼</b>. 시뮬의 401 은 첫 겹","kw":["Z 1~5","Z1에서 ▲ · Z5에서 ▼","ALM-401","세 겹"],"sec":52,"audio":true},"06-13":{"key":"엔코더는 <b>명령이 아니라 실제</b>를 읽는다 — 펄스 수 × 한 펄스 각도 = 회전량","kw":["슬릿 원판 · A/B 상","1만 펄스 → 0.036°","증분형 vs 절대형","B가 1/4 늦으면 정방향"],"sec":63,"audio":true},"06-14":{"key":"원판을 돌려 펄스를 세고, <b>전원을 껐다 켜</b> 증분형과 절대형의 차이를 본다","kw":["슬라이더 = 모터","A·B 순서 = 방향","전원 OFF → 증분형 ?","절대형은 그대로"],"sec":52,"audio":true},"06-15":{"key":"폐루프 = <b>목표 − 실제</b>를 계속 비교한다. 3° 넘게 어긋나면 ALM-405 (6강에선 안 남, 14강에서)","kw":["목표 − 실제 → 모터","엔코더가 되돌려 준다","3° 허용","안 변하면 인터록 · 다르면 티칭"],"sec":64,"audio":true},"06-16":{"key":"인터록은 센서 신호의 <b>AND</b> — 하나라도 아니오면 거부, 코드가 어느 센서인지 알려 준다","kw":["Docking 302","Door 301","Init·Home 101·102","θ 편차 405","양방향(306·305)"],"sec":58,"audio":true},"06-17":{"key":"게이지 하나로 대기부터 초고진공까지 못 잰다 — 시뮬은 <b>700 Torr · 1 Torr</b> 두 문턱","kw":["피라니 · 커패시턴스 · 이온 게이지","Pressure ON < 700","Vacuum ON < 1","밸브 허가 조건 → 10강"],"sec":63,"audio":true},"06-18":{"key":"같은 센서라도 배선에 따라 ON의 뜻이 반대 — <b>안전 신호는 끊기면 위험으로</b> 읽히게(페일세이프)","kw":["NO / NC","페일세이프","채터링 · 디바운스","도면의 NO/NC 표기부터"],"sec":56,"audio":true},"06-19":{"key":"신호와 실물이 다를 때 — <b>어느 쪽이 틀렸는지 가르는 것</b>이 진단이다","kw":["센서 불량 503","흡착 불량 506","엔코더 편차 405","매핑 불일치","오염이 가장 흔함"],"sec":57,"audio":true},"06-20":{"key":"<b>동작 ≠ 성공</b> — 성공은 Presence 가 증명한다. 눈을 믿지 말고 신호를, 단 센서도 의심하라","kw":["움직였으니 됐다는 착각","Home 켜져도 Position 보기","Reset부터 하지 않기","신호 없음 ≠ 웨이퍼 없음"],"sec":59,"audio":true},"06-21":{"key":"6강의 주인공 탭은 <b>센서 모니터</b>와 <b>알람 로그</b> — 훈련 탭에는 움직이는 버튼이 없다","kw":["학습 · 수동조작 · Load Port","센서 모니터 늘 열어 둠","알람 로그는 최근 줄부터","상태줄 R · θ · Z · HAND"],"sec":59,"audio":true},"06-22":{"key":"순서대로 네 가지 — Presence ON/OFF · Home OFF→ON · Limit 알람 · 훈련 4개. 막히면 <b>알람 로그 앞자리</b>","kw":["Docking · Door Open 후 Pick","Extend → Home OFF","Z1에서 ▲ → 401","1xx 준비 · 2xx 자세 · 3xx 문 · 4xx 한계 · 5xx 유무"],"sec":68,"audio":true},"06-23":{"key":"드릴 네 개에는 <b>실패 조건</b>이 있다 — 조작 수 · 60초 · 엉뚱한 알람 · 오답 3회. ④는 누르기 전에 고른다","kw":["① 14회 · 알람 0","② 60초 · 다른 알람 금지","③ 10개 · 여유 6회","④ 예측 10문항 · 오답 3회"],"sec":70,"audio":true},"06-24":{"key":"자동차 공장 로봇도 같은 다섯 신호 — 이름만 <b>마스터링 · 소프트 리밋 · 파트 센서 · In-Position · 절대형 엔코더</b>","kw":["Home = 마스터링","Limit = 소프트 리밋","Presence = 파트 센서","문: 열려야 vs 닫혀야","셋업 순서도 같다"],"sec":62,"audio":true},"06-25":{"key":"남길 것 네 가지 — <b>다섯 센서 · 원리 두 갈래 · 인터록은 AND · 신호가 진실이지만 센서도 고장 난다</b>","kw":["Presence·Home·Limit·Position·Encoder","문턱 vs 값 비교","AND","Q1 Presence · Q2 ON 그대로 · Q3 1,250"],"sec":71,"audio":true}}</script>
+<script src="_notes.js"></script>
+<script src="_print.js"></script>
+</body></html>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import PlasmaSimulatorI from './PlasmaSimulatorI'
 import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
@@ -8,6 +8,11 @@ import RGAEducation from './RGAEducation'
 import RGAViewer from './RGAViewer'
 import MiniFabSimulator from './MiniFabSimulator'
 import './App.css'
+
+// 데모(semiconductor-simulator)에서 들인 두 교재 — 데이터가 커서 누를 때 받는다.
+// 직무영어는 데모 판 + 서고 상황 삽화(SLIDE_ART), 이송 로봇은 public/topic-sims 의 iframe 래퍼.
+const FieldEnglishSimulator = lazy(() => import('./simulators/FieldEnglishSimulator'))
+const WaferTransferSim = lazy(() => import('./simulators/WaferTransferSim'))
 
 function App() {
   const [selectedSimulator, setSelectedSimulator] = useState('oes');
@@ -125,6 +130,22 @@ function App() {
       icon: '🏭',
       color: 'from-fuchsia-500 to-pink-600',
       component: MiniFabSimulator
+    },
+    {
+      id: 'field-english',
+      name: '현장 실무영어',
+      description: 'Field English · 장비 화면·알람·DRC/LVS 영어',
+      icon: '📖',
+      color: 'from-indigo-500 to-blue-600',
+      component: FieldEnglishSimulator
+    },
+    {
+      id: 'wafer-transfer',
+      name: '웨이퍼 이송 로봇',
+      description: 'Wafer Transfer Robot · 센서·인터록 15강',
+      icon: '🤖',
+      color: 'from-slate-500 to-cyan-600',
+      component: WaferTransferSim
     }
   ];
 
@@ -235,7 +256,11 @@ function App() {
 
         {/* Simulator Content */}
         <main className="flex-1 overflow-auto bg-gray-950">
-          {SelectedComponent && <SelectedComponent />}
+          {SelectedComponent && (
+            <Suspense fallback={<div className="p-8 text-gray-400">불러오는 중…</div>}>
+              <SelectedComponent />
+            </Suspense>
+          )}
           {selected?.iframeSrc && <RGAViewer src={selected.iframeSrc} />}
         </main>
       </div>
