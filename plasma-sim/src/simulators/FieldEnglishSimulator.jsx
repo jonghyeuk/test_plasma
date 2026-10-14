@@ -4113,19 +4113,19 @@ export default function FieldEnglishSimulator({
 function FesStyles() {
   return (
     <style>{`
-.fes-root{font-family:${C.sans};color:${C.text};background:linear-gradient(180deg,#0a1120,#0b1220);border:1px solid ${C.line};border-radius:14px;padding:16px;min-height:560px;box-sizing:border-box;line-height:1.5}
+.fes-root{font-family:${C.sans};color:${C.text};background:linear-gradient(180deg,#0a1120,#0b1220);border:1px solid ${C.line};border-radius:14px;padding:10px 14px 14px;min-height:560px;box-sizing:border-box;line-height:1.5}
 .fes-root *{box-sizing:border-box}
-.fes-header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;border-bottom:1px solid ${C.line};padding-bottom:12px;margin-bottom:14px}
-.fes-title{display:flex;flex-direction:column;gap:2px}
-.fes-title-en{font-size:19px;font-weight:800;letter-spacing:.2px;color:#e8eefc;background:linear-gradient(90deg,${C.cyan},${C.violet});-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.fes-header{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:space-between;align-items:center;border-bottom:1px solid ${C.line};padding-bottom:8px;margin-bottom:10px}
+.fes-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.fes-title-en{font-size:16px;font-weight:800;letter-spacing:.2px;color:#e8eefc;background:linear-gradient(90deg,${C.cyan},${C.violet});-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .fes-title-ko{font-size:12px;color:${C.dim}}
 .fes-tabs{display:flex;flex-wrap:wrap;gap:6px}
-.fes-tab{display:flex;flex-direction:column;align-items:center;gap:1px;background:${C.panel};border:1px solid ${C.line};color:${C.dim};border-radius:10px;padding:7px 11px;cursor:pointer;transition:.15s;min-width:78px}
+.fes-tab{display:flex;flex-direction:row;align-items:center;gap:6px;background:${C.panel};border:1px solid ${C.line};color:${C.dim};border-radius:9px;padding:5px 11px;cursor:pointer;transition:.15s}
 .fes-tab:hover{border-color:${C.line2};color:${C.text}}
 .fes-tab.on{background:linear-gradient(180deg,#15294a,#122038);border-color:${C.cyan};color:#fff;box-shadow:0 0 0 1px ${C.cyan}33,0 4px 14px #0006}
-.fes-tab-icon{font-size:16px}
+.fes-tab-icon{font-size:14px}
 .fes-tab-en{font-size:11.5px;font-weight:700}
-.fes-tab-loop{font-size:9px;text-transform:uppercase;letter-spacing:.6px;opacity:.7}
+.fes-tab-loop{display:none}
 .fes-solo-head{display:flex;align-items:center;gap:10px;border-bottom:1px solid ${C.line};padding-bottom:10px;margin-bottom:14px}
 .fes-solo-icon{font-size:22px}.fes-solo-en{font-size:17px;font-weight:800;color:#e8eefc}
 .fes-solo-ko{font-size:12px;color:${C.dim}}
