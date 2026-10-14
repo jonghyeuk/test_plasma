@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import PlasmaSimulatorI from './PlasmaSimulatorI'
 import PlasmaSimulatorII from './PlasmaSimulatorII'
 import PlasmaSimulatorIII from './PlasmaSimulatorIII'
@@ -16,18 +16,11 @@ const WaferTransferSim = lazy(() => import('./simulators/WaferTransferSim'))
 
 function App() {
   const [selectedSimulator, setSelectedSimulator] = useState('oes');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  // 데스크톱 사이드바 접기 — 접으면 아이콘 줄만 남아 본문(교재·시뮬)이 넓어진다. 이 브라우저에만 기억한다.
-  const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem('sidebarCollapsed') === '1'; } catch { return false; }
-  });
-  const toggleCollapsed = () => setCollapsed(c => {
-    const next = !c;
-    try { localStorage.setItem('sidebarCollapsed', next ? '1' : '0'); } catch { /* 저장 못 해도 화면은 동작 */ }
-    return next;
-  });
-  // 접힘은 데스크톱(lg)에서만 — 모바일은 기존 열기/닫기 그대로
-  const hideWhenCollapsed = collapsed ? 'lg:hidden' : '';
+  // 고른 탭이 가로 탭 줄 밖에 있으면 보이는 곳으로 끌어온다
+  const tabRefs = useRef({});
+  useEffect(() => {
+    tabRefs.current[selectedSimulator]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [selectedSimulator]);
 
   const simulators = [
     {
@@ -163,135 +156,48 @@ function App() {
   const selected = simulators.find(s => s.id === selectedSimulator);
   const SelectedComponent = selected?.component;
 
+  // 위쪽 탭 줄 하나로 모듈을 고른다(데모 demo.semifabai.com 처럼) — 왼쪽 메뉴·제목 머리를 없애 본문을 넓게 쓴다.
+  // 모듈 설명은 탭에 마우스를 올리면 보인다.
   return (
-    <div className="flex h-screen bg-gray-950 relative">
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-indigo-900 text-white rounded-lg shadow-lg
-          active:scale-95 touch-manipulation transition-transform duration-150"
-        aria-label="메뉴 열기/닫기"
-      >
-        {sidebarOpen ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        )}
-      </button>
-
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30 touch-manipulation"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Left Sidebar */}
-      <aside className={`
-        fixed lg:relative z-40 h-full w-80 ${collapsed ? 'lg:w-20' : ''}
-        bg-gradient-to-b from-gray-900 via-indigo-950 to-gray-900
-        text-white shadow-2xl flex flex-col
-        transform transition-all duration-300 ease-in-out
-        border-r border-gray-700/50
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        {/* Sidebar Header */}
-        <div className={`relative border-b border-white/10 ${collapsed ? 'p-6 lg:px-2 lg:py-4' : 'p-6'}`}>
-          {/* 접기/펼치기 (데스크톱) */}
-          <button
-            onClick={toggleCollapsed}
-            className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 text-cyan-300 hover:bg-white/20 transition-colors
-              ${collapsed ? 'mx-auto' : 'absolute top-4 right-4'}`}
-            aria-label={collapsed ? '메뉴 펼치기' : '메뉴 접기'}
-            title={collapsed ? '메뉴 펼치기' : '메뉴 접기'}
-          >
-            {collapsed ? '»' : '«'}
-          </button>
-          <div className={hideWhenCollapsed}>
-          <h1 className="text-2xl font-bold mb-2 text-cyan-400">진단기술</h1>
-          <h2 className="text-xl font-semibold mb-3 text-gray-200">실습센터</h2>
-          <p className="text-sm text-gray-400">Plasma Diagnostic Training Center</p>
-          <span className="text-xs text-gray-500 mt-2 inline-block">ver 1.4</span>
-          </div>
+    <div className="flex flex-col h-screen bg-gray-950">
+      <header className="flex items-stretch gap-3 bg-gray-900 border-b border-gray-700/50 px-3 shrink-0">
+        <div className="flex items-center gap-2 pr-3 border-r border-white/10 shrink-0" title="Plasma Diagnostic Training Center · ver 1.4">
+          <span className="text-sm font-bold text-cyan-400 whitespace-nowrap">진단기술</span>
+          <span className="text-sm font-semibold text-gray-300 whitespace-nowrap hidden sm:inline">실습센터</span>
         </div>
-
-        {/* Simulator Navigation */}
-        <nav className={`flex-1 space-y-3 overflow-y-auto ${collapsed ? 'p-4 lg:p-2' : 'p-4'}`}>
-          <div className={`text-xs font-bold text-cyan-500 mb-3 px-2 ${hideWhenCollapsed}`}>
-            진단 모듈 선택
-          </div>
+        <nav className="flex-1 flex items-stretch gap-1 overflow-x-auto py-1.5 [scrollbar-width:thin]" aria-label="진단 모듈 선택">
           {simulators.map((sim) => (
             <button
               key={sim.id}
-              title={collapsed ? sim.name : undefined}
-              onClick={() => {
-                setSelectedSimulator(sim.id);
-                setSidebarOpen(false);
-              }}
+              ref={(el) => { tabRefs.current[sim.id] = el; }}
+              onClick={() => setSelectedSimulator(sim.id)}
+              title={`${sim.name} — ${sim.description}`}
+              aria-current={selectedSimulator === sim.id ? 'page' : undefined}
               className={`
-                w-full text-left rounded-xl transition-all duration-300 transform
-                ${collapsed ? 'p-4 lg:p-2 lg:flex lg:justify-center' : 'p-4'}
-                min-h-[56px] touch-manipulation
-                active:scale-95
+                flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-semibold
+                transition-colors touch-manipulation shrink-0 border
                 ${selectedSimulator === sim.id
-                  ? 'bg-cyan-600/20 text-cyan-300 shadow-lg shadow-cyan-500/10 scale-105 border border-cyan-500/40'
-                  : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:scale-102 border border-transparent'
+                  ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/50'
+                  : 'text-gray-400 border-transparent hover:bg-white/5 hover:text-gray-200'
                 }
               `}
             >
-              <div className="flex items-start gap-3">
-                <span className="text-3xl">{sim.icon}</span>
-                <div className={`flex-1 ${hideWhenCollapsed}`}>
-                  <div className="font-bold text-sm mb-1">{sim.name}</div>
-                  <div className={`text-xs ${selectedSimulator === sim.id ? 'text-cyan-400' : 'text-gray-500'}`}>
-                    {sim.description}
-                  </div>
-                </div>
-              </div>
+              <span className="text-base leading-none">{sim.icon}</span>
+              <span>{sim.name}</span>
             </button>
           ))}
         </nav>
+      </header>
 
-        {/* Sidebar Footer */}
-        <div className={`p-4 border-t border-white/10 ${hideWhenCollapsed}`}>
-          <div className="text-xs text-gray-500">
-            <div className="font-semibold mb-1 text-gray-400">확장 가능한 구조</div>
-            <div>각 시뮬레이터는 독립적으로 관리됩니다</div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-        {/* Top Header */}
-        {/* 데스크톱은 한 줄 머리(제목·설명 나란히)로 본문 높이를 아낀다. 모바일은 메뉴 버튼 자리 때문에 기존 두 줄 그대로 */}
-        <header className="bg-gray-900 shadow-md border-b border-gray-700/50 px-4 sm:px-8 lg:px-6 py-4 lg:py-2">
-          <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-3 pl-12 lg:pl-0">
-            <h1 className="text-xl lg:text-xl font-bold text-gray-100">
-              {simulators.find(s => s.id === selectedSimulator)?.icon}{' '}
-              {simulators.find(s => s.id === selectedSimulator)?.name}
-            </h1>
-            <p className="text-sm text-gray-400">
-              {simulators.find(s => s.id === selectedSimulator)?.description}
-            </p>
-          </div>
-        </header>
-
-        {/* Simulator Content */}
-        <main className="flex-1 overflow-auto bg-gray-950">
-          {SelectedComponent && (
-            <Suspense fallback={<div className="p-8 text-gray-400">불러오는 중…</div>}>
-              <SelectedComponent />
-            </Suspense>
-          )}
-          {selected?.iframeSrc && <RGAViewer src={selected.iframeSrc} />}
-        </main>
-      </div>
+      {/* Simulator Content */}
+      <main className="flex-1 overflow-auto bg-gray-950">
+        {SelectedComponent && (
+          <Suspense fallback={<div className="p-8 text-gray-400">불러오는 중…</div>}>
+            <SelectedComponent />
+          </Suspense>
+        )}
+        {selected?.iframeSrc && <RGAViewer src={selected.iframeSrc} />}
+      </main>
     </div>
   );
 }
