@@ -3915,12 +3915,22 @@ function SlideRenderer({ slide }) {
 const CHAPTERS = CONTENT_CHAPTERS;
 
 // 챕터 책 리더 — 목차(진도·성취 표시) + 슬라이드 뷰어
+const TOC_COLLAPSED_KEY = 'fes-toc-collapsed';
 function ChapterBook() {
   const available = CHAPTERS.filter((c) => !c.locked);
   const [done, setDone] = useState(() => {
     try { return new Set(JSON.parse(window.localStorage.getItem(PROGRESS_KEY) || '[]')); } catch (e) { return new Set(); }
   });
   const [sel, setSel] = useState(CHAPTERS[0].id);
+  // 목차 접기 — 접으면 CH 번호 줄만 남고 슬라이드가 넓어진다. 이 브라우저에만 기억한다.
+  const [tocCollapsed, setTocCollapsed] = useState(() => {
+    try { return window.localStorage.getItem(TOC_COLLAPSED_KEY) === '1'; } catch (e) { return false; }
+  });
+  const toggleToc = () => setTocCollapsed((c) => {
+    const next = !c;
+    try { window.localStorage.setItem(TOC_COLLAPSED_KEY, next ? '1' : '0'); } catch (e) { /* ignore */ }
+    return next;
+  });
   const markDone = useCallback((id) => {
     setDone((d) => {
       if (d.has(id)) return d;
@@ -3934,10 +3944,14 @@ function ChapterBook() {
   const pct = Math.round(available.filter((c) => done.has(c.id)).length / available.length * 100);
 
   return (
-    <div className="fes-ppt">
+    <div className={`fes-ppt ${tocCollapsed ? 'toc-min' : ''}`}>
       <aside className="fes-ppt-side">
+        <button className="fes-ppt-toggle" onClick={toggleToc}
+          title={tocCollapsed ? '목차 펼치기' : '목차 접기'} aria-label={tocCollapsed ? '목차 펼치기' : '목차 접기'}>
+          {tocCollapsed ? '»' : '« 목차 접기'}
+        </button>
         <div className="fes-cb-progress">
-          <span>학습 진도</span>
+          <span className="fes-ppt-hide">학습 진도</span>
           <span className="fes-mono">{pct}%</span>
         </div>
         <div className="fes-cb-bar"><div style={{ width: `${pct}%` }} /></div>
@@ -3946,7 +3960,7 @@ function ChapterBook() {
             <button key={c.id} disabled={c.locked} onClick={() => !c.locked && setSel(c.id)}
               className={`fes-ppt-chip ${sel === c.id ? 'on' : ''} ${c.locked ? 'off' : ''} ${done.has(c.id) ? 'done' : ''}`} title={c.title}>
               <span className="fes-ppt-chip-n">CH{idx + 1}</span>
-              <span className="fes-ppt-chip-t">{c.title}</span>
+              <span className="fes-ppt-chip-t fes-ppt-hide">{c.title}</span>
               {done.has(c.id) && <span className="fes-ppt-chip-mk">✓</span>}
               {c.locked && <span className="fes-ppt-chip-mk">🔒</span>}
             </button>
@@ -4099,19 +4113,19 @@ export default function FieldEnglishSimulator({
 function FesStyles() {
   return (
     <style>{`
-.fes-root{font-family:${C.sans};color:${C.text};background:linear-gradient(180deg,#0a1120,#0b1220);border:1px solid ${C.line};border-radius:14px;padding:16px;min-height:560px;box-sizing:border-box;line-height:1.5}
+.fes-root{font-family:${C.sans};color:${C.text};background:linear-gradient(180deg,#0a1120,#0b1220);border:1px solid ${C.line};border-radius:14px;padding:10px 14px 14px;min-height:560px;box-sizing:border-box;line-height:1.5}
 .fes-root *{box-sizing:border-box}
-.fes-header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;border-bottom:1px solid ${C.line};padding-bottom:12px;margin-bottom:14px}
-.fes-title{display:flex;flex-direction:column;gap:2px}
-.fes-title-en{font-size:19px;font-weight:800;letter-spacing:.2px;color:#e8eefc;background:linear-gradient(90deg,${C.cyan},${C.violet});-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.fes-header{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:space-between;align-items:center;border-bottom:1px solid ${C.line};padding-bottom:8px;margin-bottom:10px}
+.fes-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.fes-title-en{font-size:16px;font-weight:800;letter-spacing:.2px;color:#e8eefc;background:linear-gradient(90deg,${C.cyan},${C.violet});-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .fes-title-ko{font-size:12px;color:${C.dim}}
 .fes-tabs{display:flex;flex-wrap:wrap;gap:6px}
-.fes-tab{display:flex;flex-direction:column;align-items:center;gap:1px;background:${C.panel};border:1px solid ${C.line};color:${C.dim};border-radius:10px;padding:7px 11px;cursor:pointer;transition:.15s;min-width:78px}
+.fes-tab{display:flex;flex-direction:row;align-items:center;gap:6px;background:${C.panel};border:1px solid ${C.line};color:${C.dim};border-radius:9px;padding:5px 11px;cursor:pointer;transition:.15s}
 .fes-tab:hover{border-color:${C.line2};color:${C.text}}
 .fes-tab.on{background:linear-gradient(180deg,#15294a,#122038);border-color:${C.cyan};color:#fff;box-shadow:0 0 0 1px ${C.cyan}33,0 4px 14px #0006}
-.fes-tab-icon{font-size:16px}
+.fes-tab-icon{font-size:14px}
 .fes-tab-en{font-size:11.5px;font-weight:700}
-.fes-tab-loop{font-size:9px;text-transform:uppercase;letter-spacing:.6px;opacity:.7}
+.fes-tab-loop{display:none}
 .fes-solo-head{display:flex;align-items:center;gap:10px;border-bottom:1px solid ${C.line};padding-bottom:10px;margin-bottom:14px}
 .fes-solo-icon{font-size:22px}.fes-solo-en{font-size:17px;font-weight:800;color:#e8eefc}
 .fes-solo-ko{font-size:12px;color:${C.dim}}
@@ -4312,6 +4326,15 @@ function FesStyles() {
 .fes-ppt-chip.off .fes-ppt-chip-t{color:${C.dim}}
 .fes-ppt-chip-mk{margin-left:auto;font-size:10px;color:${C.emerald};flex:none}
 .fes-ppt-main{min-width:0}
+.fes-ppt-toggle{align-self:flex-start;background:${C.panel};border:1px solid ${C.line2};color:${C.cyan};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.fes-ppt-toggle:hover{border-color:${C.cyan}}
+.fes-ppt.toc-min{grid-template-columns:58px minmax(0,1fr)}
+.fes-ppt.toc-min .fes-ppt-hide{display:none}
+.fes-ppt.toc-min .fes-ppt-toggle{align-self:stretch;padding:4px 0}
+.fes-ppt.toc-min .fes-cb-progress{justify-content:center}
+.fes-ppt.toc-min .fes-ppt-chip{justify-content:center;padding:8px 0}
+.fes-ppt.toc-min .fes-ppt-chip-mk{display:none}
+@media(max-width:820px){.fes-ppt.toc-min{grid-template-columns:1fr}}
 .fes-ld-dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:1}
 .fes-ld-dot{width:26px;height:6px;border-radius:20px;background:#1b2c48;border:none;cursor:pointer;transition:.15s;padding:0}
 .fes-ld-dot.done{background:${C.cyan}66}

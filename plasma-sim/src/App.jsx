@@ -269,14 +269,17 @@ function App() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Header */}
-        <header className="bg-gray-900 shadow-md border-b border-gray-700/50 px-4 sm:px-8 py-4 sm:py-6">
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-100 mb-1 sm:mb-2 pl-12 lg:pl-0">
-            {simulators.find(s => s.id === selectedSimulator)?.icon}{' '}
-            {simulators.find(s => s.id === selectedSimulator)?.name}
-          </h1>
-          <p className="text-sm sm:text-base text-gray-400 pl-12 lg:pl-0">
-            {simulators.find(s => s.id === selectedSimulator)?.description}
-          </p>
+        {/* 데스크톱은 한 줄 머리(제목·설명 나란히)로 본문 높이를 아낀다. 모바일은 메뉴 버튼 자리 때문에 기존 두 줄 그대로 */}
+        <header className="bg-gray-900 shadow-md border-b border-gray-700/50 px-4 sm:px-8 lg:px-6 py-4 lg:py-2">
+          <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-3 pl-12 lg:pl-0">
+            <h1 className="text-xl lg:text-xl font-bold text-gray-100">
+              {simulators.find(s => s.id === selectedSimulator)?.icon}{' '}
+              {simulators.find(s => s.id === selectedSimulator)?.name}
+            </h1>
+            <p className="text-sm text-gray-400">
+              {simulators.find(s => s.id === selectedSimulator)?.description}
+            </p>
+          </div>
         </header>
 
         {/* Simulator Content */}
