@@ -125,7 +125,8 @@ h2.h-title{ font-size:56px; }
 .wt-photo figcaption{ font-family:var(--mono); font-size:18px; line-height:1.5; color:var(--t4); margin-top:10px; letter-spacing:.02em; }
 /* 베이스리스 표시 (단독/서랍 공통) */
 .nobase body{ margin:0; background:#0a141c; overflow:hidden; }
-.nobase .deck-viewport{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+/* 아래 56px 는 발표 네비(◀ n/N ▶) 자리 — 슬라이드가 그 위에서 끝나 강의자 메모 줄과 겹치지 않는다 */
+.nobase .deck-viewport{ position:fixed; inset:0 0 56px 0; display:flex; align-items:center; justify-content:center; }
 .nobase .deck-stage{ width:1920px; height:1080px; flex:none; position:relative; transform-origin:center center; }
 /* flex:none 이 없으면 .deck-viewport(flex) 가 1920px 를 창 너비로 줄여 버린다.
    transform:scale 은 레이아웃 크기를 바꾸지 않으므로 슬라이드가 1920 이 아닌
@@ -391,7 +392,7 @@ h2.h-title{ font-size:56px; }
     document.getElementById('pos').textContent=(i+1)+' / '+list.length;
     var h=list[i].querySelector('.h-title');
     document.getElementById('ttl').textContent=h?h.textContent:''; }
-  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'; }
+  function fit(){ stage.style.transform='scale('+Math.min(innerWidth/1920,(innerHeight-56)/1080)+')'; } // 56 = 네비 자리(.deck-viewport bottom)
   var nav=document.createElement('div'); nav.id='fbnav';
   nav.innerHTML='<button data-d="-1">◀</button><span id="pos"></span><button data-d="1">▶</button>'+
     '<span id="ttl" style="max-width:560px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
