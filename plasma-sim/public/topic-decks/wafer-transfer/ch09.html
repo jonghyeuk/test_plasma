@@ -150,7 +150,23 @@ h2.h-title{ font-size:56px; }
 <link rel="stylesheet" href="_print.css"/>
 <link rel="stylesheet" href="_notes.css"/>
 <style>/* 표지 그림(viewBox 360×406, 세로가 긴 SVG)이 메모 바와 겹친다 — 그림 높이만 줄인다 */
-section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }</style>
+section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }
+/* 실습 A · 정렬대 해독기 (09-11) — 입력칸 · 채점 표시 */
+.al-q{ display:grid; grid-template-columns:52px 1fr 150px 44px; align-items:center; gap:12px; margin-bottom:14px;
+  padding:12px 16px; border:1px solid var(--ln2); border-radius:3px; background:rgba(19,36,51,.72); }
+.al-q span{ font-family:var(--mono); font-size:20px; font-weight:700; color:var(--ac); }
+.al-q label{ font-size:23px; line-height:1.4; color:var(--t1); }
+.al-q label em{ font-style:normal; font-size:18px; color:var(--t4); }
+.al-q input{ font-family:var(--mono); font-size:24px; width:100%; box-sizing:border-box; padding:8px 10px;
+  background:#0a141c; color:var(--t1); border:1px solid #45688a; border-radius:3px; }
+.al-q input:focus{ outline:2px solid var(--ac); outline-offset:1px; }
+.al-r{ font-family:var(--mono); font-size:24px; text-align:center; color:var(--t4); }
+.al-r.ok{ color:var(--ac); } .al-r.no{ color:var(--bd); } .al-r.ans{ color:var(--wn); font-size:19px; }
+.al-btns{ display:flex; gap:12px; margin-top:4px; }
+.al-btns button{ font-family:var(--mono); font-size:21px; font-weight:700; padding:10px 22px; cursor:pointer;
+  background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:3px; }
+.al-btns button:first-child{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+</style>
 </head><body>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
  <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
@@ -167,10 +183,10 @@ section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }</style>
  <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 9</div>
   <div class="wt-body" style="margin-top:10px;align-items:center">
    <div class="wt-col" style="flex:1.05"><h1 class="h-title">정렬<br/>EFEM Robot과 Pre-aligner</h1>
-    <div class="wt-lead" style="margin-top:26px">웨이퍼에도 <b>위아래(방향)</b>가 있습니다. 공정 패턴이 그 방향에 맞아야 하므로,
-     이송 도중 <b>중심과 Notch</b>를 규격에 맞춥니다.</div>
-    <div class="wt-note" style="margin-top:40px;max-width:960px"><b>이 강의</b> — 왜 정렬하는지, Notch가 무엇인지,
-     Pre-aligner가 어떻게 방향을 잡는지 봅니다.</div></div>
+    <div class="wt-lead" style="margin-top:26px">로봇은 웨이퍼를 옮기다 말고 <b>정렬대 위에서 1초쯤 빙글 돌립니다.</b>
+     겨우 1초, 그런데 이걸 빼먹으면 다음 장비가 웨이퍼를 <b>못 알아봅니다.</b></div>
+    <div class="wt-note" style="margin-top:40px;max-width:960px"><b>오늘의 질문</b> — 정렬대는 얼마나 정확할까?
+     <b>0.1°</b>면 충분할까? 강의 끝에 직접 계산해서 답합니다.</div></div>
    <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
     <svg viewBox="50 54 360 406">
      <circle cx="230" cy="230" r="160" fill="#151f2b" stroke="#2c4a63" stroke-width="2"/>
@@ -181,105 +197,141 @@ section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }</style>
 </section>
 
 <section class="slide" data-nid="09-02" data-level="intro standard pro" data-here="align">
- <div class="wt-pad"><div class="wt-eye">01 · 왜</div><h2 class="h-title">Pre-aligner — 웨이퍼에도 위아래가 있습니다</h2>
+ <div class="wt-pad"><div class="wt-eye">01 · 정렬대가 하는 일</div><h2 class="h-title">정렬대는 1초 동안 세 가지를 합니다</h2>
   <div class="wt-body"><div class="wt-col">
-   <div class="wt-num"><i>1</i><div><b>패턴은 방향을 탄다</b> 공정에서 새기는 회로는 웨이퍼 방향 기준으로 정렬돼야 합니다.</div></div>
-   <div class="wt-num"><i>2</i><div><b>Notch가 기준</b> 가장자리의 홈(Notch)이 "12시" 같은 기준 방향을 나타냅니다.</div></div>
-   <div class="wt-num v"><i>3</i><div><b>이송 중 한 번 맞춘다</b> 챔버에 넣기 전에 방향을 규격각으로 돌려둡니다.</div></div>
-   <div class="wt-note" style="margin-top:0"><b>한 줄</b> — 정렬 = <b>중심(Centering) + 방향(Orientation)</b>을 규격에 맞추는 일.</div></div>
+   <div class="wt-num"><i>1</i><div><b>중심 찾기 (Centering)</b> 로봇은 웨이퍼를 늘 정중앙으로 집지 못합니다. 얼마나, 어느 쪽으로 치우쳤는지 잽니다.</div></div>
+   <div class="wt-num"><i>2</i><div><b>방향 맞추기 (Orientation)</b> 테두리의 홈(Notch)을 찾아 정해진 각도(보통 0°)에 세웁니다.</div></div>
+   <div class="wt-num v"><i>3</i><div><b>신분 확인 (ID 읽기)</b> 많은 장비가 이때 Notch 근처에 레이저로 새긴 <b>웨이퍼 ID</b>를 카메라로 읽어, 이 웨이퍼가 맞는 로트인지 확인합니다.</div></div>
+   <div class="wt-note" style="margin-top:0"><b>비유</b> — 택배 분류센터의 스캐너. 상자를 바로 세우고(방향), 컨베이어 가운데로 밀고(중심), 송장을 읽습니다(ID). 그래야 다음 칸으로 제대로 갑니다.</div></div>
   <div class="wt-col"><figure class="wt-photo"><img src="../../images/wafer-transfer/pre-aligner.webp" alt="EFEM 안의 작은 회전 척 위에 300mm 웨이퍼 한 장이 얹혀 있고, 한쪽에 가장자리를 끼고 있는 검은 광학 센서가 있으며 웨이퍼 테두리에 작은 홈이 보인다" loading="lazy"/>
    <figcaption>Pre-aligner — 가운데 회전 척이 웨이퍼를 돌리고, 오른쪽 센서가 가장자리와 Notch를 읽습니다 (생성 이미지)</figcaption></figure></div></div></div>
 </section>
+
 <section class="slide" data-nid="09-03" data-here="align"><div class="wt-pad"><div class="wt-eye">개념 · Notch</div>
  <h2 class="h-title">Notch — 웨이퍼의 12시 표식</h2>
  <div class="wt-body"><div class="wt-col">
-  <div class="wt-card"><h3>가장자리의 홈</h3><p>웨이퍼 테두리의 작은 V홈. 결정 방향과 기준 방향을 나타냅니다.</p></div>
-  <div class="wt-card v"><h3>Flat에서 Notch로</h3><p>작은 웨이퍼는 직선 절단면(Flat)으로 표시해 면적 손실이 컸습니다. 300mm는 작은 홈(Notch) — 손실 최소, 정밀 정렬 가능. 웨이퍼가 커지고 비싸지며 "한 칩이라도 더"가 중요해진 결과입니다.</p></div></div>
+  <div class="wt-card"><h3>가장자리의 작은 V홈</h3><p>300 mm 웨이퍼 테두리에 깊이 1 mm 남짓한 V자 홈이 딱 하나 있습니다. 모든 장비가 이 홈을 "12시"로 삼습니다.</p></div>
+  <div class="wt-card v"><h3>Flat 에서 Notch 로</h3><p>예전 작은 웨이퍼(150 mm 이하)는 한쪽을 직선으로 잘라낸 <b>Flat</b>으로 방향을 표시했습니다. 잘라낸 만큼 칩을 못 만듭니다. 웨이퍼가 커지고 비싸지자 손실이 작은 <b>Notch</b>가 표준이 됐습니다 — "한 칩이라도 더".</p></div>
+  <div class="wt-card ac"><h3>현장 한 줄</h3><p>Notch 옆에는 보통 레이저로 새긴 웨이퍼 ID가 있습니다. 방향을 맞추면 ID가 늘 같은 자리에 오므로 카메라가 바로 읽습니다.</p></div></div>
   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
-   <svg viewBox="28 38 264 290"><circle cx="160" cy="170" r="120" fill="url(#wg)" opacity=".9"/>
-    <path d="M160 50 l-12 22 h24 z" fill="#0a141c"/><text class="fx-cap" x="160" y="312" text-anchor="middle">Notch</text></svg></div></div></div></div>
+   <svg viewBox="0 0 560 330">
+    <circle cx="150" cy="170" r="120" fill="url(#wg)" opacity=".9"/>
+    <path d="M150 50 l-12 22 h24 z" fill="#0a141c"/>
+    <text class="fx-cap" x="150" y="320" text-anchor="middle">Notch (300 mm)</text>
+    <circle cx="420" cy="170" r="120" fill="url(#wg)" opacity=".9"/>
+    <rect x="300" y="40" width="240" height="38" fill="#0a141c"/>
+    <line x1="352" y1="78" x2="488" y2="78" stroke="#ffb340" stroke-width="3"/>
+    <text class="fx-cap" x="420" y="320" text-anchor="middle" style="fill:#ffb340">Flat — 잘린 만큼 손실</text></svg></div></div></div></div>
 </section>
+
 <section class="slide" data-nid="09-04"><div class="wt-pad"><div class="wt-eye">개념 · 결정방위</div>
  <h2 class="h-title">Notch는 결정 방향을 가리킨다</h2>
  <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
-   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>단결정 웨이퍼</h3><p>웨이퍼는 하나의 결정. 결정에는 방향이 있고, 공정·소자 특성이 그 방향에 의존합니다.</p></div>
-  <div class="wt-card v"><h3>Notch = 기준</h3><p>Notch가 그 결정 방향의 표식이라, 모든 장비가 같은 기준으로 방향을 잡습니다.</p></div></div></div>
-   <div class="wt-note" style="margin-top:0"><b>그래서</b> — 방향 정렬은 미관이 아니라 <b>소자 특성·수율</b>의 문제입니다.</div>
+   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 34px;align-content:center">
+    <div class="wt-card"><h3>웨이퍼 = 결정 하나</h3><p>실리콘 원자가 한 방향으로 줄 맞춰 늘어선 거대한 단결정입니다. 나무에 결이 있듯 결정에도 결이 있습니다.</p></div>
+    <div class="wt-card v"><h3>결에 따라 성질이 다르다</h3><p>같은 약품으로 식각해도 결 방향마다 깎이는 속도가 다르고, 트랜지스터의 전류 흐름(이동도)도 방향에 따라 달라집니다.</p></div>
+    <div class="wt-card ac"><h3>Notch = 결의 표시</h3><p>흔히 쓰는 (100) 웨이퍼에서 Notch는 &lt;110&gt; 방향을 가리킵니다. 이온주입 장비는 이 기준으로 각도(Twist)를 정해, 이온이 결 사이로 너무 깊이 빠지는 <b>채널링</b>을 피합니다.</p></div></div></div>
+   <div class="wt-note" style="margin-top:0"><b>그래서</b> — 방향은 "보기 좋게"가 아니라, 수십 개 장비가 <b>같은 결을 같은 쪽으로</b> 보고 일하기 위한 약속입니다.</div>
   </div></div>
 </section>
 
 <section class="slide" data-nid="09-05" data-level="intro standard pro" data-here="align">
- <div class="wt-pad"><div class="wt-eye">02 · 어떻게</div><h2 class="h-title">중심 잡고, 방향 돌리고</h2>
+ <div class="wt-pad"><div class="wt-eye">02 · 어떻게</div><h2 class="h-title">돌려 보면 다 보인다 — 흔들림 그래프</h2>
   <div class="wt-body">
-   <div class="wt-col">
-    <div class="wt-num"><i>1</i><div><b>Centering</b> Pick 때 살짝 치우쳐 집힌 웨이퍼의 중심 오차를 회전 중 가장자리로 계산해 보정합니다. 중심이 맞아야 다음 스테이션에 정확히 놓입니다.</div></div>
-    <div class="wt-num"><i>2</i><div><b>Notch 탐지</b> 웨이퍼를 돌리며 센서로 Notch 위치를 찾습니다.</div></div>
-    <div class="wt-num v"><i>3</i><div><b>규격각 정렬</b> Notch를 0°(또는 지정각)로 회전시켜 멈춥니다. 각도 오차가 작아야 후속 패턴이 겹칩니다.</div></div></div>
-   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
-    <svg viewBox="50 80 410 200">
-     <circle cx="150" cy="180" r="90" fill="url(#wg)" opacity=".85"/><path d="M150 90 l-10 20 h20 z" fill="#0a141c" transform="rotate(50 150 180)"/>
-     <path class="fx-ln" d="M270 180 H330" marker-end="url(#mA)"/><text class="fx-sub" x="272" y="168">회전</text>
-     <circle cx="400" cy="180" r="0"/><circle cx="380" cy="180" r="70" fill="url(#wg)" opacity=".85"/><path d="M380 110 l-9 18 h18 z" fill="#0a141c"/></svg></div></div></div></div>
+   <div class="wt-col" style="flex:.9">
+    <div class="wt-num"><i>1</i><div><b>한 바퀴 돌리며 테두리를 잰다</b> 센서는 고정, 웨이퍼만 돕니다. 각도마다 "테두리가 회전축에서 얼마나 먼가"를 기록합니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>치우쳤으면 물결이 생긴다</b> 중심이 e 만큼 치우치면 테두리 거리가 한 바퀴에 한 번 오르내립니다. <b>물결 높이 = e</b>, <b>꼭대기 각도 = 치우친 방향</b>.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>Notch는 뾰족한 골</b> 홈 자리에서만 테두리가 갑자기 1 mm쯤 들어갑니다. 그 각도가 Notch 위치입니다.</div></div>
+    <div class="wt-note" style="margin-top:0"><b>보정</b> — 정렬대는 계산한 e 만큼 척을 옮겨 다시 잡거나, 로봇에게 "그만큼 비켜서 집어라"(오프셋)를 넘겨 줍니다.</div></div>
+   <div class="wt-col" style="flex:1.1"><div class="wt-fig" style="margin-top:0">
+    <svg viewBox="0 0 640 420">
+     <line x1="60" y1="40" x2="60" y2="350" stroke="#3a6b8c" stroke-width="2"/>
+     <line x1="60" y1="200" x2="620" y2="200" stroke="#3a6b8c" stroke-width="2" stroke-dasharray="5 6"/>
+     <text class="fx-sub" x="70" y="228">150 mm (치우침 없음)</text>
+     <path class="fx-ln" d="M60 200 C 120 120, 180 80, 240 80 C 300 80, 360 120, 410 200 C 450 262, 470 290, 482 296 L 488 352 L 494 302 C 530 318, 560 300, 620 200"/>
+     <line x1="240" y1="80" x2="240" y2="200" stroke="#9b8cff" stroke-width="2" stroke-dasharray="4 5"/>
+     <text class="fx-cap v" x="250" y="176">높이 = e</text>
+     <text class="fx-cap" x="200" y="66">꼭대기 = 치우친 방향</text>
+     <text class="fx-cap" x="610" y="380" text-anchor="end" style="fill:#ffb340">골 = Notch</text>
+     <text class="fx-sub" x="60" y="404">0°</text><text class="fx-sub" x="320" y="404">180°</text><text class="fx-sub" x="590" y="404">360°</text>
+     <text class="fx-sub" x="66" y="34">테두리 거리</text></svg></div>
+    <div class="wt-figc">개념도 — 실습 A에서 이 그래프를 직접 읽습니다.</div></div></div></div>
 </section>
 
 <section class="slide" data-nid="09-06" data-level="standard pro">
- <div class="wt-pad"><div class="wt-eye">03 · 오차</div><h2 class="h-title">방향이 틀리면 — 오버레이 불량</h2>
+ <div class="wt-pad"><div class="wt-eye">03 · 계산해 보기</div><h2 class="h-title">0.1°는 작은가? — 정렬은 두 번 한다</h2>
   <div class="wt-body"><div class="wt-col">
-   <div class="wt-num"><i>1</i><div><b>수십 층 정합</b> 웨이퍼는 층마다 패턴을 겹쳐 만듭니다. 방향·중심이 조금만 틀려도 위·아래층이 어긋납니다(오버레이 오류).</div></div>
-   <div class="wt-num warn"><i>2</i><div><b>허용치 초과 = 불량</b> 어긋난 정도가 허용치를 넘으면 회로가 이어지지 않습니다.</div></div>
-   <div class="wt-num warn"><i>3</i><div><b>재작업 불가</b> 이미 식각·증착된 층은 되돌릴 수 없어 대량 불량이 됩니다.</div></div>
-   <div class="wt-note v" style="margin-top:0"><b>그래서</b> 정렬은 "있으면 좋은" 게 아니라 <b>수율을 지키는 필수</b> 정거장입니다. 이송이 방향까지 책임집니다.</div></div>
+   <div class="wt-card"><h3>계산 — 호의 길이 = 반지름 × 각도(rad)</h3><p>150 mm × 0.1° × π/180 ≈ <b style="color:var(--ac)">0.26 mm = 260,000 nm</b><br/>
+    최신 노광 장비가 층과 층을 겹치는 정밀도(오버레이)는 <b style="color:var(--vc)">수 nm</b>. 정렬대보다 약 <b>10만 배</b> 정밀해야 합니다.</p></div>
+   <div class="wt-num"><i>1</i><div><b>1차 · 정렬대 = 대략 (0.1° · 0.1 mm 수준)</b> "이쯤에 있다"까지. 기계적으로 빠르게.</div></div>
+   <div class="wt-num v"><i>2</i><div><b>2차 · 노광 장비 = 정밀 (nm)</b> 웨이퍼에 새겨 둔 정렬 마크를 현미경으로 찾아 미세 보정합니다.</div></div>
+   <div class="wt-note v" style="margin-top:0"><b>그럼 정렬대는 왜?</b> — 노광 장비는 마크를 <b>좁은 범위 안에서만</b> 빨리 찾습니다. 대략이라도 맞춰 와야 바로 찾습니다. 첫 단추가 틀리면 찾다가 시간을 쓰고, 못 찾으면 웨이퍼를 돌려보냅니다.</div></div>
   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
-   <svg viewBox="0 0 520 360">
-    <text class="fx-cap" x="20" y="34">정렬됨</text>
-    <rect x="40" y="60" width="180" height="120" fill="none" stroke="#35e0c8" stroke-width="3"/>
-    <rect x="40" y="60" width="180" height="120" fill="rgba(155,140,255,.25)" stroke="#9b8cff" stroke-width="2" stroke-dasharray="6 5"/>
-    <line x1="80" y1="60" x2="80" y2="180" stroke="#35e0c8" stroke-width="3"/><line x1="180" y1="60" x2="180" y2="180" stroke="#35e0c8" stroke-width="3"/>
-    <text class="fx-sub" x="40" y="210">아래층 · 위층이 겹친다</text>
-    <text class="fx-cap" x="290" y="34" style="fill:#ff8f8f">방향 오차</text>
-    <rect x="300" y="60" width="180" height="120" fill="none" stroke="#35e0c8" stroke-width="3"/>
-    <rect x="300" y="60" width="180" height="120" fill="rgba(155,140,255,.25)" stroke="#9b8cff" stroke-width="2" stroke-dasharray="6 5" transform="rotate(8 390 120)"/>
-    <line x1="340" y1="60" x2="340" y2="180" stroke="#35e0c8" stroke-width="3"/><line x1="440" y1="60" x2="440" y2="180" stroke="#35e0c8" stroke-width="3"/>
-    <text class="fx-sub" x="300" y="210" style="fill:#ff8f8f">가장자리부터 어긋난다</text>
-    <line x1="20" y1="250" x2="500" y2="250" stroke="#274357" stroke-width="2"/>
-    <text class="fx-sub" x="20" y="290">실선 = 이미 새긴 아래층</text>
-    <text class="fx-sub" x="20" y="322">점선 = 새로 겹칠 위층</text></svg></div>
-   <div class="wt-figc">개념도 — 실제 허용 오차는 나노미터 단위입니다.</div></div></div></div>
+   <svg viewBox="0 0 520 380">
+    <text class="fx-cap" x="20" y="40">비유 — 주차</text>
+    <rect x="30" y="70" width="210" height="170" fill="none" stroke="#35e0c8" stroke-width="3"/>
+    <text class="fx-lbl" x="44" y="110">내비게이션</text>
+    <text class="fx-sub" x="44" y="144">"건물 입구까지"</text>
+    <text class="fx-sub" x="44" y="172">= 정렬대 (대략)</text>
+    <text class="fx-sub" x="44" y="212">±0.26 mm</text>
+    <path class="fx-ln" d="M248 155 H282" marker-end="url(#mA)"/>
+    <rect x="290" y="70" width="210" height="170" fill="none" stroke="#9b8cff" stroke-width="3"/>
+    <text class="fx-lbl" x="304" y="110">주차선 보고</text>
+    <text class="fx-sub" x="304" y="144">"칸에 딱 맞게"</text>
+    <text class="fx-sub" x="304" y="172">= 노광 정렬 (정밀)</text>
+    <text class="fx-sub" x="304" y="212">± 수 nm</text>
+    <text class="fx-sub" x="30" y="290">입구를 못 찾은 차는 주차선까지 갈 수 없다.</text>
+    <text class="fx-sub" x="30" y="322" style="fill:#ffb340">→ 1차가 틀리면 2차가 시작도 못 한다.</text></svg></div></div></div></div>
 </section>
 
+<section class="slide" data-nid="09-07" data-level="standard pro">
+ <div class="wt-pad"><div class="wt-eye">04 · 현장에서는</div><h2 class="h-title">정렬이 틀리면 현장에서 생기는 일</h2>
+  <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
+   <div class="wt-col" style="flex:none;width:100%;max-width:1560px;margin:0 auto"><table class="wt-tbl"><tr><th>무엇이 틀렸나</th><th>다음 장비에서</th><th>현장에서 보는 모습</th></tr>
+    <tr><td><b>중심</b></td><td>식각·증착 챔버의 척(ESC)과 둘레 링(Focus Ring)에 한쪽으로 치우쳐 놓인다</td><td>가장자리 한쪽만 막이 두껍거나 얇다(에지 불균일). 심하면 링에 걸쳐 흡착 불량·깨짐</td></tr>
+    <tr><td><b>중심</b></td><td>다음 스테이션에 놓을 때 여유가 줄어 벽·핀에 스친다</td><td>파티클(먼지)·긁힘, "웨이퍼 미끄러짐" 알람</td></tr>
+    <tr><td><b class="v">방향</b></td><td>노광 장비가 정렬 마크를 정해진 범위에서 못 찾는다</td><td>재탐색으로 시간 지연, 결국 정렬 실패 리젝트</td></tr>
+    <tr><td><b class="v">방향</b></td><td>Notch 옆 웨이퍼 ID를 카메라가 못 읽는다</td><td>"이 웨이퍼가 누구인지 모름" → 로트 홀드(작업 정지)</td></tr></table></div>
+   <div class="wt-note" style="margin-top:0"><b>현장 감각</b> — 정렬 문제는 불량 칩보다 먼저 <b>알람 · 지연 · 홀드</b>로 나타납니다. 장비 엔지니어가 먼저 전화를 받는 이유입니다.</div>
+  </div></div>
+</section>
 
+<section class="slide" data-nid="09-08" data-here="align"><div class="wt-pad"><div class="wt-eye">05 · 센서</div>
+ <h2 class="h-title">정렬대의 눈 — 그리고 속는 순간</h2>
+ <div class="wt-body"><div class="wt-col">
+   <div class="wt-num"><i>1</i><div><b>가장자리 센서</b> 테두리에 빛을 비추고 반대편에서 받습니다. 웨이퍼가 가린 폭으로 테두리 위치를 읽습니다(6강의 투과형 광센서와 같은 원리, 더 촘촘한 줄 센서).</div></div>
+   <div class="wt-num v"><i>2</i><div><b>엔코더</b> "그 순간 몇 도였나". 테두리 값과 각도가 짝이 되어야 그래프가 그려집니다(6강 엔코더).</div></div>
+   <div class="wt-note" style="margin-top:0"><b>연결</b> — 새 센서가 아닙니다. 6강의 두 센서를 <b>조합</b>했을 뿐입니다.</div></div>
+  <div class="wt-col">
+   <div class="wt-card warn"><h3>속는 경우 ① 투명한 웨이퍼</h3><p>유리·사파이어 같은 기판은 빛이 통과해 테두리를 못 봅니다. 센서 종류나 감도를 바꿔야 합니다.</p></div>
+   <div class="wt-card warn"><h3>속는 경우 ② 가장자리 깨짐</h3><p>테두리가 조금 깨진(Edge Chip) 자리도 "뾰족한 골"로 보입니다. 정렬대가 그 자리를 Notch로 착각하면 방향이 통째로 틀립니다.</p></div>
+   <div class="wt-card warn"><h3>속는 경우 ③ 휜 웨이퍼 · 더러운 센서</h3><p>막이 여러 겹 쌓여 휜 웨이퍼는 테두리가 들떠 값이 흔들리고, 센서 창이 오염되면 골을 못 찾습니다.</p></div></div></div></div>
+</section>
 
-
-<section class="slide" data-nid="09-07" data-here="align"><div class="wt-pad"><div class="wt-eye">04 · 시뮬레이터</div>
+<section class="slide" data-nid="09-09" data-here="align"><div class="wt-pad"><div class="wt-eye">06 · 시뮬레이터</div>
  <h2 class="h-title">Place → Align → Pick — 시뮬레이터에서의 정렬</h2>
  <div class="wt-body"><div class="wt-col">
   <div class="wt-num"><i>1</i><div><b>Place</b> Move Aligner → Extend → Place → Retract. 웨이퍼가 정렬대에 올라갑니다.</div></div>
-  <div class="wt-num"><i>2</i><div><b>Align</b> 가까운 쪽으로 돌려 Notch를 0°로(초당 160°, 길어야 1초 남짓).</div></div>
+  <div class="wt-num"><i>2</i><div><b>Align</b> <b>가까운 쪽으로</b> 초당 160° 돌아 Notch를 0°에 세웁니다. 남은 각이 3° 미만이면 완료.</div></div>
   <div class="wt-num v"><i>3</i><div><b>완료 확인</b> 로그 <b>[S] ALIGN "정렬 완료 : Notch 0°, 중심오차 보정."</b> 웨이퍼 색이 밝아집니다.</div></div>
-  <div class="wt-num v"><i>4</i><div><b>다시 Pick</b> Extend → Pick → Retract. 정렬된 웨이퍼는 Load Lock으로(10강).</div></div></div>
+  <div class="wt-num v"><i>4</i><div><b>다시 Pick</b> Extend → Pick → Retract. 정렬된 웨이퍼는 Load Lock으로(10강).</div></div>
+  <div class="wt-note" style="margin-top:0"><b>생각해 볼 것</b> — "가까운 쪽"이니 정렬대는 아무리 길어도 180°, 즉 <b>약 1.1초</b>면 끝납니다. 300°에 있는 Notch는 몇 도 돌까요?</div></div>
   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
    <svg viewBox="0 0 520 360">
     <circle cx="140" cy="170" r="100" fill="url(#wg)" opacity=".9"/>
-    <path d="M140 70 l-9 0 l9 14 l9 -14 z" fill="#0b1520" transform="rotate(115 140 170)"/>
-    <text class="fx-sub" x="80" y="300">정렬 전 · Notch 115°</text>
+    <path d="M140 70 l-9 0 l9 14 l9 -14 z" fill="#0b1520" transform="rotate(300 140 170)"/>
+    <path d="M43 114 A 112 112 0 0 1 132 58.3" fill="none" stroke="#35e0c8" stroke-width="3" marker-end="url(#mA)"/>
+    <text class="fx-sub" x="56" y="300">정렬 전 · Notch 300°</text>
     <path class="fx-ln" d="M258 170 H300" marker-end="url(#mA)"/><text class="fx-cap" x="244" y="150">Align</text>
     <circle cx="410" cy="170" r="100" fill="url(#wg)"/>
     <circle cx="410" cy="170" r="100" fill="none" stroke="#35e0c8" stroke-width="3"/>
     <path d="M410 70 l-9 0 l9 14 l9 -14 z" fill="#0b1520"/>
     <line x1="410" y1="40" x2="410" y2="66" stroke="#35e0c8" stroke-width="3"/><text class="fx-cap" x="424" y="54">0°</text>
     <text class="fx-sub" x="318" y="300">정렬 완료 · Notch 0°</text></svg></div>
-   <div class="wt-figc">정렬된 웨이퍼는 색으로 구분됩니다 — 훈련 ②가 이 장수를 셉니다.</div></div></div></div>
+   <div class="wt-figc">300° → 시계방향으로 60°만 (0.375초). 300° 를 거꾸로 돌지 않습니다.</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="09-08" data-here="align"><div class="wt-pad"><div class="wt-eye">05 · 센서</div>
- <h2 class="h-title">정렬은 어떤 센서로 하나</h2>
- <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
-   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-num"><i>1</i><div><b>가장자리 센서</b> 회전 중 테두리 위치를 읽어 중심·Notch 계산.</div></div>
-  <div class="wt-num v"><i>2</i><div><b>각도(엔코더)</b> 회전량을 정밀 측정.</div></div></div></div>
-   <div class="wt-note" style="margin-top:0"><b>연결</b> — 6강 센서의 위치·엔코더 개념이 여기서 쓰입니다.</div>
-  </div></div>
-</section>
-<section class="slide" data-nid="09-09"><div class="wt-pad"><div class="wt-eye">06 · 흔한 문제</div>
+<section class="slide" data-nid="09-10"><div class="wt-pad"><div class="wt-eye">07 · 흔한 문제</div>
  <h2 class="h-title">정렬에서 자주 나는 문제</h2>
  <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
    <div class="wt-col" style="flex:none;width:100%;max-width:1500px;margin:0 auto"><table class="wt-tbl"><tr><th>증상 · 코드</th><th>원인</th><th>대응</th></tr>
@@ -287,43 +339,52 @@ section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }</style>
    <tr><td><b>ALM-602</b> Pick 거부</td><td>정렬이 아직 도는 중</td><td>"정렬 완료" 로그 뒤 Pick</td></tr>
    <tr><td><b>ALM-505</b> Place 거부</td><td>정렬대에 이미 웨이퍼가 있음 (Double Place)</td><td>있던 웨이퍼를 먼저 치우기</td></tr>
    <tr><td><b>ALM-502</b> Pick 거부</td><td>빈 정렬대에서 Pick</td><td>Presence 확인</td></tr>
-   <tr><td>Notch 못 찾음 (실장비)</td><td>웨이퍼 미안착 · 센서 오염</td><td>다시 안착 후 재정렬</td></tr>
+   <tr><td>Notch 못 찾음 (실장비)</td><td>웨이퍼 미안착 · 센서 오염 · 투명 기판</td><td>다시 안착 후 재정렬, 센서 창 청소</td></tr>
+   <tr><td>방향이 엉뚱함 (실장비)</td><td>가장자리 깨짐을 Notch로 착각</td><td>웨이퍼 육안 확인 → 깨짐이면 로트 보고</td></tr>
    <tr><td>중심 오차 큼 (실장비)</td><td>Pick이 많이 치우침</td><td>Pick 자세 · 티칭 점검</td></tr></table></div>
    <div class="wt-note" style="margin-top:0"><b>대응</b> — 정렬대는 한 번에 한 장. 놓고 → 돌고 → 끝나야 집는다.</div>
   </div></div>
 </section>
 
-
-
-
-
-
-
-
-
-
-
-
-<section class="slide" data-nid="09-10" data-level="intro standard pro">
- <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">9강에서 직접 해볼 것</h2>
-  <div class="wt-body">
-   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>Pre-aligner에 Place</b> 웨이퍼를 정렬대에 올린다.</div></div>
-    <div class="wt-num"><i>2</i><div><b>Align 실행</b> Notch를 0°로 맞춘다.</div></div></div>
-   <div class="wt-col"><div class="wt-num v"><i>3</i><div><b>다시 Pick</b> 정렬된 웨이퍼를 집어 다음 단계로.</div></div>
-    <div class="wt-num v"><i>4</i><div><b>훈련 탭 2개</b> ① 정렬 한 바퀴 · ② 세 장 모두 정렬.</div></div>
-    <div class="wt-note"><b>완료 기준</b> — 재-Pick까지 성공하고 <b>훈련 2개</b>를 통과하면 9강 종료.
-     ②에서 어떤 순서가 빠른지 손으로 느껴 두면, 12강에서 같은 일을 프로그램으로 쓸 때 바로 이어집니다.</div></div></div></div>
+<section class="slide" data-nid="09-11" data-level="intro standard pro" data-here="align">
+ <div class="wt-pad"><div class="wt-eye">실습 A · 정렬대 해독기</div><h2 class="h-title">그래프 한 장으로 웨이퍼를 읽어라</h2>
+  <div class="wt-body al-lab" id="alLab">
+   <div class="wt-col" style="flex:1.25">
+    <div class="wt-fig" style="margin-top:0;padding:14px"><svg id="alPlot" viewBox="0 0 900 470" aria-label="정렬대 가장자리 센서 그래프"></svg></div>
+    <div class="wt-figc" id="alCase">웨이퍼 #1 — 가로: 회전 각도(°) · 세로: 테두리 거리 − 150 mm</div></div>
+   <div class="wt-col" style="flex:1">
+    <div class="al-q"><span>Q1</span><label for="alQ1">Notch는 몇 도에 있나? <em>(±3°)</em></label><input id="alQ1" inputmode="decimal" autocomplete="off"/><b class="al-r" id="alR1"></b></div>
+    <div class="al-q"><span>Q2</span><label for="alQ2">중심 오차 e 는 몇 mm? <em>(±0.1)</em></label><input id="alQ2" inputmode="decimal" autocomplete="off"/><b class="al-r" id="alR2"></b></div>
+    <div class="al-q"><span>Q3</span><label for="alQ3">웨이퍼는 몇 도 쪽으로 치우쳤나? <em>(±10°)</em></label><input id="alQ3" inputmode="decimal" autocomplete="off"/><b class="al-r" id="alR3"></b></div>
+    <div class="al-q"><span>Q4</span><label for="alQ4">Notch를 0°로 — 최단 회전 몇 도? <em>(+/− 부호, ±3°)</em></label><input id="alQ4" inputmode="decimal" autocomplete="off"/><b class="al-r" id="alR4"></b></div>
+    <div class="al-q"><span>Q5</span><label for="alQ5">시뮬레이터 정렬대(초당 160°)라면 몇 초? <em>(±0.05)</em></label><input id="alQ5" inputmode="decimal" autocomplete="off"/><b class="al-r" id="alR5"></b></div>
+    <div class="al-btns"><button type="button" id="alCheck">채점</button><button type="button" id="alNew">새 웨이퍼</button><button type="button" id="alShow">정답 보기</button></div>
+    <div class="wt-note" id="alMsg" style="margin-top:12px">힌트 — 뾰족한 골 = Notch · 물결 꼭대기 높이 = e · 꼭대기 각도 = 치우친 방향 · 회전은 각이 커지는 쪽 + · 시간 = |회전각| ÷ 160</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="09-11" data-level="intro standard pro" data-here="all">
+<section class="slide" data-nid="09-12" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 B · 시뮬레이터</div><h2 class="h-title">예측하고, 재고, 설계한다</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>예측 — 훈련 ③ 예측하고 확인</b> 로그의 <b>[I] LOT</b> 줄에서 Notch 각도를 읽고, 돌기 전에 회전각 · 시간 · 방향을 계산합니다. 답은 사람마다 다릅니다(웨이퍼 각도가 매번 새로 정해짐).</div></div>
+    <div class="wt-num"><i>2</i><div><b>측정 — 훈련 ② 세 장 모두 정렬</b> 기록 시간 T 를 적습니다. 그중 정렬대가 돈 시간은? (①에서 계산한 방식으로 세 장 합) → <b>정렬 시간 ÷ T</b> 를 % 로.</div></div>
+    <div class="wt-num v"><i>3</i><div><b>판단 — 병목은 누구인가</b> 정렬대인가, 로봇의 왕복인가? 숫자로 근거를 대세요.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card v" style="flex:none"><h3>설계 토론 — 손이 둘이라면</h3><p>실제 EFEM 로봇은 손(End Effector)이 둘인 경우가 많습니다. 손이 둘이면 정렬대 앞에서 무엇을 동시에 할 수 있나요? 위 ③의 결과를 근거로 순서를 다시 써 보세요.</p></div>
+    <div class="wt-card" style="flex:none"><h3>워크시트 (손으로 채우기)</h3><p>① 내 W1 회전각 ___° · ___초 · ___방향<br/>② T = ___초 · 정렬 합 = ___초 · 비율 ___%<br/>③ 병목 = ______ (근거: ______)<br/>④ 손이 둘이면 바뀌는 한 줄: ______</p></div>
+    <div class="wt-note"><b>완료 기준</b> — 훈련 <b>① ② ③ 통과</b> + 워크시트 네 칸. 12강에서 이 순서를 프로그램으로 씁니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="09-13" data-level="intro standard pro" data-here="all">
  <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">9강에서 남길 것</h2>
   <div class="wt-body">
-   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>Notch=방향</b> 웨이퍼의 기준 방향 표식.</div></div>
-    <div class="wt-num v"><i>2</i><div><b>중심+방향</b> Pre-aligner가 둘 다 맞춘다.</div></div>
-    <div class="wt-num"><i>3</i><div><b>놓고 · 돌고 · 끝나야 집는다</b> Place → Align → "정렬 완료" → Pick.</div></div></div>
-   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① 정렬을 건너뛰면 공정에서 무슨 문제가? → 오버레이 오류, 되돌릴 수 없는 불량.<br/>
-     ② 정렬이 도는 중에 Pick 하면? → ALM-602, "정렬 완료" 뒤에.<br/>
-     ③ 빈 정렬대에서 Align을 누르면? → ALM-601.</p></div>
+   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>정렬대 = 중심 · 방향 · ID</b> 1초 동안 세 가지를 하고 다음 장비에 넘긴다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>정렬은 두 번</b> 정렬대는 대략(0.1° ≈ 0.26 mm), 노광은 정밀(nm). 1차가 틀리면 2차가 시작을 못 한다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>그래프 읽기</b> 물결 높이 = e, 꼭대기 = 방향, 뾰족한 골 = Notch.</div></div>
+    <div class="wt-num"><i>4</i><div><b>놓고 · 돌고 · 끝나야 집는다</b> Place → Align → "정렬 완료" → Pick.</div></div></div>
+   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① 정렬대가 0.1° 틀리면 가장자리는? → 약 0.26 mm. 그래서 nm 정렬은 노광 장비가 정렬 마크로 따로 한다.<br/>
+     ② 정렬을 건너뛰면? → 다음 장비가 마크·ID를 못 찾거나 치우쳐 놓여 알람·지연·홀드, 심하면 불량.<br/>
+     ③ Notch가 300°면 시뮬 정렬대는? → 시계방향 60°, 0.375초.</p></div>
     <div class="wt-note"><b>다음 강</b> — 10강 <b>Load Lock</b>: 대기와 진공을 잇는 압력 전환을 다룹니다.</div></div></div></div>
 </section>
 </div></div>
@@ -371,7 +432,84 @@ section[data-nid="09-01"] .wt-fig svg{ max-height:500px; }</style>
   build(); fit();
 })();
 </script>
-<script id="wt-notes" type="application/json">{"09-01":{"key":"웨이퍼에도 위아래가 있다 — 이송 도중 <b>중심과 Notch</b>를 규격에 맞춘다","kw":["Notch = 방향 기준","중심 + 방향","Pre-aligner"],"sec":57,"audio":true},"09-02":{"key":"정렬 = <b>Centering + Orientation</b> — 패턴은 방향을 타고, 챔버 전에 한 번 맞춘다","kw":["패턴은 방향을 탄다","Notch 12시","챔버 전에 한 번"],"sec":59,"audio":true},"09-03":{"key":"Notch 는 테두리의 작은 V홈 — Flat 에서 Notch 로 바뀐 이유는 <b>한 칩이라도 더</b>","kw":["V홈 = 12시 표식","Flat → Notch","면적 손실 최소","300mm"],"sec":51,"audio":true},"09-04":{"key":"웨이퍼는 하나의 단결정 — Notch 가 결정 방향을 가리키므로 정렬은 <b>소자 특성·수율</b>의 문제","kw":["단결정","결정 방향","모든 장비가 같은 기준","미관이 아니라 수율"],"sec":47,"audio":true},"09-05":{"key":"세 단계 — <b>Centering → Notch 탐지 → 규격각 정렬</b>, 가장자리를 읽으며 회전","kw":["중심 오차 보정","Notch 탐지","0° 또는 지정각","회전 중 계산"],"sec":53,"audio":true},"09-06":{"key":"방향이 틀리면 <b>오버레이 불량</b> — 수십 층 정합, 허용치 초과 = 불량, 재작업 불가","kw":["수십 층 정합","오버레이 오류","되돌릴 수 없다","필수 정거장"],"sec":57,"audio":true},"09-07":{"key":"시뮬은 <b>Place → Align → 완료 로그 → Pick</b> — Notch 0°, 정렬되면 색이 밝아진다","kw":["Move Aligner → Extend → Place → Retract","Align 초당 160°","[S] ALIGN 로그","색이 밝아짐"],"sec":68,"audio":true},"09-08":{"key":"정렬의 센서는 둘 — <b>가장자리 센서</b>로 중심·Notch, <b>엔코더</b>로 회전량. 6강이 여기서 쓰인다","kw":["가장자리 센서","엔코더 각도","6강 연결"],"sec":50,"audio":true},"09-09":{"key":"한 번에 한 장 — <b>놓고 → 돌고 → 끝나야 집는다</b>. 601 빈 정렬대 · 602 도는 중","kw":["ALM-601","ALM-602","505 · 502","Notch 못 찾음 · 중심 오차"],"sec":58,"audio":true},"09-10":{"key":"실습 — Place · Align · 재Pick, 훈련 ① 정렬 한 바퀴 · ② <b>세 장 모두 정렬</b>","kw":["Place → Align → Pick","훈련 2개","②의 순서 감각 → 12강"],"sec":60,"audio":true},"09-11":{"key":"남길 것 — <b>Notch = 방향 · 중심+방향 · 끝나야 집는다</b>. Q 오버레이 · 602 · 601","kw":["Notch = 방향","Centering + Orientation","Place → Align → 완료 → Pick","다음 10강 Load Lock"],"sec":64,"audio":true}}</script>
+<script>
+/* 실습 A · 정렬대 해독기 — 무작위 웨이퍼의 가장자리 센서 그래프를 그리고, 학생 답을 채점한다.
+   모델: 테두리 거리 r(φ) − 150 = e·cos(φ − α) − (Notch 골, 폭 ±2.5°, 깊이 1.1 mm)
+   Q4 부호는 시뮬레이터(wafer-transfer-sim.html)와 같다: d = ((0 − φn + 540) mod 360) − 180, + 면 각이 커지는 쪽.
+   입력칸에서 스페이스·화살표를 누르면 슬라이드가 넘어가지 않도록 keydown 전파를 막는다. */
+(function(){
+  var lab=document.getElementById('alLab'); if(!lab) return;
+  var plot=document.getElementById('alPlot'), NS='http://www.w3.org/2000/svg';
+  var X0=70, X1=880, Y0=30, Y1=410, YMAX=2, YMIN=-2.6;   // 그래프 영역 · 세로 범위(mm)
+  var W={}, n=0;
+  function rnd(a,b,step){ return a+Math.floor(Math.random()*((b-a)/step+1))*step; }
+  function px(phi){ return X0+(X1-X0)*phi/360; }
+  function py(v){ return Y0+(Y1-Y0)*(YMAX-v)/(YMAX-YMIN); }
+  function dip(phi){ var d=Math.abs(((phi-W.n)+540)%360-180); return d<2.5 ? 1.1*(1-d/2.5) : 0; }
+  function edge(phi){ return W.e*Math.cos((phi-W.a)*Math.PI/180)-dip(phi); }
+  function el(tag,at,txt){ var e=document.createElementNS(NS,tag); for(var k in at) e.setAttribute(k,at[k]); if(txt!=null) e.textContent=txt; plot.appendChild(e); return e; }
+  function draw(){
+    while(plot.firstChild) plot.removeChild(plot.firstChild);
+    for(var g=0; g<=360; g+=30){ el('line',{x1:px(g),y1:Y0,x2:px(g),y2:Y1,stroke:'#294357','stroke-width':1});
+      el('text',{x:px(g),y:Y1+28,'text-anchor':'middle','class':'fx-sub'},g+'°'); }
+    for(var v=-2.5; v<=2.001; v+=0.5){ var y=py(v);
+      el('line',{x1:X0,y1:y,x2:X1,y2:y,stroke:v===0?'#3a6b8c':'#1f3547','stroke-width':v===0?2:1});
+      el('text',{x:X0-10,y:y+6,'text-anchor':'end','class':'fx-sub'},(v>0?'+':'')+v.toFixed(1)); }
+    var d='';
+    for(var p=0; p<=360; p+=0.25) d+=(p?'L':'M')+px(p).toFixed(1)+' '+py(edge(p)).toFixed(1)+' ';
+    el('path',{d:d,fill:'none',stroke:'#35e0c8','stroke-width':3});
+    el('text',{x:X0+6,y:Y0-8,'class':'fx-sub'},'mm');
+  }
+  function fresh(){
+    n++;
+    W.e=rnd(3,15,1)/10;                 // 0.3 ~ 1.5 mm
+    W.a=rnd(0,350,10);                  // 치우친 방향
+    do { W.n=rnd(5,355,5); } while(Math.abs(((W.n-W.a)+540)%360-180)<30 || Math.abs(W.n-180)<12); // 골이 꼭대기에 묻히거나 180° 근처(방향 애매)면 다시
+    W.d=((0-W.n+540)%360)-180;
+    W.t=Math.abs(W.d)/160;
+    draw();
+    document.getElementById('alCase').textContent='웨이퍼 #'+n+' — 가로: 회전 각도(°) · 세로: 테두리 거리 − 150 mm';
+    for(var i=1;i<=5;i++){ document.getElementById('alQ'+i).value=''; var r=document.getElementById('alR'+i); r.textContent=''; r.className='al-r'; }
+    msg('힌트 — 뾰족한 골 = Notch · 물결 꼭대기 높이 = e · 꼭대기 각도 = 치우친 방향 · 회전은 각이 커지는 쪽 + · 시간 = |회전각| ÷ 160','');
+  }
+  function msg(t,cls){ var m=document.getElementById('alMsg'); m.textContent=t; m.className='wt-note'+(cls?' '+cls:''); m.style.marginTop='12px'; }
+  function angDiff(a,b){ return Math.abs(((a-b)+540)%360-180); }
+  var Q=[
+    {want:function(){return W.n;}, ok:function(g){return angDiff(g,W.n)<=3;},
+     hint:'Q1 — 그래프에서 아래로 뾰족하게 꺼진 곳의 가로 각도입니다.'},
+    {want:function(){return W.e;}, ok:function(g){return Math.abs(g-W.e)<=0.1;},
+     hint:'Q2 — 물결의 꼭대기가 0 선에서 몇 mm 위인가요? (골은 빼고 물결만)'},
+    {want:function(){return W.a;}, ok:function(g){return angDiff(g,W.a)<=10;},
+     hint:'Q3 — 테두리가 가장 멀어지는 각도, 즉 물결 꼭대기의 가로 각도입니다.'},
+    {want:function(){return W.d;}, ok:function(g){return Math.abs(g-W.d)<=3;},
+     hint:'Q4 — 0° 까지 두 길(각을 줄이는 쪽 / 늘리는 쪽) 중 짧은 쪽. 180° 이하가 답이고, 늘리는 쪽이면 +.'},
+    {want:function(){return +W.t.toFixed(2);}, ok:function(g){return Math.abs(g-W.t)<=0.05;},
+     hint:'Q5 — Q4 의 크기 ÷ 160.'}
+  ];
+  function num(s){ var g=parseFloat(String(s).replace(/[^0-9.+-]/g,'')); return isFinite(g)?g:null; }
+  function check(){
+    var right=0, first=null;
+    Q.forEach(function(q,i){
+      var r=document.getElementById('alR'+(i+1)), g=num(document.getElementById('alQ'+(i+1)).value);
+      if(g===null){ r.textContent='—'; r.className='al-r'; if(first===null) first=q.hint; return; }
+      if(q.ok(g)){ r.textContent='✓'; r.className='al-r ok'; right++; }
+      else { r.textContent='✗'; r.className='al-r no'; if(first===null) first=q.hint; }
+    });
+    if(right===5) msg('5 / 5 — 정렬대처럼 읽었습니다. "새 웨이퍼"로 한 번 더, 이번엔 1분 안에.','');
+    else msg(right+' / 5 — '+first,'warn');
+  }
+  function show(){
+    Q.forEach(function(q,i){ var r=document.getElementById('alR'+(i+1)); r.textContent=String(q.want()); r.className='al-r ans'; });
+    msg('정답 — Notch '+W.n+'° · e '+W.e.toFixed(1)+' mm · 방향 '+W.a+'° · 회전 '+(W.d>0?'+':'')+W.d+'° · '+W.t.toFixed(2)+'초','v');
+  }
+  lab.addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') check(); });
+  document.getElementById('alCheck').addEventListener('click',check);
+  document.getElementById('alNew').addEventListener('click',fresh);
+  document.getElementById('alShow').addEventListener('click',show);
+  fresh();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"09-01":{"key":"로봇은 옮기다 말고 정렬대에서 <b>1초</b> 돌린다 — 빼먹으면 다음 장비가 웨이퍼를 못 알아본다","kw":["1초의 정거장","Notch = 방향 기준","오늘의 질문: 0.1°면 충분한가"],"sec":48,"audio":true},"09-02":{"key":"정렬대는 1초 동안 <b>중심 · 방향 · ID</b> 세 가지를 한다 — 택배 분류센터 스캐너처럼","kw":["Centering","Orientation","웨이퍼 ID 읽기","택배 스캐너 비유"],"sec":57,"audio":true},"09-03":{"key":"Notch 는 테두리의 1 mm 남짓한 V홈 — Flat 에서 Notch 로 바뀐 이유는 <b>한 칩이라도 더</b>","kw":["V홈 = 12시","Flat → Notch","옆에 레이저 ID"],"sec":60,"audio":true},"09-04":{"key":"웨이퍼는 하나의 결정 — 결 방향마다 성질이 달라서 Notch 로 <b>같은 결을 같은 쪽으로</b> 본다","kw":["단결정 = 결","식각 속도·이동도","(100) 웨이퍼 <110>","채널링 · Twist"],"sec":55,"audio":true},"09-05":{"key":"한 바퀴 돌리면 <b>물결 높이 = 중심 오차 e</b>, 꼭대기 = 치우친 방향, 뾰족한 골 = Notch","kw":["센서 고정, 웨이퍼 회전","물결 = 중심 오차","골 = Notch","오프셋 보정"],"sec":63,"audio":true},"09-06":{"key":"0.1° 는 가장자리에서 <b>0.26 mm = 260,000 nm</b> — 정렬대는 대략, 노광은 정밀, 정렬은 두 번","kw":["호 = 반지름 × 각도","260,000 nm vs 수 nm","1차 대략 · 2차 정밀","주차 비유"],"sec":72,"audio":true},"09-07":{"key":"정렬 문제는 불량 칩보다 먼저 <b>알람 · 지연 · 홀드</b>로 나타난다","kw":["치우친 안착 → 에지 불균일","스침 → 파티클","마크 못 찾음 → 리젝트","ID 못 읽음 → 로트 홀드"],"sec":59,"audio":true},"09-08":{"key":"정렬대의 눈은 <b>가장자리 센서 + 엔코더</b> — 투명 기판 · 에지 깨짐 · 휜 웨이퍼에 속는다","kw":["투과형 광센서(줄)","엔코더 각도","가짜 Notch = Edge Chip","6강 조합"],"sec":60,"audio":true},"09-09":{"key":"시뮬은 <b>Place → Align → 완료 로그 → Pick</b> — 정렬대는 가까운 쪽으로 초당 160°, 최대 약 1.1초","kw":["Move Aligner → Extend → Place → Retract","가까운 쪽 · 초당 160°","3° 미만이면 완료","300° → 60°"],"sec":61,"audio":true},"09-10":{"key":"한 번에 한 장 — <b>놓고 → 돌고 → 끝나야 집는다</b>. 실장비는 센서 오염 · 가짜 Notch 도 의심","kw":["ALM-601 · 602","505 · 502","Notch 못 찾음","에지 깨짐 착각"],"sec":63,"audio":true},"09-11":{"key":"실습 A — 무작위 웨이퍼의 그래프를 읽고 <b>Notch · e · 방향 · 회전각 · 시간</b>을 답한다","kw":["뾰족한 골 = Notch","물결 높이 = e","꼭대기 = 방향","새 웨이퍼로 반복"],"sec":66,"audio":true},"09-12":{"key":"실습 B — 훈련 ③ <b>예측</b>, ② <b>측정</b>, 그리고 병목 판단 · 손이 둘인 로봇 설계 토론","kw":["훈련 ③ 예측하고 확인","정렬 시간 ÷ T","병목은 누구인가","Dual Arm 이면?"],"sec":68,"audio":true},"09-13":{"key":"남길 것 — <b>중심·방향·ID · 정렬은 두 번 · 그래프 읽기 · 끝나야 집는다</b>","kw":["0.1° ≈ 0.26 mm","1차 대략 · 2차 정밀","물결 · 꼭대기 · 골","다음 10강 Load Lock"],"sec":60,"audio":true}}</script>
 <script src="_notes.js"></script>
 <script src="_print.js"></script>
 </body></html>

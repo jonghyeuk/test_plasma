@@ -149,6 +149,25 @@ h2.h-title{ font-size:56px; }
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="_print.css"/>
 <link rel="stylesheet" href="_notes.css"/>
+<style>
+/* 실습 A · 클러스터 처리량 계산기 (11-13) — 9·10강 실습과 같은 판 — 입력칸 · 채점 표시 */
+.al-q{ display:grid; grid-template-columns:52px 1fr 150px 44px; align-items:center; gap:12px; margin-bottom:14px;
+  padding:12px 16px; border:1px solid var(--ln2); border-radius:3px; background:rgba(19,36,51,.72); }
+.al-q span{ font-family:var(--mono); font-size:20px; font-weight:700; color:var(--ac); }
+.al-q label{ font-size:23px; line-height:1.4; color:var(--t1); }
+.al-q label em{ font-style:normal; font-size:18px; color:var(--t4); }
+.al-q input{ font-family:var(--mono); font-size:24px; width:100%; box-sizing:border-box; padding:8px 10px;
+  background:#0a141c; color:var(--t1); border:1px solid #45688a; border-radius:3px; }
+.al-q input:focus{ outline:2px solid var(--ac); outline-offset:1px; }
+.al-r{ font-family:var(--mono); font-size:24px; text-align:center; color:var(--t4); }
+.al-r.ok{ color:var(--ac); } .al-r.no{ color:var(--bd); } .al-r.ans{ color:var(--wn); font-size:19px; }
+.al-btns{ display:flex; gap:12px; margin-top:4px; }
+.al-btns button{ font-family:var(--mono); font-size:21px; font-weight:700; padding:10px 22px; cursor:pointer;
+  background:#16293a; color:#cfe4f2; border:1px solid #2f5470; border-radius:3px; }
+.al-btns button:first-child{ background:var(--ac); color:#03231e; border-color:var(--ac); }
+.al-q select{ font-family:var(--sans); font-size:22px; width:100%; padding:7px 8px; background:#0a141c; color:var(--t1); border:1px solid #45688a; border-radius:3px; }
+.al-q select:focus{ outline:2px solid var(--ac); outline-offset:1px; }
+</style>
 </head><body>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
  <marker id="mA" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 Z" fill="#35e0c8"/></marker>
@@ -165,10 +184,10 @@ h2.h-title{ font-size:56px; }
  <div class="wt-pad"><div class="wt-eye">로봇및센서실습 · 반도체장비전공 · CHAPTER 11</div>
   <div class="wt-body" style="margin-top:10px;align-items:center">
    <div class="wt-col" style="flex:1.05"><h1 class="h-title">진공 이송<br/>Vacuum Robot과 Process Chamber</h1>
-    <div class="wt-lead" style="margin-top:26px">Load Lock을 넘으면 <b>진공의 세계</b>입니다.
-     대기 로봇과 다른 <b>진공 이송 로봇</b>이 웨이퍼를 공정 챔버로 나릅니다.</div>
-    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>이 강의</b> — 진공 로봇이 왜 다르게 생겼는지,
-     Load Lock에서 챔버까지 어떻게 넘기는지 봅니다.</div></div>
+    <div class="wt-lead" style="margin-top:26px">Load Lock을 넘으면 <b>진공의 세계</b>입니다. 그런데 여기 로봇은
+     대기 로봇보다 <b>일부러 천천히</b> 움직입니다. 비싼 장비에서 왜 굼뜨게 굴까요?</div>
+    <div class="wt-note v" style="margin-top:40px;max-width:960px"><b>오늘의 질문</b> — 진공에서 웨이퍼가 미끄러지지 않는 <b>최대 가속도</b>는?
+     그리고 챔버를 하나 더 붙이면 처리량은 정말 늘어날까?</div></div>
    <div class="wt-col" style="flex:.95"><div class="wt-fig" style="margin:0">
     <svg viewBox="28 108 444 264">
      <rect class="fx-vac" x="150" y="120" width="220" height="220" rx="14"/><text class="fx-lbl" x="170" y="150" fill="#bcaeff">TRANSFER</text>
@@ -183,22 +202,23 @@ h2.h-title{ font-size:56px; }
   <div class="wt-body">
    <div class="wt-col">
     <div class="wt-num v"><i>1</i><div><b>왜 밖에?</b> 진공 안에서는 윤활유가 증발해 웨이퍼를 오염시키고, 대류가 없어 모터 열이 빠져나가지 못합니다.</div></div>
-    <div class="wt-num v"><i>2</i><div><b>자력 전달</b> 모터·베어링은 진공 밖에 두고, <b>자석</b>으로 힘만 안으로 전달해 팔을 움직입니다.</div></div>
-    <div class="wt-num"><i>3</i><div><b>내열 재질</b> End Effector도 고온·진공을 견디는 재질을 씁니다.</div></div>
+    <div class="wt-num v"><i>2</i><div><b>벽을 뚫지 않고 힘만</b> 모터·베어링은 진공 밖(대기)에 두고, 회전만 벽 너머로 전달해 팔을 움직입니다. 방법은 다음 장에서 셋을 봅니다.</div></div>
+    <div class="wt-num"><i>3</i><div><b>모양도 다르다</b> 팔은 개구리 다리처럼 접히는 링크(Frog-leg)나 SCARA형. 진공 안에는 금속 링크와 손만 들어갑니다.</div></div>
     <div class="wt-note v" style="margin-top:0"><b>한 줄</b> — "오염과 발열을 피하려고 <b>구동부를 진공 밖</b>에 두는 것"이 진공 로봇의 가장 큰 특징입니다.</div></div>
    <div class="wt-col"><figure class="wt-photo"><img src="../../images/wafer-transfer/vacuum-robot.webp" alt="뚜껑을 연 다각형 스테인리스 Transfer Chamber 안, 가운데 기둥에서 뻗은 개구리다리형 금속 팔이 웨이퍼 한 장을 들고 있고 벽마다 공정 챔버로 이어지는 슬릿 밸브 구멍이 있다" loading="lazy"/>
     <figcaption>Transfer Chamber 안의 진공 로봇 — 팔만 안에 있고 모터는 바닥 아래(대기) 쪽입니다. 벽의 네모 구멍이 챔버로 가는 문 (생성 이미지)</figcaption></figure></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-03" data-here="tm"><div class="wt-pad"><div class="wt-eye">개념 · 커플링</div>
- <h2 class="h-title">자석으로 힘을 넘긴다 — 마그네틱 커플링</h2>
+<section class="slide" data-nid="11-03" data-here="tm"><div class="wt-pad"><div class="wt-eye">개념 · 벽 너머로</div>
+ <h2 class="h-title">벽 너머로 회전을 넘기는 세 가지 방법</h2>
  <div class="wt-body"><div class="wt-col">
-  <div class="wt-num v"><i>1</i><div><b>벽 너머로</b> 진공 벽을 사이에 두고 바깥 자석이 돌면 안쪽 자석이 따라 돕니다.</div></div>
-  <div class="wt-num v"><i>2</i><div><b>밀봉 유지</b> 축이 벽을 관통하지 않아 회전 씰에서 새는 누설이 없습니다.</div></div>
+  <div class="wt-num v"><i>1</i><div><b>자기 커플링</b> 진공 벽을 사이에 두고 바깥 자석이 돌면 안쪽 자석이 따라 돕니다. 축이 벽을 안 뚫습니다(오른쪽 그림).</div></div>
+  <div class="wt-num v"><i>2</i><div><b>밀봉 모터</b> 모터의 돌아가는 부분(회전자)만 진공 쪽에, 코일(고정자)은 얇은 벽 바깥에. 전자기력이 벽을 지나갑니다.</div></div>
+  <div class="wt-num"><i>3</i><div><b>자성유체 씰 · 벨로즈</b> 축은 벽을 지나가되, 자석에 붙잡힌 액체 고리(자성유체)나 주름 금속관(벨로즈)으로 틈을 막습니다.</div></div>
   <table class="wt-tbl" style="margin-top:6px"><tr><th>진공의 문제</th><th>설계 답</th></tr>
    <tr><td>윤활유 증발 → 오염</td><td>구동부를 밖에 · 무윤활 재질</td></tr>
    <tr><td>대류 없음 → 모터 발열</td><td>모터를 대기 쪽에 두어 냉각</td></tr>
-   <tr><td>축 관통 → 누설</td><td>자석으로 벽 너머 전달</td></tr></table></div>
+   <tr><td>축 관통 → 누설</td><td>벽 너머 전달 · 씰로 막기</td></tr></table></div>
   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
    <svg viewBox="0 0 520 380">
     <rect x="20" y="30" width="480" height="150" rx="10" fill="#161a35" stroke="#4d3f8c" stroke-width="2"/>
@@ -216,21 +236,56 @@ h2.h-title{ font-size:56px; }
     <rect x="235" y="256" width="50" height="60" fill="#233746" stroke="#4a7ea6" stroke-width="2"/><text class="fx-sub" x="296" y="292">모터</text>
     <path d="M150 145 C130 185 130 205 150 235" stroke="#ffb340" stroke-width="2.5" fill="none" stroke-dasharray="6 6"/>
     <path d="M370 145 C390 185 390 205 370 235" stroke="#ffb340" stroke-width="2.5" fill="none" stroke-dasharray="6 6"/>
-    <text class="fx-sub" x="72" y="228" style="fill:#ffcf85">자력</text></svg></div>
-   <div class="wt-figc">축은 벽을 뚫지 않고, 자력선만 벽을 지나갑니다.</div></div></div></div>
+    <text class="fx-sub" x="72" y="228" style="fill:#ffcf85">자력</text></svg>
+  </div>
+   <div class="wt-figc">① 자기 커플링 — 축은 벽을 뚫지 않고, 자력선만 벽을 지나갑니다. 장비마다 쓰는 방식이 다릅니다.</div></div></div></div>
 </section>
 
 <section class="slide" data-nid="11-04" data-here="tm"><div class="wt-pad"><div class="wt-eye">02 · 손</div>
  <h2 class="h-title">진공용 End Effector — 흡착을 못 쓴다</h2>
- <div class="wt-body" style="flex-direction:column;gap:22px;justify-content:center">
-   <div class="wt-col" style="flex:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 46px;align-content:center"><div class="wt-card"><h3>내열 재질</h3><p>고온 공정 근처를 오가므로 세라믹 등 내열·저오염 재질을 씁니다.</p></div>
-  <div class="wt-card v"><h3>지지 방식</h3><p>대기 로봇의 진공 흡착은 "주변 공기압이 웨이퍼를 눌러 주는" 원리라 진공 안에서는 힘이 생기지 않습니다. 그래서 <b>마찰 패드</b> 위에 얹거나 <b>가장자리 걸림(edge grip)</b>으로 잡습니다.</p></div></div></div>
-   <div class="wt-note warn" style="margin-top:0"><b>결과</b> — 붙잡는 힘이 약하므로 진공 로봇은 대기 로봇보다 <b>가감속을 부드럽게</b> 합니다. 축은 여전히 R·θ·Z, 리듬(접고·돌고·펴고)도 같습니다.</div>
-  </div></div>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-card"><h3>대기에서는 공기가 눌러 준다</h3><p>흡착은 "빨아들이는" 게 아니라, 패드 아래를 비우면 <b>바깥 공기가 웨이퍼를 누르는</b> 것입니다(10강의 175 kg과 같은 원리). 흡착 구멍 합계 1.5 cm², 압력 차 70 kPa면<br/>
+   70,000 Pa × 0.00015 m² ≈ <b style="color:var(--ac)">10 N</b> — 웨이퍼 무게(약 128 g → 1.25 N)의 <b>약 8배</b>.</p></div>
+  <div class="wt-card v"><h3>진공에서는 누를 공기가 없다</h3><p>남는 건 웨이퍼 자기 무게뿐. 그래서 <b>마찰 패드</b> 위에 얹거나, 손가락으로 <b>가장자리를 물어(edge grip)</b> 잡습니다.</p></div></div>
+  <div class="wt-col">
+  <div class="wt-fig" style="margin:0 0 16px">
+   <svg viewBox="0 0 560 260">
+    <text class="fx-cap" x="30" y="30">대기 — 흡착</text>
+    <ellipse class="fx-w" cx="140" cy="150" rx="110" ry="10"/><rect x="70" y="160" width="140" height="16" rx="5" fill="#1d3b3a" stroke="#35e0c8" stroke-width="2"/>
+    <path class="fx-ln" d="M90 70 V134" marker-end="url(#mA)"/><path class="fx-ln" d="M140 70 V134" marker-end="url(#mA)"/><path class="fx-ln" d="M190 70 V134" marker-end="url(#mA)"/>
+    <text class="fx-sub" x="40" y="214">공기가 눌러 준다 ≈ 무게 × 8</text>
+    <text class="fx-cap v" x="320" y="30">진공 — 얹기</text>
+    <ellipse class="fx-w" cx="420" cy="150" rx="110" ry="10"/><rect x="350" y="160" width="140" height="16" rx="5" fill="#2f2a52" stroke="#8a7dff" stroke-width="2"/>
+    <path d="M420 112 V134" stroke="#ffb340" stroke-width="3" fill="none" marker-end="url(#mW)"/>
+    <text class="fx-sub" x="322" y="214">누르는 건 무게뿐</text></svg></div>
+  <div class="wt-card ac" style="flex:none"><h3>재질도 다르다</h3><p>뜨거운 챔버를 오가므로 세라믹 같은 내열·저오염 재질, 패드도 진공에서 가스를 내지 않는 재료를 씁니다.</p></div>
+  <div class="wt-note warn" style="margin-top:0"><b>결과</b> — 붙잡는 힘이 약하니 <b>빨리 움직이면 미끄러집니다.</b> 얼마나 빨리까지 괜찮은지 다음 장에서 계산합니다. 축(R·θ·Z)과 리듬(접고·돌고·펴고)은 대기 로봇과 같습니다.</div></div></div></div>
 </section>
 
 <section class="slide" data-nid="11-05" data-level="intro standard pro" data-here="tm">
- <div class="wt-pad"><div class="wt-eye">02 · 넘기기</div><h2 class="h-title">Load Lock에서 챔버까지 — 시뮬레이터 순서</h2>
+ <div class="wt-pad"><div class="wt-eye">03 · 계산해 보기</div><h2 class="h-title">왜 진공 로봇은 느린가 — a ≤ μ·g</h2>
+  <div class="wt-body"><div class="wt-col">
+   <div class="wt-card"><h3>미끄러지지 않을 조건</h3><p>웨이퍼를 가속시키는 힘은 패드의 <b>마찰력</b>뿐: m·a ≤ μ·N.<br/>
+    진공: N = m·g → <b style="color:var(--vc)">a ≤ μ·g</b>. μ = 0.3이면 <b>약 2.9 m/s² (0.3 G)</b>.<br/>
+    대기 흡착: N = m·g + 10 N → a ≤ 0.3 × 11.25 N ÷ 0.128 kg ≈ <b style="color:var(--ac)">26 m/s² (2.7 G)</b>.</p></div>
+   <div class="wt-num"><i>1</i><div><b>대략 10배 차이</b> 같은 0.5 m를 가속·감속만으로 가면 진공 약 <b>0.83초</b>, 대기 흡착 약 <b>0.28초</b> (t = 2√(d/a)).</div></div>
+   <div class="wt-num warn"><i>!</i><div><b>넘기면</b> 웨이퍼가 손 위에서 밀려 위치가 어긋나고(다음 Place에서 충돌), 심하면 떨어져 깨집니다.</div></div>
+   <div class="wt-note v" style="margin-top:0"><b>현장의 답</b> — 가속도를 서서히 올리고 내리는 <b>S자 속도 곡선</b>(급출발·급정거 없음), 그리고 마찰에 기대지 않는 <b>edge grip</b>. μ는 패드 재질·온도에 따라 대략 0.2~0.5로 달라집니다.</div></div>
+  <div class="wt-col"><div class="wt-fig" style="margin-top:0">
+   <svg viewBox="0 0 520 380">
+    <rect x="70" y="200" width="380" height="20" rx="6" fill="#2f2a52" stroke="#8a7dff" stroke-width="2.5"/>
+    <text class="fx-sub" x="70" y="246">패드(마찰 μ) — 로봇 손</text>
+    <ellipse class="fx-w" cx="260" cy="190" rx="150" ry="12"/>
+    <path class="fx-ln" d="M150 290 H370" marker-end="url(#mA)"/><text class="fx-cap" x="150" y="320">로봇 손이 가속 a →</text>
+    <path d="M170 176 H70" stroke="#ff5e5e" stroke-width="3" fill="none" marker-end="url(#mR)"/><text class="fx-cap" x="40" y="150" style="fill:#ff8f8f">← 관성 m·a</text>
+    <path class="fx-ln v" d="M340 196 H460" marker-end="url(#mV)"/><text class="fx-cap v" x="330" y="150">마찰 ≤ μ·N →</text>
+    <path d="M260 90 V170" stroke="#ffb340" stroke-width="3" fill="none" marker-end="url(#mW)"/><text class="fx-cap" x="272" y="100" style="fill:#ffb340">N = 무게 (+ 흡착력)</text>
+    <text class="fx-sub" x="20" y="358">관성 &gt; 마찰이면 웨이퍼가 손 위에서 미끄러진다</text></svg></div>
+   <div class="wt-figc">실제 로봇은 속도 한계·진동 때문에 이보다 더 느립니다 — 자릿수 감각만.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-06" data-level="intro standard pro" data-here="tm">
+ <div class="wt-pad"><div class="wt-eye">04 · 넘기기</div><h2 class="h-title">Load Lock에서 챔버까지 — 시뮬레이터 순서</h2>
   <div class="wt-body"><div class="wt-col">
    <div class="wt-num"><i>1</i><div><b>Load Lock Pump Down</b> 웨이퍼를 넣고 대기측 밸브를 닫은 뒤 1.0E-2 Torr까지 배기.</div></div>
    <div class="wt-num"><i>2</i><div><b>TM 밸브 개방</b> 1 Torr 이하여야 열립니다(아니면 ALM-314).</div></div>
@@ -241,7 +296,7 @@ h2.h-title{ font-size:56px; }
    <div class="wt-note"><b>대기 로봇과 리듬은 같다</b> — 접고·돌고·펴고. 달라진 것은 환경(진공)과 목적지(공정 챔버)입니다.</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-06" data-here="lock"><div class="wt-pad"><div class="wt-eye">개념 · 흐름</div>
+<section class="slide" data-nid="11-07" data-here="lock"><div class="wt-pad"><div class="wt-eye">개념 · 흐름</div>
  <h2 class="h-title">대기와 진공, Load Lock에서 손을 바꿔 잡는다</h2>
  <div class="wt-fig">
   <svg viewBox="0 0 1700 380">
@@ -264,8 +319,8 @@ h2.h-title{ font-size:56px; }
  </div>
 </section>
 
-<section class="slide" data-nid="11-07" data-level="standard pro" data-here="pm">
- <div class="wt-pad"><div class="wt-eye">03 · 클러스터</div><h2 class="h-title">하나의 허브, 여러 챔버</h2>
+<section class="slide" data-nid="11-08" data-level="standard pro" data-here="pm">
+ <div class="wt-pad"><div class="wt-eye">05 · 클러스터</div><h2 class="h-title">하나의 허브, 여러 챔버</h2>
   <div class="wt-body"><div class="wt-col">
    <div class="wt-card v"><h3>클러스터 툴</h3><p>Transfer Chamber를 중심으로 Load Lock과 여러 공정 챔버(PM)가 방사형으로 붙습니다. 한 로봇이 웨이퍼를 여러 챔버로 분배합니다.</p></div>
    <div class="wt-card"><h3>장점</h3><p>한 번 진공에 들어온 웨이퍼가 여러 공정을 <b>진공을 깨지 않고</b> 연속 처리합니다.</p></div>
@@ -281,7 +336,7 @@ h2.h-title{ font-size:56px; }
     <text class="fx-sub" x="300" y="60">10초</text><text class="fx-sub" x="300" y="332">22초</text></svg></div></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-08" data-here="pm"><div class="wt-pad"><div class="wt-eye">05 · 목적지</div>
+<section class="slide" data-nid="11-09" data-here="pm"><div class="wt-pad"><div class="wt-eye">06 · 목적지</div>
  <h2 class="h-title">Process Chamber — 놓는 순간 공정이 시작된다</h2>
  <div class="wt-body"><div class="wt-col">
   <div class="wt-num"><i>1</i><div><b>Place</b> 챔버에 놓으면 레시피가 바로 돕니다. PM1 <b>10초</b>, PM2 <b>22초</b>.</div></div>
@@ -300,11 +355,11 @@ h2.h-title{ font-size:56px; }
    <div class="wt-figc">개념도 — 시뮬레이터 화면을 단순화했습니다.</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-09" data-here="pm"><div class="wt-pad"><div class="wt-eye">개념 · 스케줄링</div>
+<section class="slide" data-nid="11-10" data-here="pm"><div class="wt-pad"><div class="wt-eye">개념 · 스케줄링</div>
  <h2 class="h-title">어느 챔버로 먼저 보낼까 — 긴 쪽 먼저</h2>
  <div class="wt-body"><div class="wt-col">
   <div class="wt-num"><i>1</i><div><b>비는 챔버 우선</b> 준비된 PM으로 보내 로봇이 기다리지 않게.</div></div>
-  <div class="wt-num v"><i>2</i><div><b>오래 걸리는 챔버를 먼저</b> 22초짜리 PM2를 먼저 채우면, 그 사이 PM1(10초)이 끝납니다.</div></div>
+  <div class="wt-num v"><i>2</i><div><b>오래 걸리는 챔버를 먼저</b>(긴 작업 먼저 — LPT 규칙) 22초짜리 PM2를 먼저 채우면, 그 사이 PM1(10초)이 끝납니다.</div></div>
   <div class="wt-num warn"><i>!</i><div><b>반대로 하면</b> 둘째 장이 들어간 뒤 PM2의 22초를 통째로 기다립니다.</div></div>
   <div class="wt-note" style="margin-top:0"><b>연결</b> — 이 판단이 훈련 ③의 기록 시간으로 드러나고, 15강 과제 ③ 처리량(두 장 겹쳐 돌리기)에서 프로그램으로 다시 만납니다.</div></div>
   <div class="wt-col"><div class="wt-fig" style="margin-top:0">
@@ -321,7 +376,31 @@ h2.h-title{ font-size:56px; }
    <div class="wt-figc">같은 두 장, 순서만 바꿔도 끝나는 시각이 달라집니다.</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-10"><div class="wt-pad"><div class="wt-eye">06 · 흔한 문제</div>
+<section class="slide" data-nid="11-11" data-here="pm"><div class="wt-pad"><div class="wt-eye">개념 · 병목</div>
+ <h2 class="h-title">병목은 누구인가 — 챔버 한계 vs 로봇 한계</h2>
+ <div class="wt-body"><div class="wt-col">
+  <div class="wt-card v"><h3>챔버 한계 (시간당 장수)</h3><p>챔버가 쉬지 않고 돈다면 1시간에 3600 ÷ 공정시간 장씩. 챔버 A·B를 나란히 쓰면<br/><b>3600 × (1/P<sub>A</sub> + 1/P<sub>B</sub>)</b>.</p></div>
+  <div class="wt-card"><h3>로봇 한계</h3><p>로봇은 한 장마다 넣기 한 번 + 빼기 한 번. 한 번에 t초면 한 장에 2t초 → <b>3600 ÷ 2t</b>.</p></div>
+  <div class="wt-note" style="margin-top:0"><b>장비 전체</b> = 둘 중 <b>작은 쪽</b>. 작은 쪽이 병목입니다.</div></div>
+  <div class="wt-col">
+  <div class="wt-card ac" style="flex:none"><h3>예 — 챔버를 하나 더 붙이면?</h3><p>공정 60초 챔버 2개: 챔버 한계 120장. 로봇 t = 15초: 로봇 한계 120장 → 장비 120장.<br/>
+   챔버를 3개로 늘리면 챔버 한계 180장 — 그러나 <b>로봇 한계 120장</b>에 막혀 그대로 120장.</p></div>
+  <div class="wt-fig" style="margin:0 0 16px">
+   <svg viewBox="0 0 560 250">
+    <line x1="60" y1="20" x2="60" y2="200" stroke="#3a6b8c" stroke-width="2"/><line x1="60" y1="200" x2="540" y2="200" stroke="#3a6b8c" stroke-width="2"/>
+    <rect x="100" y="80" width="70" height="120" fill="#9b8cff"/><rect x="180" y="80" width="70" height="120" fill="#35e0c8"/>
+    <rect x="320" y="20" width="70" height="180" fill="#9b8cff"/><rect x="400" y="80" width="70" height="120" fill="#35e0c8"/>
+    <line x1="60" y1="80" x2="540" y2="80" stroke="#ffb340" stroke-width="2" stroke-dasharray="6 5"/>
+    <text class="fx-sub" x="470" y="72" style="fill:#ffb340">장비 120</text>
+    <text class="fx-sub" x="104" y="230">챔버 2개</text><text class="fx-sub" x="324" y="230">챔버 3개</text>
+    <text class="fx-sub" x="104" y="104" style="fill:#0b1520">120</text><text class="fx-sub" x="184" y="104" style="fill:#0b1520">120</text>
+    <text class="fx-sub" x="324" y="44" style="fill:#0b1520">180</text><text class="fx-sub" x="404" y="104" style="fill:#0b1520">120</text>
+    <rect x="300" y="236" width="0" height="0"/>
+    <text class="fx-sub" x="70" y="16"><tspan style="fill:#bcaeff">■ 챔버 한계</tspan>  <tspan style="fill:#9fe8dc">■ 로봇 한계</tspan></text></svg></div>
+  <div class="wt-note v" style="margin-top:0"><b>그래서 현장은</b> — 손이 둘인 <b>듀얼 암</b> 로봇으로 챔버 앞에서 "빼면서 바로 넣기(Swap)"를 해 로봇 시간을 줄입니다. 돈을 어디에 써야 하는지 병목이 알려 줍니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-12"><div class="wt-pad"><div class="wt-eye">07 · 흔한 문제</div>
  <h2 class="h-title">진공 이송에서 자주 나는 알람</h2>
  <div class="wt-body" style="flex-direction:column;gap:20px;justify-content:center">
    <div class="wt-col" style="flex:none;width:100%;max-width:1500px;margin:0 auto"><table class="wt-tbl"><tr><th>코드</th><th>상황</th><th>고칠 것</th></tr>
@@ -336,29 +415,45 @@ h2.h-title{ font-size:56px; }
   </div></div>
 </section>
 
-<section class="slide" data-nid="11-11" data-level="intro standard pro">
- <div class="wt-pad"><div class="wt-eye">실습 미션</div><h2 class="h-title">11강에서 직접 해볼 것</h2>
-  <div class="wt-body">
-   <div class="wt-col"><div class="wt-num"><i>1</i><div><b>Load Lock Pump Down</b> 웨이퍼 넣고 배기.</div></div>
-    <div class="wt-num"><i>2</i><div><b>진공측 Gate Valve 개방</b> 압력 맞춰 연다.</div></div></div>
-   <div class="wt-col"><div class="wt-num v"><i>3</i><div><b>Process Chamber로 이송</b> 진공 로봇으로 PM까지.</div></div>
-    <div class="wt-num v"><i>4</i><div><b>훈련 탭 3개</b>
-      ① 챔버에는 시간이 걸린다 · ② 두 챔버 동시 가동 · ③ 두 장 처리 시간 재기.</div></div>
-    <div class="wt-note"><b>완료 기준</b> — PM 도착과 <b>훈련 3개</b>를 통과하면 11강 종료.</div></div></div>
-  <div class="wt-note" style="margin:0 60px 40px"><b>챔버에는 공정 시간이 있습니다 — PM1은 10초, PM2는 22초.</b>
-   놓는 순간 레시피가 시작되고 끝나기 전에는 반출할 수 없습니다(ALM-601).
-   그래서 <b>어느 챔버로 먼저 보낼지</b>가 총 시간을 바꿉니다. 이 판단을 ③에서 시간으로 확인합니다.</div></div>
+<section class="slide" data-nid="11-13" data-level="intro standard pro" data-here="pm">
+ <div class="wt-pad"><div class="wt-eye">실습 A · 클러스터 처리량 계산기</div><h2 class="h-title">순서와 병목을 숫자로 판단하라</h2>
+  <div class="wt-body ct-lab" id="ctLab">
+   <div class="wt-col" style="flex:1.2">
+    <div class="wt-fig" style="margin-top:0;padding:12px"><svg id="ctPlot" viewBox="0 0 900 470" aria-label="클러스터 장비 조건과 간트 차트"></svg></div>
+    <div class="wt-figc" id="ctCase">사례 #1</div></div>
+   <div class="wt-col" style="flex:1">
+    <div class="al-q"><span>Q1</span><label for="ctQ1">두 장 — <b>긴 챔버 먼저</b> 넣으면 끝나는 시각? <em>(초)</em></label><input id="ctQ1" inputmode="decimal" autocomplete="off"/><b class="al-r" id="ctR1"></b></div>
+    <div class="al-q"><span>Q2</span><label for="ctQ2">두 장 — <b>짧은 챔버 먼저</b>라면? <em>(초)</em></label><input id="ctQ2" inputmode="decimal" autocomplete="off"/><b class="al-r" id="ctR2"></b></div>
+    <div class="al-q"><span>Q3</span><label for="ctQ3">챔버 한계 — 시간당 몇 장? <em>(±2%)</em></label><input id="ctQ3" inputmode="decimal" autocomplete="off"/><b class="al-r" id="ctR3"></b></div>
+    <div class="al-q"><span>Q4</span><label for="ctQ4">로봇 한계 — 시간당 몇 장? <em>(±2%)</em></label><input id="ctQ4" inputmode="decimal" autocomplete="off"/><b class="al-r" id="ctR4"></b></div>
+    <div class="al-q"><span>Q5</span><label for="ctQ5">이 장비의 병목은?</label><select id="ctQ5"><option value="">— 고르기 —</option><option value="chamber">챔버</option><option value="robot">로봇</option></select><b class="al-r" id="ctR5"></b></div>
+    <div class="al-btns"><button type="button" id="ctCheck">채점</button><button type="button" id="ctNew">새 사례</button><button type="button" id="ctShow">정답 보기</button></div>
+    <div class="wt-note" id="ctMsg" style="margin-top:12px">규칙 — 두 장은 Load Lock에 준비됨, 로봇이 한 장을 챔버에 넣는 데 t초(한 번에 한 장). 공정은 놓는 순간 시작. 끝나는 시각 = 늦게 끝나는 챔버.</div></div></div></div>
 </section>
 
-<section class="slide" data-nid="11-12" data-level="intro standard pro" data-here="all">
+<section class="slide" data-nid="11-14" data-level="intro standard pro">
+ <div class="wt-pad"><div class="wt-eye">실습 B · 시뮬레이터</div><h2 class="h-title">읽고, 미리 준비하고, 꺼낸다</h2>
+  <div class="wt-body">
+   <div class="wt-col">
+    <div class="wt-num"><i>1</i><div><b>기본 — 훈련 ① ②</b> 공정 중 반출이 거부되는 것(ALM-601)을 직접 확인하고, 두 챔버가 동시에 도는 순간을 만듭니다.</div></div>
+    <div class="wt-num"><i>2</i><div><b>측정 — 훈련 ③ 두 장 처리</b> PM2(22초) 먼저 · PM1(10초) 먼저, 두 번 해서 기록 시간을 비교합니다. 차이가 실습 A의 계산과 맞나요?</div></div>
+    <div class="wt-num v"><i>3</i><div><b>현장 감각 — 훈련 ④ 상태를 읽고 반출</b> 두 챔버가 이미 돌고 있습니다. 도면의 남은 초를 읽고, 먼저 끝날 챔버를 판단하고, <b>끝나기 전에</b> Load Lock을 배기해 받을 준비를 해 둔 뒤 꺼냅니다.</div></div></div>
+   <div class="wt-col">
+    <div class="wt-card v" style="flex:none"><h3>설계 토론 — 챔버 하나 더?</h3><p>이 장비(PM1 10초 · PM2 22초)에 10초짜리 챔버를 하나 더 붙이면 처리량이 늘까요? 훈련 ③에서 잰 로봇 이동 시간으로 로봇 한계를 계산해 근거를 대세요.</p></div>
+    <div class="wt-card" style="flex:none"><h3>워크시트 (손으로 채우기)</h3><p>① ③ 기록: PM2 먼저 ___초 · PM1 먼저 ___초 · 차이 ___초<br/>② 내 로봇의 한 번 이송 t ≈ ___초 → 로봇 한계 ___장/시간<br/>③ 챔버 한계 ___장/시간 → 병목 = ______<br/>④ 챔버 추가의 효과: ______ (근거 ______)</p></div>
+    <div class="wt-note"><b>완료 기준</b> — 훈련 <b>① ② ③ ④ 통과</b> + 워크시트 네 칸. 12강에서 이 순서를 블록 시퀀스로 자동화합니다.</div></div></div></div>
+</section>
+
+<section class="slide" data-nid="11-15" data-level="intro standard pro" data-here="all">
  <div class="wt-pad"><div class="wt-eye">정리 · 자가 점검</div><h2 class="h-title">11강에서 남길 것</h2>
   <div class="wt-body">
-   <div class="wt-col"><div class="wt-num v"><i>1</i><div><b>구동부는 진공 밖</b> 오염·발열 회피, 자력 전달.</div></div>
-    <div class="wt-num"><i>2</i><div><b>압력 맞춰 넘긴다</b> Pump Down 후 Gate Valve, 진공 로봇은 따로 Init/Home.</div></div>
-    <div class="wt-num warn"><i>3</i><div><b>챔버에는 시간이 있다</b> 공정 중 반출은 ALM-601, 긴 챔버를 먼저 채운다.</div></div></div>
-   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① 진공 로봇의 구동부가 진공 밖에 있는 이유 두 가지는? → 윤활유 증발 오염, 모터 발열.<br/>
-     ② Vacuum Robot으로 전환하자마자 Move를 누르면? → ALM-101, 진공 로봇도 Initialize → Home.<br/>
-     ③ PM1(10초)·PM2(22초)에 두 장을 넣을 때 어느 쪽을 먼저? → 긴 PM2.</p></div>
+   <div class="wt-col"><div class="wt-num v"><i>1</i><div><b>구동부는 진공 밖</b> 오염·발열 회피. 자기 커플링 · 밀봉 모터 · 씰로 벽 너머 전달.</div></div>
+    <div class="wt-num"><i>2</i><div><b>진공에선 a ≤ μ·g</b> 누를 공기가 없어 약 0.3 G. 그래서 천천히, S자 곡선, edge grip.</div></div>
+    <div class="wt-num"><i>3</i><div><b>압력 맞춰 넘긴다</b> Pump Down → Gate Valve, 진공 로봇은 따로 Init/Home.</div></div>
+    <div class="wt-num warn"><i>4</i><div><b>챔버엔 시간, 장비엔 병목</b> 긴 챔버 먼저, 처리량 = min(챔버 한계, 로봇 한계).</div></div></div>
+   <div class="wt-col"><div class="wt-card" style="flex:none"><h3>Q1 · Q2 · Q3</h3><p>① 진공 로봇이 대기 로봇보다 느린 진짜 이유는? → 흡착이 안 돼 마찰만으로 붙잡으니 a ≤ μ·g (약 0.3 G).<br/>
+     ② PM1(10초)·PM2(22초)에 두 장을 넣을 때 먼저 채울 쪽은? → 긴 PM2.<br/>
+     ③ 로봇이 병목인 장비에 챔버를 더 붙이면? → 처리량 그대로. 로봇 시간을 줄여야(듀얼 암) 한다.</p></div>
     <div class="wt-note"><b>다음 강</b> — 12강 <b>시퀀스</b>: 지금까지의 이송을 블록으로 엮어 자동 실행합니다.</div></div></div></div>
 </section>
 </div></div>
@@ -406,7 +501,105 @@ h2.h-title{ font-size:56px; }
   build(); fit();
 })();
 </script>
-<script id="wt-notes" type="application/json">{"11-01":{"key":"Load Lock 을 넘으면 진공의 세계 — <b>진공 로봇</b>이 웨이퍼를 공정 챔버로 나른다","kw":["Vacuum Robot","Transfer Chamber","LL → PM1 · PM2"],"sec":58,"audio":true},"11-02":{"key":"진공 로봇은 <b>구동부가 밖에 있다</b> — 윤활유 증발·모터 발열을 피하려고 자석으로 힘만 전달","kw":["윤활유 증발 → 오염","대류 없음 → 발열","자력 전달","내열 End Effector"],"sec":54,"audio":true},"11-03":{"key":"마그네틱 커플링 — 축이 벽을 뚫지 않고 <b>자력선만 벽을 지난다</b>, 그래서 회전 씰 누설이 없다","kw":["바깥 자석 → 안쪽 자석","축 관통 없음","회전 씰 누설 0","무윤활 재질"],"sec":61,"audio":true},"11-04":{"key":"진공에선 <b>흡착을 못 쓴다</b> — 마찰 패드나 edge grip, 그래서 가감속을 부드럽게. 축과 리듬은 같다","kw":["세라믹 내열 재질","흡착 = 공기압이 눌러 주는 것","마찰 패드 · edge grip","가감속 완만"],"sec":61,"audio":true},"11-05":{"key":"Pump → TM 열기 → <b>Vacuum Robot + Init·Home</b> → LL Pick → PM Place","kw":["1.0E-2 까지 배기","TM ≤1 Torr (314)","Vacuum Robot 따로 Init/Home (101/102)","Move LL → Pick","Move PM1/PM2 → Place"],"sec":63,"audio":true},"11-06":{"key":"두 로봇은 같은 공간에 동시에 손을 넣지 않는다 — 인계는 늘 <b>놓고 → 압력 전환 → 집기</b>","kw":["EFEM Place","ATM 닫기 → Pump → TM 열기","Vacuum Pick","312/315 가 보장","돌아올 땐 Vent"],"sec":60,"audio":true},"11-07":{"key":"클러스터 툴 — Transfer Chamber 허브에 LL 과 PM 이 방사형, <b>진공을 깨지 않고</b> 연속 처리","kw":["허브 + 방사형","한 로봇이 분배","진공 안 깨고 여러 공정","시뮬: LL · PM1 · PM2"],"sec":58,"audio":true},"11-08":{"key":"놓는 순간 공정 시작 — <b>PM1 10초 · PM2 22초</b>, 도는 중 Pick 601 · 또 놓으면 505","kw":["Place = 레시피 시작","PM1 10초 · PM2 22초","ALM-601 남은 n초","완료 로그 → Pick","ALM-505"],"sec":57,"audio":true},"11-09":{"key":"어느 챔버 먼저? — <b>긴 PM2(22초)를 먼저</b> 채우면 그 사이 PM1(10초)이 끝난다","kw":["비는 챔버 우선","오래 걸리는 쪽 먼저","반대면 22초 통째로 기다림","훈련 ③ · 15강 과제 ③"],"sec":58,"audio":true},"11-10":{"key":"101/102·314·304·502·601·505·316 — 먼저 <b>압력·Presence·PM Status</b>","kw":["101/102 진공 로봇도 Init·Home","314 · 304","502 LL 비었음","601 공정 중","316 팔이 안인데 TM 닫기"],"sec":64,"audio":true},"11-11":{"key":"실습 — Pump · TM 개방 · PM 이송 · 훈련 ① 시간 ② 동시 가동 ③ <b>두 장 시간 재기</b>","kw":["Pump Down","Gate Valve 개방","Vacuum Robot → PM","훈련 3개","순서가 총 시간을 바꾼다"],"sec":67,"audio":true},"11-12":{"key":"남길 것 — <b>구동부는 진공 밖 · 압력 맞춰 넘긴다 · 챔버엔 시간</b>. Q 오염·발열 / 101 / PM2","kw":["자력 전달","Pump Down → Gate Valve → 따로 Init/Home","601 · 긴 챔버 먼저","다음 12강 시퀀스"],"sec":60,"audio":true}}</script>
+<script>
+/* 실습 A · 클러스터 처리량 계산기 — 무작위 사례(두 챔버 공정시간 Pa < Pb, 로봇 1회 이송 t)로 채점한다.
+   두 장 순서 모델(슬라이드 규칙과 같음): 두 장은 Load Lock 에 준비, 로봇은 한 번에 한 장, 한 장 넣는 데 t초,
+   공정은 놓는 순간 시작, 반출은 따지지 않는다.
+     긴 챔버 먼저  = max(t + Pb, 2t + Pa)      짧은 챔버 먼저 = max(t + Pa, 2t + Pb)
+   처리량: 챔버 한계 = 3600·(1/Pa + 1/Pb), 로봇 한계 = 3600 / (2t) (넣기 + 빼기). 장비 = 작은 쪽.
+   "정답 보기" 를 누르면 두 순서의 간트 차트를 그려 왜 그런지 보여 준다.
+   입력칸에서 스페이스·화살표를 누르면 슬라이드가 넘어가지 않도록 keydown 전파를 막는다 (9·10강 실습과 같은 방식). */
+(function(){
+  var lab=document.getElementById('ctLab'); if(!lab) return;
+  var plot=document.getElementById('ctPlot'), NS='http://www.w3.org/2000/svg';
+  var C={}, n=0;
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function el(tag,at,txt){ var e=document.createElementNS(NS,tag); for(var k in at) e.setAttribute(k,at[k]); if(txt!=null) e.textContent=txt; plot.appendChild(e); return e; }
+  function fresh(){
+    n++;
+    do {
+      C.Pa=pick([30,40,45,60,75,90]); C.Pb=pick([60,80,90,120,150,180]); C.t=pick([10,12,15,20,25,30]);
+      C.ch=3600*(1/C.Pa+1/C.Pb); C.rb=3600/(2*C.t);
+    } while(C.Pb<=C.Pa || Math.abs(C.ch-C.rb)/Math.min(C.ch,C.rb)<0.08);
+    C.longF=Math.max(C.t+C.Pb, 2*C.t+C.Pa);
+    C.shortF=Math.max(C.t+C.Pa, 2*C.t+C.Pb);
+    C.neck=C.ch<C.rb?'chamber':'robot';
+    drawSetup(false);
+    document.getElementById('ctCase').textContent='사례 #'+n+' — PM-A '+C.Pa+'초 · PM-B '+C.Pb+'초 · 로봇 1회 이송 t = '+C.t+'초';
+    for(var q=1;q<=5;q++){ document.getElementById('ctQ'+q).value=''; var r=document.getElementById('ctR'+q); r.textContent=''; r.className='al-r'; }
+    msg('규칙 — 두 장은 Load Lock에 준비됨, 로봇이 한 장을 챔버에 넣는 데 t초(한 번에 한 장). 공정은 놓는 순간 시작. 끝나는 시각 = 늦게 끝나는 챔버.','');
+  }
+  function drawSetup(withGantt){
+    while(plot.firstChild) plot.removeChild(plot.firstChild);
+    /* 장비 그림 — 허브 · LL · 두 챔버 */
+    el('rect',{x:40,y:90,width:110,height:90,rx:8,'class':'fx-box',stroke:'#6f63c9'}); el('text',{x:70,y:142,'class':'fx-lbl'},'LL');
+    el('text',{x:40,y:76,'class':'fx-sub'},'웨이퍼 2장');
+    el('circle',{cx:300,cy:135,r:62,'class':'fx-vac'}); el('circle',{cx:300,cy:135,r:20,fill:'#1c2340',stroke:'#8a7dff','stroke-width':3});
+    el('text',{x:300,y:216,'text-anchor':'middle','class':'fx-sub'},'로봇 1회 '+C.t+'s');
+    el('circle',{cx:470,cy:70,r:44,'class':'fx-vac'}); el('text',{x:470,y:66,'text-anchor':'middle','class':'fx-lbl',fill:'#bcaeff'},'PM-A');
+    el('text',{x:470,y:92,'text-anchor':'middle','class':'fx-cap v'},C.Pa+'s');
+    el('circle',{cx:470,cy:200,r:44,'class':'fx-vac'}); el('text',{x:470,y:196,'text-anchor':'middle','class':'fx-lbl',fill:'#bcaeff'},'PM-B');
+    el('text',{x:470,y:222,'text-anchor':'middle','class':'fx-cap v'},C.Pb+'s');
+    el('path',{d:'M155 135 H234','class':'fx-ln v','marker-end':'url(#mV)'});
+    el('path',{d:'M352 108 L428 82','class':'fx-ln v','marker-end':'url(#mV)'}); el('path',{d:'M352 162 L428 188','class':'fx-ln v','marker-end':'url(#mV)'});
+    el('text',{x:560,y:80,'class':'fx-sub'},'챔버 한계 = 3600·(1/A + 1/B)');
+    el('text',{x:560,y:116,'class':'fx-sub'},'로봇 한계 = 3600 ÷ 2t');
+    el('text',{x:560,y:152,'class':'fx-sub'},'장비 = 둘 중 작은 쪽');
+    if(!withGantt){ el('text',{x:40,y:330,'class':'fx-sub'},'"정답 보기"를 누르면 두 순서의 간트 차트가 여기 그려집니다.'); return; }
+    var T=Math.max(C.longF,C.shortF), X0=150, X1=870, sx=function(s){return X0+(X1-X0)*s/T;};
+    function row(y,label,col,a,b,txt){ el('text',{x:40,y:y+17,'class':'fx-sub'},label);
+      el('rect',{x:sx(a),y:y,width:Math.max(1,sx(b)-sx(a)),height:22,rx:3,fill:col});
+      if(txt) el('text',{x:sx(a)+6,y:y+17,'class':'fx-sub',style:'fill:#0b1520'},txt); }
+    function block(y0,title,first,second,end,colT){
+      el('text',{x:40,y:y0,'class':'fx-cap',style:'fill:'+colT},title+' → '+end+'초');
+      row(y0+8,'로봇','#2a3a4a',0,2*C.t,'넣기 ×2');
+      row(y0+36,first.n,first.c,C.t,C.t+first.p,first.p+'s');
+      row(y0+64,second.n,second.c,2*C.t,2*C.t+second.p,second.p+'s');
+      el('line',{x1:sx(end),y1:y0+4,x2:sx(end),y2:y0+88,stroke:colT,'stroke-width':2.5}); }
+    var A={n:'PM-A',p:C.Pa,c:'#35e0c8'}, B={n:'PM-B',p:C.Pb,c:'#9b8cff'};
+    var better=C.longF<=C.shortF;
+    block(256,'긴 챔버 먼저',B,A,C.longF,better?'#35e0c8':'#ff8f8f');
+    block(372,'짧은 챔버 먼저',A,B,C.shortF,better?'#ff8f8f':'#35e0c8');
+  }
+  function msg(t,cls){ var m=document.getElementById('ctMsg'); m.textContent=t; m.className='wt-note'+(cls?' '+cls:''); m.style.marginTop='12px'; }
+  var Q=[
+    {want:function(){return C.longF;}, ok:function(g){return Math.abs(g-C.longF)<=0.5;},
+     hint:'Q1 — 긴 챔버(B)에는 t초에, 짧은 챔버(A)에는 2t초에 들어갑니다. 각자 끝나는 시각 중 늦은 쪽.'},
+    {want:function(){return C.shortF;}, ok:function(g){return Math.abs(g-C.shortF)<=0.5;},
+     hint:'Q2 — 이번엔 A가 t초에, B가 2t초에 들어갑니다. max(t + A, 2t + B).'},
+    {want:function(){return Math.round(C.ch);}, ok:function(g){return Math.abs(g-C.ch)<=0.02*C.ch;},
+     hint:'Q3 — 3600 ÷ A + 3600 ÷ B. 두 챔버가 쉬지 않고 돌 때의 합.'},
+    {want:function(){return Math.round(C.rb);}, ok:function(g){return Math.abs(g-C.rb)<=0.02*C.rb;},
+     hint:'Q4 — 한 장에 넣기 + 빼기 = 2t초. 3600 ÷ 2t.'},
+    {want:function(){return C.neck==='chamber'?'챔버':'로봇';}, ok:function(g){return g===C.neck;},
+     hint:'Q5 — Q3 과 Q4 중 작은 쪽이 장비 전체를 막습니다.'}
+  ];
+  function num(s){ var g=parseFloat(String(s).replace(/[^0-9.+-]/g,'')); return isFinite(g)?g:null; }
+  function check(){
+    var right=0, first=null;
+    Q.forEach(function(q,i){
+      var r=document.getElementById('ctR'+(i+1)), raw=document.getElementById('ctQ'+(i+1)).value;
+      var g = i===4 ? (raw||null) : num(raw);
+      if(g===null){ r.textContent='—'; r.className='al-r'; if(first===null) first=q.hint; return; }
+      if(q.ok(g)){ r.textContent='✓'; r.className='al-r ok'; right++; }
+      else { r.textContent='✗'; r.className='al-r no'; if(first===null) first=q.hint; }
+    });
+    if(right===5){ drawSetup(true); msg('5 / 5 — 아래 간트 차트로 확인해 보세요. 병목이 '+(C.neck==='chamber'?'챔버면 챔버를 늘리는 게 답이지만':'로봇이면 챔버를 늘려도 소용없고')+', 무엇에 돈을 쓸지 숫자가 말해 줍니다.',''); }
+    else msg(right+' / 5 — '+first,'warn');
+  }
+  function show(){
+    Q.forEach(function(q,i){ var r=document.getElementById('ctR'+(i+1)); r.textContent=String(q.want()); r.className='al-r ans'; });
+    drawSetup(true);
+    msg('정답 — 긴 먼저 '+C.longF+'초 · 짧은 먼저 '+C.shortF+'초 · 챔버 한계 '+C.ch.toFixed(1)+'장 · 로봇 한계 '+C.rb.toFixed(1)+'장 → 병목 '+(C.neck==='chamber'?'챔버':'로봇'),'v');
+  }
+  lab.addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') check(); });
+  document.getElementById('ctCheck').addEventListener('click',check);
+  document.getElementById('ctNew').addEventListener('click',fresh);
+  document.getElementById('ctShow').addEventListener('click',show);
+  fresh();
+})();
+</script>
+<script id="wt-notes" type="application/json">{"11-01":{"key":"Load Lock 너머 진공의 세계 — 여기 로봇은 <b>일부러 천천히</b> 움직인다. 왜?","kw":["진공 이송","최대 가속도","챔버를 늘리면?"],"sec":43,"audio":true},"11-02":{"key":"진공 로봇은 <b>구동부가 진공 밖</b> — 오염과 발열을 피해 벽 너머로 회전만 넘긴다","kw":["윤활유 증발 → 오염","대류 없음 → 발열","Frog-leg · SCARA","팔만 진공 안"],"sec":49,"audio":true},"11-03":{"key":"벽 너머로 회전을 넘기는 세 방법 — <b>자기 커플링 · 밀봉 모터 · 자성유체 씰/벨로즈</b>","kw":["자기 커플링","밀봉 모터(회전자만 진공)","자성유체 씰","벨로즈"],"sec":53,"audio":true},"11-04":{"key":"흡착은 <b>공기가 눌러 주는 것</b> — 대기에선 무게의 약 8배로 잡지만 진공에선 무게뿐","kw":["흡착 = 공기의 누름","70 kPa × 1.5 cm² ≈ 10 N","웨이퍼 128 g","마찰 패드 · edge grip"],"sec":59,"audio":true},"11-05":{"key":"미끄러지지 않을 조건 <b>a ≤ μ·g ≈ 0.3 G</b> — 대기 흡착의 약 1/10, 그래서 진공 로봇은 느리다","kw":["m·a ≤ μ·N","진공 약 2.9 m/s²","대기 약 26 m/s²","S자 속도 곡선 · edge grip"],"sec":69,"audio":true},"11-06":{"key":"Load Lock 에서 챔버까지 — <b>Pump Down → TM 밸브 → 진공 로봇 Init/Home → Pick → Place</b>","kw":["1 Torr 이하 TM 개방","진공 로봇 따로 Init · Home","Load Lock Pick","놓는 순간 공정 시작"],"sec":52,"audio":true},"11-07":{"key":"대기와 진공은 Load Lock 에서 <b>손을 바꿔 잡는다</b> — 놓고 → 압력 전환 → 집기","kw":["EFEM 이 Place","압력 전환","Vacuum Robot 이 Pick","돌아올 땐 Vent"],"sec":45,"audio":true},"11-08":{"key":"클러스터 툴 — <b>하나의 허브, 여러 챔버</b>. 진공을 깨지 않고 여러 공정을 잇는다","kw":["Transfer Chamber 허브","방사형 PM","진공 유지 연속 처리","시뮬: LL · PM1 · PM2"],"sec":49,"audio":true},"11-09":{"key":"Process Chamber — <b>놓는 순간 공정 시작</b>, 끝나기 전 반출은 ALM-601","kw":["PM1 10초 · PM2 22초","공정 중 Pick → 601","완료 로그 후 반출","Double Place → 505"],"sec":45,"audio":true},"11-10":{"key":"어느 챔버로 먼저? <b>긴 쪽 먼저(LPT)</b> — 22초 PM2 를 먼저 채우면 그 사이 PM1 이 끝난다","kw":["비는 챔버 우선","긴 작업 먼저 = LPT","반대로 하면 22초를 통째로","15강 처리량 과제"],"sec":49,"audio":true},"11-11":{"key":"장비 처리량 = <b>min(챔버 한계, 로봇 한계)</b> — 로봇이 병목이면 챔버를 늘려도 그대로","kw":["챔버 한계 3600·(1/A+1/B)","로봇 한계 3600÷2t","작은 쪽이 병목","듀얼 암 Swap"],"sec":66,"audio":true},"11-12":{"key":"진공 이송 알람 — <b>101/102 · 314 · 304 · 502 · 601 · 505 · 316</b>, 압력 · Presence · PM Status 부터","kw":["진공 로봇도 Init/Home","314 배기 전 TM","304 닫힌 TM 으로 Extend","601 공정 중 Pick"],"sec":58,"audio":true},"11-13":{"key":"실습 A — 두 장의 <b>순서별 끝나는 시각</b>, <b>챔버 한계 · 로봇 한계</b>, 그리고 병목을 판단","kw":["긴 먼저 max(t+B, 2t+A)","짧은 먼저 max(t+A, 2t+B)","3600·(1/A+1/B) vs 3600÷2t","간트 차트로 확인"],"sec":66,"audio":true},"11-14":{"key":"실습 B — 훈련 ③ <b>순서별 시간 측정</b>, ④ <b>남은 시간 읽고 미리 준비해 반출</b>, 챔버 추가 토론","kw":["① 601 확인 · ② 동시 가동","③ PM2 먼저 vs PM1 먼저","④ 끝나기 전에 준비","챔버 하나 더?"],"sec":59,"audio":true},"11-15":{"key":"남길 것 — <b>구동부는 밖 · a ≤ μg · 압력 맞춰 넘긴다 · 처리량 = min(챔버, 로봇)</b>","kw":["자기 커플링 · 밀봉 모터 · 씰","약 0.3 G","Init/Home 따로","긴 챔버 먼저 · 병목"],"sec":59,"audio":true}}</script>
 <script src="_notes.js"></script>
 <script src="_print.js"></script>
 </body></html>
