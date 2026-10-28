@@ -681,7 +681,7 @@ const WEEK=[
  m:[['웨이퍼를 Pre-aligner에 올린다',()=>!!S.al.wafer],
     ['Align을 실행해 Notch를 0°로 맞춘다',()=>C.align>=1],
     ['정렬된 웨이퍼를 다시 Pick 한다',()=>C.align>=1&&C.pick>=2],
-    ['훈련 탭의 2개를 모두 완료한다',()=>(DRILL[9]||[]).every(d=>DR.done[d.id])]]},
+    ['훈련 탭의 3개를 모두 완료한다',()=>(DRILL[9]||[]).every(d=>DR.done[d.id])]]},
 {n:10,t:'Load Lock',ti:'진공 형성과 압력 센서',
  g:'Pump Down · Vent · Gate Valve · Pressure Sensor의 상호 조건을 이해한다.',
  scope:['efem','ll','vac'],tabs:['guide','manual','drill','vac','sensor','log'],
@@ -892,18 +892,20 @@ const GUIDE={
        e:"정렬 완료 로그가 뜬 뒤에 집습니다."},
       {q:"Pick 직후 다음 스테이션으로 가려면 먼저 할 것은?",a:["바로 회전","Retract","Home"],c:1,
        e:"든 채로도 접고 → 돌고 → 편다. 편 채 회전하면 ALM-201입니다."}]},
-9:{why:'웨이퍼 가장자리에는 V자 홈(Notch)이 하나 있고, 그것이 웨이퍼의 12시 방향입니다. 이전 공정에서 그린 패턴이 모두 이 기준을 따르기 때문에, 정렬 없이 챔버에 넣으면 패턴이 어긋나 제품 전체가 불량이 됩니다.',
+9:{why:'웨이퍼 가장자리에는 V자 홈(Notch)이 하나 있고, 그것이 웨이퍼의 12시 방향입니다. Pre-aligner 는 웨이퍼의 중심과 방향을 "대략" 맞춰(0.1° · 0.1 mm 수준) 다음 장비에 넘깁니다. 나노미터 정렬은 노광 장비가 정렬 마크로 다시 하지만, 첫 단추가 틀리면 다음 장비가 마크를 못 찾거나 챔버에 치우쳐 놓여 알람 · 지연 · 불량으로 이어집니다.',
   how:['웨이퍼를 Pre-aligner 위에 Place 하세요.',
-       'Align을 누르세요. 웨이퍼가 회전하며 홈이 12시로 맞춰집니다.',
+       'Align을 누르세요. 정렬대는 가까운 쪽으로 초당 160° 돌아 홈을 12시(0°)에 맞춥니다.',
        '정렬이 끝난 웨이퍼를 다시 Pick 하세요. 색이 밝아진 것이 정렬 완료 표시입니다.',
-       '훈련 탭으로 가세요. ① 정렬 한 바퀴 · ② 세 장 모두 정렬 — 어떤 순서가 빠른지는 12강에서 프로그램으로 다시 만납니다.'],
+       '훈련 탭으로 가세요. ① 정렬 한 바퀴 · ② 세 장 모두 정렬 · ③ 예측하고 확인 — ②에서 정렬대와 로봇 중 무엇이 시간을 잡아먹는지, ③에서 돌기 전에 계산하는 법을 익힙니다.'],
   qz:[{q:'Notch는 무엇인가?',a:['웨이퍼 표면의 흠집','웨이퍼 방향의 기준이 되는 홈','웨이퍼를 잡는 손잡이'],c:1,
        e:'가장자리에 파인 V자 홈으로, 결정 방향과 패턴 정렬의 기준점입니다.'},
-      {q:'정렬을 건너뛰고 챔버에 넣으면?',a:['처리 시간만 조금 늘어난다','패턴이 이전 층과 어긋나 불량이 된다','아무 문제 없다'],c:1,
-       e:'노광이라면 겹침이 틀어지고, 식각이라면 엉뚱한 자리가 깎입니다.'},
+      {q:'정렬을 건너뛰고 다음 장비로 보내면?',a:['아무 문제 없다 — 노광 장비가 알아서 다 맞춘다','다음 장비가 정렬 마크를 못 찾거나 챔버에 치우쳐 놓여 알람·지연·불량이 난다','처리 시간만 조금 줄어든다'],c:1,
+       e:'노광 장비의 나노미터 정렬도 "대략 맞춰 온" 웨이퍼를 전제로 합니다. 첫 단추가 틀리면 마크를 못 찾아 재시도·리젝트, 식각 챔버에서는 치우친 안착으로 가장자리 불균일이 납니다.'},
+      {q:'Pre-aligner 의 각도 오차 0.1° 는 웨이퍼 가장자리(반지름 150 mm)에서 몇 mm 어긋남인가?',a:['약 0.003 mm','약 0.26 mm','약 2.6 mm'],c:1,
+       e:'150 mm × 0.1° × π/180 ≈ 0.26 mm = 260,000 nm. 노광 정렬(수 nm)과는 10만 배 차이라 정밀 정렬은 노광 장비가 따로 합니다.'},
       /* 문항 은행 추가분 — 강을 열 때마다 이 중 QZ_SHOW 개를 무작위로 보여 준다 */
       {q:"Pre-aligner가 맞추는 두 가지는?",a:["중심(Centering)과 방향(Notch)","압력과 온도","속도와 높이"],c:0,
-       e:"중심이 맞아야 정확히 놓이고, 방향이 맞아야 패턴이 겹칩니다."},
+       e:"중심이 맞아야 다음 스테이션에 정확히 놓이고, 방향이 맞아야 다음 장비가 기준(Notch · 정렬 마크)을 바로 찾습니다."},
       {q:"정렬대가 비어 있는데 Align을 누르면?",a:["ALM-601","허공을 한 바퀴 돈다","ALM-502"],c:0,
        e:"먼저 Place로 웨이퍼를 올려야 합니다."},
       {q:"정렬 도중에 Pick을 누르면?",a:["ALM-602로 거부된다","정렬이 끝난 것으로 처리된다","웨이퍼가 떨어진다"],c:0,
@@ -1061,6 +1063,14 @@ function alignedCount(){
   S.foup.forEach(x=>{ if(x.wafer&&x.wafer.al)n++; });
   ['pm1','pm2','ll','al','efem','vac'].forEach(k=>{ if(S[k].wafer&&S[k].wafer.al)n++; });
   return n;
+}
+/* 9강 ③ 예측 훈련 — setup 이 뽑은 최단 회전량(d)과 처음 Notch 각(n) */
+const CH9P={d:[40,-95,150], n:[320,95,210]};
+/* 웨이퍼 ID 로 찾기 — 어디에 놓여 있든 */
+function waferById(id){
+  const f=S.foup.find(x=>x.wafer&&x.wafer.id===id); if(f) return f.wafer;
+  for(const k of ['pm1','pm2','ll','al','efem','vac']) if(S[k].wafer&&S[k].wafer.id===id) return S[k].wafer;
+  return null;
 }
 function procCount(){
   let n=0;
@@ -1257,6 +1267,36 @@ const DRILL={
     {t:'첫 장을 정렬한다', k:()=>alignedCount()>=1},
     {t:'둘째 장을 정렬한다', k:()=>alignedCount()>=2},
     {t:'셋째 장을 정렬한다', k:()=>alignedCount()>=3}
+   ]},
+  /* 누르기 전에 계산한다 — 매번 Notch 각도를 새로 뽑아 로그에 "로트 정보"로 적는다(옆자리와 답이 다르다).
+     정렬기 규칙(위 tick): 가까운 쪽으로 초당 160°, 남은 각이 3° 미만이면 0°에 맞추고 완료.
+     화면 회전 방향: Notch 각이 커지면 시계방향(SVG rotate). 그래서 최단 회전량 d 가 + 면 시계, - 면 반시계. */
+  {id:'ch9-predict', use:['port','manual'], type:'value', title:'③ 예측하고 확인 — 돌기 전에 맞힌다', record:'wrong', maxWrong:2,
+   desc:'정렬대가 얼마나, 어느 쪽으로, 몇 초 돌지를 누르기 전에 계산합니다. 웨이퍼마다 Notch 위치가 달라서 정렬 시간이 다릅니다 — 이 계산이 장비 처리량(몇 장/시간)을 따지는 첫걸음입니다.',
+   tip:'알람 로그의 [I] LOT 줄에서 W1~W3 의 Notch 각도를 읽으세요. 정렬대는 "가까운 쪽"으로 돕니다 — 300° 에 있는 Notch 는 300° 를 도는 게 아니라 반대로 60° 만 돕니다. 시간 = 각도 ÷ 160.',
+   setup:()=>{
+     /* 15°~165° 사이(0° 근처·180° 근처는 피한다 — 180° 는 양쪽 길이가 같아 방향이 애매하다), 서로 20° 이상 차이 */
+     let ds=[];
+     for(let tries=0; tries<200 && ds.length<3; tries++){
+       const m=15+Math.floor(Math.random()*151), sgn=Math.random()<0.5?-1:1;
+       if(ds.every(x=>Math.abs(Math.abs(x)-m)>=20)) ds.push(sgn*m);
+     }
+     while(ds.length<3) ds.push([40,-95,150][ds.length]);
+     /* 최단 회전량 d → 처음 Notch 각: notch = (-d) mod 360 */
+     CH9P.d=ds; CH9P.n=ds.map(d=>((-d)%360+360)%360);
+     S.foup.forEach((s,i)=>{ if(s.wafer&&i<3) s.wafer.notch=CH9P.n[i]; });
+     log('I','LOT','로트 정보 — Notch 위치 : W1 '+CH9P.n[0]+'° · W2 '+CH9P.n[1]+'° · W3 '+CH9P.n[2]+'° (12시 = 0°, 시계방향으로 증가)');
+   },
+   qs:[
+    {q:'W1 을 Notch 0° 로 맞출 때 정렬대가 실제로 도는 각도는? (가까운 쪽, 도 · ±3)', ph:'예: 70',
+     tol:3, a:()=>Math.abs(CH9P.d[0])},
+    {q:'그 회전에 걸리는 시간은? (정렬대 초당 160°, 초 · ±0.05)', ph:'예: 0.44',
+     tol:0.05, a:()=>Math.abs(CH9P.d[0])/160},
+    {q:'세 장 중 정렬이 가장 오래 걸리는 웨이퍼는?', ph:'예: W2',
+     a:()=>'W'+(1+[0,1,2].reduce((b,i)=>Math.abs(CH9P.d[i])>Math.abs(CH9P.d[b])?i:b,0))},
+    {q:'이제 W1 을 실제로 정렬대에 놓고 Align 하세요. 화면에서 Notch 는 어느 방향으로 돌았습니까? (시계 / 반시계)', ph:'시계 또는 반시계',
+     need:()=>{ const w=waferById('W1'); return !!(w&&w.al); }, needMsg:'먼저 W1 을 정렬대에 놓고 Align 하세요 — 예측이 맞는지 눈으로 확인하는 단계입니다',
+     a:()=>CH9P.d[0]>0?['시계','시계방향','CW']:['반시계','반시계방향','CCW']}
    ]}
  ],
 
@@ -1718,6 +1758,9 @@ function drillAnswer(text){
   if(q.tol!==undefined){
     const g=parseFloat(String(text).replace(/[^0-9.+-eE]/g,''));
     right = isFinite(g) && Math.abs(g-Number(want))<=q.tol;
+  } else if(Array.isArray(want)){
+    /* 같은 답의 여러 표기("반시계" · "반시계방향" · "CCW") — 하나라도 맞으면 정답 */
+    right = want.some(w=>norm(text).toLowerCase()===norm(w).toLowerCase());
   } else {
     right = norm(text).toLowerCase()===norm(want).toLowerCase();
   }
