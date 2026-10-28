@@ -35,3 +35,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PLASMA_SIMULATOR }}'
           channelId: live
           projectId: plasma-simulator
+          # 임시 고정: firebase-tools 15.34.0 부터 Hosting 배포 전에 "Hosting API 가 켜져 있나"를 확인하는데
+          # (ensureApiEnabled), 배포용 서비스 계정에 그 권한(serviceusage.services.get)이 없어 403 으로 실패한다.
+          # 마지막 성공 배포가 15.33.0. 서비스 계정에 "서비스 사용량 소비자" 역할을 주면 이 줄을 지워 latest 로 되돌린다.
+          firebaseToolsVersion: '15.33.0'
