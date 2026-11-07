@@ -1323,3 +1323,154 @@ export const GAS_LOG_Q = [
   { line: '03:14  FORELINE  0.35 Torr', ans: 'pump',
     why: '포어라인 압력 — 진공 펌프 쪽 값. 높으면 펌프 성능 저하를 의심.' },
 ];
+
+/* =========================================================================
+ * 9강 안전 작업 — 규정 문장 판정 · LOTO 순서 · 가스 경보 판독
+ *   교재: 조동사 강도(ISO/IEC Directives Part 2 — shall 요구 · should 권고 · may 허용, need not = 의무 아님,
+ *         must = 현장 매뉴얼에서 '반드시'), LOTO 6단계(OSHA 29 CFR 1910.147(d)),
+ *         TLV-TWA(ACGIH) Cl2 0.1 · SiH4 5 · AsH3 0.005 · PH3 0.05 · NF3 10 ppm.
+ *   이 실습을 위해 정한 것 — 경보 단계(1차 = TLV 50%, 2차 = TLV 100%). 실제 값은 사업장 절차서가 정한다.
+ * ====================================================================== */
+
+/** 규정 문장의 무게 — 화면 버튼 순서이기도 하다 */
+export const MODAL_CLASSES = [
+  { id: 'required', en: 'Required', ko: '반드시 (의무)' },
+  { id: 'prohibited', en: 'Prohibited', ko: '하지 마라 (금지)' },
+  { id: 'recommended', en: 'Recommended', ko: '하는 게 좋다 (권장)' },
+  { id: 'permitted', en: 'Permitted', ko: '해도 된다 (허용)' },
+  { id: 'notRequired', en: 'Not required', ko: '안 해도 된다 (의무 아님)' },
+];
+
+/**
+ * 문장 → 무게. 첫 조동사 하나로 정한다(교재 규칙 그대로). 조동사가 없으면 null.
+ * 'may not' 은 금지·가능성 두 뜻이라 판정하지 않는다(교재: 애매하면 묻는다) → 'ambiguous'.
+ */
+export function modalClass(sentence) {
+  const s = ` ${String(sentence || '').toLowerCase().replace(/[’']/g, "'")} `;
+  const m = s.match(/\b(shall not|shan't|must not|mustn't|should not|shouldn't|need not|needn't|may not|shall|must|should|may)\b/);
+  if (!m) return null;
+  const w = m[1];
+  if (w === 'may not') return 'ambiguous';
+  if (/^(shall not|shan't|must not|mustn't)$/.test(w)) return 'prohibited';
+  if (/^(need not|needn't)$/.test(w)) return 'notRequired';
+  if (/^(should not|shouldn't)$/.test(w)) return 'recommended'; // '하지 않는 게 좋다' — 권고의 부정. 이 실습 문장에는 쓰지 않는다
+  if (w === 'should') return 'recommended';
+  if (w === 'may') return 'permitted';
+  return 'required'; // shall · must
+}
+
+/** 실습 문장 — ans 는 손으로 적은 정답(테스트가 modalClass 와 대조한다), modal 은 근거 단어 */
+export const MODAL_ITEMS = [
+  { id: 'm1', en: 'Personnel shall complete gas safety training before entering the gas area.', ans: 'required', modal: 'shall',
+    why: 'shall = 요구사항. 교육을 안 마치고 들어가면 규정 위반이다.' },
+  { id: 'm2', en: 'Personnel must not work alone on any toxic gas line.', ans: 'prohibited', modal: 'must not',
+    why: 'must not = 금지. 혼자 작업하는 것 자체가 안 된다.' },
+  { id: 'm3', en: 'A portable gas detector should be carried during any line break.', ans: 'recommended', modal: 'should',
+    why: 'should = 권고. 하는 게 좋지만, 정당한 이유가 있으면 달리 할 수 있다.' },
+  { id: 'm4', en: 'The technician may use a digital torque wrench instead of a click type.', ans: 'permitted', modal: 'may',
+    why: 'may = 허용. 디지털 렌치를 써도 되고, 원래 렌치를 써도 위반이 아니다.' },
+  { id: 'm5', en: 'A face shield need not be worn inside the control room.', ans: 'notRequired', modal: 'need not',
+    why: 'need not = 의무가 아님. "쓰지 마라"가 아니다 — 써도 된다.' },
+  { id: 'm6', en: 'The RF generator shall not be energized while any panel is open.', ans: 'prohibited', modal: 'shall not',
+    why: 'shall not = 금지. 패널이 하나라도 열려 있으면 RF 를 켜면 안 된다.' },
+  { id: 'm7', en: 'All isolation points must be locked and tagged before work begins.', ans: 'required', modal: 'must',
+    why: '현장 매뉴얼의 must = 반드시. 작업 전에 모든 차단 지점에 잠금·표찰.' },
+  { id: 'm8', en: 'Leak checks should be performed at the start of each shift.', ans: 'recommended', modal: 'should',
+    why: 'should = 권고. 교대마다 누설 검사를 하는 것이 좋다.' },
+  { id: 'm9', en: 'The tool need not be vented for a software-only update.', ans: 'notRequired', modal: 'need not',
+    why: 'need not = 안 해도 된다. 벤트를 해도 위반은 아니다(필요가 없을 뿐).' },
+  { id: 'm10', en: 'Visitors may enter the gas area only when escorted.', ans: 'permitted', modal: 'may … only when',
+    why: 'may = 허용이지만 only when 이 조건을 단다 — 안내자와 함께일 때만 허용.' },
+];
+export function modalJudge(id, pick) {
+  const it = MODAL_ITEMS.find((x) => x.id === id);
+  if (!it) return null;
+  return { ok: pick === it.ans, ans: it.ans, why: it.why, modal: it.modal };
+}
+
+/* ── LOTO 순서 ──
+   카드마다 먼저 끝나 있어야 할 카드(needs)와, 너무 일찍 눌렀을 때의 이유(early)를 둔다.
+   trap 카드는 절차서에 없는 지름길 — 언제 눌러도 거절된다. */
+export const LOTO_CARDS = [
+  { id: 'notify', en: 'Notify affected personnel that the tool will be shut down.', ko: '영향받는 사람에게 정지를 알린다', step: 1, needs: [] },
+  { id: 'shutdown', en: 'Shut down the tool using the normal stop sequence.', ko: '정상 정지 순서로 멈춘다', step: 2, needs: ['notify'],
+    early: '알리기 전에 멈추면 그 장비를 쓰던 사람이 영문도 모른 채 공정을 잃는다.' },
+  { id: 'isoMain', en: 'Open the AC main breaker.', ko: '주전원 차단기를 내린다', step: 3, needs: ['shutdown'],
+    early: '운전 중에 전원부터 끊으면 공정·장비가 비정상으로 멈춘다 — 정상 정지가 먼저.' },
+  { id: 'isoRf', en: 'Switch off the RF generator at its own breaker.', ko: 'RF 발생기를 자체 차단기에서 끈다', step: 3, needs: ['shutdown'],
+    early: '정상 정지 전에 RF 를 끊으면 플라즈마가 비정상으로 꺼진다 — 정상 정지가 먼저.' },
+  { id: 'isoCda', en: 'Close the CDA supply valve.', ko: '압축공기(CDA) 공급 밸브를 닫는다', step: 3, needs: ['shutdown'],
+    early: '운전 중 공압을 끊으면 밸브가 제멋대로 움직인다 — 정상 정지가 먼저.' },
+  { id: 'isoGas', en: 'Close the process gas valve at the VMB.', ko: 'VMB 에서 공정 가스 밸브를 닫는다', step: 3, needs: ['shutdown'],
+    early: '공정 중 가스를 끊으면 압력이 흔들리고 알람이 연쇄로 뜬다 — 정상 정지가 먼저.' },
+  { id: 'lock', en: 'Apply your personal lock and tag to every isolation point.', ko: '모든 차단 지점에 내 자물쇠·표찰', step: 4, needs: ['isoMain', 'isoRf', 'isoCda', 'isoGas'],
+    early: '아직 끊지 않은 에너지원이 있다 — every isolation point 는 네 곳 모두다(RF 는 자체 차단기).' },
+  { id: 'bleed', en: 'Bleed the residual pressure from the CDA line.', ko: 'CDA 라인 잔압을 뺀다', step: 5, needs: ['lock'],
+    early: '잠그기 전에 잔압을 빼면, 그 사이 누가 밸브를 다시 열 수 있다 — 잠금이 먼저.' },
+  { id: 'purge', en: 'Cycle-purge the process gas line with N2.', ko: '가스 라인을 N2 로 반복 퍼지한다', step: 5, needs: ['lock'],
+    early: '잠그기 전에 퍼지하면, 그 사이 가스가 다시 들어올 수 있다 — 잠금이 먼저.' },
+  { id: 'verify', en: 'Verify zero energy: press START (no response) and measure 0 V.', ko: '무에너지 확인 — START 무반응, 0 V', step: 6, needs: ['bleed', 'purge'],
+    early: '남은 에너지(잔압·가스)를 빼기 전이라 확인해도 무에너지가 아니다.' },
+  { id: 'work', en: 'Open the chamber panel and begin the maintenance work.', ko: '패널을 열고 정비를 시작한다', step: 7, needs: ['verify'],
+    early: '잠갔다고 에너지가 없는 게 아니다 — 확인(try-out) 전에는 손대지 않는다.' },
+  { id: 'trapBuddy', en: 'Ask a coworker to hold the breaker OFF instead of locking it.', ko: '자물쇠 대신 동료가 차단기를 붙잡고 있게 한다', trap: true,
+    early: '사람은 자물쇠가 아니다 — 자리를 비우거나 다른 사람이 올리면 끝이다. one person, one lock, one key.' },
+  { id: 'trapTag', en: 'Hang a tag only, without a lock, to save time.', ko: '시간을 아끼려 표찰만 단다', trap: true,
+    early: '이 장비는 자물쇠를 걸 수 있다 — 표찰은 경고일 뿐 물리적으로 막지 못한다.' },
+];
+export function lotoInit() { return { done: [], mistakes: 0, finished: false }; }
+/** 카드 하나를 누른다. 반환 { s, ok, log:[{t,m}] } — s 는 새 객체 */
+export function lotoAct(s, id) {
+  const card = LOTO_CARDS.find((c) => c.id === id);
+  if (!card || s.finished || s.done.includes(id)) return { s, ok: false, log: [] };
+  const miss = card.trap ? [] : card.needs.filter((n) => !s.done.includes(n));
+  if (card.trap || miss.length) {
+    return { s: { ...s, mistakes: s.mistakes + 1 }, ok: false,
+      log: [{ t: 'ALARM', m: `REJECTED — ${card.en}` }, { t: 'INFO', m: card.early }] };
+  }
+  const done = [...s.done, id];
+  const finished = id === 'work';
+  return { s: { ...s, done, finished }, ok: true,
+    log: [{ t: 'CMD', m: `STEP ${card.step} DONE — ${card.en}` }, ...(finished ? [{ t: 'CMD', m: `Zero energy verified. Work may begin. (mistakes: ${s.mistakes})` }] : [])] };
+}
+/** 지금 눌러도 되는 카드 id (힌트·테스트용) */
+export function lotoAvailable(s) {
+  return LOTO_CARDS.filter((c) => !c.trap && !s.done.includes(c.id) && c.needs.every((n) => s.done.includes(n))).map((c) => c.id);
+}
+
+/* ── 가스 경보 ── */
+export const GAS_TLV = { Cl2: 0.1, SiH4: 5, AsH3: 0.005, PH3: 0.05, NF3: 10 }; // ppm, ACGIH TLV-TWA
+export const GAS_L1_FRAC = 0.5; // 이 실습의 설정: 1차 경보 = TLV 50%
+export const GAS_L2_FRAC = 1.0; // 2차 경보 = TLV 100%
+export const GAS_ACTIONS = [
+  { id: 'continue', en: 'Continue work and keep monitoring.', ko: '작업 계속, 감시 유지' },
+  { id: 'stop', en: 'Stop work, secure the area, and report to the supervisor.', ko: '작업 중지 · 현장 정리 · 보고' },
+  { id: 'evacuate', en: 'Evacuate immediately via the nearest exit. Do not re-enter until the all-clear.', ko: '즉시 대피 · 해제 전 재진입 금지' },
+];
+export function toPpm(value, unit) { return unit === 'ppb' ? value / 1000 : value; }
+/** 농도 → 단계. 경계값은 '이상'으로 본다(≥) */
+export function gasLevel(gas, value, unit = 'ppm') {
+  const tlv = GAS_TLV[gas];
+  if (tlv == null) throw new Error(`unknown gas ${gas}`);
+  const ppm = toPpm(value, unit);
+  const eps = 1e-12;
+  if (ppm + eps >= tlv * GAS_L2_FRAC) return 'ALARM';
+  if (ppm + eps >= tlv * GAS_L1_FRAC) return 'WARNING';
+  return 'NORMAL';
+}
+export function gasAction(level) { return level === 'ALARM' ? 'evacuate' : level === 'WARNING' ? 'stop' : 'continue'; }
+export const GAS_CASES = [
+  { id: 'g1', point: 'TGM-03 (VMB-3)', gas: 'Cl2', value: 0.03, unit: 'ppm', note: '라인 개방 작업 중' },
+  { id: 'g2', point: 'TGM-03 (VMB-3)', gas: 'Cl2', value: 0.06, unit: 'ppm', note: '라인 개방 작업 중' },
+  { id: 'g3', point: 'TGM-11 (GC-07 exhaust)', gas: 'SiH4', value: 6, unit: 'ppm', note: '가스 캐비닛 자동 차단 작동(auto shut-off)' },
+  { id: 'g4', point: 'TGM-21 (implant gas box)', gas: 'AsH3', value: 3, unit: 'ppb', note: '단위가 ppb 인 것에 주의' },
+  { id: 'g5', point: 'TGM-14 (chamber clean line)', gas: 'NF3', value: 4, unit: 'ppm', note: '세정 가스 라인 근처' },
+  { id: 'g6', point: 'TGM-22 (implant gas box)', gas: 'PH3', value: 50, unit: 'ppb', note: '단위가 ppb 인 것에 주의' },
+];
+/** 사례 판정 설명 — 화면과 테스트가 같은 문장을 쓴다 */
+export function gasExplain(c) {
+  const tlv = GAS_TLV[c.gas], ppm = toPpm(c.value, c.unit), lv = gasLevel(c.gas, c.value, c.unit);
+  const fmt = (x) => String(+x.toPrecision(3));
+  const conv = c.unit === 'ppb' ? `${c.value} ppb = ${fmt(ppm)} ppm. ` : '';
+  return `${conv}TLV ${fmt(tlv)} ppm → 1차 ${fmt(tlv * GAS_L1_FRAC)} · 2차 ${fmt(tlv * GAS_L2_FRAC)} ppm. ${fmt(ppm)} ppm 은 ${lv === 'ALARM' ? '2차 이상 — 즉시 대피' : lv === 'WARNING' ? '1차 이상 2차 미만 — 작업 중지·보고' : '1차 미만 — 정상'}.`;
+}

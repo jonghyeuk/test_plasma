@@ -127,12 +127,14 @@ export function extractChapterSentences(chapters) {
   return out;
 }
 
-/* 실습(sim) 화면의 고정 영어 알람 문장 — 6장 ② ACK/RESET 의 ACK_CASES.msg, 6장 ③ 우선순위의 PRIO_ITEMS.msg.
+/* 실습(sim) 화면의 고정 영어 알람 문장 — 6장 ② ACK/RESET 의 ACK_CASES.msg, 6장 ③ 우선순위의 PRIO_ITEMS.msg,
+   9장 규정 문장 판정의 MODAL_ITEMS.en(문장마다 ▶).
    데이터 파일 밖(src/simulators/fieldEnglishLabs.js)에 있어 extractChapterSentences 가 못 보므로 따로 받는다.
    숫자가 매번 바뀌는 로그 줄은 사전 생성이 맞지 않아 넣지 않는다. 빌드 스크립트와 테스트가 같은 함수를 쓴다. */
 export function extractLabSentences(labs) {
   const out = [];
-  [...(labs.ACK_CASES || []), ...(labs.PRIO_ITEMS || [])].forEach((x) => { const k = speechKey(x.msg); if (k && !out.includes(k)) out.push(k); });
+  [...(labs.ACK_CASES || []), ...(labs.PRIO_ITEMS || []), ...(labs.MODAL_ITEMS || []).map((x) => ({ msg: x.en }))]
+    .forEach((x) => { const k = speechKey(x.msg); if (k && !out.includes(k)) out.push(k); });
   return out;
 }
 

@@ -8,6 +8,9 @@ import { SCENEBG } from '../data/fieldEnglishSceneBg.data';
 import FE_AUDIO from '../data/fieldEnglishAudio.manifest.json'; // { "문장": "해시" } — scripts/narration/field-english-build.js 가 만든다
 import { AUDIO_DIR, SLIDE_AUDIO_DIR, speechKey, findSpeechSpans, slideNarration } from '../data/fieldEnglishAudio';
 import FE_SLIDE_AUDIO from '../data/fieldEnglishSlideAudio.manifest.json'; // { "읽어 줄 글": { h, sec } } — scripts/narration/field-english-slides-build.js 가 만든다
+import FE_LECTURE from '../data/fieldEnglishLecture.manifest.json'; // { w9: [{ i, sig, h, sec, cues }] } — scripts/narration/field-english-lecture-build.mjs 가 만든다
+import { LECTURE_AUDIO_DIR, slideSig } from '../data/fieldEnglishLecture';
+import { findTextRects, underlinePath, circlePath, highlightSegs, PEN_DUR } from './fieldEnglishPen';
 import {
   procInit, procCheck, procPress, procTick, procLamps, PROC_BUTTONS,
   judgeLine, SPPV_LINES, SPPV_CASES,
@@ -31,6 +34,9 @@ import {
   crInit, crCheck, crApply, CR_FIXES, LC_LAYERS, CNT_RULE, cntInit, cntCheck,
   LVS_SCH, LVS_LAY, LVS_PAIR, lvsCompare, LVS_WHICH_Q, LVS_TYPES, LVS_ERRORS, lvsRerun,
   GAS_PARTS, GAS_LOG_Q,
+  MODAL_CLASSES, MODAL_ITEMS, modalJudge,
+  LOTO_CARDS, lotoInit, lotoAct,
+  GAS_TLV, GAS_ACTIONS, GAS_CASES, gasLevel, gasAction, gasExplain,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -1270,6 +1276,7 @@ function LessonDeck({ steps, chapterId, chapterNo, chapterTitle, onReachEnd }) {
   const [i, setI] = useState(0);
   // 챕터 PDF — 화면에서는 한 장씩 넘기지만, 저장할 때는 전 단계를 한 번에 펼쳐 인쇄한다.
   const [printing, setPrinting] = useState(false);
+  const bodyRef = useRef(null); // 강의 듣기 펜 층이 이 본문(스크롤 영역) 안에 깔린다
   const step = steps[i];
   const last = i === steps.length - 1;
   const artName = CH_ART[chapterId] && !(step.art && MANGA[step.art]) ? CH_ART[chapterId][step.title] : undefined;
@@ -1299,9 +1306,10 @@ function LessonDeck({ steps, chapterId, chapterNo, chapterTitle, onReachEnd }) {
         <div className="fes-ld-head">
           <span className="fes-ld-step">CH{chapterNo} · {chapterTitle}<span className="fes-ld-step-sep">/</span>STEP {i + 1} / {steps.length}{stepLabel ? ' · ' + stepLabel : ''}</span>
           <div className="fes-ld-title">{step.title}</div>
-          <SlideAudioBtn slide={step} />
+          <SlideAudioBtn slide={step} chapterId={chapterId} index={i} />
         </div>
-        <div className="fes-ld-body">
+        <div className="fes-ld-body" ref={bodyRef}>
+          <PenLayer key={`pen-${i}`} bodyRef={bodyRef} entry={lectureFor(chapterId, i, step)} />
           {step.body || <SlideRenderer key={i} slide={step} />}
           {artName && <SlideArt name={artName} />}
         </div>
@@ -2340,6 +2348,114 @@ function PmPartsLab() {
   );
 }
 
+/* ── 9강 · 규정 문장 판정 (조동사의 강도) ── */
+function SafetyModalLab() {
+  const [ans, setAns] = useState({});
+  const right = MODAL_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  const answered = Object.keys(ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        안전 규정집 <b>GENERAL SAFETY REQUIREMENTS</b> 의 문장입니다. 동사 앞의 <b>조동사</b>를 찾아, 그 줄이 무엇을 요구하는지 고르세요.
+      </p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {MODAL_ITEMS.map((it, n) => {
+          const r = ans[it.id] != null ? modalJudge(it.id, ans[it.id]) : null;
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {it.en} <SpeakBtn text={it.en} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {MODAL_CLASSES.map((m) => {
+                  const picked = ans[it.id] === m.id, isAns = r && m.id === it.ans;
+                  return (
+                    <button key={m.id} className={`fes-chip ${picked ? 'on' : ''}`} disabled={r != null}
+                      style={isAns ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : picked ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: m.id }))}>{m.ko}</button>
+                  );
+                })}
+              </div>
+              {r && <div style={{ marginTop: 6, fontSize: 12.5, color: r.ok ? C.emerald : C.amber }}>{r.ok ? '✔' : '✘'} 근거: <b>{r.modal}</b> — {r.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{answered} / {MODAL_ITEMS.length} 판정 · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 9강 · LOTO 순서 ──
+   카드는 고정된 순서로 섞어 둔다(렌더마다 바뀌면 학생이 위치로 외울 수도, 화면이 흔들릴 수도 있다). */
+const LOTO_ORDER = ['isoCda', 'verify', 'notify', 'trapBuddy', 'lock', 'isoGas', 'work', 'bleed', 'isoMain', 'trapTag', 'shutdown', 'purge', 'isoRf'];
+function LotoLab() {
+  const START = [{ t: 'INFO', m: 'WO-24203 — Etch tool ET-05 chamber service. Energy sources: AC main, RF generator, CDA, process gas.' }];
+  const [box, setBox] = useState(() => ({ s: lotoInit(), log: START }));
+  const { s } = box;
+  const press = (id) => setBox((b) => { const r = lotoAct(b.s, id); return { s: r.s, log: [...b.log, ...r.log].slice(-30) }; });
+  const cards = LOTO_ORDER.map((id) => LOTO_CARDS.find((c) => c.id === id));
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        식각 장비 <b>ET-05</b> 정비 전 LOTO 입니다. 지금 해도 되는 카드를 골라 순서대로 누르세요. 에너지원은 <b>네 곳</b>(AC main · RF generator · CDA · process gas)입니다.
+      </p>
+      <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+        {cards.map((c) => {
+          const done = s.done.includes(c.id);
+          return (
+            <button key={c.id} className="fes-dev-status" disabled={done || s.finished} onClick={() => press(c.id)}
+              style={{ textAlign: 'left', cursor: done || s.finished ? 'default' : 'pointer', borderColor: done ? C.emerald : undefined, opacity: done ? 0.75 : 1 }}>
+              <div style={{ fontFamily: C.mono, fontSize: 12, color: done ? C.emerald : C.text }}>{done ? `✔ ${LOTO_CARDS.find((x) => x.id === c.id).step}. ` : ''}{c.en}</div>
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 3 }}>{c.ko}</div>
+            </button>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>완료 {s.done.length} / {LOTO_CARDS.filter((c) => !c.trap).length} · 잘못 누름 {s.mistakes}</span>
+        <button className="fes-btn ghost" onClick={() => setBox({ s: lotoInit(), log: START })}>Reset</button>
+      </div>
+      {s.finished && <div className="fes-ok" style={{ marginTop: 10 }}>✔ Zero energy verified — 정비를 시작할 수 있습니다. 지름길 카드 두 장은 끝까지 쓰지 않는 것이 정답입니다.</div>}
+      <LabLog log={box.log} title="LOTO LOG" />
+    </div>
+  );
+}
+
+/* ── 9강 · 가스 경보 판독 ── */
+function GasAlarmLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = GAS_CASES[ci];
+  const lv = gasLevel(c.gas, c.value, c.unit);
+  const right = gasAction(lv);
+  const a = ans[c.id];
+  const col = lv === 'ALARM' ? C.red : lv === 'WARNING' ? C.amber : C.emerald;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        감지기 화면의 <b>가스 · 농도 · 단위</b>를 읽고 행동을 고르세요. 이 실습의 설정: <b>1차 경보 = TLV 50%</b>, <b>2차 경보 = TLV 100%</b> (실제 값은 사업장 절차서가 정한다).
+      </p>
+      <CaseChips cases={GAS_CASES} idx={ci} setIdx={setCi} label={(x) => x.point.split(' ')[0]}
+        mark={(x) => (ans[x.id] == null ? null : ans[x.id] === gasAction(gasLevel(x.gas, x.value, x.unit)))} />
+      <div className="fes-dev-grid">
+        <div className="fes-dev-led"><div className="fes-dev-led-label">MONITOR POINT</div><div className="fes-dev-led-val" style={{ fontSize: 15, textShadow: 'none' }}>{c.point}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">GAS (TLV-TWA)</div><div className="fes-dev-led-val" style={{ fontSize: 17, textShadow: 'none' }}>{c.gas}<span className="fes-dev-led-unit">{GAS_TLV[c.gas]} ppm</span></div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">READING</div><div className="fes-dev-led-val" style={{ fontSize: 17, textShadow: 'none', color: a != null ? col : C.cyan }}>{c.value}<span className="fes-dev-led-unit">{c.unit}</span></div></div>
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>현장 메모: {c.note}</div>
+      <PickRow prompt="이 화면을 보고 지금 할 일은?" options={GAS_ACTIONS.map((x) => ({ id: x.id, label: x.en }))}
+        picked={a} answer={right} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === right ? C.emerald : C.amber }}>
+          {a === right ? '✔' : '✘'} <b style={{ color: col }}>{lv === 'ALARM' ? 'LEVEL 2 ALARM' : lv === 'WARNING' ? 'LEVEL 1 WARNING' : 'NORMAL'}</b> — {gasExplain(c)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -3349,21 +3465,23 @@ function speakEN(text, onEnd) {
     synth.speak(u);
   } catch (e) { if (onEnd) onEnd(); /* 미지원 브라우저는 무시 */ }
 }
-const SPEECH = { audio: null, key: null, paused: false, listeners: new Set() }; // 지금 울리는 것 하나 (모듈 전역)
-function speechNotify() { const st = { key: SPEECH.key, paused: SPEECH.paused }; SPEECH.listeners.forEach((fn) => fn(st)); }
+const SPEECH = { audio: null, key: null, paused: false, ended: null, listeners: new Set() }; // 지금 울리는 것 하나 (모듈 전역)
+/* ended — 끝까지 들은 것의 key. 강의 듣기의 펜 자국을 끝난 뒤에도 남겨 두려고 둔다(정지 ■ 를 누르면 지운다). */
+function speechNotify() { const st = { key: SPEECH.key, paused: SPEECH.paused, ended: SPEECH.ended }; SPEECH.listeners.forEach((fn) => fn(st)); }
 /* 일시정지 / 이어 듣기 — 전체 듣기(긴 글)용. 위치를 잃지 않는다. 담당자 2026-10-07 "재생·잠깐 멈춤" */
 function pauseSpeech() { if (SPEECH.audio && !SPEECH.audio.paused) { SPEECH.audio.pause(); SPEECH.paused = true; speechNotify(); } }
 function resumeSpeech() { if (SPEECH.audio && SPEECH.paused) { SPEECH.paused = false; const p = SPEECH.audio.play(); if (p && p.catch) p.catch(() => {}); speechNotify(); } }
 function stopSpeech() {
   if (SPEECH.audio) { try { SPEECH.audio.pause(); SPEECH.audio.src = ''; } catch (e) { /* ignore */ } SPEECH.audio = null; }
   try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
-  SPEECH.key = null; SPEECH.paused = false; speechNotify();
+  SPEECH.key = null; SPEECH.paused = false; SPEECH.ended = null; speechNotify();
 }
-function playSpeech(key, text, src) {
+/* rate — 슬라이드 전체 읽기(src)는 기본 0.9배. 강의 듣기는 말하듯 쓴 대본이라 1배로 부른다. */
+function playSpeech(key, text, src, rate) {
   if (SPEECH.key === key) { stopSpeech(); return; } // 재생 중인 것을 다시 누르면 정지
   stopSpeech();
   SPEECH.key = key; SPEECH.paused = false; speechNotify();
-  const endIfMine = (k) => () => { if (SPEECH.key === k) { SPEECH.audio = null; SPEECH.key = null; SPEECH.paused = false; speechNotify(); } };
+  const endIfMine = (k) => () => { if (SPEECH.key === k) { SPEECH.audio = null; SPEECH.key = null; SPEECH.paused = false; SPEECH.ended = k; speechNotify(); } };
   /* 폴백: 문장(text)이 있으면 Web Speech. 슬라이드 전체 읽기(src 지정)는 글이 길고 한·영 혼합이라 폴백 없이 멈춘다. */
   const fallback = () => { if (SPEECH.key !== key) return; SPEECH.audio = null; if (text) speakEN(text, endIfMine(key)); else { SPEECH.key = null; speechNotify(); } };
   const hash = FE_AUDIO[key];
@@ -3371,7 +3489,7 @@ function playSpeech(key, text, src) {
   try {
     const a = new Audio(src || `${AUDIO_DIR}/${hash}.mp3`);
     a.preload = 'auto';
-    if (src) a.playbackRate = 0.9; // 슬라이드 전체 읽기(한·영 혼합)는 살짝 천천히. 문장 발음은 원어민 속도 그대로
+    if (src) a.playbackRate = rate || 0.9; // 슬라이드 전체 읽기(한·영 혼합)는 살짝 천천히. 문장 발음은 원어민 속도 그대로
     a.onended = endIfMine(key);
     a.onerror = fallback; // 파일이 없거나 못 읽으면 Web Speech 로
     SPEECH.audio = a;
@@ -3380,27 +3498,109 @@ function playSpeech(key, text, src) {
   } catch (e) { fallback(); }
 }
 function useSpeechState() {
-  const [st, setSt] = useState({ key: SPEECH.key, paused: SPEECH.paused });
+  const [st, setSt] = useState({ key: SPEECH.key, paused: SPEECH.paused, ended: SPEECH.ended });
   useEffect(() => { SPEECH.listeners.add(setSt); return () => SPEECH.listeners.delete(setSt); }, []);
   return st;
 }
 function useSpeechKey() { return useSpeechState().key; }
 /* ▶ 전체 듣기 — story · read · manual 슬라이드를 한 화자(Chris, 한·영 혼합)가 처음부터 끝까지 읽는다.
    매니페스트(FE_SLIDE_AUDIO)에 그 슬라이드 글이 있을 때만 그린다. 문장 ▶ 와 같은 SPEECH 를 쓰므로 서로 끼어들면 앞 것이 멈춘다. */
-function SlideAudioBtn({ slide }) {
-  const narr = slideNarration(slide);
+/* 펜 층 — 강의 듣기가 이 슬라이드를 읽는 동안, 음성의 현재 시각에 맞춰 밑줄·동그라미·형광펜을 긋는다.
+   - 시각은 오디오의 currentTime 하나만 본다 → 일시정지하면 펜도 멈추고, 이어 들으면 이어 긋는다.
+   - 끝까지 들으면 자국을 남겨 둔다(정지 ■ 나 다른 슬라이드로 가면 지운다).
+   - 그을 차례가 된 글이 본문 스크롤 밖이면 그쪽으로 부드럽게 내려 준다.
+   - 최근 다섯 개만 진하게, 그 전 것은 흐리게 — 화면이 빨간 줄로 덮이지 않게. */
+const PEN_RED = '#ff5468', PEN_HL = '#ffd23f';
+function PenLayer({ bodyRef, entry }) {
+  const { key: cur, ended } = useSpeechState();
+  const key = entry ? `lecture:${entry.h}` : null;
+  const playing = key != null && cur === key;
+  const finished = key != null && !playing && ended === key;
+  const [now, setNow] = useState(0);
+  const [geo, setGeo] = useState({ w: 0, h: 0, boxes: [] });
+  const scrolledTo = useRef(-1);
+  const measure = useCallback(() => {
+    const body = bodyRef.current;
+    if (!body || !entry) return;
+    const boxes = entry.cues.map((c) => findTextRects(body, c.x, c.n));
+    if (import.meta.env && import.meta.env.DEV) boxes.forEach((b, j) => { if (!b.length) console.warn('[pen] 화면에서 못 찾음:', entry.cues[j].x); });
+    setGeo({ w: body.scrollWidth, h: body.scrollHeight, boxes });
+  }, [bodyRef, entry]);
+  // 재생 중에는 매 프레임 시각을 읽는다
+  useEffect(() => {
+    if (!playing) return undefined;
+    let raf = 0;
+    const tick = () => { if (SPEECH.audio) setNow(SPEECH.audio.currentTime); raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+  // 위치는 재생이 시작될 때 · 본문 크기가 바뀔 때(글꼴 로딩·창 크기·실습 화면 변화) 다시 잰다
+  useEffect(() => {
+    if (!playing && !finished) return undefined;
+    measure();
+    const body = bodyRef.current;
+    if (!body || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(body);
+    if (body.firstElementChild) Array.from(body.children).forEach((c) => ro.observe(c));
+    return () => ro.disconnect();
+  }, [playing, finished, measure, bodyRef]);
+  useEffect(() => { if (!playing && !finished) { setNow(0); scrolledTo.current = -1; } }, [playing, finished]);
+  const t = finished ? Infinity : now;
+  const active = entry && (playing || finished) ? entry.cues.map((c, j) => ({ c, j })).filter(({ c }) => c.t <= t) : [];
+  // 새로 그을 글이 보이는 곳 밖이면 그쪽으로
+  const newest = active.length ? active[active.length - 1].j : -1;
+  useEffect(() => {
+    if (!playing || newest < 0 || scrolledTo.current === newest) return;
+    scrolledTo.current = newest;
+    const body = bodyRef.current, b = geo.boxes[newest];
+    if (!body || !b || !b.length) return;
+    const top = b[0].y, bot = b[b.length - 1].y + b[b.length - 1].h;
+    if (top < body.scrollTop + 8 || bot > body.scrollTop + body.clientHeight - 8) {
+      body.scrollTo({ top: Math.max(0, top - body.clientHeight * 0.3), behavior: 'smooth' });
+    }
+  }, [playing, newest, geo, bodyRef]);
+  if (!entry || !active.length) return null;
+  return (
+    <svg className="fes-pen" width={geo.w} height={geo.h} aria-hidden="true">
+      {active.map(({ c, j }, order) => {
+        const boxes = geo.boxes[j];
+        if (!boxes || !boxes.length) return null;
+        const p = Math.max(0, Math.min(1, (t - c.t) / (PEN_DUR[c.k] || 0.6)));
+        const faded = active.length - order > 5;
+        const common = { pathLength: 1, strokeDasharray: '1 1', strokeDashoffset: 1 - p, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+        if (c.k === 'h') {
+          return <g key={j} className="fes-pen-hl" opacity={faded ? 0.22 : 0.42}>{highlightSegs(boxes).map((sg, q) => <path key={q} d={sg.d} stroke={PEN_HL} strokeWidth={sg.w} {...common} strokeLinecap="butt" />)}</g>;
+        }
+        // 두 줄 이상에 걸친 글은 동그라미가 화면 폭만 한 타원이 되므로 밑줄로 짚는다
+        const ring = c.k === 'o' && boxes.length === 1;
+        return <path key={j} d={ring ? circlePath(boxes, j + 1) : underlinePath(boxes, j + 1)} stroke={PEN_RED} strokeWidth={ring ? 2.6 : 2.4} opacity={faded ? 0.35 : 0.95} {...common} />;
+      })}
+    </svg>
+  );
+}
+/* 강의 듣기 — 대본(say)을 설명하듯 읽고 화면에 펜으로 짚는다. 이 슬라이드의 강의가 있으면 전체 듣기 대신 이것을 단다.
+   매니페스트의 서명(slideSig)이 지금 슬라이드와 다르면(교재가 바뀌고 빌드를 안 돌림) 옛 음성을 붙이지 않는다. */
+function lectureFor(chapterId, index, slide) {
+  const list = chapterId ? FE_LECTURE[chapterId] : null;
+  const e = list ? list.find((x) => x.i === index) : null;
+  return e && e.sig === slideSig(slide) ? e : null;
+}
+function SlideAudioBtn({ slide, chapterId, index }) {
+  const lec = lectureFor(chapterId, index, slide);
+  const narr = lec ? null : slideNarration(slide);
   const { key: cur, paused } = useSpeechState();
-  const ent = narr ? FE_SLIDE_AUDIO[narr] : null;
+  const ent = lec || (narr ? FE_SLIDE_AUDIO[narr] : null);
   if (!ent) return null;
-  const key = `slide:${ent.h}`, on = cur === key;
-  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  const src = `${SLIDE_AUDIO_DIR}/${ent.h}.mp3`;
+  const key = lec ? `lecture:${ent.h}` : `slide:${ent.h}`, on = cur === key;
+  const mmss = (v) => { const s = Math.round(v); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  const src = lec ? `${LECTURE_AUDIO_DIR}/${ent.h}.mp3` : `${SLIDE_AUDIO_DIR}/${ent.h}.mp3`;
   if (!on) {
     return (
       <div className="fes-slide-audio-wrap">
-        <button type="button" className="fes-slide-audio" title="이 화면 전체를 읽어 줍니다 (한국어 설명 + 영어 문장, 한 화자)"
-          onClick={(e) => { e.stopPropagation(); playSpeech(key, null, src); }}>
-          <span aria-hidden="true">▶</span> 전체 듣기<small>{mmss(ent.sec || 0)}</small>
+        <button type="button" className="fes-slide-audio" title={lec ? '강의 듣기 — 설명하듯 읽으며 화면에 펜으로 짚어 줍니다' : '이 화면 전체를 읽어 줍니다 (한국어 설명 + 영어 문장, 한 화자)'}
+          onClick={(e) => { e.stopPropagation(); playSpeech(key, null, src, lec ? 1 : undefined); }}>
+          <span aria-hidden="true">▶</span> {lec ? '강의 듣기' : '전체 듣기'}<small>{mmss(ent.sec || 0)}</small>
         </button>
       </div>
     );
@@ -3596,6 +3796,8 @@ const SIM_REGISTRY = {
       : sl.mode === 'priority' ? <PriorityHMI />
         : sl.mode === 'shiftLog' ? <ShiftLogLab />
       : <EquipmentHMI variant={sl.mode === 'sequence' ? 'sequence' : 'etch'} />),
+  // 9강 안전 작업 — 규정 문장 판정 · LOTO 순서 · 가스 경보 판독
+  safety: (sl) => (sl.mode === 'loto' ? <LotoLab /> : sl.mode === 'gas' ? <GasAlarmLab /> : <SafetyModalLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -3989,8 +4191,11 @@ const CM_PART_EQUIP = [
   { ch: 'CH 6', t: '알람과 조치', d: 'alarm·interlock·timeout·failure' },
   { ch: 'CH 7', t: '유지보수(PM)', d: 'inspect·clean·replace·calibrate' },
 ];
+// 2부(9~15강)는 장비 문서와 소통으로 바뀌는 중이다 — 바뀐 강은 CM_PART_DOCS 로 옮기고, 남은 설계 강은 아래 표에 둔다.
+const CM_PART_DOCS = [
+  { ch: 'CH 9', t: '안전 작업 — LOTO · 가스 · 작업 허가', d: 'shall · must · should · may · need not (규정문의 조동사)' },
+];
 const CM_PART_DESIGN = [
-  { ch: 'CH 9', t: 'Layer 용어', d: 'well·active·poly·contact·metal' },
   { ch: 'CH 10', t: 'Design Rule', d: 'width·spacing·overlap·enclosure' },
   { ch: 'CH 11', t: '패턴 배치', d: 'layer 배치 · 선폭 · 간격' },
   { ch: 'CH 12', t: 'DRC 오류', d: 'DRC (Design Rule Check) 오류 해석' },
@@ -4017,7 +4222,7 @@ function CourseMap() {
         <span className="fes-cm-loop-tag">매 챕터 반복</span>
       </div>
 
-      {/* 구성: Day1 + 장비 파트 / 디자인 파트 / 종합 */}
+      {/* 구성: Day1 + 장비 파트 / 2부(문서와 소통 · 개편 중인 설계 강) / 종합 */}
       <div className="fes-cm-day1">CH 1 · Day 1 — 오리엔테이션 (두루두루 훑기)</div>
       <div className="fes-cm-parts">
         <div className="fes-cm-part">
@@ -4027,7 +4232,11 @@ function CourseMap() {
           ))}
         </div>
         <div className="fes-cm-part">
-          <div className="fes-cm-part-h fes-b">디자인 파트 · Design</div>
+          <div className="fes-cm-part-h fes-b">2부 · 장비 문서와 소통</div>
+          {CM_PART_DOCS.map((c) => (
+            <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
+          ))}
+          <div className="fes-cm-part-h fes-b" style={{ marginTop: 10, opacity: 0.75 }}>설계 영어 · 장비 강으로 개편 중</div>
           {CM_PART_DESIGN.map((c) => (
             <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
           ))}
@@ -4344,6 +4553,11 @@ function FesStyles() {
 .fes-ld-head:after{content:'';position:absolute;right:20px;top:14px;width:30px;height:30px;border-radius:9px;background:radial-gradient(circle at 30% 30%,${C.neon}55,${C.elec}22);opacity:.5}
 .fes-ld-step{font-family:${C.mono};font-size:11px;letter-spacing:1.2px;color:${C.neon};font-weight:700}
 .fes-slide-audio-wrap{position:absolute;right:62px;top:12px;display:flex;gap:6px}
+/* 강의 듣기 펜 층 — 본문(스크롤 영역) 안쪽 내용 좌표에 깔린다. 클릭을 막지 않는다. 형광펜은 어두운 판에서 글자를 덮지 않게 screen 으로 섞는다 */
+.fes-ld-body{position:relative}
+.fes-pen{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:3}
+.fes-pen-hl{mix-blend-mode:screen}
+@media print{.fes-pen{display:none}}
 .fes-slide-audio{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid ${C.cyan}88;background:${C.cyan}14;color:${C.cyan};font-family:${C.mono};font-size:12px;font-weight:700;cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent}
 .fes-slide-audio:hover{background:${C.cyan}2a}
 .fes-slide-audio.on{background:${C.cyan};color:#061018;border-color:${C.cyan}}

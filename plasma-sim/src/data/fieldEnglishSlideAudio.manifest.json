@@ -251,38 +251,6 @@
   "h": "9c22fdf2b6",
   "sec": 11
  },
- "층으로 읽는 반도체 신입 기술자 지훈은 첫 출근날, 엔지니어가 모니터에 띄운 소자 cross-section 그림 앞에서 멈칫했다. 화면 맨 아래엔 회색 substrate (Si), 그 위로 well, active, 빨간 poly (gate), 그리고 위쪽 굵은 선들에는 metal이라 적혀 있었다. 선배가 물었다. \"This layer here — what is it?\" 지훈은 순간 당황했지만, 곧 깨달았다. 반도체는 결국 bottom-up 으로 층층이 쌓인 구조이고, 화면과 매뉴얼의 영어 단어는 각각 그 '층(layer)'의 이름일 뿐이라는 것을. 아래에서 위로 substrate → well → active → poly → contact → metal 순서만 머릿속에 넣으면, 낯선 영어 화면도 '지도'처럼 읽을 수 있다. 오늘 수업의 목표는 바로 이 층 이름을 영어로 '읽고 판단'하는 것이다.": {
-  "h": "2ff96a65a9",
-  "sec": 58
- },
- "소자 단면과 적층 순서 (아래→위) 반도체 소자를 옆에서 자른 단면(cross-section)으로 보면, 아래에서 위로 정해진 순서대로 층이 쌓입니다. 소자는 cross-section 으로 보면 아래에서 위로 층층이 쌓인 구조입니다. 순서는 substrate (Si) → well → active → gate (poly) → contact / via → metal (interconnect) 이며, 이 bottom-up stack 을 외워두면 모든 화면 용어의 '위치'를 알 수 있습니다. 맨 아래층인 substrate 는 순수 실리콘 wafer 본체입니다. 모든 소자가 이 위에 만들어지므로 '바닥'이자 기준면(reference plane)이 됩니다. 각 층은 도면(layout)에서는 서로 다른 색의 layer 로 그려지고, 실제 소자에서는 물리적으로 쌓인 박막(thin film)이 됩니다. 즉 화면의 layer = 실물의 한 층입니다. 매뉴얼과 HMI 화면에서 \"Metal 1\", \"poly\", \"active\" 같은 단어는 이 적층 순서 중 특정 층을 가리키는 이름입니다. 순서를 알면 낯선 영어 단어도 '어느 높이의 층인지'로 해석할 수 있습니다. 공정 관점에서는 아래쪽(substrate ~ contact)을 FEOL (Front-End-Of-Line), 위쪽 배선(metal / via)을 BEOL (Back-End-Of-Line) 이라 부르며, 적층 순서가 곧 공정 순서와 대응됩니다.": {
-  "h": "78408dee3b",
-  "sec": 99
- },
- "맨 아래층: substrate · well · active 소자의 뿌리에 해당하는 세 층입니다. 트랜지스터가 '어디에, 어떤 극성으로' 만들어질지를 결정합니다. substrate 는 소자의 기반이 되는 실리콘 몸체입니다. 화면 라벨로 \"Sub\", \"Si substrate\", \"P-sub\" 등으로 나타나며, 보통 P형(P-type) 실리콘을 씁니다. well 은 substrate 안에 만드는 넓은 도핑 영역입니다. N-well 은 PMOS 트랜지스터를, P-well 은 NMOS 트랜지스터를 담는 '방(pocket)' 역할을 합니다. 화면의 \"NW\" / \"PW\" 가 이것입니다. active (또는 active area, OD)는 트랜지스터가 실제로 동작하는 영역입니다. 이 영역 밖은 field oxide / STI 로 절연되어 소자끼리 서로 간섭하지 않게 격리(isolation)됩니다. 즉 순서상 substrate 위에 well 을 만들고, 그 안에 active 영역을 정의합니다. active 영역 안에서 source, drain, 채널(channel)이 형성됩니다. 매뉴얼에서 \"Define the active region inside the well\" 같은 문장을 만나면, '웰 안에 소자 동작 영역을 잡는다'는 뜻으로 읽으면 됩니다.": {
-  "h": "0e1754cee7",
-  "sec": 80
- },
- "게이트층: poly · gate oxide · source/drain 트랜지스터의 '스위치'를 이루는 핵심 층들입니다. 이 부분 영어 용어가 화면·매뉴얼에 가장 자주 등장합니다. gate 는 트랜지스터를 켜고 끄는 전극입니다. 재료로 폴리실리콘을 쓰기 때문에 화면·도면에서는 흔히 poly 라는 층 이름으로 표시됩니다. 즉 \"poly\" = gate layer 로 이해하면 됩니다. gate 와 active 사이에는 아주 얇은 절연막인 gate oxide (GOX) 가 있습니다. 두께가 나노미터 수준이라 품질 관리가 매우 중요하며, 매뉴얼에 \"gate oxide thickness\" 스펙이 자주 나옵니다. gate 양옆의 active 영역이 각각 source 와 drain 이 됩니다. 전류가 source → channel → drain 으로 흐르며, 이 흐름을 gate 전압이 제어합니다. 적층 순서로 보면 active 위에 gate oxide, 그 위에 poly (gate) 가 올라갑니다. 따라서 단면도에서 poly 는 active 보다 한 층 위에 그려집니다. HMI/매뉴얼 표현 예: \"Inspect the poly gate for bridging\" → '폴리 게이트가 서로 붙었는지(단락) 검사하라'. \"S/D implant\" → source/drain 도핑 주입 공정을 뜻합니다.": {
-  "h": "14504ce997",
-  "sec": 81
- },
- "배선층: contact · via · metal (interconnect) 소자를 만든 뒤, 각 부분을 전기적으로 연결하는 위층 배선 구조입니다. contact 는 아래쪽 소자(active / poly)와 첫 번째 금속층을 세로로 이어주는 연결 기둥(plug)입니다. 화면 라벨 \"CO\" / \"CONT\" 가 이것입니다. metal (interconnect) 은 소자들을 가로로 연결하는 전선입니다. 여러 층으로 쌓이며 아래부터 Metal 1 (M1), Metal 2 (M2) … 순으로 번호가 커집니다. 번호가 클수록 더 위층입니다. via 는 금속층과 금속층 사이(예: M1 ↔ M2)를 세로로 잇는 연결입니다. contact 는 '소자↔금속', via 는 '금속↔금속' 연결이라는 점이 핵심 차이입니다. 금속층 사이의 절연막은 ILD (Inter-Layer Dielectric) / IMD 라 부르며, 서로 다른 배선이 합선되지 않도록 막아줍니다. 적층 순서 정리: … active/poly → contact → M1 → via → M2 → via → M3 … 로, 위로 갈수록 배선이 굵어지고 전원(power)·신호(signal) 배선을 나눠 담습니다. 매뉴얼 표현 예: \"Route the signal on Metal 2 and drop a via to Metal 1\" → '신호를 M2로 배선하고 via로 M1에 연결하라'.": {
-  "h": "4bfb404328",
-  "sec": 91
- },
- "화면·매뉴얼에서 layer 용어 읽는 법 현장에서는 이 층 이름들이 도면 색상, HMI 라벨, 검사 리포트 형태로 계속 등장합니다. 읽는 규칙을 정리합니다. 레이아웃 툴/검사 화면에서 각 layer 는 색과 이름표로 구분됩니다. 예: active(초록), poly(빨강), contact(검정 점), metal(파랑). 색만 봐도 어느 층인지 판단할 수 있어야 합니다. 층 이름은 보통 대문자 약어로 표시됩니다: OD/AA = active, PO/GT = poly gate, CO = contact, M1/M2 = metal, VIA/V1 = via, NW/PW = well. 약어를 층 위치로 변환해 읽으세요. 검사 리포트의 \"Layer: METAL1, Defect: bridge\" 같은 문장은 '금속1 층에서 다리처럼 붙는 결함 발견'을 뜻합니다. 즉 layer 이름 + 결함(defect) 유형 조합으로 읽습니다. cross-section 이미지(SEM 단면 사진)에서는 아래→위 순서가 그대로 보입니다. 층 두께(thickness)와 정렬(alignment)을 눈으로 확인하는 것이 기술자의 주요 판단 업무입니다. 정렬 관련 표현 \"contact not landed on active\" → '컨택이 액티브 위에 제대로 안 닿음(오정렬)'. 이런 문장을 즉시 뜻으로 읽어 불량 여부를 판단해야 합니다.": {
-  "h": "031253bd49",
-  "sec": 82
- },
- "CROSS-SECTION LAYER STACK (BOTTOM-UP) Layer 1 (bottom): Silicon substrate (P-type). This is the base for all devices. 맨 아래층: P형 실리콘 기판(substrate). 모든 소자의 바닥이 됩니다. Layer 2: N-well / P-well formed in the substrate to hold the transistors. 2층: 트랜지스터를 담기 위해 기판 안에 만든 N-웰/P-웰. Layer 3: Active area, isolated from neighbors by STI (field oxide). 3층: 액티브 영역. 옆 소자와는 STI(필드 산화막)로 격리됩니다. Layer 4: Gate oxide, then poly gate on top of the active area. 4층: 게이트 산화막 위에 폴리(게이트)가 액티브 영역 위로 올라갑니다. Layer 5: Contacts connect source/drain and poly up to Metal 1. 5층: 컨택이 소스/드레인과 폴리를 금속1(M1)까지 위로 연결합니다. Layer 6 and above: Metal layers (M1, M2 …) linked by vias. 6층 이상: 금속층(M1, M2 …)들이 비아(via)로 서로 연결됩니다.": {
-  "h": "139185d43d",
-  "sec": 79
- },
- "LAYER INSPECTION WORK INSTRUCTION STEP 1. Open the cross-section SEM image and identify each layer bottom-up. 1단계: 단면 SEM 이미지를 열고 각 층을 아래에서 위로 식별하십시오. STEP 2. Verify that every contact has landed fully on the active area. 2단계: 모든 컨택이 액티브 영역 위에 완전히 안착했는지 확인하십시오. NOTE: A contact not landed on active is an alignment defect. Reject the lot. 참고: 액티브에 안착하지 못한 컨택은 정렬 불량입니다. 해당 로트를 불합격 처리하십시오. STEP 3. Measure the gate oxide thickness and confirm it is within spec. 3단계: 게이트 산화막 두께를 측정하고 규격 이내인지 확인하십시오. WARNING: Do not touch the poly gate line; bridging between gates causes a short. 경고: 폴리 게이트 라인을 건드리지 마십시오. 게이트 간 브리징은 단락을 유발합니다. STEP 4. Record the layer name and defect type for any anomaly found. 4단계: 발견된 이상에 대해 레이어 이름과 결함 유형을 기록하십시오.": {
-  "h": "adb2ce0d79",
-  "sec": 78
- },
  "현장 이야기: 0.02um이 만든 재작업 신입 공정 기술자 지훈은 마스크 레이아웃 검증 화면 앞에 앉았다. 화면 오른쪽에는 영어로 된 표 하나가 떠 있었다. Design Rule Table. 표에는 Rule, Layer, Min Width, Min Spacing 같은 영어 항목과 함께 숫자들이 um 단위로 빼곡히 적혀 있었다. 선배가 물었다. \"이 metal 라인 하나, 폭이 0.18um인데 룰은 min width 0.20um이야. 이거 통과야, 아니야?\" 지훈은 잠깐 멈칫했다. 값은 읽었지만, 영어 항목이 무엇을 요구하는지 정확히 몰랐다. 결국 이 한 줄을 잘못 읽어 DRC violation이 그대로 넘어갔고, 마스크는 재작업(rework) 대상이 되었다. 현장에서 영어 Design Rule을 '읽고 판단'하는 힘은, 설계 실력이 아니라 안전과 수율의 문제였다.": {
   "h": "edc5112059",
   "sec": 54

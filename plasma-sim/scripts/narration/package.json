@@ -1,0 +1,4 @@
+{
+  "//": "이 폴더의 .js 빌드 스크립트(field-english-build.js · field-english-slides-build.js · build.js)는 CommonJS(require) 다. 상위 package.json 이 type:module 이라 이 표시가 없으면 실행되지 않는다. .mjs 는 영향 없음.",
+  "type": "commonjs"
+}
