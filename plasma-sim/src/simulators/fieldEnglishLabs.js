@@ -1679,3 +1679,119 @@ export const SPEC_ITEMS = [
   { id: 's8', tool: 'CVD', spec: 'Film thickness: within ±3% of the target (1000 Å).', shown: '97 nm', num: 970, pass: true,
     why: '97 nm = 970 Å (1 nm = 10 Å). 경계값 970 Å 은 within 이라 포함 — 합격.' },
 ];
+
+/* =========================================================================
+ * 12강 트러블슈팅 문서 — 확신 등급 · 원인 좁히기 · 관리도 규칙
+ *   교재: 확신 네 층(confirmed · was found / most likely · is consistent with / may · suspected / ruled out),
+ *         관리도 규칙 — Rule 1 한계 밖 한 점(Western Electric 1) · Rule 2 중심선 한쪽 8점 연속(WE 4) ·
+ *         Rule 3 6점 연속 증가/감소(Nelson 3). OOC 는 규격 이탈(OOS)이 아니다.
+ *   교재 예시: 트러블슈팅 표 MM-0505(원인 4개 · '세정 뒤 12시간'), 관리도 CL 100 · UCL 106 · LCL 94 · 규격 90~110 nm/min.
+ * ====================================================================== */
+
+export const CERTAINTY_LEVELS = [
+  { id: 'confirmed', ko: '확정', en: 'Confirmed' },
+  { id: 'likely', ko: '가능성 높음', en: 'Likely' },
+  { id: 'possible', ko: '가능성 있음', en: 'Possible' },
+  { id: 'ruledOut', ko: '배제', en: 'Ruled out' },
+];
+/** 문장 → 확신 등급. 배제 → 확정 → 가능성 높음 → 가능성 있음 순으로 본다(교재 표). 표현이 없으면 null */
+export function certaintyOf(sentence) {
+  const s = ` ${String(sentence || '').toLowerCase()} `;
+  if (/ruled out|is not the cause|was not the cause|eliminated|excluded/.test(s)) return 'ruledOut';
+  if (/confirmed|verified|was found|were found|the root cause (?:is|was)/.test(s)) return 'confirmed';
+  if (/most likely|\blikely\b|probably|is consistent with|points to|suggests/.test(s)) return 'likely';
+  if (/\bmay\b|\bmight\b|\bcould\b|possibly|suspected|potential/.test(s)) return 'possible';
+  return null;
+}
+export const CERTAINTY_ITEMS = [
+  { id: 'k1', en: 'Root cause confirmed: the lid O-ring was cut during the last PM.', ans: 'confirmed', cue: 'confirmed' },
+  { id: 'k2', en: 'The leak is most likely at the lid O-ring.', ans: 'likely', cue: 'most likely' },
+  { id: 'k3', en: 'The gauge may be drifting.', ans: 'possible', cue: 'may' },
+  { id: 'k4', en: 'Turbo pump degradation has been ruled out.', ans: 'ruledOut', cue: 'ruled out' },
+  { id: 'k5', en: 'The chamber liner is suspected as the particle source.', ans: 'possible', cue: 'is suspected' },
+  { id: 'k6', en: 'The pressure trend is consistent with outgassing after the wet clean.', ans: 'likely', cue: 'is consistent with' },
+  { id: 'k7', en: 'A cracked viewport window was found during the inspection.', ans: 'confirmed', cue: 'was found' },
+  { id: 'k8', en: 'The MFC is not the cause; its flow matched the reference meter.', ans: 'ruledOut', cue: 'is not the cause' },
+];
+
+/* ── 원인 좁히기: BASE PRESSURE HIGH (트러블슈팅 표 MM-0505, 교재 예시) ──
+   관측(obs): gaugeAgree(두 게이지 일치?) · turboOk(터보 정상?) · hoursSinceClean · rorTrend('decreasing'|'steady') · heLeak('found'|'none')
+   값이 null 이면 아직 확인하지 않은 것. */
+export const OUTGAS_HOURS = 12; // 교재 예시: 세정 뒤 12시간이 지났으면 탈기(outgassing)는 배제
+export const TS_CAUSES = [
+  { id: 'gauge', en: 'Gauge error or drift', ko: '게이지 오차', check: 'Compare with the second gauge.',
+    status: (o) => (o.gaugeAgree == null ? 'open' : o.gaugeAgree ? 'ruledOut' : 'confirmed') },
+  { id: 'turbo', en: 'Turbo pump degraded', ko: '터보 펌프 저하', check: 'Check turbo speed and foreline pressure.',
+    status: (o) => (o.turboOk == null ? 'open' : o.turboOk ? 'ruledOut' : 'confirmed') },
+  { id: 'outgas', en: 'Outgassing after wet clean', ko: '세정 뒤 탈기', check: `Clean within ${OUTGAS_HOURS} h and rate of rise decreasing?`,
+    status: (o) => (o.hoursSinceClean == null ? 'open' : o.hoursSinceClean > OUTGAS_HOURS ? 'ruledOut'
+      : o.rorTrend === 'decreasing' ? 'confirmed' : o.rorTrend === 'steady' ? 'ruledOut' : 'open') },
+  { id: 'leak', en: 'Vacuum leak at the lid O-ring', ko: '덮개 O-ring 누설', check: 'Perform a helium leak check at the lid.',
+    status: (o) => (o.heLeak == null ? 'open' : o.heLeak === 'found' ? 'confirmed' : 'ruledOut') },
+];
+/** 관측 → 후보별 상태와 결론('gauge'|'turbo'|'outgas'|'leak'|'more'|'escalate') */
+export function tsNarrow(obs) {
+  const st = Object.fromEntries(TS_CAUSES.map((c) => [c.id, c.status(obs)]));
+  const conf = TS_CAUSES.filter((c) => st[c.id] === 'confirmed');
+  const open = TS_CAUSES.filter((c) => st[c.id] === 'open');
+  const verdict = conf.length === 1 ? conf[0].id : conf.length > 1 ? 'more' : open.length ? 'more' : 'escalate';
+  return { st, verdict };
+}
+export const TS_VERDICTS = [
+  ...TS_CAUSES.map((c) => ({ id: c.id, ko: c.ko })),
+  { id: 'more', ko: '확인이 더 필요하다' },
+  { id: 'escalate', ko: '표에 없는 원인 — 상부에 올린다' },
+];
+export const TS_CASES = [
+  { id: 'A', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 72, rorTrend: null, heLeak: 'found' },
+    lines: ['Second gauge reads 4.1E-5 Torr (same).', 'Turbo speed 100%, foreline 45 mTorr (normal).', 'Last wet clean: 72 h ago.', 'He leak check at lid: leak detected (2E-8 mbar·L/s).'] },
+  { id: 'B', obs: { gaugeAgree: false, turboOk: true, hoursSinceClean: null, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads 6.0E-6 Torr (main gauge: 4.2E-5).', 'Turbo speed 100%, foreline 45 mTorr (normal).'] },
+  { id: 'C', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 3, rorTrend: 'decreasing', heLeak: 'none' },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 100% (normal).', 'Last wet clean: 3 h ago. Rate of rise is decreasing every hour.', 'He leak check at lid: no leak.'] },
+  { id: 'D', obs: { gaugeAgree: true, turboOk: null, hoursSinceClean: 2, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads the same value.', 'Last wet clean: 2 h ago.', 'Turbo, rate-of-rise trend, and leak check: not checked yet.'] },
+  { id: 'E', obs: { gaugeAgree: true, turboOk: false, hoursSinceClean: 96, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 62%, foreline 0.4 Torr (high).', 'Last wet clean: 96 h ago.'] },
+  { id: 'F', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 48, rorTrend: null, heLeak: 'none' },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 100% (normal).', 'Last wet clean: 48 h ago.', 'He leak check at lid: no leak. Base pressure is still high.'] },
+];
+
+/* ── 관리도 규칙 (교재 예시 차트: CL 100 · UCL 106 · LCL 94 · 규격 90~110 nm/min) ── */
+export const SPC_CHART = { cl: 100, ucl: 106, lcl: 94, lsl: 90, usl: 110, unit: 'nm/min' };
+export const SPC_RUN_N = 8;   // Rule 2 — 한쪽 8점 연속 (Western Electric 규칙 4)
+export const SPC_TREND_N = 6; // Rule 3 — 6점 연속 증가/감소 (Nelson 규칙 3)
+/** 점들 → 걸린 규칙 목록(['rule1','rule2','rule3'] 의 부분집합, 순서대로). 중심선과 같은 점은 쏠림을 끊는다 */
+export function spcCheck(pts, ch = SPC_CHART) {
+  const out = [];
+  if (pts.some((v) => v > ch.ucl || v < ch.lcl)) out.push('rule1');
+  let run = 0, side = 0;
+  for (const v of pts) {
+    const s = v > ch.cl ? 1 : v < ch.cl ? -1 : 0;
+    run = s !== 0 && s === side ? run + 1 : s !== 0 ? 1 : 0; side = s;
+    if (run >= SPC_RUN_N) { out.push('rule2'); break; }
+  }
+  let up = 1, down = 1;
+  for (let i = 1; i < pts.length; i += 1) {
+    up = pts[i] > pts[i - 1] ? up + 1 : 1; down = pts[i] < pts[i - 1] ? down + 1 : 1;
+    if (up >= SPC_TREND_N || down >= SPC_TREND_N) { out.push('rule3'); break; }
+  }
+  return out;
+}
+export function spcInSpec(pts, ch = SPC_CHART) { return pts.every((v) => v >= ch.lsl && v <= ch.usl); }
+export const SPC_ANSWERS = [
+  { id: 'none', ko: '이상 없음 (in control)' },
+  { id: 'rule1', ko: 'Rule 1 — 한계 밖 한 점' },
+  { id: 'rule2', ko: 'Rule 2 — 한쪽 8점 연속' },
+  { id: 'rule3', ko: 'Rule 3 — 6점 연속 추세' },
+];
+export const SPC_CASES = [
+  { id: 'S1', pts: [99, 101.5, 102, 98, 100.5, 103, 97.5, 101, 99, 100.5] },
+  { id: 'S2', pts: [100, 101, 99, 102, 98, 100.5, 101, 99.5, 107, 101] },
+  { id: 'S3', pts: [99, 98.5, 101, 102, 101.5, 103, 102, 101, 104, 102] },
+  { id: 'S4', pts: [100, 99, 97.5, 98, 99.5, 100.5, 102, 103.5, 104.5, 105] },
+  { id: 'S5', pts: [100, 98, 97, 99, 101, 96, 93, 95, 98, 99] },
+  { id: 'S6', pts: [101, 99, 100, 102, 98, 101, 111, 100, 99, 101] }, // 한계 밖이면서 규격(110)도 밖 — OOC 이자 OOS
+];
+/** 사례의 정답 — 걸린 규칙 중 첫째(교재: Rule 1 이 가장 급하다), 없으면 none */
+export function spcAnswer(c) { const r = spcCheck(c.pts); return r.length ? r[0] : 'none'; }

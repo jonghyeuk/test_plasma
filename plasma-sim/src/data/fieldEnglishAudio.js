@@ -128,14 +128,14 @@ export function extractChapterSentences(chapters) {
 }
 
 /* 실습(sim) 화면의 고정 영어 알람 문장 — 6장 ② ACK/RESET 의 ACK_CASES.msg, 6장 ③ 우선순위의 PRIO_ITEMS.msg,
-   9장 규정 문장 판정의 MODAL_ITEMS.en, 10장 경계 판정의 LIMIT_ITEMS.spec · 변경 규정 CC_RULES.en, 11장 장비별 규격 SPEC_ITEMS.spec(문장마다 ▶).
+   9장 규정 문장 판정의 MODAL_ITEMS.en, 10장 경계 판정의 LIMIT_ITEMS.spec · 변경 규정 CC_RULES.en, 11장 장비별 규격 SPEC_ITEMS.spec, 12장 확신 등급 CERTAINTY_ITEMS.en(문장마다 ▶).
    데이터 파일 밖(src/simulators/fieldEnglishLabs.js)에 있어 extractChapterSentences 가 못 보므로 따로 받는다.
    숫자가 매번 바뀌는 로그 줄은 사전 생성이 맞지 않아 넣지 않는다. 빌드 스크립트와 테스트가 같은 함수를 쓴다. */
 export function extractLabSentences(labs) {
   const out = [];
   [...(labs.ACK_CASES || []), ...(labs.PRIO_ITEMS || []), ...(labs.MODAL_ITEMS || []).map((x) => ({ msg: x.en })),
     ...(labs.LIMIT_ITEMS || []).map((x) => ({ msg: x.spec })), ...(labs.CC_RULES || []).map((x) => ({ msg: x.en })),
-    ...(labs.SPEC_ITEMS || []).map((x) => ({ msg: x.spec }))]
+    ...(labs.SPEC_ITEMS || []).map((x) => ({ msg: x.spec })), ...(labs.CERTAINTY_ITEMS || []).map((x) => ({ msg: x.en }))]
     .forEach((x) => { const k = speechKey(x.msg); if (k && !out.includes(k)) out.push(k); });
   return out;
 }

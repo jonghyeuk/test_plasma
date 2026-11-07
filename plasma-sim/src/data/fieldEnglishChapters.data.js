@@ -7431,570 +7431,831 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w12",
-  "title": "DRC 오류",
+  "title": "트러블슈팅 문서 — 원인을 좁히고, 확신을 밝혀라",
   "slides": [
    {
     "type": "story",
-    "icon": "📐",
-    "title": "빨간 마커가 뜬 화면",
-    "text": "야간 근무 중, 신입 기술자 지훈은 레이아웃 검증 장비의 HMI 화면 앞에 앉아 있다. 방금 돌린 검사 결과 창에 붉은 글씨가 잔뜩 떴다. 화면 상단에는 **DRC RESULTS**, 그 아래로 **SPACING violation: 15 errors**, **WIDTH violation: 3 errors**, 그리고 노란색으로 **2 warnings**라는 줄이 보인다. 각 줄 끝에는 **insufficient spacing (min 0.14um)** 같은 짧은 영어 문장과 좌표가 붙어 있다. 지훈은 이 영어가 '무엇이 잘못되었는지'를 말해준다는 것을 안다. **error**는 반드시 고쳐야 하는 규칙 위반이고, **warning**은 확인이 필요한 경고다. 이 화면을 정확히 읽어내는 것이 오늘 그의 임무다. 선임은 말했다. \"메시지를 못 읽으면 멀쩡한 칩을 버리거나, 불량을 그냥 넘긴다.\" 오늘 우리는 이 붉은 줄들을 하나씩 해독한다.",
-    "art": "drc"
+    "icon": "🔍",
+    "title": "\"확정이야, 추정이야?\"",
+    "text": "밤 11시. 식각 장비 ET-05 에 알람이 뜬다. **BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5)**. 준호는 장비사의 트러블슈팅 가이드를 펼친다. 표 맨 위 줄: **Symptom: Base pressure high. Possible cause: Vacuum leak at the lid O-ring.** 준호는 바로 교대 보고에 적는다. \"O-ring leak. Will replace.\" 30분 뒤, 해외 엔지니어에게서 메시지가 온다. \"**Is the O-ring leak confirmed, or only suspected?** Did you run a helium leak check?\" 준호는 멈칫한다. 검사는 아직 안 했다. 표에 「가능한 원인」으로 적힌 것을 「원인」으로 옮겨 적은 것이다. 선배가 보고를 고쳐 준다. \"**A leak at the lid O-ring is suspected. A helium leak check is in progress.**\" 그리고 덧붙인다. \"트러블슈팅 문서에서 제일 위험한 건 틀린 원인이 아니라, **추정을 확정처럼 쓰는 것**이야. 그 한 줄 때문에 멀쩡한 부품을 갈고, 진짜 원인은 그대로 남거든.\"",
+    "figs": [
+     {
+      "kind": "alarm",
+      "level": "danger",
+      "code": "VAC-112",
+      "en": "BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5).",
+      "ko": "도달 진공도 높음 — 4.2E-5 Torr (한계 1.0E-5)"
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "검증 장비 HMI 앞, 야간 근무.",
-    "tool": "DRC(Design Rule Check) 검사 결과 창.",
-    "situation": "방금 돌린 검사에 붉은 글씨가 잔뜩 떴다. error와 warning을 구분해야 한다.",
+    "where": "야간의 식각 장비 앞 — 장비사 트러블슈팅 가이드와 공정 감시(SPC) 화면.",
+    "tool": "트러블슈팅 표, 헬륨 누설 검사기, 관리도(control chart), 교대 보고서와 원인 분석 보고서.",
+    "situation": "알람의 원인 후보가 넷이다. 하나씩 확인해 지워 나가야 하고, 보고할 때는 어디까지 확인했는지를 영어로 밝혀야 한다.",
     "meet": [
-     "DRC RESULTS 리포트",
-     "violation · error · warning",
-     "레이아웃 마커",
-     "NOT CLEAN"
+     "표 Symptom · Possible Cause · Check · Action",
+     "확신 confirmed · likely · suspected · ruled out",
+     "원인 caused by ↔ results in",
+     "관리도 UCL · LCL · OOC"
     ],
-    "goal": "붉은 리포트를 한 줄씩 해독해 \"고칠 것 / 확인할 것\"을 나누기.",
+    "goal": "원인 후보를 확인으로 좁히고, 보고서에 확신의 정도를 정확히 적기.",
     "bg": "w12"
    },
    {
     "type": "read",
-    "title": "DRC란 무엇인가",
-    "intro": "DRC는 설계된 레이아웃이 공정에서 실제로 만들 수 있는지 규칙과 대조해 검사하는 절차다.",
+    "title": "트러블슈팅 표의 구조 — 증상에서 조치까지",
+    "intro": "장비사 매뉴얼의 트러블슈팅 장(chapter)은 대개 표다. 한 증상(symptom)에 원인 후보가 여러 줄 달린다.",
     "paras": [
-     "**DRC (Design Rule Check)**는 칩 레이아웃의 도형(선, 사각형, 홀)이 공정에서 정한 최소 치수·간격 규칙을 지키는지 자동으로 검사하는 단계다. 위반이 있으면 그 위치를 **violation**으로 표시한다.",
-     "각 공정 노드(예: 28nm, 14nm)는 리소그래피·식각의 한계 때문에 **minimum width**(최소 선폭)와 **minimum spacing**(최소 간격) 같은 물리적 한계를 가진다. DRC는 이 한계를 숫자 규칙으로 바꿔 검사한다.",
-     "검사 기준의 묶음을 **rule deck** 또는 **runset**이라 부르며, 화면에는 보통 `Loaded rule deck: N28_M1.drc` 처럼 어떤 규칙 세트를 썼는지 표시된다.",
-     "DRC를 통과하지 못한 도형은 실제 웨이퍼에서 **short**(붙어야 안 될 것이 붙음)나 **open**(끊어짐), 패턴 불량으로 이어질 수 있다. 그래서 현장에서는 '규칙 위반'을 '잠재 불량'으로 읽는다.",
-     "결과는 사람이 읽는 리포트(텍스트)와, 레이아웃 위에 겹쳐 보이는 그래픽 마커(색깔 도형) 두 형태로 나온다. 기술자는 두 가지를 연결해 판단한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "왜 규칙이 존재하는가 — 물리적 의미",
-    "intro": "DRC 규칙은 자의적인 숫자가 아니라 실제 공정의 한계에서 나온다.",
-    "paras": [
-     "**minimum spacing**이 존재하는 이유: 두 배선이 너무 가까우면 식각·증착 공정에서 사이가 메워져 **short**(단락)가 나거나, 전기적으로 서로 간섭(**bridge**)한다.",
-     "**minimum width**가 존재하는 이유: 선이 너무 얇으면 식각 때 그 부분이 끊어져 **open**(단선)가 되거나, 저항이 커져 발열·신호 지연을 일으킨다.",
-     "즉 숫자 규칙은 '수율(yield)을 지키기 위한 안전 여유'다. 규칙을 어기면 바로 불량이 아니더라도 불량 확률이 크게 오른다.",
-     "그래서 리포트의 **required / min** 값은 협상 대상이 아니라 공정이 보장하는 최소선이다. 기술자가 임의로 낮추지 않는다.",
-     "이 때문에 화면의 **error**는 '보기 싫은 것'이 아니라 '이대로 만들면 칩이 죽을 수 있다'는 물리적 경고로 읽어야 한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "SPACING violation — 간격이 부족하다",
-    "intro": "가장 흔한 오류. 두 도형 사이가 규칙보다 가까울 때 뜬다.",
-    "paras": [
-     "**SPACING violation**은 서로 다른(또는 같은) 도형 사이의 거리가 정해진 **minimum spacing**보다 작을 때 발생한다. 메시지 예: **insufficient spacing between metal lines (measured 0.10um, required 0.14um)**.",
-     "리포트에서 핵심 숫자는 두 개다. **measured**(실제 측정된 값)와 **required / min**(규칙이 요구하는 최소값). measured < required 이면 위반이다.",
-     "화면 문구가 **insufficient spacing**, **spacing < min**, **space violation** 등으로 다양하게 표현되어도 의미는 모두 '간격이 최소 기준에 못 미친다'로 같다.",
-     "같은 layer 안에서 나는 간격 위반은 보통 배선이 너무 촘촘한 것이고, 다른 layer 사이 위반은 정렬·겹침 규칙(enclosure/overlap)과 함께 봐야 한다.",
-     "화면에서 해당 줄을 클릭하면 두 도형 사이의 가장 가까운 지점이 **highlight marker**로 표시되어, 어느 모서리가 문제인지 보인다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "WIDTH violation — 선이 너무 얇다",
-    "intro": "도형 자체의 폭이 최소 기준보다 좁을 때 발생하는 오류다.",
-    "paras": [
-     "**WIDTH violation**은 한 도형(주로 금속 배선)의 폭이 **minimum width**보다 작을 때 뜬다. 메시지 예: **metal width below minimum (measured 0.08um, min 0.10um)**.",
-     "SPACING이 '도형과 도형 사이'를 보는 반면, WIDTH는 '한 도형의 안쪽 폭'을 본다. 이 차이를 구분하는 것이 리포트 해석의 기본이다.",
-     "화면 표현은 **width < min**, **minimum width violation**, **narrow metal** 등으로 나오지만 모두 '폭이 최소 기준 미달'을 뜻한다.",
-     "간혹 **notch**(도형 가장자리가 살짝 파인 부분)나 짧은 돌출부에서 국소적으로 폭이 줄어 WIDTH 위반이 잡히기도 한다. 이때는 좌표를 확대해 어느 지점인지 확인한다.",
-     "선폭이 규칙보다 얇으면 실제 공정에서 그 부분이 끊기거나(**open**) 저항이 급격히 커져 신호가 약해질 수 있다. 즉 '얇음 = 끊길 위험'이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "error 와 warning — 심각도 읽기",
-    "intro": "모든 위반이 같은 무게는 아니다. 영어 심각도 표시를 정확히 구분해야 한다.",
-    "paras": [
-     "**error**는 반드시 수정해야 하는 규칙 위반이다. error가 남아 있으면 다음 공정(테이프아웃, 마스크 제작)으로 넘길 수 없다. 화면에서 보통 빨간색으로 표시된다.",
-     "**warning**은 규칙을 어긴 것은 아니지만 확인이 필요한 항목이다. 예: 권장 간격 미달, 예외 규칙 적용 구간. 보통 노란색이며 '검토 후 판단'을 뜻한다.",
-     "리포트 요약 줄은 대개 `Errors: 18  Warnings: 2  Info: 5` 형태다. **Info**(정보)는 조치가 아니라 참고용 메시지다.",
-     "현장 판단 원칙: **error = must fix**, **warning = review**, **info = note**. 이 세 단계를 혼동하면 멀쩡한 설계를 붙잡거나 위험한 위반을 방치하게 된다.",
-     "일부 장비는 심각도를 **severity: high / medium / low** 나 **critical / minor**로도 표기한다. 색과 단어를 함께 보고 우선순위를 정한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "DRC 리포트와 HMI 화면 읽기",
-    "intro": "텍스트 리포트의 구조와, 그것이 화면 위에 어떻게 그려지는지 연결한다.",
-    "paras": [
-     "리포트 한 줄의 전형적 구조: **[severity] rule_name : description @ (x, y) layer**. 예: `ERROR SP1.2 : insufficient spacing (0.11 < 0.14) @ (12.40, 8.66) METAL1`.",
-     "**rule_name / rule ID** (예: SP1.2, W3.1)는 어떤 규칙을 어겼는지 가리키는 코드다. SP는 spacing, W는 width 계열임을 관례적으로 알 수 있다.",
-     "괄호 안의 좌표 **(x, y)**는 위반이 발생한 정확한 위치다. HMI에서 그 줄을 클릭하면 레이아웃이 해당 좌표로 **zoom to violation** 되어 붉은 마커가 보인다.",
-     "화면에서 위반은 보통 색으로 구분된다: 빨강 = **error**, 노랑 = **warning**, 표시된 도형에는 **highlight marker**가 겹쳐 그려진다. 색과 텍스트를 반드시 함께 읽는다.",
-     "상단 요약 패널의 총계(Total errors/warnings)와 하단 리스트의 개별 줄은 연결되어 있다. 총계가 0이 되어야 **DRC clean**(무결) 상태다.",
-     "리포트를 저장할 때 파일명은 흔히 `top_drc.rpt`, `drc_summary.txt` 형태다. 재검사 후에는 **before/after** 개수를 비교해 조치 효과를 확인한다."
+     "**Symptom(증상)** — 화면이나 측정에서 보이는 것. 예: \"Base pressure high\", \"Particle count increased\". 원인이 아니라 겉으로 드러난 결과다.",
+     "**Possible Cause(가능한 원인)** — 그 증상을 낼 수 있는 후보들. **possible** 이라는 말 그대로 아직 확인된 것이 아니다. 보통 흔한 것부터 위에 적는다.",
+     "**Check(확인 방법)** — 그 후보가 맞는지 가리는 검사. 예: \"Perform a helium leak check at the lid.\"",
+     "**Corrective Action(조치)** — 확인된 원인에 대한 처치. 예: \"Replace the lid O-ring.\" 확인 없이 이 칸부터 하면 멀쩡한 부품을 갈게 된다(**parts swapping**).",
+     "표 옆에는 흐름 문장이 붙기도 한다: \"**If** the leak check passes, **go to** Cause 2.\" — 10강의 조건문 그대로다."
     ],
     "figs": [
      {
-      "kind": "sticker",
-      "level": "danger",
-      "en": "DRC: NOT CLEAN",
-      "ko": "DRC 미통과"
+      "kind": "step",
+      "title": "TROUBLESHOOTING TABLE",
+      "items": [
+       [
+        "[Symptom] — what you see",
+        "증상"
+       ],
+       [
+        "[Possible Cause] — not yet confirmed",
+        "원인 후보"
+       ],
+       [
+        "[Check] — how to confirm",
+        "확인"
+       ],
+       [
+        "[Corrective Action] — only after the check",
+        "조치"
+       ]
+      ]
      }
     ]
    },
    {
     "type": "read",
-    "title": "오류 대응 워크플로우 — 현장 판단",
-    "intro": "리포트를 읽은 뒤 어떤 순서로 판단하고 움직이는지 정리한다.",
+    "title": "원인 좁히기 — 확인해서 지운다",
+    "intro": "트러블슈팅은 원인을 맞히는 일이 아니라 후보를 하나씩 지워 가는 일이다. 지울 때 쓰는 말이 정해져 있다.",
     "paras": [
-     "1단계: 요약 줄의 **Errors / Warnings** 총계를 먼저 본다. Errors가 0이 아니면 절대 다음 공정으로 보내지 않는다.",
-     "2단계: **severity**(심각도)로 정렬해 error를 위로 올리고, 같은 **rule ID**(예: SP1.2)가 반복되는지 본다. 반복 규칙은 보통 한 가지 원인에서 비롯된다.",
-     "3단계: 각 오류의 **(x, y)** 좌표로 확대해 문제 도형을 눈으로 확인하고, **measured**와 **min** 값을 비교해 얼마나 모자람는지 파악한다.",
-     "4단계: warning은 원인을 검토해 면제(**waive**) 가능한지 판단하고, 면제하려면 선임의 승인(**sign-off**)을 받는다.",
-     "5단계: 수정 후 DRC를 다시 돌려 **before/after** 개수를 비교하고, 총계가 0(**DRC clean**)이 되었는지 확인한다."
+     "확인 결과가 그 후보와 맞지 않으면 그 후보를 지운다: \"Gauge error **is ruled out**: the second gauge reads the same value.\"",
+     "확인 결과가 그 후보를 직접 보여 주면 확정이다: \"A leak **was found** at the lid O-ring with the helium detector.\"",
+     "아직 확인하지 않은 후보는 그대로 둔다(**open**). 보고서에는 지운 것과 남은 것을 모두 적는다: \"Turbo and gauge **have been ruled out**. Lid leak check **is in progress**.\"",
+     "순서도 중요하다. 쉽고 빠르고 장비를 열지 않는 확인부터 한다. 게이지 비교 → 터보 상태 → 누설 검사 → 분해 순서가 흔하다.",
+     "모든 후보가 지워졌는데 증상이 남아 있으면, 표에 없는 원인이다. 이때는 추측으로 조치하지 말고 **escalate(상부 · 장비사에 올림)** 한다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "TROUBLESHOOTING LOG — ET-05",
+      "lines": [
+       "23:10  Gauge cross-check — [RULED OUT]",
+       "23:18  Turbo speed 100% — [RULED OUT]",
+       "23:40  He leak check at lid — [IN PROGRESS]"
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "확신의 정도 — confirmed · likely · suspected · ruled out",
+    "intro": "원인 보고 문장은 원인이 무엇인지보다 먼저 얼마나 확실한지를 말해야 한다. 그 정도를 정하는 말이 네 층이다.",
+    "paras": [
+     "**확정(confirmed)** — confirmed · verified · was found · the root cause is. 직접 증거가 있다. 예: \"Root cause **confirmed**: the O-ring was cut during the last PM.\"",
+     "**가능성 높음(likely)** — most likely · probably · is consistent with · points to · suggests. 증거가 그쪽을 가리키지만 직접 확인은 아직이다.",
+     "**가능성 있음(possible)** — may · might · could · possibly · is suspected. 후보일 뿐이다. 예: \"The gauge **may** be drifting.\"",
+     "**배제(ruled out)** — ruled out · eliminated · is not the cause. 확인해서 지웠다.",
+     "9강의 조동사와 헷갈리지 마라. 규정문의 **may** 는 \"해도 된다\"(허용)였지만, 원인 보고의 **may** 는 \"~일 수도 있다\"(가능성)다. 문서의 종류가 뜻을 정한다.",
+     "한 등급 높여 쓰면(suspected → confirmed) 멀쩡한 부품을 갈고, 한 등급 낮춰 쓰면(confirmed → may) 조치가 늦어진다. **증거만큼만** 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "CERTAINTY",
+      "items": [
+       [
+        "[confirmed] / [was found]",
+        "확정"
+       ],
+       [
+        "[most likely] / [is consistent with]",
+        "가능성 높음"
+       ],
+       [
+        "[may] / [is suspected]",
+        "가능성 있음"
+       ],
+       [
+        "[ruled out] / [is not the cause]",
+        "배제"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "원인과 결과의 방향 — caused by ↔ results in",
+    "intro": "원인과 결과를 잇는 말은 화살표의 방향이 정반대인 것끼리 짝을 이룬다. 방향을 거꾸로 읽으면 원인과 증상이 뒤바뀐다.",
+    "paras": [
+     "**결과 ← 원인** 방향: **caused by · due to · because of · results from**. 예: \"The pressure rise is **caused by** a leak.\" → 원인은 leak.",
+     "**원인 → 결과** 방향: **causes · results in · leads to · so · as a result**. 예: \"A leak **results in** a pressure rise.\" → 원인은 여전히 leak.",
+     "두 문장은 같은 내용이다. **results in** 과 **results from** 은 전치사 하나 차이로 방향이 정반대다 — 가장 자주 거꾸로 읽는 짝이다.",
+     "**contribute to** 는 \"원인 중 하나다\"(유일한 원인이 아님). \"Chamber wall deposits **contributed to** the particle increase.\"",
+     "읽는 법: 연결어 앞뒤에서 **원인 쪽에 밑줄**을 긋는다. 원인이 문장 앞에 있든 뒤에 있든, 밑줄 친 쪽이 조치의 대상이다."
+    ],
+    "figs": [
+     {
+      "kind": "note",
+      "title": "DIRECTION",
+      "en": "Effect [is caused by] cause. Cause [results in] effect.",
+      "ko": "caused by 뒤가 원인 · results in 앞이 원인."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "근본 원인과 세 가지 조치 — 5 Why · 8D",
+    "intro": "부품을 갈아서 알람이 꺼졌다고 끝이 아니다. 원인 분석 보고(8D 등)는 원인을 두 층으로, 조치를 세 층으로 나눈다.",
+    "paras": [
+     "**direct cause(직접 원인)** — 증상을 바로 만든 것. 예: O-ring 이 찢어졌다.",
+     "**root cause(근본 원인)** — 그 직접 원인이 생긴 이유. 예: 지난 PM 때 O-ring 을 끼우는 지그가 없어 손으로 끼우다 찢었다. \"Why?\"를 다섯 번쯤 물어 내려가는 방법을 **5 Why** 라고 한다.",
+     "**containment action(임시 조치)** — 피해를 막는 즉시 조치. 예: 장비 정지, 영향받은 lot 보류(hold). 8D 의 D3.",
+     "**corrective action(시정 조치)** — 직접 원인을 없앤다. 예: O-ring 교체 후 누설 검사 합격. 8D 의 D5.",
+     "**preventive action(재발 방지)** — 근본 원인을 없애 같은 일이 다시 안 생기게 한다. 예: 지그 도입, PM 절차서 수정. 8D 의 D7. 이것이 없으면 다음 PM 에 또 찢어진다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "8D (KEY STEPS)",
+      "items": [
+       [
+        "D3 [containment] — stop the damage",
+        "임시 조치"
+       ],
+       [
+        "D4 [root cause] — why it happened",
+        "근본 원인"
+       ],
+       [
+        "D5 [corrective] — remove the direct cause",
+        "시정 조치"
+       ],
+       [
+        "D7 [preventive] — stop it from recurring",
+        "재발 방지"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "SPC 관리도 읽기 — OOC 는 \"규격 밖\"이 아니다",
+    "intro": "고장 전에 이상을 잡는 것이 공정 감시다. 측정값을 시간순으로 찍은 관리도(control chart)와 그 경고 메시지(OOC)를 읽는다.",
+    "paras": [
+     "**CL(center line)** — 평소 평균. **UCL / LCL(upper / lower control limit)** — 평소의 흔들림 폭(보통 ±3σ). 공정이 \"평소대로\"인지의 경계다.",
+     "**spec limit(규격 한계)** — 제품이 합격인지의 경계. 고객·설계가 정한다. 보통 관리 한계보다 바깥에 있다.",
+     "**OOC(out of control)** — 관리 한계 규칙에 걸렸다 = **평소와 달라졌다**. 아직 규격 안(**in spec**)일 수 있다. **OOS(out of spec)** 는 규격 밖 = 불량이다. 두 말을 섞으면 안 된다.",
+     "대표 규칙(이 교재의 예시 — Western Electric · Nelson 규칙에서): ① **한 점이 UCL 또는 LCL 밖** ② **중심선 한쪽에 8점 연속(run)** ③ **6점 연속 증가 또는 감소(trend)**.",
+     "②와 ③은 한 점도 한계 밖이 아닌데 걸린다. 값이 한쪽으로 쏠리거나 계속 움직이는 것은 무언가 바뀌었다는 신호이기 때문이다 — 예: 부품 마모, 챔버 벽 침착.",
+     "OOC 가 뜨면 보통 장비를 멈추고(**inhibit**) 엔지니어가 원인을 본다. 메시지 예: \"**OOC: Rule 2 — 8 points above CL. Tool inhibited.**\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "SPC · ET-05 ETCH RATE",
+      "status": "OOC",
+      "state": "fault",
+      "rows": [
+       [
+        "CL / UCL / LCL",
+        "100 / 106 / 94 nm/min"
+       ],
+       [
+        "SPEC LIMIT",
+        "90 ~ 110 nm/min"
+       ],
+       [
+        "LAST POINT",
+        "107 nm/min",
+        "warn"
+       ]
+      ],
+      "banner": {
+       "en": "OOC: Rule 1 — 1 point beyond UCL. Tool inhibited.",
+       "ko": "관리 이탈: 규칙 1 — UCL 밖 한 점. 장비 정지.",
+       "level": "danger"
+      }
+     }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "DRC 리포트와 검증 장비 화면에서 반복되는 약어들이다.",
+    "intro": "트러블슈팅 문서와 공정 감시 화면에 나오는 약어입니다.",
     "items": [
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 — 레이아웃이 공정 규칙을 지키는지 검사"
+      "ab": "RCA",
+      "full": "Root Cause Analysis",
+      "ko": "근본 원인 분석"
      },
      {
-      "ab": "DR",
-      "full": "Design Rule",
-      "ko": "설계 규칙 — 최소 폭·간격 등 공정이 정한 규칙"
+      "ab": "8D",
+      "full": "Eight Disciplines",
+      "ko": "8단계 문제 해결 보고 양식 — D3 임시 · D5 시정 · D7 재발 방지"
      },
      {
-      "ab": "SP",
-      "full": "Spacing (rule prefix)",
-      "ko": "간격 규칙 계열을 뜻하는 규칙 ID 접두사"
+      "ab": "CAPA",
+      "full": "Corrective and Preventive Action",
+      "ko": "시정 및 재발 방지 조치"
      },
      {
-      "ab": "W",
-      "full": "Width (rule prefix)",
-      "ko": "선폭 규칙 계열을 뜻하는 규칙 ID 접두사"
+      "ab": "FDC",
+      "full": "Fault Detection and Classification",
+      "ko": "장비 센서 값으로 이상을 잡는 감시 시스템"
      },
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃과 회로도 일치 검사 (DRC와 짝을 이루는 검증)"
+      "ab": "SPC",
+      "full": "Statistical Process Control",
+      "ko": "통계적 공정 관리 — 관리도로 감시"
      },
      {
-      "ab": "GDS",
-      "full": "Graphic Data System",
-      "ko": "레이아웃 도형을 담는 표준 파일 형식 (GDSII)"
+      "ab": "CL",
+      "full": "Center Line",
+      "ko": "관리도의 중심선(평소 평균)"
      },
      {
-      "ab": "HMI",
-      "full": "Human-Machine Interface",
-      "ko": "작업자용 조작 화면"
+      "ab": "UCL / LCL",
+      "full": "Upper / Lower Control Limit",
+      "ko": "관리 상한 / 하한 — 규격 한계와 다르다"
      },
      {
-      "ab": "min",
-      "full": "minimum",
-      "ko": "최소값 — 규칙이 요구하는 하한선"
+      "ab": "OOC",
+      "full": "Out of Control",
+      "ko": "관리 이탈 — 평소와 달라짐(규격 안일 수 있음)"
+     },
+     {
+      "ab": "OOS",
+      "full": "Out of Specification",
+      "ko": "규격 이탈 — 불량"
+     },
+     {
+      "ab": "MTBF",
+      "full": "Mean Time Between Failures",
+      "ko": "평균 고장 간격 — 장비 신뢰성 지표"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) — 검사와 위반",
-    "intro": "DRC 화면에서 가장 먼저 만나는 기본 단어들이다.",
+    "title": "핵심 용어 (1) — 확신의 정도",
+    "intro": "원인 보고 문장의 확신 등급입니다. 예문마다 어느 층인지 가려 보세요.",
     "items": [
      {
-      "en": "Design Rule Check (DRC)",
-      "ko": "설계 규칙 검사",
-      "d": "레이아웃이 공정 규칙을 지키는지 자동 검사하는 단계.",
-      "ex": "Run DRC before sending the layout to the mask shop."
+      "en": "confirmed",
+      "ko": "확정된",
+      "d": "직접 증거로 확인됨",
+      "ex": "Root cause confirmed: the lid O-ring was cut during the last PM."
      },
      {
-      "en": "violation",
-      "ko": "위반(사항)",
-      "d": "규칙을 어긴 지점. 리포트의 각 오류 항목.",
-      "ex": "The report shows 15 spacing violations on METAL1."
+      "en": "was found",
+      "ko": "발견되었다",
+      "d": "검사에서 실제로 봤다 — 확정",
+      "ex": "A leak was found at the lid O-ring with the helium detector."
      },
      {
-      "en": "rule deck",
-      "ko": "규칙 세트 파일",
-      "d": "공정 규칙들을 모아둔 검사 기준 파일(runset).",
-      "ex": "Load the correct rule deck for the 28nm process."
+      "en": "most likely",
+      "ko": "가장 가능성 높은",
+      "d": "증거가 가리키지만 직접 확인 전",
+      "ex": "The leak is most likely at the lid O-ring."
      },
      {
-      "en": "clean",
-      "ko": "무결(위반 없음)",
-      "d": "오류가 하나도 없는 통과 상태.",
-      "ex": "The block is DRC clean, zero errors remaining."
+      "en": "is consistent with",
+      "ko": "~와 들어맞는다",
+      "d": "증거가 그 설명과 모순되지 않음 — 가능성 높음",
+      "ex": "The pressure trend is consistent with outgassing after the wet clean."
      },
      {
-      "en": "flag",
-      "ko": "표시하다/걸리다",
-      "d": "검사기가 위반으로 지적함.",
-      "ex": "The tool flagged three shapes as too narrow."
-     }
-    ],
-    "figs": [
+      "en": "is suspected",
+      "ko": "의심된다",
+      "d": "후보일 뿐 — 가능성 있음",
+      "ex": "The chamber liner is suspected as the particle source."
+     },
      {
-      "kind": "log",
-      "title": "DRC RESULTS",
-      "lines": [
-       "SPACING violation: [15 errors]",
-       "WIDTH violation: [3 errors]",
-       "[2 warnings]",
-       "→ insufficient spacing (min 0.14um)"
-      ],
-      "cap": "검사 결과 창 — 붉은 줄을 하나씩 해독한다."
+      "en": "ruled out",
+      "ko": "배제된",
+      "d": "확인해서 원인이 아님",
+      "ex": "Turbo pump degradation has been ruled out."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — DRC 검사",
-    "app": "DRC Studio",
-    "doc": "chip_top",
-    "run": "Run",
-    "canvas": "drc",
-    "left": {
-     "title": "Violations",
-     "items": [
-      {
-       "name": "SPACING x15",
-       "color": "#e05a4a"
-      },
-      {
-       "name": "WIDTH x3",
-       "color": "#e05a4a"
-      },
-      {
-       "name": "WARN x2",
-       "color": "#e0a83a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 확신의 정도",
+    "intro": "보고 문장의 확신 등급을 판단하세요.",
+    "questions": [
+     {
+      "prompt": "교대 보고: 'The leak is most likely at the lid O-ring.' 다음 사람이 할 일은?",
+      "opts": [
+       "O-ring 을 바로 교체한다 — 확정이다",
+       "누설 검사로 확인한다 — 가능성이 높을 뿐 확정 전이다",
+       "아무것도 안 한다 — 배제되었다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'Turbo pump degradation has been ruled out.' 의 뜻은?",
+      "opts": [
+       "터보 펌프는 확인 결과 원인이 아니다",
+       "터보 펌프가 원인으로 확정되었다",
+       "터보 펌프가 원인일 수도 있다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "원인 보고서의 'The gauge may be drifting.' 에서 may 는?",
+      "opts": [
+       "허용 — 게이지가 움직여도 된다",
+       "의무 — 게이지를 움직여야 한다",
+       "가능성 — 게이지가 틀어졌을 수도 있다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 원인과 결과",
+    "intro": "화살표 방향을 정하는 연결어입니다. 원인 쪽에 밑줄을 그어 보세요.",
+    "items": [
+     {
+      "en": "caused by",
+      "ko": "~에 의해 생긴",
+      "d": "뒤가 원인 (결과 ← 원인)",
+      "ex": "The pressure rise was caused by a cut O-ring."
+     },
+     {
+      "en": "due to",
+      "ko": "~때문에",
+      "d": "뒤가 원인",
+      "ex": "The run was aborted due to an endpoint timeout."
+     },
+     {
+      "en": "results in",
+      "ko": "~을 낳는다",
+      "d": "앞이 원인 (원인 → 결과)",
+      "ex": "A low sweep rate results in pad glazing."
+     },
+     {
+      "en": "results from",
+      "ko": "~에서 생긴다",
+      "d": "뒤가 원인 — results in 과 반대 방향",
+      "ex": "Pad glazing results from a low conditioner sweep rate."
+     },
+     {
+      "en": "leads to",
+      "ko": "~로 이어진다",
+      "d": "앞이 원인",
+      "ex": "Polymer buildup on the wall leads to particle flakes."
+     },
+     {
+      "en": "contribute to",
+      "ko": "~의 한 원인이 되다",
+      "d": "여러 원인 중 하나",
+      "ex": "Chamber wall deposits contributed to the particle increase."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 트러블슈팅 표",
+    "doc": {
+     "name": "ET-05 MAINTENANCE MANUAL — TROUBLESHOOTING",
+     "no": "MM-0505",
+     "rev": "D"
     },
-    "log": [
-     "> run DRC on chip_top",
-     "> DRC finished: 18 errors, 2 warnings",
-     "> result: NOT CLEAN"
+    "heading": "Symptom: BASE PRESSURE HIGH (교재 예시)",
+    "cols": [
+     "#",
+     "POSSIBLE CAUSE",
+     "CHECK",
+     "IF CONFIRMED (CORRECTIVE ACTION)"
     ],
-    "status": "Errors: 18   Warnings: 2   Marker: M1.S.1",
+    "rows": [
+     [
+      "1",
+      "Gauge error or drift",
+      "Compare with the second gauge.",
+      "Calibrate or replace the gauge."
+     ],
+     [
+      "2",
+      "Turbo pump degraded",
+      "Check turbo speed and foreline pressure.",
+      "Replace the turbo pump."
+     ],
+     [
+      "3",
+      "Outgassing after wet clean",
+      "Clean within 12 h and rate of rise decreasing?",
+      "Continue pumping; recheck in 4 h."
+     ],
+     [
+      "4",
+      "Vacuum leak at the lid O-ring",
+      "Perform a helium leak check at the lid.",
+      "Replace the O-ring; retest."
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Check the causes in this order. Do not replace any part until its cause is confirmed."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 표로 좁히기",
+    "intro": "위 트러블슈팅 표 MM-0505 를 근거로 판단하세요.",
+    "questions": [
+     {
+      "prompt": "두 번째 게이지도 같은 값(4.2E-5 Torr)을 읽는다. 1번 원인(gauge error)은?",
+      "opts": [
+       "확정이다",
+       "아직 열려 있다",
+       "배제한다 — 두 게이지가 같으면 게이지 오차가 아니다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "세정(wet clean)은 3일 전이었다. 3번 원인(outgassing)은?",
+      "opts": [
+       "배제한다 — 12시간 기준을 한참 넘었다",
+       "확정이다",
+       "가장 가능성이 높다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "1~3번이 모두 배제되었다. 'Do not replace any part until its cause is confirmed.' 다음 할 일은?",
+      "opts": [
+       "O-ring 을 바로 교체한다",
+       "4번 확인(헬륨 누설 검사)을 한다",
+       "터보 펌프를 교체한다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 원인 분석과 조치",
+    "intro": "원인 분석 보고(8D · CAPA)에서 쓰는 말입니다.",
+    "items": [
+     {
+      "en": "direct cause",
+      "ko": "직접 원인",
+      "d": "증상을 바로 만든 것",
+      "ex": "The direct cause was a cut O-ring at the lid."
+     },
+     {
+      "en": "root cause",
+      "ko": "근본 원인",
+      "d": "직접 원인이 생긴 이유 — 5 Why 로 찾는다",
+      "ex": "The root cause was the lack of an O-ring install jig during PM."
+     },
+     {
+      "en": "containment action",
+      "ko": "임시 조치",
+      "d": "피해를 막는 즉시 조치 (D3)",
+      "ex": "As a containment action, the tool was inhibited and two lots were put on hold."
+     },
+     {
+      "en": "corrective action",
+      "ko": "시정 조치",
+      "d": "직접 원인을 없앤다 (D5)",
+      "ex": "Corrective action: the O-ring was replaced and the leak check passed."
+     },
+     {
+      "en": "preventive action",
+      "ko": "재발 방지 조치",
+      "d": "근본 원인을 없앤다 (D7)",
+      "ex": "Preventive action: an install jig was added to the PM procedure."
+     },
+     {
+      "en": "escalate",
+      "ko": "상부에 올리다",
+      "d": "내 선에서 못 풀 때 엔지니어 · 장비사로",
+      "ex": "If all causes are ruled out, escalate to the vendor."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 원인 분석 요약 메일",
+    "from": "Junho Lee <junho.lee@fab.example>",
+    "to": "Etch Equipment Team <etch-eq@fab.example>",
+    "subject": "ET-05 base pressure high — RCA summary",
+    "lines": [
+     "Hi all,",
+     "Symptom: Base pressure was 4.2E-5 Torr against a limit of 1.0E-5 Torr at 23:05.",
+     "Checks: Gauge error and turbo degradation were [ruled out]. A leak [was found] at the lid O-ring with the helium detector.",
+     "Direct cause: The O-ring was cut. It was [most likely] damaged during the PM on Nov 3, because it was installed by hand.",
+     "Containment: ET-05 was inhibited, and lots 2417 and 2418 are on hold.",
+     "Corrective action: The O-ring was replaced. Base pressure recovered to 6.0E-6 Torr.",
+     "Preventive action (proposed): Add an install jig to the PM procedure. The root cause is not yet [confirmed]."
+    ],
+    "sign": "Thanks, Junho (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 보고서 읽기",
+    "intro": "위 원인 분석 요약 메일을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "메일에서 '확정'으로 쓴 것은?",
+      "opts": [
+       "O-ring 이 PM 때 손상되었다는 것",
+       "근본 원인(지그가 없었다는 것)",
+       "덮개 O-ring 에서 누설이 발견되었다는 것"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'lots 2417 and 2418 are on hold' 는 8D 의 어느 조치인가?",
+      "opts": [
+       "임시 조치(containment)",
+       "시정 조치(corrective)",
+       "재발 방지(preventive)"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "'The root cause is not yet confirmed.' 를 읽은 엔지니어가 할 일은?",
+      "opts": [
+       "보고를 닫는다 — 부품을 갈았으니 끝이다",
+       "근본 원인 확인을 계속하고 재발 방지를 확정한다",
+       "O-ring 을 한 번 더 간다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 공정 감시(SPC · FDC)",
+    "intro": "관리도와 감시 화면의 말입니다. 관리 한계와 규격 한계를 구분하세요.",
+    "items": [
+     {
+      "en": "control limit",
+      "ko": "관리 한계 (UCL · LCL)",
+      "d": "평소의 흔들림 폭 — 공정이 \"평소대로\"인지의 경계",
+      "ex": "The point at 107 nm/min is above the upper control limit of 106."
+     },
+     {
+      "en": "spec limit",
+      "ko": "규격 한계",
+      "d": "제품 합격의 경계 — 보통 관리 한계보다 바깥",
+      "ex": "The same point is still within the spec limit of 110 nm/min."
+     },
+     {
+      "en": "out of control (OOC)",
+      "ko": "관리 이탈",
+      "d": "평소와 달라짐 — 규격 안일 수 있다",
+      "ex": "An OOC point does not always mean the wafer is bad."
+     },
+     {
+      "en": "run",
+      "ko": "연속(한쪽 쏠림)",
+      "d": "중심선 한쪽에 여러 점이 연속",
+      "ex": "Eight points in a run above the center line trigger Rule 2."
+     },
+     {
+      "en": "trend",
+      "ko": "추세",
+      "d": "계속 오르거나 내림",
+      "ex": "Six points steadily increasing indicate a trend, such as wear."
+     },
+     {
+      "en": "inhibit",
+      "ko": "(장비 사용을) 막다",
+      "d": "OOC 뒤 엔지니어 확인 전까지 정지",
+      "ex": "The tool is inhibited until the engineer reviews the chart."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — OOC 대응 절차",
+    "doc": {
+     "name": "SPC Response Procedure",
+     "no": "SOP-QA-044",
+     "sec": "3",
+     "rev": "C",
+     "page": "3-1"
+    },
+    "heading": "3  Responding to an OOC Alarm",
+    "steps": [
+     "When an OOC alarm occurs, the tool is inhibited automatically.",
+     {
+      "t": "Check which rule was triggered: Rule 1 (beyond a control limit), Rule 2 (run of 8), or Rule 3 (trend of 6).",
+      "note": {
+       "kind": "note",
+       "en": "An OOC point may still be within the spec limit."
+      }
+     },
+     {
+      "t": "If the point is also out of spec (OOS), put the affected lots on hold.",
+      "note": {
+       "kind": "caution",
+       "en": "OOC and OOS are different. Do not scrap wafers for OOC alone."
+      }
+     },
+     "Investigate the cause using the troubleshooting guide and the FDC data.",
+     "Release the tool only after the cause is confirmed or the engineer approves."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Do not clear an OOC alarm without recording the cause."
+    },
     "gloss": [
      [
-      "Run",
-      "실행"
+      "triggered",
+      "(규칙에) 걸린"
      ],
      [
-      "Violation",
-      "규칙 위반"
+      "scrap",
+      "폐기하다"
      ],
      [
-      "Marker",
-      "오류 표시"
+      "investigate",
+      "조사하다"
      ],
      [
-      "error / warning",
-      "오류 / 경고"
-     ],
-     [
-      "NOT CLEAN",
-      "미통과"
+      "release",
+      "(정지를) 풀다"
      ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "화면 문구의 의미를 고르시오.",
+    "title": "확인 퀴즈 (4) — OOC 와 OOS",
+    "intro": "관리도와 OOC 대응 절차 SOP-QA-044 를 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "화면에 'DRC clean, 0 errors' 라고 떴다. 무슨 뜻인가?",
+      "prompt": "식각 속도 107 nm/min. UCL 106, 규격 90~110. 이 점은?",
       "opts": [
-       "규칙 위반이 하나도 없어 통과했다",
-       "검사를 아직 시작하지 않았다",
-       "오류가 너무 많아 검사가 멈췄다"
+       "OOC 이면서 OOS — 불량이다",
+       "OOC 지만 규격 안 — 평소와 달라진 신호다",
+       "정상 — 아무 일도 아니다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'Do not scrap wafers for OOC alone.' 의 뜻은?",
+      "opts": [
+       "관리 이탈만으로 웨이퍼를 폐기하지 마라",
+       "OOC 면 웨이퍼를 폐기하라",
+       "OOC 를 기록하지 마라"
       ],
       "ans": 0
      },
      {
-      "prompt": "'The tool flagged three shapes.' 에서 flagged의 의미는?",
+      "prompt": "8점 연속 중심선 위, 한 점도 UCL 밖은 아니다. 어떻게 읽나?",
       "opts": [
-       "세 도형을 삭제했다",
-       "세 도형을 위반으로 표시했다",
-       "세 도형을 저장했다"
+       "정상 — 한계 밖이 없으니 문제없다",
+       "규격 이탈이다",
+       "Rule 2(run) 에 걸린 OOC — 공정이 한쪽으로 쏠렸다"
       ],
-      "ans": 1
-     },
-     {
-      "prompt": "리포트에 'Loaded rule deck: N28_M1.drc' 가 보인다. 이 줄이 알려주는 것은?",
-      "opts": [
-       "오류의 좌표",
-       "사용된 검사 규칙 세트",
-       "웨이퍼 온도"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) — 간격과 폭",
-    "intro": "SPACING과 WIDTH 위반을 읽는 데 꼭 필요한 단어들이다.",
-    "items": [
-     {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "두 도형 사이의 거리.",
-      "ex": "Increase the spacing between these two metal lines."
-     },
-     {
-      "en": "minimum spacing",
-      "ko": "최소 간격",
-      "d": "규칙이 허용하는 가장 가까운 거리.",
-      "ex": "This gap is below the minimum spacing of 0.14um."
-     },
-     {
-      "en": "insufficient spacing",
-      "ko": "간격 부족",
-      "d": "간격이 최소 기준에 못 미치는 상태.",
-      "ex": "Error: insufficient spacing between contacts."
-     },
-     {
-      "en": "width",
-      "ko": "폭/선폭",
-      "d": "한 도형의 안쪽 폭.",
-      "ex": "The measured width is 0.08um, below the limit."
-     },
-     {
-      "en": "minimum width",
-      "ko": "최소 선폭",
-      "d": "도형이 가질 수 있는 가장 작은 폭.",
-      "ex": "Any line thinner than the minimum width will be flagged."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "다음 영어 오류 메시지의 뜻을 고르시오.",
-    "questions": [
-     {
-      "prompt": "'SPACING violation: insufficient spacing (0.10 < 0.14)' 의 의미는?",
-      "opts": [
-       "선폭이 규칙보다 넓다",
-       "두 도형 사이 간격이 최소 기준보다 좁다",
-       "온도가 너무 낮다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'metal width below minimum (0.08um, min 0.10um)' 은 무엇을 말하는가?",
-      "opts": [
-       "금속 선의 폭이 최소 기준보다 얇다",
-       "금속 선의 간격이 넓다",
-       "금속층이 누락되었다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "리포트 한 줄에 'measured 0.11, required 0.14' 가 있다. 위반인가?",
-      "opts": [
-       "아니다, measured가 더 크다",
-       "그렇다, measured가 required보다 작다",
-       "알 수 없다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "WIDTH violation과 SPACING violation의 차이는?",
-      "opts": [
-       "WIDTH는 한 도형의 폭, SPACING은 도형 사이 거리",
-       "둘은 완전히 같은 말이다",
-       "WIDTH는 온도, SPACING은 압력"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) — 심각도와 리포트",
-    "intro": "리포트의 심각도와 위치 정보를 읽는 단어들이다.",
-    "items": [
-     {
-      "en": "error",
-      "ko": "오류(필수 수정)",
-      "d": "반드시 고쳐야 하는 규칙 위반.",
-      "ex": "You must fix every error before tape-out."
-     },
-     {
-      "en": "warning",
-      "ko": "경고(검토 필요)",
-      "d": "위반은 아니나 확인이 필요한 항목.",
-      "ex": "This warning can be waived after review."
-     },
-     {
-      "en": "severity",
-      "ko": "심각도",
-      "d": "위반의 중요도 등급(high/low 등).",
-      "ex": "Sort the results by severity, highest first."
-     },
-     {
-      "en": "coordinate",
-      "ko": "좌표",
-      "d": "위반이 난 위치를 나타내는 (x, y) 값.",
-      "ex": "Double-click the coordinate to zoom to the violation."
-     },
-     {
-      "en": "layer",
-      "ko": "레이어(층)",
-      "d": "위반이 발생한 마스크 층 이름.",
-      "ex": "The violation is on layer METAL1."
-     },
-     {
-      "en": "highlight marker",
-      "ko": "강조 표시",
-      "d": "레이아웃 위에 위반 위치를 색으로 겹쳐 표시한 것.",
-      "ex": "The red highlight marker shows where the lines are too close."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "MESSAGE",
-      "en": "[error] = must fix.   [warning] = check.",
-      "ko": "error=반드시 수정, warning=확인 필요."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "심각도와 대응을 판단하시오.",
-    "questions": [
-     {
-      "prompt": "요약에 'Errors: 4  Warnings: 2' 가 보인다. 다음 공정으로 넘어가려면?",
-      "opts": [
-       "warning 2개만 지우면 된다",
-       "error 4개를 모두 수정해야 한다",
-       "아무것도 안 해도 된다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'This warning can be waived after review.' 의 뜻은?",
-      "opts": [
-       "이 경고는 무조건 오류다",
-       "검토 후 이 경고는 예외 처리(면제)될 수 있다",
-       "이 경고는 자동 삭제된다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'@ (12.40, 8.66) METAL1' 이 알려주는 것 두 가지는?",
-      "opts": [
-       "위반의 좌표와 레이어",
-       "온도와 압력",
-       "규칙 파일명과 날짜"
-      ],
-      "ans": 0
+      "ans": 2
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DRC RESULTS REPORT (excerpt)",
+    "mtitle": "TROUBLESHOOTING REPORT — WRITE ONLY WHAT YOU KNOW",
     "paras": [
-     "SUMMARY: Errors: 18   Warnings: 2   Info: 5   Status: NOT CLEAN",
-     "요약 줄: 오류 18, 경고 2, 정보 5, 상태는 '무결 아님(NOT CLEAN)'. error가 남아 있으므로 통과가 아니다.",
-     "ERROR  SP1.2 : insufficient spacing (measured 0.11, required 0.14) @ (12.40, 8.66) METAL1",
-     "오류 SP1.2: 간격 부족. 측정 0.11 < 요구 0.14, 위치 (12.40, 8.66), 레이어 METAL1. 반드시 수정.",
-     "ERROR  W3.1 : metal width below minimum (measured 0.08, min 0.10) @ (30.15, 4.02) METAL2",
-     "오류 W3.1: 선폭이 최소 미달. 측정 0.08 < 최소 0.10, 위치 (30.15, 4.02), 레이어 METAL2.",
-     "WARNING  SP2.0 : recommended spacing not met (0.16 < 0.18); may be waived after review",
-     "경고 SP2.0: 권장 간격 미달(0.16 < 0.18). 규칙 위반은 아니며 검토 후 예외 처리 가능."
+     "A leak at the lid O-ring is suspected. A helium leak check is in progress.",
+     "해설: 확인 전 보고 — is suspected(가능성 있음) + in progress(진행 중). \"O-ring leak\" 이라고만 쓰면 확정처럼 읽힌다.",
+     "A leak was found at the lid O-ring. The O-ring was replaced, and the leak check passed.",
+     "해설: 확인 뒤 보고 — was found(확정) + 조치 + 조치의 결과(passed). 조치가 효과가 있었는지까지 쓴다.",
+     "The particle increase is most likely caused by polymer flakes from the chamber wall.",
+     "해설: most likely(가능성 높음) + caused by(뒤가 원인). 원인 = 챔버 벽의 폴리머 조각. 아직 확정은 아니다.",
+     "Gauge error has been ruled out: the second gauge reads the same value.",
+     "해설: ruled out(배제) + 근거(콜론 뒤). 배제한 이유를 함께 적어야 다음 사람이 같은 확인을 반복하지 않는다."
     ]
    },
    {
     "type": "manual",
-    "mtitle": "OPERATING PROCEDURE — REVIEWING DRC ERRORS",
+    "mtitle": "SPC RULES FOR THIS COURSE (교재 예시)",
     "paras": [
-     "1. Open the DRC results and check the SUMMARY line for the total error and warning count.",
-     "1. DRC 결과를 열고 요약 줄에서 오류·경고 총 개수를 먼저 확인한다.",
-     "2. Sort the results by severity so that all ERROR items appear at the top of the list.",
-     "2. 심각도 순으로 정렬해 모든 ERROR 항목이 목록 위쪽에 오도록 한다.",
-     "3. Double-click each error to zoom to its coordinate; the violating shapes are shown with a red highlight marker.",
-     "3. 각 오류를 더블클릭해 좌표로 확대한다. 위반 도형은 빨간 강조 표시로 나타난다.",
-     "NOTE: Do NOT proceed to tape-out while any ERROR remains. Warnings must be reviewed but may be waived with sign-off.",
-     "주의: ERROR가 하나라도 남아 있으면 테이프아웃으로 진행하지 말 것. 경고는 검토 대상이며 승인 시 면제 가능.",
-     "WARNING: Loading the wrong rule deck will report false results. Always confirm the process node before running DRC.",
-     "경고: 잘못된 규칙 세트를 불러오면 결과가 틀린다. DRC 실행 전 반드시 공정 노드를 확인한다."
+     "Rule 1: One point beyond the upper or lower control limit.",
+     "해설: UCL 또는 LCL 밖 한 점. 갑작스러운 변화 — 예: 부품 고장, 잘못된 레시피.",
+     "Rule 2: Eight points in a row on one side of the center line.",
+     "해설: 중심선 한쪽에 8점 연속. 평균이 옮겨 갔다 — 예: 세정 뒤 챔버 조건 변화.",
+     "Rule 3: Six points in a row steadily increasing or decreasing.",
+     "해설: 6점 연속 증가 또는 감소. 천천히 변하는 것 — 예: 부품 마모, 벽 침착.",
+     "An OOC point is a signal to investigate, not proof of a bad wafer.",
+     "해설: OOC 는 조사하라는 신호이지 불량의 증거가 아니다. 불량 판정은 규격(spec)으로 한다."
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "layerColor",
-    "intro": "먼저 레이어(층)의 개념을 익힙니다. DRC 위반은 항상 'METAL1', 'METAL2' 같은 특정 layer에서 발생합니다. 아래 인터랙티브 화면에서 각 레이어를 켜고 끄며 도형이 어느 층에 있는지, 리포트의 layer 이름과 화면 색이 어떻게 대응되는지 확인하세요."
+    "which": "trouble",
+    "mode": "certainty",
+    "intro": "먼저 **확신 등급** 실습입니다. 교대 보고와 원인 분석 보고서에서 뽑은 문장을 읽고 **확정(confirmed) · 가능성 높음(likely) · 가능성 있음(possible) · 배제(ruled out)** 중 하나를 고르세요. 판단의 근거는 문장 속 **확신 표현** 하나입니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "counts",
-    "intro": "이제 실제 DRC 검사를 실행해 봅니다. 아래 시뮬레이터에서 도형의 간격과 폭을 조정하며 검사를 돌리고, 화면에 뜨는 SPACING violation / WIDTH violation 메시지와 error/warning 개수를 읽어 보세요. measured 값과 min 값을 비교해 왜 위반이 났는지 스스로 판단하는 것이 목표입니다."
+    "which": "trouble",
+    "mode": "narrow",
+    "intro": "다음은 **원인 좁히기** 실습입니다. BASE PRESSURE HIGH 의 트러블슈팅 표(교재 예시)와 지금까지의 확인 결과가 나옵니다. 후보마다 **배제 · 확정 · 미확인** 을 따져, 증거가 가리키는 원인을 고르세요. 증거가 모자라면 **\"확인이 더 필요하다\"** 가 답입니다."
+   },
+   {
+    "type": "sim",
+    "which": "trouble",
+    "mode": "spc",
+    "intro": "마지막은 **관리도 규칙** 실습입니다. 식각 속도 관리도(CL 100 · UCL 106 · LCL 94, 규격 90~110)를 보고, 어느 규칙에 걸렸는지 고르세요: **이상 없음 · Rule 1(한계 밖) · Rule 2(8점 쏠림) · Rule 3(6점 추세)**. 그리고 그 점이 **규격 안인지**도 함께 보세요."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "해외 엔지니어가 방금 나온 DRC 리포트를 함께 보며 상태를 묻는다.",
+      "sit": "해외 엔지니어가 원인이 확정인지 묻는다",
       "q": {
-       "en": "Is the block clean, or do we still have errors?",
-       "ko": "이 블록 무결 상태예요, 아니면 아직 오류가 남았나요?"
+       "en": "Is the O-ring leak confirmed, or only suspected?",
+       "ko": "O-ring 누설이 확정이에요, 아니면 의심만 하는 거예요?"
       },
       "a": {
-       "en": "Not clean yet. There are 18 errors, mostly spacing violations on METAL1.",
-       "ko": "아직 무결 아니에요. 오류가 18개고, 대부분 METAL1의 간격 위반입니다."
+       "en": "It is only suspected for now. We ruled out the gauge and the turbo, and the helium leak check is in progress. I will update you in 20 minutes.",
+       "ko": "지금은 의심 단계입니다. 게이지와 터보는 배제했고, 헬륨 누설 검사를 진행 중입니다. 20분 뒤에 다시 알려 드리겠습니다."
       }
      },
      {
-      "sit": "엔지니어가 특정 오류의 원인을 확인하려 한다.",
+      "sit": "원인과 조치를 한 번에 보고한다",
       "q": {
-       "en": "This one says 'insufficient spacing, 0.11 versus 0.14'. What does that mean here?",
-       "ko": "이건 'insufficient spacing, 0.11 대 0.14'라고 나오는데, 여기서 무슨 뜻이죠?"
+       "en": "What was the cause, and what did you do?",
+       "ko": "원인이 뭐였고, 무엇을 했어요?"
       },
       "a": {
-       "en": "The two metal lines are 0.11 micron apart, but the minimum spacing is 0.14. It is too close.",
-       "ko": "두 금속 배선 간격이 0.11um인데 최소 간격은 0.14예요. 너무 가깝습니다."
+       "en": "A leak was found at the lid O-ring. It was cut, most likely during the last PM. We replaced it, and the base pressure is back to 6.0E-6 Torr. Two lots are on hold until you review them.",
+       "ko": "덮개 O-ring 에서 누설이 발견됐습니다. 찢어져 있었고, 아마 지난 PM 때 손상된 것 같습니다. 교체했고 도달 진공도는 6.0E-6 Torr 로 돌아왔습니다. 두 lot 은 검토하실 때까지 보류해 두었습니다."
       }
      },
      {
-      "sit": "노란색 경고 항목을 어떻게 처리할지 상의한다.",
+      "sit": "OOC 알람을 보고한다",
       "q": {
-       "en": "And the two yellow warnings — do we have to fix them before tape-out?",
-       "ko": "그리고 노란 경고 두 개는요, 테이프아웃 전에 꼭 고쳐야 하나요?"
+       "en": "The SPC chart shows an OOC. Are the wafers bad?",
+       "ko": "SPC 관리도에 OOC 가 떴네요. 웨이퍼가 불량인가요?"
       },
       "a": {
-       "en": "No, those are warnings, not errors. We can waive them after a review and sign-off.",
-       "ko": "아니요, 그건 경고지 오류가 아니에요. 검토와 승인 후 면제할 수 있습니다."
+       "en": "Not necessarily. It is a Rule 2 OOC, eight points above the center line, but all points are within spec. The tool is inhibited, and I am checking the FDC data for a cause.",
+       "ko": "꼭 그렇지는 않습니다. 중심선 위 8점 연속인 Rule 2 OOC 이지만 모든 점이 규격 안입니다. 장비는 정지해 두었고, FDC 데이터에서 원인을 찾고 있습니다."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 증거만큼만 쓴다",
     "points": [
-     "**DRC (Design Rule Check)**는 레이아웃이 공정 규칙(최소 폭·간격)을 지키는지 검사하고, 위반을 **violation**으로 표시한다.",
-     "**SPACING violation** = 도형 사이 간격이 **minimum spacing**보다 좁음(**insufficient spacing**). **WIDTH violation** = 도형 폭이 **minimum width**보다 얇음.",
-     "리포트 판단은 **measured vs required/min** 비교로 한다: measured가 min보다 작으면 위반.",
-     "심각도: **error = 반드시 수정**, **warning = 검토 후 판단(면제 가능)**, **info = 참고**. **clean**은 오류 0인 통과 상태.",
-     "리포트 한 줄 = [severity] rule_ID : description @ (x, y) layer. 좌표와 layer로 화면의 **highlight marker** 위치를 찾는다."
+     "트러블슈팅 표: **Symptom → Possible Cause → Check → Corrective Action**. 확인 없이 조치하면 **parts swapping**.",
+     "확신 네 층: **confirmed · was found** / **most likely · is consistent with** / **may · is suspected** / **ruled out**. 원인 보고의 may 는 허용이 아니라 **가능성**이다.",
+     "방향: **caused by · due to · results from** 은 뒤가 원인, **results in · leads to** 는 앞이 원인.",
+     "원인 두 층(**direct · root**), 조치 세 층(**containment · corrective · preventive**).",
+     "관리도: **OOC 는 평소와 달라졌다는 신호**, **OOS 는 불량**. 한계 밖이 아니어도 **run · trend** 로 OOC 가 된다."
     ],
-    "done": "이제 붉은 줄이 뜬 DRC 화면을 보고 **무엇이, 어디서, 얼마나 심각하게** 위반됐는지 영어 그대로 읽어낼 수 있습니다. **error는 반드시 고치고, warning은 검토하라** — 이것이 현장 판단의 기본입니다.",
+    "done": "이제 여러분은 트러블슈팅 문서를 읽고 **원인을 확인으로 좁히고**, 보고서에 **어디까지 확인했는지**를 영어로 정확히 적을 수 있습니다. **Write only what you know.**",
     "figs": [
      {
-      "kind": "alarm",
-      "level": "danger",
-      "code": "DRC",
-      "en": "18 ERRORS FOUND",
-      "ko": "DRC 오류 18건"
+      "kind": "step",
+      "title": "REPORT A CAUSE",
+      "items": [
+       [
+        "State the [symptom].",
+        "증상"
+       ],
+       [
+        "Say how [certain] you are.",
+        "확신의 정도"
+       ],
+       [
+        "Give the [evidence].",
+        "근거"
+       ],
+       [
+        "Say what is [next].",
+        "다음 할 일"
+       ]
+      ]
      }
     ]
    }

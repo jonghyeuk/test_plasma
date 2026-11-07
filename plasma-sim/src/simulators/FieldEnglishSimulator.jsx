@@ -39,6 +39,8 @@ import {
   GAS_TLV, GAS_ACTIONS, GAS_CASES, gasLevel, gasAction, gasExplain,
   LIMIT_ITEMS, RCP_FIELDS, RCP_RUNS, rcpCheck, CC_RULES, CC_ACTIONS, CC_CASES, CC_WHY, ccDecide,
   NOUN_ITEMS, nounHead, ofChain, TOOL_FAMILIES, TOOL_LINES, toolOf, SPEC_ITEMS,
+  CERTAINTY_LEVELS, CERTAINTY_ITEMS, certaintyOf, TS_CAUSES, TS_CASES, TS_VERDICTS, tsNarrow,
+  SPC_CHART, SPC_ANSWERS, SPC_CASES, spcCheck, spcInSpec, spcAnswer,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -2678,6 +2680,120 @@ function ToolSpecLab() {
   );
 }
 
+/* ── 12강 · 확신 등급 ── */
+function CertaintyLab() {
+  const [ans, setAns] = useState({});
+  const right = CERTAINTY_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">교대 보고 · 원인 분석 보고서의 문장입니다. 문장 속 <b>확신 표현</b>을 찾아 등급을 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {CERTAINTY_ITEMS.map((it, n) => {
+          const a = ans[it.id], truth = certaintyOf(it.en);
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {it.en} <SpeakBtn text={it.en} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {CERTAINTY_LEVELS.map((l) => (
+                  <button key={l.id} className={`fes-chip ${a === l.id ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && l.id === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === l.id ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: l.id }))}>{l.ko} · {l.en}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} 근거: <b>{it.cue}</b> → {CERTAINTY_LEVELS.find((l) => l.id === truth).ko}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {CERTAINTY_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 12강 · 원인 좁히기 (트러블슈팅 표 MM-0505, 교재 예시) ── */
+const TS_STATUS_KO = { confirmed: '확정', ruledOut: '배제', open: '미확인' };
+function NarrowCauseLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = TS_CASES[ci];
+  const r = tsNarrow(c.obs);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro"><b>Symptom: BASE PRESSURE HIGH.</b> 확인 결과를 읽고, 증거가 가리키는 원인을 고르세요. 증거가 모자라면 "확인이 더 필요하다", 모두 배제되면 "상부에 올린다"입니다.</p>
+      <CaseChips cases={TS_CASES} idx={ci} setIdx={setCi} label={(x) => `CASE ${x.id}`} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === tsNarrow(x.obs).verdict)} />
+      <div className="fes-dev-status" style={{ marginTop: 8 }}>
+        <div className="fes-dev-sub">CHECK RESULTS</div>
+        {c.lines.map((l) => <div key={l} style={{ fontFamily: C.mono, fontSize: 12.5, color: C.cyan, marginTop: 3 }}>• {l}</div>)}
+      </div>
+      <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
+        {TS_CAUSES.map((k, n) => (
+          <div key={k.id} className="fes-dev-status" style={{ display: 'grid', gridTemplateColumns: '24px minmax(180px,1.2fr) minmax(200px,1.6fr) 80px', gap: 10, alignItems: 'center' }}>
+            <span style={{ color: C.dim, fontFamily: C.mono }}>{n + 1}</span>
+            <span style={{ fontSize: 12.5, color: C.text }}>{k.en}<span style={{ color: C.dim }}> · {k.ko}</span></span>
+            <span style={{ fontSize: 12, color: C.dim }}>{k.check}</span>
+            <b style={{ fontSize: 12, color: a == null ? C.dim : r.st[k.id] === 'confirmed' ? C.emerald : r.st[k.id] === 'ruledOut' ? C.red : C.amber }}>{a == null ? '?' : TS_STATUS_KO[r.st[k.id]]}</b>
+          </div>
+        ))}
+      </div>
+      <PickRow prompt="증거가 가리키는 결론은?" options={TS_VERDICTS.map((v) => ({ id: v.id, label: v.ko }))}
+        picked={a} answer={r.verdict} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === r.verdict ? C.emerald : C.amber }}>
+          {a === r.verdict ? '✔' : '✘'} {r.verdict === 'more' ? '확정된 원인이 없고 미확인 후보가 남았다 — 다음 확인을 한다(부품부터 갈지 않는다).'
+            : r.verdict === 'escalate' ? '네 후보가 모두 배제됐는데 증상이 남았다 — 표에 없는 원인이다. 추측으로 조치하지 말고 상부·장비사에 올린다.'
+              : `확정: ${TS_CAUSES.find((k) => k.id === r.verdict).en} — 이 원인에 대한 조치만 한다.`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 12강 · 관리도 규칙 (교재 예시 차트) ── */
+function SpcChart({ pts }) {
+  const ch = SPC_CHART, W = 560, H = 190, x0 = 46, x1 = W - 14, lo = 88, hi = 112;
+  const y = (v) => 10 + (hi - v) / (hi - lo) * (H - 30);
+  const x = (i) => x0 + (i / (pts.length - 1)) * (x1 - x0);
+  const line = (v, col, dash, label) => (
+    <g key={label}><path d={`M${x0} ${y(v)} L${x1} ${y(v)}`} stroke={col} strokeWidth="1.2" strokeDasharray={dash} />
+      <text x={x0 - 6} y={y(v) + 3.5} textAnchor="end" fontSize="9.5" fill={col} fontFamily={C.mono}>{label}</text></g>
+  );
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 640, display: 'block', background: '#04070d', borderRadius: 8, border: `1px solid ${C.line2}` }} role="img" aria-label="control chart">
+      {line(ch.usl, C.red, '2 3', `USL ${ch.usl}`)}{line(ch.ucl, C.amber, '6 4', `UCL ${ch.ucl}`)}{line(ch.cl, C.dim, '', `CL ${ch.cl}`)}
+      {line(ch.lcl, C.amber, '6 4', `LCL ${ch.lcl}`)}{line(ch.lsl, C.red, '2 3', `LSL ${ch.lsl}`)}
+      <path d={pts.map((v, i) => `${i ? 'L' : 'M'}${x(i)} ${y(v)}`).join(' ')} fill="none" stroke={C.cyan} strokeWidth="1.6" />
+      {pts.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r="3.6" fill={v > ch.ucl || v < ch.lcl ? C.red : C.cyan} />)}
+      {pts.map((v, i) => <text key={`t${i}`} x={x(i)} y={H - 6} textAnchor="middle" fontSize="8.5" fill={C.dim} fontFamily={C.mono}>{v}</text>)}
+    </svg>
+  );
+}
+function SpcRuleLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = SPC_CASES[ci];
+  const truth = spcAnswer(c), rules = spcCheck(c.pts), inSpec = spcInSpec(c.pts);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">식각 속도 관리도(교재 예시: CL {SPC_CHART.cl} · UCL {SPC_CHART.ucl} · LCL {SPC_CHART.lcl}, 규격 {SPC_CHART.lsl}~{SPC_CHART.usl} {SPC_CHART.unit})입니다. 걸린 규칙을 고르세요.</p>
+      <CaseChips cases={SPC_CASES} idx={ci} setIdx={setCi} label={(x) => `CHART ${x.id}`} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === spcAnswer(x))} />
+      <div style={{ marginTop: 8 }}><SpcChart pts={c.pts} /></div>
+      <PickRow prompt="어느 규칙에 걸렸나?" options={SPC_ANSWERS.map((o) => ({ id: o.id, label: o.ko }))}
+        picked={a} answer={truth} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>
+          {a === truth ? '✔' : '✘'} {rules.length ? `OOC — ${rules.map((x) => SPC_ANSWERS.find((o) => o.id === x).ko).join(', ')}.` : '관리 한계 안, 쏠림·추세 없음 — in control.'}
+          {' '}<b style={{ color: inSpec ? C.emerald : C.red }}>{inSpec ? '모든 점이 규격 안(in spec) — 불량이 아니라 조사 신호.' : '규격 밖 점이 있다(OOS) — 영향받은 lot 을 보류한다.'}</b>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -4024,6 +4140,8 @@ const SIM_REGISTRY = {
   recipe: (sl) => (sl.mode === 'run' ? <RecipeRunLab /> : sl.mode === 'change' ? <ChangeControlLab /> : <RecipeLimitLab />),
   // 11강 다른 장비 계열 읽기 — 명사 덩어리 · 장비 계열 맞히기 · 장비별 규격 판정
   tools: (sl) => (sl.mode === 'family' ? <ToolFamilyLab /> : sl.mode === 'specs' ? <ToolSpecLab /> : <NounChainLab />),
+  // 12강 트러블슈팅 — 확신 등급 · 원인 좁히기 · 관리도 규칙
+  trouble: (sl) => (sl.mode === 'narrow' ? <NarrowCauseLab /> : sl.mode === 'spc' ? <SpcRuleLab /> : <CertaintyLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -4422,9 +4540,9 @@ const CM_PART_DOCS = [
   { ch: 'CH 9', t: '안전 작업 — LOTO · 가스 · 작업 허가', d: 'shall · must · should · may · need not (규정문의 조동사)' },
   { ch: 'CH 10', t: '레시피 · 변경 관리', d: 'unless · only if · not to exceed · at least · within ± (조건과 경계)' },
   { ch: 'CH 11', t: '다른 장비 계열 읽기', d: '증착 · 노광 · CMP · 이온주입 — 명사 덩어리 · 수동태 · 단위' },
+  { ch: 'CH 12', t: '트러블슈팅 문서', d: 'confirmed · likely · suspected · ruled out · caused by ↔ results in · OOC' },
 ];
 const CM_PART_DESIGN = [
-  { ch: 'CH 12', t: 'DRC 오류', d: 'DRC (Design Rule Check) 오류 해석' },
   { ch: 'CH 13', t: 'LVS 검증', d: 'LVS (Layout Versus Schematic) 비교' },
 ];
 
