@@ -1474,3 +1474,140 @@ export function gasExplain(c) {
   const conv = c.unit === 'ppb' ? `${c.value} ppb = ${fmt(ppm)} ppm. ` : '';
   return `${conv}TLV ${fmt(tlv)} ppm → 1차 ${fmt(tlv * GAS_L1_FRAC)} · 2차 ${fmt(tlv * GAS_L2_FRAC)} ppm. ${fmt(ppm)} ppm 은 ${lv === 'ALARM' ? '2차 이상 — 즉시 대피' : lv === 'WARNING' ? '1차 이상 2차 미만 — 작업 중지·보고' : '1차 미만 — 정상'}.`;
 }
+
+/* =========================================================================
+ * 10강 레시피 · 변경 관리 — 경계 판정 · 레시피 실행 기록 판정 · 변경 관리 결정
+ *   교재: 경계어(not to exceed ≤ · below < · at least ≥ · within ± 양 끝 포함 · between 양 끝 포함),
+ *         조건어(unless = if not · only if = 필요조건 · provided that = 예외 조건).
+ *   이 교재의 가상 예시 — 레시피 ETCH-POLY-01 Rev C 의 ME 설정값, 허용 범위(압력 ±5% · 유량 ±2 sccm · RF 3%),
+ *   끝점 정상 범위 30~60 s, OE = 실제 ME 시간의 30%, 변경 규정 R1~R4. 교재 원고(scripts/content/field-english-w10.mjs)와 같은 숫자.
+ * ====================================================================== */
+
+/**
+ * 경계 문장 → 구간. 반환 { lo, hi, loInc, hiInc } (없는 쪽은 null). 읽지 못하면 null.
+ * 교재 규칙: not to exceed / no more than / max / up to → ≤ · below / less than / under → <
+ *           at least / a minimum of / no less than → ≥ · above / greater than / more than / over → >
+ *           greater than or equal to → ≥ · less than or equal to → ≤
+ *           within ±d (of s) → [s-d, s+d] · between a and b → [a, b] (exclusive 라고 적혀 있으면 (a, b))
+ */
+export function parseLimit(phrase, setpoint) {
+  const p = ` ${String(phrase || '').toLowerCase()} `;
+  const num = (re) => { const m = p.match(re); return m ? parseFloat(m[1]) : null; };
+  const N = '([0-9]+(?:\\.[0-9]+)?(?:e-?[0-9]+)?)';
+  let m;
+  if ((m = p.match(new RegExp(`between ${N}\\D*? and ${N}`)))) {
+    const ex = /exclusive/.test(p);
+    return { lo: parseFloat(m[1]), hi: parseFloat(m[2]), loInc: !ex, hiInc: !ex };
+  }
+  if ((m = p.match(new RegExp(`within ±\\s*${N}`)))) {
+    const d = parseFloat(m[1]);
+    const pct = new RegExp(`within ±\\s*${N}\\s*%`).test(p);
+    const s = num(new RegExp(`setpoint \\(?${N}`)) ?? setpoint;
+    if (s == null) return null;
+    const w = pct ? (s * d) / 100 : d;
+    return { lo: s - w, hi: s + w, loInc: true, hiInc: true };
+  }
+  const rules = [
+    [/greater than or equal to|no less than|at least|a minimum of|minimum/, 'lo', true],
+    [/less than or equal to|not to exceed|no more than|up to|maximum|\bmax\b/, 'hi', true],
+    [/below|less than|under/, 'hi', false],
+    [/above|greater than|more than|over/, 'lo', false],
+  ];
+  for (const [re, side, inc] of rules) {
+    const k = p.match(re);
+    if (!k) continue;
+    const after = p.slice(k.index + k[0].length);
+    const v = after.match(new RegExp(N));
+    if (!v) return null;
+    const x = parseFloat(v[1]);
+    return side === 'lo' ? { lo: x, hi: null, loInc: inc, hiInc: false } : { lo: null, hi: x, loInc: false, hiInc: inc };
+  }
+  return null;
+}
+export function inLimit(lim, v) {
+  if (!lim) return null;
+  const eps = 1e-9;
+  if (lim.lo != null && (lim.loInc ? v < lim.lo - eps : v <= lim.lo + eps)) return false;
+  if (lim.hi != null && (lim.hiInc ? v > lim.hi + eps : v >= lim.hi - eps)) return false;
+  return true;
+}
+/** 경계 판정 실습 — pass 는 손으로 적은 정답(테스트가 parseLimit·inLimit 과 대조) */
+export const LIMIT_ITEMS = [
+  { id: 'l1', spec: 'Reflected power is not to exceed 20 W.', value: 20, unit: 'W', pass: true, why: 'not to exceed = ≤ 20. 경계값 20 W 는 합격.' },
+  { id: 'l2', spec: 'Reflected power must be below 20 W.', value: 20, unit: 'W', pass: false, why: 'below = < 20. 경계값 20 W 는 불합격 — 위 문장과 숫자는 같고 말만 다르다.' },
+  { id: 'l3', spec: 'Purge the chamber for at least 5 minutes.', value: 5, unit: 'min', pass: true, why: 'at least = ≥ 5. 정확히 5분은 합격.' },
+  { id: 'l4', spec: 'Gas flow must stay within ±2 sccm of the setpoint (50 sccm).', value: 52.4, unit: 'sccm', pass: false, why: 'within ±2 of 50 = 48 ~ 52. 52.4 는 위로 벗어났다.' },
+  { id: 'l5', spec: 'Pressure within ±5% of the setpoint (10 mTorr).', value: 10.5, unit: 'mTorr', pass: true, why: '±5% of 10 = ±0.5 → 9.5 ~ 10.5. 10.5 는 경계 — 포함이 보통이라 합격.' },
+  { id: 'l6', spec: 'The endpoint should be detected between 30 and 60 seconds.', value: 28, unit: 's', pass: false, why: 'between 30 and 60 → 30 ~ 60. 28 s 는 너무 이르다(비정상 끝점).' },
+  { id: 'l7', spec: 'RF power deviation shall be no more than 3%.', value: 2.6, unit: '%', pass: true, why: 'no more than = ≤ 3. 2.6% 는 합격.' },
+  { id: 'l8', spec: 'Edge etch depth shall be greater than 95% of the center depth.', value: 95, unit: '%', pass: false, why: 'greater than = > 95. 같으면 불합격 — "greater than or equal to" 였다면 합격이다.' },
+];
+
+/* ── 레시피 실행 기록 판정 (ETCH-POLY-01 Rev C · 3단계 ME + 4단계 OE) ── */
+export const RCP_ME = { press: 10, src: 600, bias: 120, hbr: 150, cl2: 50, o2: 5 };
+export const RCP_TOL = { pressPct: 5, flowSccm: 2, rfPct: 3, epdMin: 30, epdMax: 60, oeFrac: 0.3, oeTolS: 0.5 };
+export const RCP_FIELDS = [
+  { id: 'press', label: 'ME PRESSURE', unit: 'mTorr', rule: 'within ±5% of the setpoint' },
+  { id: 'src', label: 'ME SOURCE RF', unit: 'W', rule: 'no more than 3% deviation' },
+  { id: 'bias', label: 'ME BIAS RF', unit: 'W', rule: 'no more than 3% deviation' },
+  { id: 'hbr', label: 'ME HBr FLOW', unit: 'sccm', rule: 'within ±2 sccm' },
+  { id: 'cl2', label: 'ME Cl2 FLOW', unit: 'sccm', rule: 'within ±2 sccm' },
+  { id: 'epd', label: 'ENDPOINT TIME', unit: 's', rule: 'between 30 and 60 s' },
+  { id: 'oe', label: 'OE TIME', unit: 's', rule: '30% of the actual ME time (±0.5 s)' },
+];
+/** 한 항목 판정 — run 은 실제값, 반환 { ok, expect } */
+export function rcpCheck(run, id) {
+  const T = RCP_TOL, v = run[id];
+  const dev = (sp) => Math.abs(v - sp) / sp * 100;
+  switch (id) {
+    case 'press': return { ok: dev(RCP_ME.press) <= T.pressPct + 1e-9, expect: `${RCP_ME.press * 0.95} ~ ${RCP_ME.press * 1.05}` };
+    case 'src': case 'bias': return { ok: dev(RCP_ME[id]) <= T.rfPct + 1e-9, expect: `${RCP_ME[id]} ±3%` };
+    case 'hbr': case 'cl2': return { ok: Math.abs(v - RCP_ME[id]) <= T.flowSccm + 1e-9, expect: `${RCP_ME[id] - 2} ~ ${RCP_ME[id] + 2}` };
+    case 'epd': return { ok: v >= T.epdMin && v <= T.epdMax, expect: `${T.epdMin} ~ ${T.epdMax}` };
+    case 'oe': { const e = Math.round(run.epd * T.oeFrac * 10) / 10; return { ok: Math.abs(v - e) <= T.oeTolS + 1e-9, expect: `${e} (= ${run.epd} × 0.3)` }; }
+    default: return null;
+  }
+}
+export const RCP_RUNS = [
+  { id: 'W03', note: '정상 웨이퍼', press: 10.2, src: 603, bias: 119, hbr: 150.8, cl2: 49.5, epd: 42.0, oe: 12.6 },
+  { id: 'W07', note: '압력이 떠 있다', press: 10.7, src: 598, bias: 121, hbr: 149.6, cl2: 50.3, epd: 44.5, oe: 13.4 },
+  { id: 'W12', note: 'OE 를 최대 시간 기준으로 잡았다', press: 9.9, src: 601, bias: 120, hbr: 150.1, cl2: 50.0, epd: 41.0, oe: 18.0 },
+  { id: 'W15', note: '끝점이 너무 이르다', press: 10.1, src: 606, bias: 118, hbr: 147.5, cl2: 50.2, epd: 24.0, oe: 7.2 },
+];
+
+/* ── 변경 관리 결정 (규정 R1~R4) ── */
+export const CC_RULES = [
+  { id: 'R1', en: 'A production recipe shall not be edited unless an ECN has been approved.' },
+  { id: 'R2', en: 'An approved change may be released only if at least two qual wafers pass.' },
+  { id: 'R3', en: 'If any qual wafer fails, the change shall be rolled back to the previous revision.' },
+  { id: 'R4', en: 'A step time change need not be re-qualified, provided that the change is within ±10% of the original value.' },
+];
+export const CC_ACTIONS = [
+  { id: 'blocked', ko: '지금 고칠 수 없음', en: 'Cannot edit yet' },
+  { id: 'hold', ko: '보류 — 시험 더 필요', en: 'Hold for qual' },
+  { id: 'release', ko: '적용 (release)', en: 'Release' },
+  { id: 'rollback', ko: '되돌림 (roll back)', en: 'Roll back' },
+];
+/** 사실 → { action, rule } — 규정을 위에서부터 그대로 적용한다 */
+export function ccDecide(c) {
+  if (c.ecn !== 'APPROVED') return { action: 'blocked', rule: 'R1' };
+  if (c.fail > 0) return { action: 'rollback', rule: 'R3' };
+  if (c.kind === 'time' && Math.abs(c.deltaPct) <= 10 + 1e-9) return { action: 'release', rule: 'R4' };
+  if (c.pass >= 2) return { action: 'release', rule: 'R2' };
+  return { action: 'hold', rule: 'R2' };
+}
+export const CC_CASES = [
+  { id: 'c1', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'PENDING', pass: 0, fail: 0 },
+  { id: 'c2', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'APPROVED', pass: 1, fail: 0 },
+  { id: 'c3', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'APPROVED', pass: 2, fail: 0 },
+  { id: 'c4', what: 'OE O2 5 → 8 sccm', kind: 'gas', deltaPct: 60, ecn: 'APPROVED', pass: 1, fail: 1 },
+  { id: 'c5', what: 'STAB time 15 → 16 s', kind: 'time', deltaPct: 6.7, ecn: 'APPROVED', pass: 0, fail: 0 },
+  { id: 'c6', what: 'STAB time 15 → 18 s', kind: 'time', deltaPct: 20, ecn: 'APPROVED', pass: 0, fail: 0 },
+  { id: 'c7', what: 'STAB time 15 → 16 s', kind: 'time', deltaPct: 6.7, ecn: 'PENDING', pass: 0, fail: 0 },
+];
+export const CC_WHY = {
+  R1: 'R1 — unless an ECN has been approved: ECN 이 승인되지 않았으면 고칠 수 없다(시간 변경이어도 마찬가지).',
+  R2: 'R2 — only if at least two qual wafers pass: 합격 두 장 이상이 반드시 있어야 적용한다.',
+  R3: 'R3 — if any qual wafer fails: 한 장이라도 불합격이면 옛 판으로 되돌린다.',
+  R4: 'R4 — need not be re-qualified, provided that … within ±10%: 10% 안의 시간 변경은 시험 없이 적용할 수 있다.',
+};

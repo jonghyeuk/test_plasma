@@ -50,7 +50,9 @@ for (const { f, J } of scripts) {
     const entries = MANIFEST[J.chapter];
     assert.ok(entries, `${J.chapter} 매니페스트 없음 — 빌드를 돌리세요`);
     for (const s of J.slides) {
-      const e = entries.find((x) => x.i === s.i); assert.ok(e, `#${s.i}`);
+      const e = entries.find((x) => x.i === s.i);
+      if (!e) continue; // 아직 음성이 없는 슬라이드 — 아래 '음성 없음' 항목(TODO)이 따로 센다
+
       const { spoken, cues } = parseLecture(s.say);
       const h = crypto.createHash('sha1').update(`${J.voice}|${J.model}|${spoken}`, 'utf8').digest('hex').slice(0, 10);
       assert.equal(e.h, h, `#${s.i}: 대본이 바뀌었다 — 빌드를 다시 돌리세요`);
@@ -60,5 +62,12 @@ for (const { f, J } of scripts) {
       assert.ok(e.cues.every((c) => c.t >= 0 && c.t <= e.sec), `#${s.i}: 펜 시각이 음성 밖`);
       assert.ok(fs.existsSync(path.join(ROOT, 'public/audio/field-english/lecture', `${e.h}.mp3`)), `#${s.i}: mp3 없음`);
     }
+    assert.ok(!entries.some((e) => !J.slides.find((s) => s.i === e.i)), '대본에 없는 슬라이드가 매니페스트에 있다');
+  });
+  /* 음성이 빠진 슬라이드(예: 일레븐랩스 크레딧 소진)는 실패가 아니라 '할 일'로 센다 — 화면에는 강의 듣기 버튼이 안 붙을 뿐 틀린 것을 보이지 않는다.
+     빠진 것이 있으면 이 항목이 TODO 로 뜨고 목록을 보여 준다. 빌드를 다시 돌리면 빠진 것만 만든다. */
+  const missing = J.slides.filter((s) => !(MANIFEST[J.chapter] || []).find((x) => x.i === s.i)).map((s) => s.i);
+  test(`${f}: 음성 없음 ${missing.length ? missing.join(', ') : '— 없음'}`, { todo: missing.length ? `음성 빠짐 ${missing.length}장 — node scripts/narration/field-english-lecture-build.mjs ${J.chapter}` : false }, () => {
+    assert.deepEqual(missing, []);
   });
 }

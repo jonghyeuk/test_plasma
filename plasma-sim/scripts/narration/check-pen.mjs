@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -81,6 +81,22 @@ for (const e of entries) {
     if (place.err || place.bad.length) { missing += 1; console.log(`   ✘ 자리: ${place.err || place.bad.join(' | ')}`); }
     await page.locator('.fes-ld-body').evaluate((b) => { b.scrollTop = 0; });
     await page.locator('.fes-ld-slide').screenshot({ path: path.join(SHOTS, `${chapter}-${String(e.i).padStart(2, '0')}.png`) });
+  }
+}
+// 음성이 아직 없는 슬라이드(매니페스트에 없음)도 대본의 펜 표시가 화면 글에 있는지는 미리 본다 — 음성만 만들면 바로 맞게 그어지도록
+const { parseLecture } = await import(pathToFileURL(path.join(ROOT, 'src/data/fieldEnglishLecture.js')).href);
+const nn = chapter.replace(/^w/, '').padStart(2, '0');
+const scriptFile = path.join(HERE, `field-english-w${nn}.lecture.json`);
+if (fs.existsSync(scriptFile)) {
+  const J = JSON.parse(fs.readFileSync(scriptFile, 'utf8'));
+  for (const sl of J.slides.filter((x) => !entries.find((e) => e.i === x.i))) {
+    const cues = parseLecture(sl.say).cues;
+    await page.locator('.fes-ld-dot').nth(sl.i).click();
+    await page.waitForTimeout(250);
+    const res = await page.evaluate((cs) => { const body = document.querySelector('.fes-ld-body'); return cs.map((c) => window.__fesPen.findTextRects(body, c.x, c.n).length); }, cues);
+    const miss = cues.filter((_, j) => !res[j]);
+    total += cues.length; missing += miss.length;
+    console.log(`#${sl.i} (음성 없음) · 펜 ${cues.length - miss.length}/${cues.length}${miss.length ? ' — 못 찾음: ' + miss.map((c) => `${c.k}:${c.x}#${c.n}`).join(' | ') : ''}`);
   }
 }
 console.log(`\n펜 표시 ${total - missing}/${total} 화면에서 찾음${errors.length ? ` · 페이지 오류 ${errors.length}: ${errors[0]}` : ''}`);

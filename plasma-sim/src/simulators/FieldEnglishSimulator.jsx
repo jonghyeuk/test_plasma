@@ -37,6 +37,7 @@ import {
   MODAL_CLASSES, MODAL_ITEMS, modalJudge,
   LOTO_CARDS, lotoInit, lotoAct,
   GAS_TLV, GAS_ACTIONS, GAS_CASES, gasLevel, gasAction, gasExplain,
+  LIMIT_ITEMS, RCP_FIELDS, RCP_RUNS, rcpCheck, CC_RULES, CC_ACTIONS, CC_CASES, CC_WHY, ccDecide,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -2456,6 +2457,115 @@ function GasAlarmLab() {
   );
 }
 
+/* ── 10강 · 경계 판정 (not to exceed · below · at least · within ± · between) ── */
+function RecipeLimitLab() {
+  const [ans, setAns] = useState({});
+  const right = LIMIT_ITEMS.filter((it) => ans[it.id] === (it.pass ? 'PASS' : 'FAIL')).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">규격 문장의 <b>경계어</b>를 먼저 읽고, 측정값이 <b>PASS</b> 인지 <b>FAIL</b> 인지 고르세요. 경계값에 딱 걸린 값이 섞여 있습니다.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {LIMIT_ITEMS.map((it, n) => {
+          const a = ans[it.id], truth = it.pass ? 'PASS' : 'FAIL';
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. SPEC: {it.spec} <SpeakBtn text={it.spec} /></div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                <span style={{ fontSize: 12, color: C.dim }}>MEASURED: <b style={{ color: C.cyan, fontFamily: C.mono }}>{it.value} {it.unit}</b></span>
+                <div className="fes-btnrow">
+                  {['PASS', 'FAIL'].map((v) => (
+                    <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                      style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: v }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {LIMIT_ITEMS.length} 판정 · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 10강 · 레시피 실행 기록 판정 (ETCH-POLY-01 Rev C · ME + OE) ── */
+function RecipeRunLab() {
+  const [ri, setRi] = useState(0);
+  const [ans, setAns] = useState({}); // `${run}:${field}` → 'IN' | 'OUT'
+  const run = RCP_RUNS[ri];
+  const doneRun = (r) => RCP_FIELDS.every((f) => ans[`${r.id}:${f.id}`] != null);
+  const allRight = (r) => RCP_FIELDS.every((f) => ans[`${r.id}:${f.id}`] === (rcpCheck(r, f.id).ok ? 'IN' : 'OUT'));
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        웨이퍼마다 본 식각(ME) 실제값과 끝점 시각, 추가 식각(OE) 시간이 기록되어 있습니다. 오른쪽 <b>허용 범위</b> 문장으로 항목마다 <b>IN / OUT</b> 을 고르세요(교재 예시 규격).
+      </p>
+      <CaseChips cases={RCP_RUNS} idx={ri} setIdx={setRi} label={(x) => `WAFER ${x.id}`} mark={(x) => (doneRun(x) ? allRight(x) : null)} />
+      <div style={{ fontSize: 12, color: C.dim, margin: '6px 0 8px' }}>메모: {run.note}</div>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {RCP_FIELDS.map((f) => {
+          const k = `${run.id}:${f.id}`, a = ans[k], r = rcpCheck(run, f.id), truth = r.ok ? 'IN' : 'OUT';
+          return (
+            <div key={f.id} className="fes-dev-status" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px,1fr) 110px minmax(180px,1.4fr) auto', gap: 10, alignItems: 'center' }}>
+              <span style={{ fontFamily: C.mono, fontSize: 12, color: C.text }}>{f.label}</span>
+              <b style={{ fontFamily: C.mono, color: a != null ? (r.ok ? C.emerald : C.red) : C.cyan }}>{run[f.id]} {f.unit}</b>
+              <span style={{ fontSize: 12, color: C.dim }}>{f.rule}{a != null ? ` → ${r.expect}` : ''}</span>
+              <div className="fes-btnrow">
+                {['IN', 'OUT'].map((v) => (
+                  <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [k]: v }))}>{v}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {doneRun(run) && (
+        <div className={allRight(run) ? 'fes-ok' : ''} style={{ marginTop: 8, fontSize: 12.5, color: allRight(run) ? undefined : C.amber }}>
+          {allRight(run) ? '✔ 모두 맞게 판정했습니다.' : '✘ 틀린 항목은 오른쪽의 계산(→)을 확인하세요.'}
+          {' '}이 웨이퍼: {RCP_FIELDS.filter((f) => !rcpCheck(run, f.id).ok).map((f) => f.label).join(', ') || '모든 항목 범위 안'}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 10강 · 변경 관리 결정 (규정 R1~R4) ── */
+function ChangeControlLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = CC_CASES[ci];
+  const d = ccDecide(c);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">변경 규정(교재 예시)과 상황을 읽고 지금 할 일을 고르세요.</p>
+      <div className="fes-dev-status" style={{ marginBottom: 8 }}>
+        <div className="fes-dev-sub">RECIPE CHANGE CONTROL POLICY</div>
+        {CC_RULES.map((r) => (
+          <div key={r.id} style={{ fontFamily: C.mono, fontSize: 12, color: a != null && d.rule === r.id ? C.amber : C.text, marginTop: 3 }}>{r.id}. {r.en} <SpeakBtn text={r.en} /></div>
+        ))}
+      </div>
+      <CaseChips cases={CC_CASES} idx={ci} setIdx={setCi} label={(x) => x.id.toUpperCase()} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === ccDecide(x).action)} />
+      <div className="fes-dev-grid">
+        <div className="fes-dev-led"><div className="fes-dev-led-label">CHANGE</div><div className="fes-dev-led-val" style={{ fontSize: 14, textShadow: 'none' }}>{c.what}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">ECN STATUS</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none', color: c.ecn === 'APPROVED' ? C.emerald : C.amber }}>{c.ecn}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">QUAL WAFERS PASS / FAIL</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none' }}>{c.pass} / {c.fail}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">CHANGE SIZE</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none' }}>{c.deltaPct}%</div></div>
+      </div>
+      <PickRow prompt="지금 할 일은?" options={CC_ACTIONS.map((x) => ({ id: x.id, label: `${x.ko} · ${x.en}` }))}
+        picked={a} answer={d.action} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && <div style={{ marginTop: 8, fontSize: 12.5, color: a === d.action ? C.emerald : C.amber }}>{a === d.action ? '✔' : '✘'} {CC_WHY[d.rule]}</div>}
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -3798,6 +3908,8 @@ const SIM_REGISTRY = {
       : <EquipmentHMI variant={sl.mode === 'sequence' ? 'sequence' : 'etch'} />),
   // 9강 안전 작업 — 규정 문장 판정 · LOTO 순서 · 가스 경보 판독
   safety: (sl) => (sl.mode === 'loto' ? <LotoLab /> : sl.mode === 'gas' ? <GasAlarmLab /> : <SafetyModalLab />),
+  // 10강 레시피·변경 관리 — 경계 판정 · 실행 기록 판정 · 변경 관리 결정
+  recipe: (sl) => (sl.mode === 'run' ? <RecipeRunLab /> : sl.mode === 'change' ? <ChangeControlLab /> : <RecipeLimitLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -4194,9 +4306,9 @@ const CM_PART_EQUIP = [
 // 2부(9~15강)는 장비 문서와 소통으로 바뀌는 중이다 — 바뀐 강은 CM_PART_DOCS 로 옮기고, 남은 설계 강은 아래 표에 둔다.
 const CM_PART_DOCS = [
   { ch: 'CH 9', t: '안전 작업 — LOTO · 가스 · 작업 허가', d: 'shall · must · should · may · need not (규정문의 조동사)' },
+  { ch: 'CH 10', t: '레시피 · 변경 관리', d: 'unless · only if · not to exceed · at least · within ± (조건과 경계)' },
 ];
 const CM_PART_DESIGN = [
-  { ch: 'CH 10', t: 'Design Rule', d: 'width·spacing·overlap·enclosure' },
   { ch: 'CH 11', t: '패턴 배치', d: 'layer 배치 · 선폭 · 간격' },
   { ch: 'CH 12', t: 'DRC 오류', d: 'DRC (Design Rule Check) 오류 해석' },
   { ch: 'CH 13', t: 'LVS 검증', d: 'LVS (Layout Versus Schematic) 비교' },

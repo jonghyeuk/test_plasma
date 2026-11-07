@@ -5681,359 +5681,354 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w10",
-  "title": "Design Rule",
+  "title": "레시피 · 변경 관리",
   "slides": [
    {
     "type": "story",
-    "icon": "📐",
-    "title": "현장 이야기: 0.02um이 만든 재작업",
-    "text": "신입 공정 기술자 지훈은 마스크 레이아웃 검증 화면 앞에 앉았다. 화면 오른쪽에는 영어로 된 표 하나가 떠 있었다. **Design Rule Table**. 표에는 **Rule**, **Layer**, **Min Width**, **Min Spacing** 같은 영어 항목과 함께 숫자들이 um 단위로 빼곡히 적혀 있었다. 선배가 물었다. \"이 metal 라인 하나, 폭이 **0.18um**인데 룰은 **min width 0.20um**이야. 이거 통과야, 아니야?\" 지훈은 잠깐 멈칫했다. 값은 읽었지만, 영어 항목이 무엇을 요구하는지 정확히 몰랐다. 결국 이 한 줄을 잘못 읽어 **DRC violation**이 그대로 넘어갔고, 마스크는 재작업(rework) 대상이 되었다. 현장에서 영어 **Design Rule**을 '읽고 판단'하는 힘은, 설계 실력이 아니라 안전과 수율의 문제였다.",
-    "art": "designrule"
+    "icon": "🧾",
+    "title": "\"압력만 살짝 올려\"",
+    "text": "새벽 4시. 지수는 폴리 식각 장비의 레시피 **ETCH-POLY-01 Rev C** 를 보고 있다. 최근 웨이퍼 가장자리 식각량이 조금씩 모자란다. 옆 라인 선배가 지나가며 말한다. \"메인 에치 압력 10에서 12로만 살짝 올려 봐. 그럼 맞을 거야.\" 지수가 레시피 편집 화면을 열자 노란 글씨가 뜬다. **RECIPE LOCKED — Changes require an approved ECN.** 공정 규정집에는 이렇게 적혀 있다. \"**A production recipe shall not be edited unless an ECN has been approved.**\" 승인된 변경 통지(**ECN**)가 없으면 고칠 수 없다는 뜻이다. 그 아래 줄도 있다. \"**An approved change may be released only if at least two qual wafers pass.**\" 고쳐도 바로 쓰는 게 아니라, 시험 웨이퍼(**qual wafer**) 두 장이 합격해야 한다. 지수는 레시피를 닫고 변경 요청서(**ECR**)를 쓰기 시작한다. 오늘의 영어는 **unless · only if · at least** — 조건과 경계를 정하는 말이다.",
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "RECIPE EDITOR",
+      "status": "LOCKED",
+      "state": "fault",
+      "rows": [
+       [
+        "RECIPE",
+        "ETCH-POLY-01"
+       ],
+       [
+        "REVISION",
+        "Rev C"
+       ],
+       [
+        "STATUS",
+        "PRODUCTION",
+        "warn"
+       ]
+      ],
+      "banner": {
+       "en": "Changes require an approved ECN.",
+       "ko": "승인된 ECN 이 있어야 수정할 수 있다.",
+       "level": "warn"
+      }
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "레이아웃 검토 데스크.",
-    "tool": "디자인 룰 문서(rule deck)와 레이아웃 화면.",
-    "situation": "0.02µm 차이가 재작업(rework)을 불렀다. 규칙을 숫자로 읽어야 한다.",
+    "where": "새벽의 식각 장비 앞 — 레시피 편집 화면(Recipe Editor)과 공정 규정집.",
+    "tool": "레시피 표(step table), 끝점 검출(EPD) 화면, 변경 요청서(ECR), 시험 웨이퍼(qual wafer) 결과.",
+    "situation": "식각량이 조금 모자라 레시피를 바꾸고 싶다. 하지만 레시피는 잠겨 있고, 규정은 조건을 달아 둔다.",
     "meet": [
-     "MIN WIDTH · SPACING 규칙",
-     "0.02µm 위반",
-     "DRC CLEAN 요구",
-     "재작업 rework"
+     "조건어 unless · only if · provided that",
+     "경계 not to exceed · at least · within ±",
+     "레시피 표 STEP · END · EPD",
+     "변경 관리 ECR → ECN → qual → release"
     ],
-    "goal": "설계 규칙을 숫자와 영어로 읽어 위반을 판단하기.",
+    "goal": "조건이 맞는지, 값이 경계 안인지 영어 문장 그대로 판단하기.",
     "bg": "w10"
    },
    {
     "type": "read",
-    "title": "Design Rule이란 무엇인가",
-    "intro": "디자인 규칙은 '만들 수 있는 도형'의 최소 조건을 정한 약속입니다.",
+    "title": "레시피는 왜 잠겨 있나 — production recipe 와 revision",
+    "intro": "레시피(recipe)는 압력·가스·RF·시간 같은 공정 조건의 묶음이다. 같은 레시피를 쓰면 어느 장비, 어느 날이든 같은 결과가 나와야 한다.",
     "paras": [
-     "**Design Rule**은 공정 장비가 실제로 재현할 수 있는 도형의 기하학적 한계를 규정한 규칙 모음입니다. 화면과 문서에서는 흔히 **design rules** 또는 **DR**로 표기됩니다.",
-     "각 규칙은 보통 **layer**(층), **rule name**(규칙 이름), **symbol/기호**, **value**(값), **description**(설명)으로 이루어진 표(**Design Rule Table**) 형태로 제공됩니다.",
-     "값의 단위는 대부분 **micron(um)** 또는 **nanometer(nm)**입니다. 화면에 `0.20 um` 또는 `200 nm`처럼 표기되며, 두 값이 같은 크기임을 즉시 환산해 읽을 수 있어야 합니다.",
-     "규칙의 목적은 **manufacturability**(제조 가능성)입니다. 너무 가늘거나 너무 가까운 패턴은 노광·식각에서 끊기거나 붙어(short) 불량이 됩니다. 즉 규칙은 '수율(yield)을 지키는 최소 안전선'입니다.",
-     "기술자의 핵심 임무는 도형을 '그리는' 것이 아니라, 측정된 값(**measured value**)이 규칙 값(**rule value**)을 **satisfy**(만족)하는지 **pass/fail**을 판단하는 것입니다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "핵심 규칙 5종: Width · Spacing · Overlap · Enclosure · Extension",
-    "intro": "현장 표에서 가장 자주 보는 다섯 가지 규칙 유형입니다.",
-    "paras": [
-     "**Minimum Width (min width)**: 한 도형이 가질 수 있는 가장 얇은 폭입니다. `Metal1 min width = 0.20 um`이면 폭이 0.20um보다 작으면 **violation**입니다. 너무 가늘면 라인이 끊어져(open) 전기가 통하지 않습니다.",
-     "**Minimum Spacing (min spacing)**: 같은 층의 서로 다른 두 도형 사이의 최소 간격입니다. 간격이 규칙보다 좁으면 두 배선이 붙어 **short**(단락)가 납니다. 화면에서는 `spacing`, `space`, `S`로 표기됩니다.",
-     "**Overlap**: 두 층이 서로 겹쳐야 하는 최소 겹침량입니다. 예를 들어 via와 metal은 반드시 일정 넓이 이상 겹쳐야 접촉(contact)이 안정적으로 형성됩니다.",
-     "**Enclosure**: 한 층이 다른 층을 '감싸는' 최소 여유입니다. `Metal enclosure of via = 0.05 um`은 via 둘레를 metal이 사방 0.05um 이상 덮어야 한다는 뜻입니다. 정렬 오차(misalignment)를 견디게 해줍니다.",
-     "**Extension**: 한 도형이 경계를 넘어 뻗어야 하는 최소 길이입니다. gate가 active 영역 밖으로 충분히 뻗어야(poly extension) 누설을 막습니다.",
-     "이 다섯 규칙은 각각 **min**(최소) 조건인지 **max**(최대) 조건인지 반드시 확인해야 합니다. min은 '이보다 크면 OK', max는 '이보다 작으면 OK'로 판단 방향이 정반대입니다."
+     "양산에 쓰는 레시피를 **production recipe** 라고 한다. 누가 몰래 숫자 하나를 바꾸면 그 뒤에 흐른 웨이퍼 수백 장이 영향을 받는다. 그래서 장비는 레시피를 **locked(잠금)** 상태로 둔다.",
+     "레시피에는 판 번호가 붙는다. **Rev C** 는 세 번째 판이라는 뜻이다. 바꾸면 **Rev D** 가 되고, 옛 판은 지우지 않고 남겨 둔다. 문제가 생기면 옛 판으로 되돌리기(**roll back**) 위해서다.",
+     "바꾸는 길은 정해져 있다. 변경 요청(**ECR**) → 검토(**review**) → 승인된 변경 통지(**ECN**) → 시험 웨이퍼로 확인(**qualification**, 줄여서 **qual**) → 양산 적용(**release**).",
+     "이 길을 거치지 않은 변경을 현장에서는 **unauthorized change(무단 변경)** 라고 부른다. 결과가 좋아도 위반이다. 기록이 없으면 다음 사람이 원인을 찾을 수 없기 때문이다.",
+     "그래서 레시피 화면과 변경 규정의 영어는 거의 다 **조건문**이다 — 어떤 조건이 맞을 때만, 어떤 범위 안일 때만 허용한다."
     ],
     "figs": [
      {
-      "kind": "note",
-      "title": "DESIGN RULE",
-      "en": "Minimum spacing = [0.14 µm].",
-      "ko": "최소 간격 = 0.14µm"
+      "kind": "log",
+      "title": "RECIPE HISTORY",
+      "lines": [
+       "ETCH-POLY-01 Rev B — [ARCHIVED]",
+       "ETCH-POLY-01 Rev C — [PRODUCTION] since 2026-09-14",
+       "ETCH-POLY-01 Rev D — [DRAFT] ECR-0412 pending"
+      ]
      }
     ]
    },
    {
     "type": "read",
-    "title": "규칙 표(Design Rule Table) 읽는 법",
-    "intro": "표의 열(column) 이름과 기호를 정확히 해석해야 판단이 흔들리지 않습니다.",
+    "title": "레시피 표 읽기 — STEP · END · TIME",
+    "intro": "레시피 화면은 대개 표다. 한 줄이 한 단계(step)이고, 칸마다 그 단계의 설정값(setpoint)이 들어 있다.",
     "paras": [
-     "**Rule / Rule Name** 열: 규칙의 식별자입니다. 흔히 `M1.W.1`, `V1.E.2`처럼 '층.유형.번호'로 코드화됩니다. `W`=width, `S`=space, `E`=enclosure/extension, `O`=overlap을 뜻하는 경우가 많습니다.",
-     "**Layer** 열: 규칙이 적용되는 층입니다. `POLY`, `ACTIVE`, `METAL1(M1)`, `VIA1(V1)`, `CONTACT(CO)` 등이 자주 등장합니다.",
-     "**Symbol** 열: `≥`(이상), `≤`(이하), `=`(정확히)로 판단 방향을 알려줍니다. `Min Width ≥ 0.20`은 '0.20 이상이어야 통과'라는 뜻입니다.",
-     "**Value / Min / Max** 열: 기준 수치입니다. `Min` 열의 값은 하한선, `Max` 열의 값은 상한선입니다. 두 값이 함께 있으면 '범위(range)' 규칙입니다.",
-     "**Description** 열: 규칙의 영어 설명 문장입니다. 예: `Minimum spacing between two Metal1 lines`. 이 문장을 읽고 '무엇과 무엇 사이'의 규칙인지 파악하는 것이 핵심입니다.",
-     "판단 절차: (1) 어떤 layer인지 확인 → (2) rule type(width/spacing/…)을 확인 → (3) symbol로 방향 확인 → (4) 측정값과 비교해 **pass** 또는 **fail** 결정."
+     "**STEP** — 단계 이름. 식각이라면 **STAB(stabilize, 안정화)** → **BT(breakthrough, 표면 산화막 뚫기)** → **ME(main etch, 본 식각)** → **OE(over etch, 추가 식각)** → **PUMP(배기)** 순서가 흔하다.",
+     "**END** — 그 단계가 언제 끝나는가. **TIME** 이면 정해진 시간이 지나면 끝나고, **EPD** 면 끝점 검출(endpoint detection)이 신호를 줄 때 끝난다.",
+     "**TIME (s)** — 초 단위 시간. EPD 단계에는 보통 **MAX 60** 처럼 최대 시간이 붙는다. 60초 안에 끝점이 안 나오면 장비는 그 단계를 멈추고 알람을 낸다(**step timeout**).",
+     "**PRESS (mTorr) · SRC / BIAS (W) · GAS (sccm)** — 압력, RF 전력(플라즈마를 만드는 source 와 이온을 끌어당기는 bias), 가스 유량. 1부에서 읽은 단위 그대로다.",
+     "표 아래에는 거의 항상 **허용 범위(tolerance)** 가 한 줄 붙는다. 예: \"Pressure within ±5% of the setpoint.\" — 실제 값이 이 범위를 벗어나면 그 웨이퍼는 의심받는다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "ETCH-POLY-01 · STEP 3",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "STEP",
+        "ME (main etch)"
+       ],
+       [
+        "END",
+        "EPD · MAX 60 s"
+       ],
+       [
+        "PRESS SP / PV",
+        "10.0 / 10.2 mTorr"
+       ],
+       [
+        "SRC / BIAS",
+        "600 / 120 W"
+       ]
+      ]
+     }
     ]
    },
    {
     "type": "read",
-    "title": "판단 실습의 사고 흐름과 단위 함정",
-    "intro": "값을 읽는 것과 '만족 여부를 판단'하는 것은 다른 능력입니다.",
+    "title": "끝점(EPD)과 over-etch — \"언제 멈추나\"를 읽기",
+    "intro": "식각은 시간이 아니라 \"막이 다 깎였는가\"로 멈추는 것이 이상적이다. 그 순간을 알려 주는 것이 끝점 검출(EPD)이다.",
     "paras": [
-     "측정값 비교의 기본 문장: `measured 0.18 um < min 0.20 um → FAIL`. 부등호의 방향과 규칙이 min인지 max인지를 함께 봐야 합니다.",
-     "단위 함정 1 — **um vs nm**: `0.20 um`과 `200 nm`은 같은 값입니다. 화면마다 단위가 다르므로 `1 um = 1000 nm` 환산을 항상 염두에 둬야 합니다.",
-     "단위 함정 2 — **소수점 자리**: `0.020 um`과 `0.20 um`은 10배 차이입니다. 현장 화면의 작은 글씨에서 이 자리 실수가 실제 rework를 부릅니다.",
-     "**Waived / Waiver**: 일부 violation은 검토 후 '예외 승인'되어 무시됩니다. 리포트에서 `waived`로 표시된 항목은 실제 fail이 아닐 수 있으니 상태(status)를 함께 읽어야 합니다.",
-     "**Error vs Warning**: DRC 리포트는 심각도를 나눕니다. `error`는 반드시 수정, `warning`은 검토 후 판단입니다. 색상(빨강/노랑)과 함께 영어 라벨을 확인하세요.",
-     "최종 산출물은 언제나 하나의 영어 판정어입니다: **PASS**(clean) 또는 **FAIL**(violation). 이 한 단어를 정확히 도출하는 것이 이 수업의 목표입니다."
+     "플라즈마는 빛을 낸다. 깎이는 막이 바뀌면 빛의 색(특정 파장의 세기)이 바뀐다. 이 변화를 **OES(optical emission spectroscopy)** 로 보다가 신호가 꺾이면 **endpoint detected** 다.",
+     "웨이퍼 가운데와 가장자리는 식각 속도가 조금 다르다. 끝점은 대개 \"먼저 뚫린 곳\"에서 잡히므로, 남은 곳을 마저 깎는 **over etch(OE)** 단계를 둔다.",
+     "OE 시간은 흔히 ME 시간의 비율로 적는다. 예: \"Over etch: **30% of the main etch time**.\" 끝점이 **40 s** 에 나왔다면 OE 는 **12 s** 다.",
+     "끝점이 너무 빨리 나오면(예: 10 s) 웨이퍼나 막이 잘못 들어온 것일 수 있고, 너무 늦거나 안 나오면 식각 속도가 떨어진 것이다. 그래서 규정은 정상 범위를 적어 둔다: \"Endpoint shall be detected **between 30 and 60 s**.\"",
+     "로그에서는 이렇게 보인다: STEP 3 ME — EPD triggered at 42.0 s / STEP 4 OE — 12.6 s (30% of ME). 숫자 두 개를 읽고 서로 맞는지 확인하는 것이 오늘 실습의 하나다."
+    ]
+   },
+   {
+    "type": "read",
+    "title": "경계가 포함되는가 — not to exceed · below · at least · within ±",
+    "intro": "허용 범위 문장은 숫자보다 그 앞의 말이 중요하다. 같은 \"20 W\"라도 20 W 가 합격인지 불합격인지가 말 하나로 갈린다.",
+    "paras": [
+     "**not to exceed 20 W / no more than 20 W / 20 W max** — 20 W 까지 허용(**≤ 20**). 20 W 는 합격.",
+     "**below 20 W / less than 20 W / under 20 W** — 20 W 보다 작아야 한다(**< 20**). 20 W 는 불합격.",
+     "**at least 5 min / a minimum of 5 min / no less than 5 min** — 5분 이상(**≥ 5**). 정확히 5분은 합격.",
+     "**above / greater than / more than 95%** — 95% 보다 커야 한다(**> 95**). **greater than or equal to** 는 같아도 된다(**≥**).",
+     "**within ±2 sccm of the setpoint** — 설정값 50 이면 **48 ~ 52**. 양 끝(48, 52)은 보통 포함한다. **between 30 and 60 s** 도 보통 양 끝을 포함한다 — 애매하면 문서는 **inclusive(포함)** / **exclusive(제외)** 를 적어 둔다.",
+     "정리: 숫자를 읽기 전에 **경계어**를 읽는다. 경계값에 걸린 측정값이 가장 자주 판단이 갈리는 곳이다."
     ],
     "figs": [
      {
-      "kind": "sticker",
-      "level": "danger",
-      "en": "0.02 µm SHORT → REWORK",
-      "ko": "0.02µm 부족 → 재작업"
+      "kind": "step",
+      "title": "BOUNDARY",
+      "items": [
+       [
+        "[not to exceed] 20 — ≤ 20",
+        "20 포함"
+       ],
+       [
+        "[below] 20 — < 20",
+        "20 제외"
+       ],
+       [
+        "[at least] 5 — ≥ 5",
+        "5 포함"
+       ],
+       [
+        "[within ±2] of 50 — 48 ~ 52",
+        "양 끝 포함"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "조건 연결어 — if · unless · provided that · only if",
+    "intro": "변경 규정은 \"이럴 때만 된다\"를 여러 방법으로 말한다. 연결어마다 조건이 걸리는 방향이 다르다.",
+    "paras": [
+     "**if** — ~이면. \"If the endpoint is not detected within 60 s, the step aborts.\" 조건이 맞으면 뒤의 일이 일어난다.",
+     "**unless** — ~이 아니면(= **if not**). \"The recipe shall not be edited unless an ECN has been approved.\" → ECN 승인이 **없으면** 고칠 수 없다. 우리말로 옮길 때 부정이 두 번 겹쳐 가장 자주 거꾸로 읽는다.",
+     "**only if** — 오직 ~일 때만. \"A change may be released only if two qual wafers pass.\" → 두 장 합격은 **반드시 있어야 하는 조건**이다. 그냥 if 보다 훨씬 좁다.",
+     "**provided that / as long as** — ~라는 조건이라면. \"The step time may be adjusted without qual, provided that the change is within ±10%.\" → 10% 안일 때만 그 예외가 허용된다.",
+     "**otherwise** — 그렇지 않으면. \"Verify two qual wafers; otherwise, keep the previous revision.\" **until** — ~할 때까지. \"Do not release the recipe until the qual results are recorded.\"",
+     "읽는 순서: ① 연결어를 찾는다 → ② 조건 부분과 결과 부분을 나눈다 → ③ 지금 사실이 조건을 만족하는지 본다. 이 세 단계를 실습에서 그대로 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "note",
+      "title": "READ IT",
+      "en": "[unless] = if not. [only if] = this condition is required.",
+      "ko": "unless = ~가 아니면. only if = 이 조건이 반드시 필요하다."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "변경 관리 흐름 — ECR → ECN → qual → release",
+    "intro": "레시피를 바꾸는 일은 한 사람의 판단이 아니라 기록이 남는 흐름이다. 단계마다 쓰는 영어 표현이 정해져 있다.",
+    "paras": [
+     "**ECR (Engineering Change Request)** — 무엇을, 왜, 얼마나 바꾸려는지 쓴 요청서. \"Request: increase ME pressure from 10 to 12 mTorr to improve edge etch rate.\"",
+     "**Review / Approval** — 공정·장비·품질 담당이 검토하고 승인한다. 승인되면 **ECN (Engineering Change Notice)** 번호가 붙는다. 상태는 **PENDING → APPROVED** 또는 **REJECTED**.",
+     "**Qualification (qual)** — 새 판으로 시험 웨이퍼를 돌려 규격 안인지 확인한다. 결과는 **PASS / FAIL** 로 적는다.",
+     "**Release / Effective date** — 합격하면 새 판을 양산에 적용한다. \"Rev D effective from 2026-11-10.\" 그 날부터 장비는 새 판만 쓴다.",
+     "**Roll back** — 시험이나 양산에서 문제가 나오면 옛 판으로 되돌린다. \"Roll back to Rev C and hold the lot.\" 옛 판을 지우지 않는 이유가 이것이다.",
+     "**Hold** — 판단이 끝날 때까지 웨이퍼 묶음(**lot**)을 멈춰 두는 것. 변경 관리 문장에서 자주 함께 나온다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "CHANGE FLOW",
+      "items": [
+       [
+        "[ECR] submitted",
+        "요청"
+       ],
+       [
+        "[ECN] approved",
+        "승인"
+       ],
+       [
+        "[qual] 2 wafers PASS",
+        "시험 합격"
+       ],
+       [
+        "[release] Rev D",
+        "양산 적용"
+       ]
+      ]
      }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "디자인 규칙 화면과 리포트에서 반복 등장하는 약어입니다.",
+    "intro": "레시피 화면과 변경 관리 문서에 반복해서 나오는 약어입니다.",
     "items": [
      {
-      "ab": "DR",
-      "full": "Design Rule",
-      "ko": "디자인 규칙, 제조 가능성을 위한 도형 규칙"
+      "ab": "EPD",
+      "full": "Endpoint Detection",
+      "ko": "끝점 검출 — 막이 다 깎인 순간을 잡는다"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "디자인 규칙 검사(위반 자동 검출)"
+      "ab": "OES",
+      "full": "Optical Emission Spectroscopy",
+      "ko": "발광 분광 — 플라즈마 빛으로 끝점을 본다"
      },
      {
-      "ab": "W",
-      "full": "Width",
-      "ko": "폭(주로 min width 규칙 기호)"
+      "ab": "ME / OE",
+      "full": "Main Etch / Over Etch",
+      "ko": "본 식각 / 추가 식각"
      },
      {
-      "ab": "S",
-      "full": "Space / Spacing",
-      "ko": "간격(주로 min spacing 규칙 기호)"
+      "ab": "BT",
+      "full": "Breakthrough",
+      "ko": "표면 자연 산화막을 뚫는 짧은 단계"
      },
      {
-      "ab": "ENC",
-      "full": "Enclosure",
-      "ko": "감쌈 여유(층이 다른 층을 덮는 양)"
+      "ab": "SP / PV",
+      "full": "Setpoint / Process Value",
+      "ko": "설정값 / 실제값"
      },
      {
-      "ab": "EXT",
-      "full": "Extension",
-      "ko": "뻗음(경계를 넘어 연장되는 길이)"
+      "ab": "ECR",
+      "full": "Engineering Change Request",
+      "ko": "변경 요청서"
      },
      {
-      "ab": "M1",
-      "full": "Metal 1",
-      "ko": "1번 금속 배선층"
+      "ab": "ECN",
+      "full": "Engineering Change Notice",
+      "ko": "승인된 변경 통지 — 번호가 붙는다"
      },
      {
-      "ab": "V1",
-      "full": "Via 1",
-      "ko": "1번 비아(층간 연결 구멍)"
+      "ab": "MOC",
+      "full": "Management of Change",
+      "ko": "변경 관리 — 이 흐름 전체를 부르는 말"
      },
      {
-      "ab": "um",
-      "full": "Micron (Micrometer)",
-      "ko": "마이크론, 1um = 1000nm"
+      "ab": "Rev",
+      "full": "Revision",
+      "ko": "판 번호 — Rev C → Rev D"
      },
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃-회로 일치 검증(DRC와 함께 자주 언급)"
+      "ab": "qual",
+      "full": "qualification",
+      "ko": "적격 시험 — 시험 웨이퍼로 확인"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) 규칙 유형",
-    "intro": "규칙 표의 rule type을 나타내는 영어 용어입니다.",
+    "title": "핵심 용어 (1) — 조건 연결어",
+    "intro": "조건이 어느 쪽에 걸리는지 예문으로 확인하세요.",
     "items": [
      {
-      "en": "minimum width",
-      "ko": "최소 폭",
-      "d": "도형이 가질 수 있는 가장 얇은 폭 하한선",
-      "ex": "The metal line must meet the minimum width of 0.20 um."
+      "en": "unless",
+      "ko": "~이 아니면 (= if not)",
+      "d": "조건이 없을 때 결과가 막힌다",
+      "ex": "Do not start the run unless the chamber has passed the leak check."
      },
      {
-      "en": "minimum spacing",
-      "ko": "최소 간격",
-      "d": "같은 층 두 도형 사이 최소 거리 하한선",
-      "ex": "Check the minimum spacing between two adjacent Metal1 lines."
+      "en": "only if",
+      "ko": "오직 ~일 때만",
+      "d": "반드시 있어야 하는 조건",
+      "ex": "The lot may be released only if all qual wafers pass."
      },
      {
-      "en": "overlap",
-      "ko": "겹침",
-      "d": "두 층이 서로 겹쳐야 하는 최소 넓이",
-      "ex": "The via must have sufficient overlap with the metal above it."
+      "en": "provided that",
+      "ko": "~라는 조건이라면",
+      "d": "예외를 허락하는 조건",
+      "ex": "Minor time changes are allowed, provided that they are within ±10%."
      },
      {
-      "en": "enclosure",
-      "ko": "감쌈 여유",
-      "d": "한 층이 다른 층을 사방으로 덮는 최소 여유",
-      "ex": "Metal enclosure of the via must be at least 0.05 um on all sides."
+      "en": "otherwise",
+      "ko": "그렇지 않으면",
+      "d": "조건이 안 맞을 때 할 일",
+      "ex": "Check the endpoint trace; otherwise, the over-etch time cannot be verified."
      },
      {
-      "en": "extension",
-      "ko": "연장",
-      "d": "도형이 경계를 넘어 뻗어야 하는 최소 길이",
-      "ex": "The poly extension beyond the active area must not be smaller than 0.10 um."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "log",
-      "title": "RULE DECK",
-      "lines": [
-       "MIN WIDTH    0.10 µm",
-       "MIN SPACING  0.14 µm",
-       "ENCLOSURE    0.05 µm"
-      ]
+      "en": "until",
+      "ko": "~할 때까지",
+      "d": "그 일이 끝날 때까지 다른 일은 안 됨",
+      "ex": "Keep the lot on hold until the engineer reviews the data."
      },
      {
-      "kind": "note",
-      "title": "DESIGN RULE",
-      "en": "Minimum width = [0.10 µm].",
-      "ko": "최소 선폭 = 0.10µm"
-     }
-    ]
-   },
-   {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — 디자인 룰",
-    "app": "LayoutPro",
-    "doc": "m1_rules.drc",
-    "run": "Ruler",
-    "canvas": "rules",
-    "left": {
-     "title": "Rule Deck",
-     "items": [
-      {
-       "name": "MIN WIDTH 0.10"
-      },
-      {
-       "name": "MIN SPACING 0.14"
-      },
-      {
-       "name": "ENCLOSURE 0.05"
-      }
-     ]
-    },
-    "log": [
-     "> load rule deck N28_M1.drc",
-     "> ready"
-    ],
-    "status": "Ruler: 0.16µm   Rule: M1.S.1   Zoom: 600%",
-    "gloss": [
-     [
-      "Rule deck",
-      "규칙 세트"
-     ],
-     [
-      "Ruler",
-      "치수 자"
-     ],
-     [
-      "min spacing",
-      "최소 간격"
-     ],
-     [
-      "enclosure",
-      "겹침(감쌈)"
-     ]
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "영어 규칙 항목의 뜻을 고르세요.",
-    "questions": [
-     {
-      "prompt": "'Minimum spacing between two Metal1 lines'가 규정하는 것은?",
-      "opts": [
-       "한 metal 라인의 최소 폭",
-       "서로 다른 두 metal 라인 사이의 최소 간격",
-       "metal과 via의 겹침량"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'Metal enclosure of via = 0.05 um'의 의미로 맞는 것은?",
-      "opts": [
-       "via가 metal보다 0.05um 커야 한다",
-       "metal이 via를 사방 0.05um 이상 감싸야 한다",
-       "via 간 간격이 0.05um여야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "규칙이 'Min Width ≥ 0.20 um'이고 측정값이 0.18 um일 때 판정은?",
-      "opts": [
-       "PASS (통과)",
-       "FAIL (위반)",
-       "판정 불가"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) 판단·단위",
-    "intro": "만족 여부를 판단할 때 쓰는 영어 표현입니다.",
-    "items": [
-     {
-      "en": "satisfy / meet",
-      "ko": "만족하다",
-      "d": "측정값이 규칙 조건을 충족함",
-      "ex": "This line satisfies the minimum width rule."
-     },
-     {
-      "en": "violation",
-      "ko": "위반",
-      "d": "규칙을 어긴 상태, 수정 대상",
-      "ex": "The DRC found one spacing violation in the layout."
-     },
-     {
-      "en": "minimum",
-      "ko": "최소값(하한)",
-      "d": "이 값 이상이어야 통과하는 기준",
-      "ex": "The minimum contact size is 0.16 um."
-     },
-     {
-      "en": "maximum",
-      "ko": "최대값(상한)",
-      "d": "이 값 이하여야 통과하는 기준",
-      "ex": "The maximum metal width in this layer is 10 um."
-     },
-     {
-      "en": "micron (um)",
-      "ko": "마이크론",
-      "d": "길이 단위, 1um = 1000nm",
-      "ex": "All values in this table are given in microns (um)."
-     },
-     {
-      "en": "measured value",
-      "ko": "측정값",
-      "d": "실제 도형에서 측정된 수치",
-      "ex": "Compare the measured value with the rule value to decide pass or fail."
+      "en": "in case of",
+      "ko": "~의 경우에는",
+      "d": "특정 상황에 대한 지시",
+      "ex": "In case of an endpoint timeout, abort the run and notify the process engineer."
      }
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "단위와 판단 방향을 정확히 읽으세요.",
+    "title": "확인 퀴즈 (1) — 조건 연결어",
+    "intro": "연결어를 찾고, 조건 부분이 지금 사실과 맞는지 판단하세요.",
     "questions": [
      {
-      "prompt": "화면에 규칙이 '200 nm'로, 측정값이 '0.20 um'로 표기됐다. 두 값의 관계는?",
+      "prompt": "'Do not start the run unless the chamber has passed the leak check.' 누설 검사를 아직 안 했다. 시작해도 되는가?",
       "opts": [
-       "측정값이 더 크다",
-       "측정값이 더 작다",
-       "두 값은 같다"
+       "시작해도 된다 — 금지 조건이 아니다",
+       "시작하면 안 된다 — 누설 검사 통과가 먼저다",
+       "누설 검사는 시작 후에 한다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'The lot may be released only if all qual wafers pass.' 시험 웨이퍼 3장 중 2장 합격. 출하할 수 있는가?",
+      "opts": [
+       "3장 중 2장이면 과반이라 된다",
+       "감독자 판단에 따라 된다",
+       "안 된다 — 모든(all) 웨이퍼가 합격해야 한다"
       ],
       "ans": 2
      },
      {
-      "prompt": "'maximum metal width = 10 um' 규칙에서 측정값 12 um는?",
+      "prompt": "'Minor time changes are allowed, provided that they are within ±10%.' 60초 단계를 64초로 바꾸려 한다(약 6.7%). 맞는 것은?",
       "opts": [
-       "PASS",
-       "FAIL",
-       "waived"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "리포트 항목 상태가 'waived'로 표시되어 있다면 그 뜻은?",
-      "opts": [
-       "검토 후 예외 승인되어 무시됨",
-       "즉시 수정해야 하는 심각한 오류",
-       "측정에 실패한 항목"
+       "허용 범위 안이라 이 예외가 적용된다",
+       "10% 를 넘으므로 안 된다",
+       "provided that 은 권장이라 상관없다"
       ],
       "ans": 0
      }
@@ -6041,222 +6036,486 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (3) 층·표 항목",
-    "intro": "규칙 표의 열과 층 이름을 읽는 용어입니다.",
+    "title": "핵심 용어 (2) — 레시피 표",
+    "intro": "레시피 화면의 칸 이름과 그 칸에 들어가는 말입니다.",
     "items": [
      {
-      "en": "layer",
-      "ko": "층",
-      "d": "규칙이 적용되는 마스크 층",
-      "ex": "Select the METAL1 layer to view its width rules."
+      "en": "step",
+      "ko": "단계",
+      "d": "레시피 표의 한 줄 — STAB · BT · ME · OE · PUMP",
+      "ex": "Step 3 is the main etch, and it ends on the endpoint signal."
      },
      {
-      "en": "rule value",
-      "ko": "규칙 값",
-      "d": "표에 명시된 기준 수치",
-      "ex": "The rule value for this spacing is 0.22 um."
+      "en": "setpoint",
+      "ko": "설정값",
+      "d": "장비가 맞추려는 목표 값(SP)",
+      "ex": "The pressure setpoint for the main etch is 10 mTorr."
      },
      {
-      "en": "description",
-      "ko": "설명",
-      "d": "규칙을 풀어 쓴 영어 문장",
-      "ex": "Read the description column to know what the rule checks."
+      "en": "endpoint",
+      "ko": "끝점",
+      "d": "막이 다 깎여 빛 신호가 바뀌는 순간",
+      "ex": "The endpoint was detected at 42 seconds into the main etch."
      },
      {
-      "en": "active area",
-      "ko": "활성 영역",
-      "d": "트랜지스터가 형성되는 영역",
-      "ex": "The gate poly must extend beyond the active area."
+      "en": "over-etch",
+      "ko": "추가 식각",
+      "d": "끝점 뒤 남은 곳을 마저 깎는 단계",
+      "ex": "The over-etch time is set to 30% of the main etch time."
      },
      {
-      "en": "via",
-      "ko": "비아",
-      "d": "금속 층간을 잇는 연결 구멍",
-      "ex": "Each via must be enclosed by metal on all sides."
+      "en": "tolerance",
+      "ko": "허용 범위",
+      "d": "설정값에서 벗어나도 되는 폭",
+      "ex": "The pressure tolerance is ±5% of the setpoint."
      },
      {
-      "en": "contact",
-      "ko": "콘택",
-      "d": "실리콘과 금속을 잇는 하부 연결",
-      "ex": "The contact size must not be smaller than the minimum."
+      "en": "abort",
+      "ko": "중단하다",
+      "d": "그 단계·공정을 즉시 멈추는 것",
+      "ex": "The step aborts if the endpoint is not detected within 60 seconds."
      }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 레시피 표 ETCH-POLY-01",
+    "doc": {
+     "name": "RECIPE SHEET — ETCH-POLY-01",
+     "no": "RCP-0117",
+     "rev": "C"
+    },
+    "heading": "Poly gate etch — step table (교재 예시)",
+    "cols": [
+     "STEP",
+     "END",
+     "TIME (s)",
+     "PRESS (mTorr)",
+     "SRC / BIAS (W)",
+     "GAS (sccm)"
+    ],
+    "rows": [
+     [
+      "1 STAB",
+      "TIME",
+      "15",
+      "10",
+      "0 / 0",
+      "HBr 150, Cl2 50"
+     ],
+     [
+      "2 BT",
+      "TIME",
+      "8",
+      "5",
+      "500 / 150",
+      "CF4 80"
+     ],
+     [
+      "3 ME",
+      "EPD",
+      "MAX 60",
+      "10",
+      "600 / 120",
+      "HBr 150, Cl2 50, O2 5"
+     ],
+     [
+      "4 OE",
+      "TIME",
+      "30% of ME",
+      "30",
+      "400 / 80",
+      "HBr 200, O2 5"
+     ],
+     [
+      "5 PUMP",
+      "TIME",
+      "10",
+      "base",
+      "0 / 0",
+      "—"
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Tolerance: pressure within ±5% of the setpoint, gas flow within ±2 sccm, RF power no more than 3% deviation. Endpoint shall be detected between 30 and 60 s."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 레시피 표 읽기",
+    "intro": "위 레시피 표 ETCH-POLY-01 을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "3단계(ME)의 END 칸은 'EPD', TIME 칸은 'MAX 60'. 뜻은?",
+      "opts": [
+       "60초 동안 무조건 식각한다",
+       "끝점이 나오면 끝나고, 60초 안에 안 나오면 멈춘다",
+       "끝점이 나온 뒤 60초 더 식각한다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "끝점이 40 s 에 나왔다. 'Over etch: 30% of ME' 이면 4단계 시간은?",
+      "opts": [
+       "12 s",
+       "30 s",
+       "18 s"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "ME 압력 PV 가 10.6 mTorr. 'pressure within ±5% of the setpoint' (SP 10) 로 판단하면?",
+      "opts": [
+       "범위 안 — 9.5 ~ 10.5 에 들어간다",
+       "정확히 경계라 합격이다",
+       "범위 밖 — 10.5 를 넘었다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 경계 표현",
+    "intro": "규격 문장의 숫자 앞에 붙는 말입니다. 경계값이 포함되는지 함께 익히세요.",
+    "items": [
+     {
+      "en": "not to exceed",
+      "ko": "~을 넘지 않게 (≤)",
+      "d": "경계값은 합격",
+      "ex": "Reflected power is not to exceed 20 W during the main etch."
+     },
+     {
+      "en": "below / less than",
+      "ko": "~보다 작게 (<)",
+      "d": "경계값은 불합격",
+      "ex": "Base pressure must be below 1.0E-5 Torr before the run starts."
+     },
+     {
+      "en": "at least",
+      "ko": "적어도 (≥)",
+      "d": "경계값은 합격",
+      "ex": "Purge the chamber for at least 5 minutes after the wet clean."
+     },
+     {
+      "en": "within ±",
+      "ko": "± 범위 안",
+      "d": "설정값 양쪽으로 같은 폭, 양 끝 포함이 보통",
+      "ex": "Gas flow must stay within ±2 sccm of the setpoint."
+     },
+     {
+      "en": "between … and …",
+      "ko": "~와 ~ 사이",
+      "d": "보통 양 끝 포함 — 애매하면 inclusive 를 적는다",
+      "ex": "The endpoint should be detected between 30 and 60 seconds."
+     },
+     {
+      "en": "inclusive / exclusive",
+      "ko": "포함 / 제외",
+      "d": "경계값을 넣는지 빼는지 밝히는 말",
+      "ex": "Accept values from 48 to 52 sccm, inclusive."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 변경 요청 메일 (ECR)",
+    "from": "Jisu Park <jisu.park@fab.example>",
+    "to": "Process Engineering <pe-etch@fab.example>",
+    "subject": "ECR-0412: ETCH-POLY-01 main etch pressure 10 → 12 mTorr",
+    "lines": [
+     "Hello team,",
+     "I would like to request a change to ETCH-POLY-01 Rev C.",
+     "Problem: The edge etch depth has been [below] the lower limit on 4 of the last 20 lots.",
+     "Proposed change: Increase the main etch pressure from 10 to 12 mTorr.",
+     "Qualification plan: Run 2 qual wafers. The change will be released [only if] both wafers pass.",
+     "If either wafer fails, we will [roll back] to Rev C and keep the lot on hold.",
+     "Please let me know if you need the endpoint traces."
+    ],
+    "sign": "Best regards, Jisu Park (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 경계와 조건",
+    "intro": "경계값에 걸린 값과 조건 문장을 판단하세요.",
+    "questions": [
+     {
+      "prompt": "'Reflected power is not to exceed 20 W.' 측정값이 정확히 20 W. 판정은?",
+      "opts": [
+       "합격 — 20 W 까지 허용",
+       "불합격 — 20 W 보다 작아야 한다",
+       "다시 측정해야만 알 수 있다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "'Base pressure must be below 1.0E-5 Torr.' 측정값이 1.0E-5 Torr. 판정은?",
+      "opts": [
+       "합격 — 경계와 같다",
+       "판정할 수 없다",
+       "불합격 — below 는 경계를 포함하지 않는다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "ECR 메일: 'The change will be released only if both wafers pass.' 한 장만 합격했다. 다음 행동은?",
+      "opts": [
+       "합격한 한 장 기준으로 적용한다",
+       "적용하지 않고, 메일대로 Rev C 로 되돌리고 lot 을 멈춘다",
+       "세 번째 웨이퍼를 돌려 둘이 합격하면 적용한다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 변경 관리",
+    "intro": "변경 요청부터 양산 적용까지 각 단계의 말입니다.",
+    "items": [
+     {
+      "en": "revision",
+      "ko": "판(판 번호)",
+      "d": "Rev C → Rev D. 옛 판은 남긴다",
+      "ex": "Rev D replaces Rev C, but Rev C is archived for roll back."
+     },
+     {
+      "en": "approve / reject",
+      "ko": "승인하다 / 반려하다",
+      "d": "검토 결과",
+      "ex": "The change review board approved ECR-0412 with one condition."
+     },
+     {
+      "en": "qualification (qual)",
+      "ko": "적격 시험",
+      "d": "새 판으로 시험 웨이퍼를 돌려 확인",
+      "ex": "Two qual wafers are required before the new revision is released."
+     },
+     {
+      "en": "release",
+      "ko": "양산에 적용하다",
+      "d": "합격한 새 판을 장비에 걸어 쓰기 시작",
+      "ex": "Rev D was released to production on November 10."
+     },
+     {
+      "en": "roll back",
+      "ko": "되돌리다",
+      "d": "옛 판으로 돌아가기",
+      "ex": "If the qual fails, roll back to the previous revision."
+     },
+     {
+      "en": "hold",
+      "ko": "보류하다",
+      "d": "판단이 끝날 때까지 lot 을 멈춰 둠",
+      "ex": "Put the lot on hold until the engineer reviews the qual data."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 변경 적용 절차",
+    "doc": {
+     "name": "Recipe Change Procedure",
+     "no": "SOP-PE-031",
+     "sec": "5",
+     "rev": "B",
+     "page": "5-2"
+    },
+    "heading": "5  Releasing an Approved Recipe Change",
+    "steps": [
+     "Confirm that the ECN status is APPROVED before editing the recipe.",
+     {
+      "t": "Save the new recipe as a new revision. Do not overwrite the current revision.",
+      "note": {
+       "kind": "note",
+       "en": "The previous revision is kept for roll back."
+      }
+     },
+     "Run two qual wafers with the new revision and measure the etch depth.",
+     {
+      "t": "Release the new revision only if both qual wafers are within the specification.",
+      "note": {
+       "kind": "caution",
+       "en": "If either wafer fails, roll back and hold the lot."
+      }
+     },
+     "Record the ECN number and the effective date in the recipe history."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Production recipes shall not be edited unless an ECN has been approved."
+    },
+    "gloss": [
+     [
+      "overwrite",
+      "덮어쓰다"
+     ],
+     [
+      "specification",
+      "규격"
+     ],
+     [
+      "effective date",
+      "적용 시작일"
+     ],
+     [
+      "recipe history",
+      "레시피 이력"
+     ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "표 항목과 판정 문장을 해석하세요.",
+    "title": "확인 퀴즈 (4) — 절차 읽기",
+    "intro": "위 변경 적용 절차 SOP-PE-031 을 근거로 답하세요.",
     "questions": [
      {
-      "prompt": "규칙 코드 'M1.S.1'에서 가운데 'S'가 가장 뜻할 가능성이 높은 것은?",
+      "prompt": "'Do not overwrite the current revision.' 를 지키지 않으면 무엇을 잃는가?",
       "opts": [
-       "Size",
-       "Spacing",
-       "Symbol"
+       "장비 알람 기록",
+       "문제가 생겼을 때 되돌아갈 옛 판",
+       "ECN 번호"
       ],
       "ans": 1
      },
      {
-      "prompt": "'The gate poly must extend beyond the active area.'가 요구하는 규칙 유형은?",
+      "prompt": "ECN 상태가 'PENDING' 이다. 지금 레시피를 고쳐도 되는가?",
       "opts": [
-       "extension (연장)",
-       "spacing (간격)",
-       "overlap (겹침)"
+       "안 된다 — APPROVED 를 확인한 뒤에만",
+       "고쳐 두고 승인 뒤에 적용하면 된다",
+       "PENDING 은 승인과 같은 뜻이다"
       ],
       "ans": 0
      },
      {
-      "prompt": "판정 문장 'measured 0.25 um ≥ min 0.22 um'의 결과는?",
+      "prompt": "두 장 모두 규격 안. 마지막으로 남은 일은?",
       "opts": [
-       "PASS",
-       "FAIL",
-       "warning"
+       "아무 기록 없이 적용한다",
+       "옛 판을 지운다",
+       "ECN 번호와 적용 시작일을 레시피 이력에 적는다"
       ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (4) 리포트·상태",
-    "intro": "DRC 리포트 화면에서 상태를 읽는 용어입니다.",
-    "items": [
-     {
-      "en": "DRC clean",
-      "ko": "위반 없음",
-      "d": "모든 규칙을 통과한 깨끗한 상태",
-      "ex": "The layout is DRC clean and ready for release."
-     },
-     {
-      "en": "error",
-      "ko": "오류(필수 수정)",
-      "d": "반드시 고쳐야 하는 심각한 위반",
-      "ex": "There are 3 errors that must be fixed before tape-out."
-     },
-     {
-      "en": "warning",
-      "ko": "경고(검토 요망)",
-      "d": "수정 여부를 검토해야 하는 항목",
-      "ex": "This warning may be waived after review."
-     },
-     {
-      "en": "pass / fail",
-      "ko": "통과 / 실패",
-      "d": "규칙 만족 여부의 최종 판정",
-      "ex": "Mark each rule as pass or fail in the report."
-     },
-     {
-      "en": "waiver",
-      "ko": "예외 승인",
-      "d": "위반이지만 검토 후 허용된 상태",
-      "ex": "A waiver was approved for this density violation."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "sticker",
-      "level": "warn",
-      "en": "DRC CLEAN REQUIRED BEFORE TAPEOUT",
-      "ko": "테이프아웃 전 DRC 통과 필수"
+      "ans": 2
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DESIGN RULE CHECK - OPERATING PROCEDURE",
+    "mtitle": "RECIPE CHANGE CONTROL POLICY (교재 예시)",
     "paras": [
-     "1. Load the layout and select the technology rule deck before running the check.",
-     "1. 검사를 실행하기 전에 레이아웃을 불러오고 공정 룰 덱(rule deck)을 선택합니다.",
-     "2. Verify that all measured values are displayed in microns (um).",
-     "2. 모든 측정값이 마이크론(um) 단위로 표시되는지 확인합니다. (단위 혼동 방지)",
-     "3. Run DRC and review each violation in the report by layer and rule name.",
-     "3. DRC를 실행하고, 리포트의 각 위반을 layer와 rule name 기준으로 검토합니다.",
-     "NOTE: A rule marked 'min' passes only when the measured value is greater than or equal to the rule value.",
-     "참고: 'min' 규칙은 측정값이 규칙 값 이상일 때만 통과합니다. (부등호 방향 주의)",
-     "WARNING: Do not release a layout that still contains errors. Warnings must be reviewed before waiver.",
-     "경고: error가 남아 있는 레이아웃은 배포(release)하지 마십시오. warning은 예외 승인 전에 반드시 검토합니다."
+     "R1. A production recipe shall not be edited unless an ECN has been approved.",
+     "해설: 승인된 ECN 이 없으면 양산 레시피를 고칠 수 없다. (unless = if not)",
+     "R2. An approved change may be released only if at least two qual wafers pass.",
+     "해설: 승인된 변경도 시험 웨이퍼가 두 장 이상 합격해야만 적용할 수 있다. (only if = 필요조건, at least = 2 포함)",
+     "R3. If any qual wafer fails, the change shall be rolled back to the previous revision.",
+     "해설: 시험 웨이퍼가 한 장이라도 불합격이면 옛 판으로 되돌린다. (any = 한 장이라도)",
+     "R4. A step time change need not be re-qualified, provided that the change is within ±10% of the original value.",
+     "해설: 단계 시간 변경은 원래 값의 ±10% 안이면 다시 시험하지 않아도 된다. 단, R1(ECN 승인)은 그대로 적용된다."
     ]
    },
    {
     "type": "manual",
-    "mtitle": "WORK INSTRUCTION - JUDGING A RULE TABLE",
+    "mtitle": "ENDPOINT AND OVER-ETCH SETTINGS",
     "paras": [
-     "Step 1: Identify the layer and rule type (width, spacing, enclosure) from the table.",
-     "1단계: 표에서 layer와 규칙 유형(폭/간격/감쌈)을 먼저 파악합니다.",
-     "Step 2: Read the symbol column to confirm the direction ( >= for minimum, <= for maximum ).",
-     "2단계: symbol 열을 읽어 판단 방향을 확인합니다 (최소는 >=, 최대는 <=).",
-     "Step 3: Compare the measured value against the rule value and record PASS or FAIL.",
-     "3단계: 측정값을 규칙 값과 비교하여 PASS 또는 FAIL을 기록합니다.",
-     "CAUTION: 0.020 um and 0.20 um differ by ten times. Always check the decimal point.",
-     "주의: 0.020 um과 0.20 um은 10배 차이입니다. 소수점 자리를 항상 확인하십시오."
+     "The main etch ends when the endpoint is detected. If no endpoint is detected within 60 s, the step aborts.",
+     "해설: 본 식각은 끝점이 잡히면 끝난다. 60초 안에 끝점이 없으면 단계가 중단된다.",
+     "Over etch time = 30% of the actual main etch time, not of the maximum time.",
+     "해설: 추가 식각 시간은 최대 시간(60 s)이 아니라 실제 본 식각 시간의 30% 다. 끝점이 42 s 면 12.6 s.",
+     "An endpoint detected earlier than 30 s shall be treated as abnormal.",
+     "해설: 30초보다 일찍 잡힌 끝점은 비정상으로 본다 — 막이 얇거나 다른 웨이퍼가 들어왔을 수 있다.",
+     "In case of an endpoint timeout, hold the lot and notify the process engineer.",
+     "해설: 끝점 시간 초과가 나면 lot 을 멈추고 공정 엔지니어에게 알린다."
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "masks",
-    "intro": "아래 시뮬레이터에서 각 마스크 층(POLY, ACTIVE, METAL1, VIA1 등)을 켜고 끄며, 어떤 영어 층 이름이 어떤 도형에 해당하는지 눈으로 확인해 보세요. 층을 선택하면 그 층에 적용되는 규칙 항목이 강조됩니다. 층 이름의 영어 표기와 약어(M1, V1 등)를 함께 읽어 익히는 것이 목표입니다."
+    "which": "recipe",
+    "mode": "limits",
+    "intro": "먼저 **경계 판정** 실습입니다. 규격 문장과 측정값이 나옵니다. 숫자보다 앞에 붙은 **경계어**(not to exceed · below · at least · within ± · between)를 먼저 읽고, 측정값이 **합격(PASS)** 인지 **불합격(FAIL)** 인지 고르세요. 경계값에 딱 걸린 값이 섞여 있습니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "intro": "이번에는 실제 도형에 DRC를 돌려 봅니다. 도형의 width와 spacing 값을 바꿔 가며, 화면의 Design Rule Table 값과 비교해 PASS/FAIL이 어떻게 바뀌는지 직접 판단해 보세요. 위반이 발생하면 어떤 영어 규칙 이름(min width, min spacing 등)으로 표시되는지 확인하는 것이 핵심입니다."
+    "which": "recipe",
+    "mode": "run",
+    "intro": "다음은 **레시피 실행 기록 판정** 실습입니다. ETCH-POLY-01 의 본 식각(ME) 실제값과 끝점 시각, 추가 식각(OE) 시간이 나옵니다. 표 아래 **허용 범위** 문장으로 각 값을 판정하고, OE 시간이 **실제 ME 시간의 30%** 와 맞는지도 확인하세요."
    },
    {
     "type": "sim",
-    "which": "report",
-    "mode": "drcReport",
-    "intro": "마지막으로 DRC 리포트 화면을 읽습니다. error / warning / waived 상태와 각 위반의 layer, rule name, measured value를 표에서 찾아, 각 항목이 실제로 수정 대상인지 예외인지 영어 상태 라벨을 보고 판단해 보세요. 'DRC clean'이 되려면 무엇을 고쳐야 하는지 스스로 결론 내리는 연습입니다."
+    "which": "recipe",
+    "mode": "change",
+    "intro": "마지막은 **변경 관리 결정** 실습입니다. 변경 규정 R1~R4 와 상황(ECN 상태 · 시험 웨이퍼 결과 · 바꾸려는 값)을 읽고, 지금 할 일을 고르세요: **지금 고칠 수 없음 · 보류(시험 더 필요) · 적용(release) · 되돌림(roll back)**. 근거가 되는 규정 번호가 함께 나옵니다."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "외국인 엔지니어가 규칙 표를 함께 보며 판단을 묻는다",
+      "sit": "해외 엔지니어가 레시피를 바로 고치자고 한다",
       "q": {
-       "en": "This Metal1 line is measured at 0.18 um. The rule says minimum width 0.20 um. Does it pass?",
-       "ko": "이 Metal1 라인이 0.18um으로 측정됐어요. 규칙은 최소 폭 0.20um이고요. 통과인가요?"
+       "en": "Can you just bump the main etch pressure to 12 mTorr tonight?",
+       "ko": "오늘 밤 메인 에치 압력을 12 mTorr 로 바로 올려 줄 수 있어요?"
       },
       "a": {
-       "en": "No, it fails. 0.18 is less than the minimum of 0.20, so it is a width violation.",
-       "ko": "아니요, 실패입니다. 0.18은 최소값 0.20보다 작으므로 폭 위반입니다."
+       "en": "I can't edit it tonight. The recipe is locked unless an ECN is approved. I'll submit an ECR now and attach the edge etch data.",
+       "ko": "오늘 밤엔 못 고칩니다. ECN 승인 없이는 레시피가 잠겨 있어요. 지금 ECR 을 올리고 가장자리 식각 데이터를 붙이겠습니다."
       }
      },
      {
-      "sit": "리포트에 waived 항목이 보인다",
+      "sit": "시험 웨이퍼 결과를 보고한다",
       "q": {
-       "en": "There is a spacing item here marked 'waived'. Do we need to fix it now?",
-       "ko": "여기 'waived'로 표시된 간격 항목이 있어요. 지금 수정해야 하나요?"
+       "en": "How did the qual wafers look?",
+       "ko": "시험 웨이퍼 결과는 어땠어요?"
       },
       "a": {
-       "en": "No, it was already reviewed and approved as a waiver, so we can leave it as is.",
-       "ko": "아니요, 이미 검토 후 예외 승인된 항목이라 그대로 두어도 됩니다."
+       "en": "Both qual wafers passed. Edge etch depth is within spec, and the endpoint came at 44 seconds. I'll release Rev D and record the ECN number.",
+       "ko": "두 장 모두 합격입니다. 가장자리 식각 깊이는 규격 안이고, 끝점은 44초에 나왔습니다. Rev D 를 적용하고 ECN 번호를 기록하겠습니다."
       }
      },
      {
-      "sit": "배포 전 최종 확인",
+      "sit": "끝점 시간 초과로 공정이 멈췄다",
       "q": {
-       "en": "Can we release this layout? Is it DRC clean?",
-       "ko": "이 레이아웃 배포해도 될까요? DRC clean 상태인가요?"
+       "en": "Why did the run abort at step 3?",
+       "ko": "3단계에서 왜 공정이 멈췄죠?"
       },
       "a": {
-       "en": "Not yet. There are still two errors on the VIA1 enclosure rule. Let me fix them first.",
-       "ko": "아직요. VIA1 enclosure 규칙에 error가 두 개 남아 있어요. 먼저 그것부터 고치겠습니다."
+       "en": "The endpoint was not detected within 60 seconds, so the step aborted. I put the lot on hold and I'm checking the OES trace now.",
+       "ko": "60초 안에 끝점이 안 잡혀서 단계가 중단됐습니다. lot 을 보류해 두고 지금 OES 신호를 확인하고 있습니다."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리: 규칙을 읽고 판단하는 힘",
+    "title": "정리 — 조건을 나누고, 경계를 읽어라",
     "points": [
-     "**Design Rule**은 제조 가능성을 지키는 최소 안전선이며, **layer / rule / value / description** 열로 된 표로 제공된다.",
-     "핵심 규칙 5종: **min width**, **min spacing**, **overlap**, **enclosure**, **extension** — 각각 min/max 방향을 반드시 확인한다.",
-     "판단 절차: layer 확인 → rule type 확인 → **symbol(≥/≤)** 방향 확인 → **measured value**와 **rule value** 비교 → **PASS/FAIL** 결정.",
-     "단위 함정 주의: **1 um = 1000 nm**, 그리고 소수점 자리(0.020 vs 0.20)를 항상 확인한다.",
-     "리포트는 **error / warning / waived** 상태로 심각도를 구분한다. **DRC clean**이 되어야 배포(release)할 수 있다."
+     "레시피는 **locked**. 바꾸는 길은 **ECR → ECN(approved) → qual → release**, 문제가 나면 **roll back**. 옛 판(**revision**)은 지우지 않는다.",
+     "레시피 표: **STEP · END(TIME / EPD) · TIME(MAX) · PRESS · RF · GAS**. OE 시간은 **실제 ME 시간**의 비율이다.",
+     "경계어: **not to exceed / no more than** = ≤ · **below / less than** = < · **at least** = ≥ · **within ±** = 양 끝 포함이 보통. 경계값에서 판단이 갈린다.",
+     "조건어: **unless** = if not · **only if** = 반드시 필요한 조건 · **provided that** = 예외를 허락하는 조건 · **otherwise** · **until**.",
+     "읽는 순서: **연결어 찾기 → 조건과 결과 나누기 → 지금 사실이 조건을 만족하는지**."
     ],
-    "done": "이제 여러분은 영어 **Design Rule Table**을 읽고 **PASS/FAIL**을 스스로 판단할 수 있습니다. **0.02um의 실수가 rework를 부른다** — 값이 아니라 '판단'을 읽어내는 기술자가 되었습니다."
+    "done": "이제 여러분은 레시피 화면과 변경 규정을 읽고 **\"지금 바꿔도 되는가, 이 값은 경계 안인가\"** 를 영어 문장 그대로 판단할 수 있습니다. **Split the condition, read the boundary.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "READ THE RULE",
+      "items": [
+       [
+        "Find the [connector].",
+        "연결어 찾기"
+       ],
+       [
+        "Split [condition] and [result].",
+        "조건 / 결과 나누기"
+       ],
+       [
+        "Check the [boundary].",
+        "경계 확인"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },

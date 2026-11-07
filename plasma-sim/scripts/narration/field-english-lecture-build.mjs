@@ -65,6 +65,8 @@ let manifest = {};
 try { manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8')); } catch (e) { /* 처음 */ }
 
 let made = 0, reused = 0, chars = 0;
+const missing = []; // 음성을 못 만든 슬라이드 — 매니페스트에 싣지 않는다(화면에 '강의 듣기' 가 안 붙는다)
+let stopTts = null;  // 크레딧 소진처럼 다시 보내도 안 되는 실패 — 남은 슬라이드는 보내지 않고 이미 있는 것만 싣는다
 for (const f of files) {
   const J = JSON.parse(fs.readFileSync(path.join(HERE, f), 'utf8'));
   const ch = CONTENT_CHAPTERS.find((c) => c.id === J.chapter);
@@ -79,9 +81,16 @@ for (const f of files) {
     if (LIST) { console.log(`  ${J.chapter}#${sl.i} ${h} ${spoken.length}자 · 펜 ${cues.length}`); continue; }
     let align;
     if (!FORCE && fs.existsSync(mp3) && fs.existsSync(alignFile)) { align = JSON.parse(fs.readFileSync(alignFile, 'utf8')); reused += 1; }
+    else if (stopTts) { missing.push(`${J.chapter}#${sl.i}`); continue; }
     else {
       process.stdout.write(`  ${J.chapter}#${sl.i} ${h} (${spoken.length}자) … `);
-      const j = await ttsRetry(spoken, J.voice, J.model);
+      let j;
+      try { j = await ttsRetry(spoken, J.voice, J.model); } catch (e) {
+        console.log(`실패: ${e.message.split('\n')[0].slice(0, 200)}`);
+        missing.push(`${J.chapter}#${sl.i}`);
+        if (/quota_exceeded|TTS 401|TTS 403/.test(e.message)) stopTts = e.message;
+        continue;
+      }
       fs.writeFileSync(mp3, Buffer.from(j.audio_base64, 'base64'));
       const a = j.alignment;
       if (a.characters.join('') !== spoken) throw new Error(`#${sl.i}: 정렬 글자가 보낸 글과 다릅니다 — 위치 대응을 믿을 수 없다`);
@@ -101,4 +110,9 @@ if (!LIST) {
   const used = new Set(Object.values(manifest).flat().map((e) => e.h));
   const stale = fs.readdirSync(OUT_DIR).filter((x) => x.endsWith('.mp3') && !used.has(x.slice(0, -4)));
   console.log(`\n음성 생성 ${made} · 재사용 ${reused} · 이번에 쓴 글자 ${chars}` + (stale.length ? ` · 안 쓰는 옛 파일 ${stale.length}개: ${stale.join(', ')}` : ''));
+  if (missing.length) {
+    console.log(`음성 없음 ${missing.length}장(매니페스트에 싣지 않음 — 화면에 '강의 듣기' 가 안 붙는다): ${missing.join(' ')}`);
+    if (stopTts) console.log('  원인: 다시 보내도 안 되는 실패(크레딧·권한) — 해결 뒤 같은 명령을 다시 돌리면 빠진 것만 만든다.');
+    process.exit(1);
+  }
 }
