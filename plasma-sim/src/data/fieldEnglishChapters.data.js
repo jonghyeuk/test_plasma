@@ -6521,272 +6521,531 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w11",
-  "title": "패턴 배치",
+  "title": "다른 장비 계열 읽기 — 증착 · 노광 · CMP · 이온주입",
   "slides": [
    {
     "type": "story",
-    "icon": "📐",
-    "title": "도면대로 놓였는가?",
-    "text": "신입 기술자 민수는 포토 공정 앞에서 영어로 된 **layout** 배치 지시서를 받는다. 화면에는 여러 색의 **layer**가 겹쳐 있고, 지시서에는 'Place the metal pattern on **layer** M1, keep **minimum spacing** 0.5 μm'라고 적혀 있다. 민수의 일은 새 패턴을 그리는 것이 아니라, 이미 배치된 패턴이 **line width**와 **spacing** 규칙에 맞는지 **읽고 판단**하는 것이다. 한 곳이라도 **alignment**가 틀어지거나 두 패턴이 **overlap**되면, 웨이퍼 수백 장이 불량이 된다. 오늘 민수가 배워야 할 것은 영어 배치 지시문을 정확히 해석하고, 화면의 **grid** 위 수치가 규칙을 위반하는지 눈으로 잡아내는 능력이다.",
-    "art": "placement"
-   },
-   {
-    "type": "scene",
-    "title": "오늘의 현장 · 상황 설정",
-    "where": "레이아웃 에디터 화면 앞.",
-    "tool": "셀 배치 도면(Rev C)과 그리드.",
-    "situation": "도면대로 놓였는지 확인한다. off-grid 셀이 보인다.",
-    "meet": [
-     "지시 PER THE DRAWING",
-     "배치 상태 placed",
-     "off-grid",
-     "도면 대조"
-    ],
-    "goal": "도면과 실제 배치를 대조해 \"맞다 / 틀리다\"를 판단하기.",
-    "bg": "w11"
-   },
-   {
-    "type": "read",
-    "title": "패턴 배치란 무엇인가",
-    "intro": "패턴 배치(layout placement)는 각 층의 도형을 정해진 위치·크기·간격 규칙에 맞게 놓는 작업이다.",
-    "paras": [
-     "반도체 소자는 여러 층(**layer**)의 패턴이 위아래로 쌓여 만들어진다. 각 **layer**는 실제 공정에서 하나의 **mask**(포토 마스크)에 대응하며, 화면에서는 서로 다른 색으로 표시된다.",
-     "**Layout**은 이 층들을 위에서 내려다본 평면도이다. 현장 기술자는 보통 이 **layout**을 직접 그리기보다, 배치가 규칙에 맞는지 **읽고 확인(review/verify)**하는 역할을 맡는다.",
-     "배치의 핵심 판단 기준은 네 가지다: 선의 굵기(**line width**), 도형 사이 간격(**spacing**), 층 정렬(**alignment**), 그리고 겹침(**overlap**) 여부.",
-     "지시서에는 항상 수치 규칙이 붙는다. 예: 'Keep **line width** ≥ 0.25 μm'. 이 문장은 '선 굵기를 0.25 마이크로미터 이상으로 유지하라'는 뜻이며, 이보다 얇으면 위반이다.",
-     "HMI/GUI 화면 하단에는 보통 **coordinate**(좌표)와 **grid** 값이 표시된다. 이 숫자를 읽어야 패턴이 규칙 안에 있는지 즉시 판단할 수 있다."
-    ],
+    "icon": "🔄",
+    "title": "순환 근무 첫날, 처음 보는 화면",
+    "text": "석 달 동안 식각 장비만 본 민지가 이번 주부터 순환 근무(**rotation**)로 CMP 구역에 배치됐다. 화면을 여니 처음 보는 말이 가득하다. **PLATEN 2 DOWN FORCE 3.0 psi**, **SLURRY FLOW 200 mL/min**, 그리고 노란 줄 하나 — **PAD CONDITIONER SWEEP RATE LOW**. 민지가 중얼거린다. \"패드… 컨디셔너… 스윕… 비율이 낮다? 뭐가 낮다는 거지?\" 옆의 선배가 웃으며 말한다. \"명사가 줄줄이 붙으면 **맨 오른쪽**부터 읽어. rate 가 주인공이야. 무엇의 rate? sweep 의. 무엇의 sweep? pad conditioner 의.\" 민지가 다시 읽는다. \"패드 컨디셔너의, 왕복의, 속도가 낮다.\" 선배가 고개를 끄덕인다. \"식각에서 배운 거 그대로야. **SP / PV**, **ALARM / WARNING**, 단위. 장비가 바뀌면 단어만 바뀌고, 읽는 법은 안 바뀌어.\" 오늘은 증착 · 노광 · CMP · 이온주입 장비를 한 바퀴 돈다.",
     "figs": [
      {
       "kind": "hmi",
-      "tool": "LAYOUT EDITOR",
+      "tool": "CMP POLISHER · PLATEN 2",
       "status": "RUN",
       "state": "run",
       "rows": [
        [
-        "Cells placed",
-        "128"
+        "DOWN FORCE",
+        "3.0 psi"
        ],
        [
-        "Off-grid",
-        "2",
-        "high"
+        "SLURRY FLOW",
+        "200 mL/min"
+       ],
+       [
+        "PLATEN SPEED",
+        "93 rpm"
+       ]
+      ],
+      "banner": {
+       "en": "PAD CONDITIONER SWEEP RATE LOW",
+       "ko": "패드 컨디셔너 왕복 속도 낮음",
+       "level": "warn"
+      }
+     }
+    ]
+   },
+   {
+    "type": "scene",
+    "title": "오늘의 현장 · 상황 설정",
+    "where": "순환 근무 첫 주 — 증착(CVD · ALD · PVD), 노광(트랙 · 스캐너), CMP, 이온주입 구역을 하루씩 돈다.",
+    "tool": "장비마다 다른 HMI 화면, 장비 개요서(tool overview), 공정 조건 표.",
+    "situation": "처음 보는 단어와 단위가 쏟아진다. 하지만 화면의 뼈대와 문장 구조는 식각 장비와 같다.",
+    "meet": [
+     "명사 덩어리 pad conditioner sweep rate",
+     "수동태 is held by · is removed by",
+     "목적 is used to · in order to",
+     "단위 Å · psi · mJ/cm² · keV · E15"
+    ],
+    "goal": "처음 보는 장비 화면에서 \"무엇의 무엇인가\"와 \"단위가 무엇인가\"를 읽어 내기.",
+    "bg": "w11"
+   },
+   {
+    "type": "read",
+    "title": "처음 보는 장비 앞에서 — 뼈대는 같다",
+    "intro": "반도체 장비는 종류가 많지만 화면과 문서의 뼈대는 거의 같다. 낯선 장비를 만나면 먼저 이 뼈대를 찾는다.",
+    "paras": [
+     "**무엇이 들어오나** — 웨이퍼, 그리고 가스(gas) · 약액(chemical) · 슬러리(slurry) · 이온(ion) 중 하나 이상. 화면에는 보통 유량(**FLOW**)으로 나온다.",
+     "**어디서 처리하나** — 챔버(chamber), 코터 컵(coater cup), 플래튼(platen), 엔드 스테이션(end station). 이름은 달라도 \"웨이퍼가 처리되는 곳\"이다.",
+     "**무엇으로 조절하나** — 압력 · 온도 · 전력 · 회전 속도 · 누르는 힘 · 에너지. 화면은 1부에서 본 그대로 **SP / PV** 쌍으로 보여 준다.",
+     "**결과를 무엇으로 재나** — 두께(thickness), 제거 속도(removal rate), 선폭(CD), 정렬 오차(overlay), 주입량(dose). 장비마다 다른 이 숫자가 그 장비의 \"성적표\"다.",
+     "**상태어와 알람은 같다** — IDLE · RUN · ALARM · WARNING · INTERLOCK, 그리고 9강 · 10강의 규정문(shall · unless · not to exceed)도 그대로 나온다.",
+     "그래서 오늘 새로 배울 것은 두 가지뿐이다. **장비마다 다른 명사와 단위**, 그리고 그 명사들이 **줄줄이 붙었을 때 읽는 법**."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SAME SKELETON",
+      "items": [
+       [
+        "What comes [in]?",
+        "들어오는 것"
+       ],
+       [
+        "Where is it [processed]?",
+        "처리하는 곳"
+       ],
+       [
+        "What is [controlled]?",
+        "조절하는 값"
+       ],
+       [
+        "What is [measured]?",
+        "결과 측정"
        ]
       ]
-     },
-     {
-      "kind": "note",
-      "title": "WORK INSTRUCTION",
-      "en": "Place the cells [per the drawing], Rev C.",
-      "ko": "도면(Rev C)대로 셀 배치."
      }
     ]
    },
    {
     "type": "read",
-    "title": "선폭·간격·피치의 물리적 의미",
-    "intro": "line width, spacing, pitch는 소자 성능과 수율을 직접 결정하는 치수 규칙이다.",
+    "title": "명사 덩어리는 오른쪽부터 — compound noun",
+    "intro": "장비 화면의 영어는 자리가 좁아 명사를 줄줄이 붙인다. 이것을 compound noun(명사 덩어리)이라고 한다. 읽는 규칙은 하나다.",
     "paras": [
-     "**Line width**(선폭)는 도형 한 개의 굵기다. 너무 얇으면 식각·현상 중에 끊기고(**open**), 전기가 흐르지 못한다. 그래서 규칙은 항상 최소값을 정한다: **minimum line width**.",
-     "**Spacing**(간격)은 이웃한 두 패턴 사이의 빈 거리다. 너무 좁으면 두 배선이 붙어 합선(**short**)되므로, **minimum spacing** 규칙이 존재한다.",
-     "**Pitch**(피치)는 '선폭 + 간격'을 합한 반복 주기다. 화면 규칙에 'Pitch = 0.5 μm'라고 나오면, 한 선의 중심에서 다음 선의 중심까지 거리가 0.5 μm라는 뜻이다.",
-     "이 세 값 중 가장 작고 중요한 치수를 **critical dimension (CD)**라 부른다. 공정 관리에서 CD가 규격을 벗어나면 즉시 알람이 뜬다.",
-     "영어 지시문에서 '≥'는 '이상', '≤'는 '이하', 'min'은 최소, 'max'는 최대를 뜻한다. 예: 'Spacing shall be **no less than** 0.3 μm'는 '간격은 0.3 μm 미만이면 안 된다'는 규칙이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "정렬·겹침·오정렬을 판단하기",
-    "intro": "층과 층 사이의 정렬(alignment)과 겹침(overlap)은 배치 판단의 핵심이다.",
-    "paras": [
-     "**Alignment**(정렬)는 위층 패턴이 아래층 패턴에 정확히 맞춰졌는지를 뜻한다. 두 층의 위치 어긋남 정도를 **overlay error**(오버레이 오차) 또는 **misalignment**라고 한다.",
-     "정렬을 돕기 위해 웨이퍼에는 **alignment mark** 또는 **registration mark**라는 십자·박스 모양 기준점이 새겨진다. 장비는 이 마크를 보고 층을 맞춘다.",
-     "**Overlap**(겹침)은 두 도형이 서로 포개지는 것이다. 의도된 겹침(예: **contact**이 배선 위에 놓임)은 정상이지만, 규칙에 없는 겹침은 불량이다.",
-     "지시문 예: 'The via must **fully overlap** the underlying metal by at least 0.05 μm.' — 비아가 아래 금속을 최소 0.05 μm 감싸며 완전히 겹쳐야 한다는 뜻. 이 감싸는 여유를 **enclosure**라고 한다.",
-     "화면에서 위반이 발생하면 보통 빨간색 하이라이트와 함께 'Overlap violation' 또는 'Misalignment detected' 같은 영어 메시지가 뜬다. 이 문구를 읽고 즉시 원인을 파악해야 한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "그리드·스냅·좌표 읽기",
-    "intro": "모든 배치는 격자(grid) 위에서 이루어지며, 좌표를 읽는 것이 판단의 출발점이다.",
-    "paras": [
-     "**Grid**(격자)는 화면에 깔린 보이지 않는 눈금이다. 모든 패턴의 꼭짓점은 이 **grid** 위 점에 놓여야 하며, 이 최소 눈금 간격을 **grid resolution** 또는 **manufacturing grid**라 한다.",
-     "**Snap**은 도형을 가장 가까운 **grid** 점에 자동으로 붙이는 기능이다. 'Snap to grid' 옵션이 켜져 있으면 좌표가 항상 눈금값의 정수배가 된다.",
-     "화면 좌표는 보통 (X, Y)로 표시된다. 원점을 **origin**이라 하며, 'Set **origin** to (0,0)'는 기준점을 좌하단으로 잡으라는 뜻이다.",
-     "좌표를 읽으면 치수를 직접 계산할 수 있다. 두 선의 X좌표가 각각 1.0과 1.4라면 중심 간 거리는 0.4 μm이고, 규칙이 'pitch ≥ 0.5'라면 이는 위반이다.",
-     "GUI 상태바의 'X: 1.400  Y: 0.800  Grid: 0.005' 같은 표시는 '현재 커서 좌표와 격자 해상도'를 알려준다. 이 값을 규칙과 대조하는 것이 현장 판단의 기본이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "영어는 화면 어디에 나타나는가",
-    "intro": "배치 영어는 지시서뿐 아니라 HMI/GUI 곳곳에 짧은 문구로 등장한다.",
-    "paras": [
-     "메뉴·버튼: 'Move', 'Align', 'Distribute', 'Snap to Grid', 'Check Rules' — 배치 조작 명령들이다.",
-     "레이어 패널: 각 층 옆에 'M1', 'M2', 'VIA', 'POLY' 같은 층 이름과 표시/숨김(**visible/hidden**), 잠금(**lock**) 상태가 영어로 나온다.",
-     "규칙 결과창(**DRC report**): 위반 항목이 'Spacing < 0.3 μm', 'Width violation', 'Off-grid vertex' 처럼 짧은 영어로 나열된다.",
-     "경고 팝업: 'WARNING: Two patterns on the same layer overlap.' 같은 완전한 문장으로 뜨기도 한다. 대문자 WARNING/CAUTION은 즉시 확인이 필요한 신호다.",
-     "이 모든 영어는 '작성'이 아니라 '해석'의 대상이다. 짧은 명사구와 부등호를 빠르게 읽어 규칙 위반 여부를 판단하는 훈련이 이 수업의 목표다."
+     "**맨 오른쪽 명사가 머리(head)** — 그 말이 \"무엇인가\"를 정한다. 나머지는 모두 그것을 꾸민다.",
+     "**오른쪽부터 \"~의\"로 읽는다** — chamber wall temperature setpoint → 설정값(setpoint) ← 온도의 ← 챔버 벽의. 즉 \"챔버 벽 온도의 **설정값**\". 온도가 아니라 설정값을 말하는 줄이다.",
+     "**of 로 풀어 보면 확실하다** — the setpoint **of** the temperature **of** the chamber wall. 영어 설명서에서는 이렇게 풀어 쓴 문장도 자주 나온다.",
+     "**두 단어가 한 덩어리인 것도 있다** — pad conditioner(패드 컨디셔너), beam current(빔 전류), wafer edge(웨이퍼 가장자리)는 붙어서 하나의 이름이다. 덩어리끼리 오른쪽부터 읽는다.",
+     "**머리를 틀리면 판단이 틀린다** — SLURRY FLOW ALARM LIMIT 은 \"슬러리 유량 알람의 **한계값**\"이다. 알람이 울렸다는 말이 아니라, 알람이 울리는 기준값을 말하는 칸이다."
     ],
     "figs": [
      {
-      "kind": "sticker",
-      "level": "caution",
-      "en": "CHECK PLACEMENT vs DRAWING",
-      "ko": "도면 대비 배치 확인"
+      "kind": "note",
+      "title": "READ RIGHT TO LEFT",
+      "en": "chamber wall temperature [setpoint] = the setpoint of the temperature of the chamber wall",
+      "ko": "맨 오른쪽(setpoint)이 주인공 — 오른쪽부터 \"~의\"로 읽는다."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "증착 장비 — CVD · ALD · PVD",
+    "intro": "막을 쌓는 장비다. 무엇으로 쌓는지에 따라 화면의 단어가 다르다.",
+    "paras": [
+     "**CVD(화학 기상 증착)** — 가스가 반응해 막이 된다. 원료를 **precursor(전구체)** 라고 하고, 예: TEOS 는 산화막 원료다. 화면: **TEOS FLOW 1.2 g/min**, **DEP RATE 1500 Å/min**.",
+     "**ALD(원자층 증착)** — 원료를 한 번 넣고(pulse) 빼고(purge) 다음 원료를 넣는 것을 한 사이클(cycle)로 반복한다. 화면: **ALD CYCLES 120**, **GPC 1.0 Å/cycle**(growth per cycle, 사이클당 두께).",
+     "**PVD(물리 기상 증착, sputter)** — 금속 덩어리(**target**)를 이온으로 때려 떨어진 원자가 웨이퍼에 붙는다. 화면: **DC POWER 12 kW**, **TARGET LIFE 820 kWh**(타깃을 얼마나 썼나).",
+     "**Å(옹스트롬)** — 증착 두께의 단위. **1 Å = 0.1 nm**. 1,000 Å 은 100 nm 다.",
+     "증착의 성적표는 **thickness(두께)** 와 **uniformity(균일도, %)** 다. 예: \"Film thickness: within ±3% of the target (1000 Å).\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "CVD · CH B",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "TEOS FLOW",
+        "1.2 g/min"
+       ],
+       [
+        "DEP RATE",
+        "1500 Å/min"
+       ],
+       [
+        "FILM THICKNESS",
+        "1,028 Å"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "노광 장비 — 트랙(track)과 스캐너(scanner)",
+    "intro": "회로 무늬를 웨이퍼에 옮기는 구역이다. 감광액을 바르고 굽는 트랙과, 빛을 쏘는 스캐너가 한 줄로 붙어 있다.",
+    "paras": [
+     "**트랙 — coat · bake · develop** — 감광액(**resist**)을 웨이퍼를 돌려 바르고(**spin coat**, 단위 rpm), 굽고(**soft bake**, °C · s), 노광 뒤 현상한다(**develop**).",
+     "**스캐너 — reticle · dose · focus** — 회로 원판(**reticle**)의 무늬를 빛으로 옮긴다. 빛의 양이 **dose**, 단위는 **mJ/cm²**. 초점 위치는 **focus**, 단위 nm.",
+     "**overlay(정렬 오차)** — 이번 층이 아래층과 얼마나 어긋났는가. X · Y 방향으로 nm 단위로 잰다. 예: \"Overlay shall be no more than 3.0 nm.\"",
+     "**CD(Critical Dimension, 선폭)** — 만든 무늬의 폭. 노광의 성적표는 CD 와 overlay 다.",
+     "주의: 노광의 **dose(mJ/cm², 빛의 양)** 와 이온주입의 **dose(/cm², 이온의 개수)** 는 같은 단어지만 전혀 다른 양이다. **단위**가 어느 장비인지 알려 준다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "SCANNER · LOT 2417",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "DOSE",
+        "25.0 mJ/cm²"
+       ],
+       [
+        "FOCUS",
+        "-20 nm"
+       ],
+       [
+        "OVERLAY X / Y",
+        "2.1 / 2.8 nm"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "CMP · 이온주입 — 누르는 힘과 이온의 에너지",
+    "intro": "두 장비 모두 화면의 숫자가 식각 · 증착과 단위부터 다르다.",
+    "paras": [
+     "**CMP(화학 기계적 연마)** — 웨이퍼를 머리(**carrier / head**)로 잡아 회전하는 판(**platen**) 위 패드에 눌러 깎는다. 누르는 힘 **down force**(psi), 연마액 **slurry flow**(mL/min), 판 회전 **platen speed**(rpm).",
+     "**pad conditioner** — 패드 표면을 다이아몬드 원판으로 긁어 거칠기를 살린다. 왕복 속도가 **sweep rate**. 낮아지면 패드가 매끈해져 제거 속도(**removal rate**, Å/min)가 떨어진다.",
+     "**이온주입(implant)** — 불순물 이온을 가속해 웨이퍼에 박는다. 이온의 세기 **energy**(keV), 흐르는 양 **beam current**(mA · µA), 박힌 개수 **dose**(ions/cm²).",
+     "**지수 표기** — dose 는 **5.0E15 /cm²** 처럼 쓴다. E15 는 10의 15제곱. 4.8E15 와 5.0E15 는 숫자로 4%나 차이 난다.",
+     "**tilt(기울임)** — 이온이 결정 사이로 너무 깊이 미끄러지는 것(**channeling**)을 막으려 웨이퍼를 기울인다. **7°** 가 흔하다.",
+     "**µA 와 mA** — 1 mA = 1,000 µA. 화면 단위와 규격 단위가 다르면 먼저 같은 단위로 바꾼다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "IMPLANTER · END STATION",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "ENERGY",
+        "40 keV"
+       ],
+       [
+        "BEAM CURRENT",
+        "2.4 mA"
+       ],
+       [
+        "DOSE",
+        "5.0E15 /cm²"
+       ],
+       [
+        "TILT / TWIST",
+        "7° / 22°"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "장비 설명서의 문장 — 수동태와 목적 표현",
+    "intro": "장비 개요서(tool overview)는 \"무엇이 무엇에 의해, 무엇을 위해\" 움직이는지를 설명한다. 그래서 두 가지 문형이 반복된다.",
+    "paras": [
+     "**수동태 — is + 과거분사 + by** — \"The wafer **is held by** the carrier.\" 웨이퍼는 캐리어에 **의해** 잡힌다. by 뒤가 실제로 일을 하는 부품이다.",
+     "**by 가 없는 수동태** — \"The slurry **is supplied** at 200 mL/min.\" 누가 하는지보다 무엇이 일어나는지가 중요할 때 쓴다.",
+     "**목적 — is used to / is used for** — \"The Faraday cup **is used to** measure the beam current.\" 이 부품이 무엇을 하려고 있는지. to 뒤는 동사, for 뒤는 명사(-ing).",
+     "**목적 — in order to / so that** — \"The wafer is tilted 7° **in order to** reduce channeling.\" \"The pad is conditioned **so that** the removal rate stays stable.\"",
+     "읽는 순서: ① 주어(무엇이) → ② **by** 뒤(누가) → ③ **to / so that** 뒤(왜). 처음 보는 부품 이름이 나와도 이 세 칸만 채우면 그 부품의 역할이 보인다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "READ A TOOL SENTENCE",
+      "items": [
+       [
+        "[What] is acted on?",
+        "무엇이"
+       ],
+       [
+        "[By] what part?",
+        "무엇에 의해"
+       ],
+       [
+        "[To] do what?",
+        "무엇을 위해"
+       ]
+      ]
      }
     ]
    },
    {
     "type": "acr",
-    "title": "약어",
-    "intro": "배치·규칙 검증에서 자주 쓰이는 약어들이다.",
+    "title": "약어 · 단위",
+    "intro": "장비 계열마다 다른 약어와 단위입니다.",
     "items": [
+     {
+      "ab": "CVD",
+      "full": "Chemical Vapor Deposition",
+      "ko": "화학 기상 증착 — 가스 반응으로 막을 쌓는다"
+     },
+     {
+      "ab": "ALD",
+      "full": "Atomic Layer Deposition",
+      "ko": "원자층 증착 — 한 사이클에 한 층씩"
+     },
+     {
+      "ab": "PVD",
+      "full": "Physical Vapor Deposition",
+      "ko": "물리 기상 증착(스퍼터) — 타깃 원자를 떼어 붙인다"
+     },
+     {
+      "ab": "CMP",
+      "full": "Chemical Mechanical Planarization",
+      "ko": "화학 기계적 연마 — 눌러 깎아 평평하게"
+     },
      {
       "ab": "CD",
       "full": "Critical Dimension",
-      "ko": "임계 치수 — 패턴에서 가장 작고 중요한 선폭/간격"
+      "ko": "선폭 — 노광·식각의 성적표"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 — 배치가 규칙을 지키는지 자동 검사"
+      "ab": "GPC",
+      "full": "Growth Per Cycle",
+      "ko": "ALD 사이클당 두께 (Å/cycle)"
      },
      {
-      "ab": "LW",
-      "full": "Line Width",
-      "ko": "선폭 — 도형 하나의 굵기"
+      "ab": "Å",
+      "full": "angstrom",
+      "ko": "옹스트롬 — 1 Å = 0.1 nm"
      },
      {
-      "ab": "OVL",
-      "full": "Overlay",
-      "ko": "오버레이 — 층과 층 사이 정렬 오차"
+      "ab": "psi",
+      "full": "pounds per square inch",
+      "ko": "압력·누르는 힘 단위 — CMP down force"
      },
      {
-      "ab": "GDS",
-      "full": "Graphic Data System",
-      "ko": "레이아웃 도형 데이터를 담는 표준 파일 형식"
+      "ab": "keV",
+      "full": "kilo-electron-volt",
+      "ko": "이온 에너지 단위 — 클수록 깊이 박힌다"
      },
      {
-      "ab": "μm",
-      "full": "Micrometer",
-      "ko": "마이크로미터 — 100만분의 1 m, 배치 치수의 기본 단위"
+      "ab": "E15",
+      "full": "× 10¹⁵",
+      "ko": "지수 표기 — 5.0E15 = 5.0 × 10¹⁵"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) 층과 패턴",
-    "intro": "배치의 기본 단위인 층과 패턴 관련 용어다.",
+    "title": "핵심 용어 (1) — 명사 덩어리 읽기",
+    "intro": "맨 오른쪽이 머리입니다. 예문에서 머리가 무엇인지 먼저 찾으세요.",
     "items": [
      {
-      "en": "layer",
-      "ko": "층",
-      "d": "패턴이 놓이는 하나의 공정 층. 화면에서 색으로 구분된다.",
-      "ex": "Place the wiring on layer M1, not on M2."
+      "en": "setpoint",
+      "ko": "설정값 (머리)",
+      "d": "chamber wall temperature setpoint — 챔버 벽 온도의 설정값",
+      "ex": "Raise the chamber wall temperature setpoint to 65 °C."
      },
      {
-      "en": "mask",
-      "ko": "마스크",
-      "d": "각 층 패턴을 웨이퍼에 옮기는 포토 원판.",
-      "ex": "Each layer corresponds to one photo mask."
+      "en": "rate",
+      "ko": "속도 · 비율 (머리)",
+      "d": "pad conditioner sweep rate — 패드 컨디셔너의 왕복 속도",
+      "ex": "The pad conditioner sweep rate dropped below the lower limit."
      },
      {
-      "en": "pattern",
-      "ko": "패턴",
-      "d": "층 위에 그려진 개별 도형(선, 사각형 등).",
-      "ex": "This pattern is too narrow; it may break during etch."
+      "en": "limit",
+      "ko": "한계값 (머리)",
+      "d": "slurry flow alarm limit — 슬러리 유량 알람의 한계값",
+      "ex": "The slurry flow alarm limit is set to 150 mL/min."
      },
      {
-      "en": "layout",
-      "ko": "레이아웃/배치도",
-      "d": "여러 층을 위에서 본 평면 배치도.",
-      "ex": "Open the layout and check the top metal layer."
+      "en": "zone",
+      "ko": "구역 (머리)",
+      "d": "wafer edge exclusion zone — 웨이퍼 가장자리 제외 구역",
+      "ex": "Do not measure inside the wafer edge exclusion zone."
+     },
+     {
+      "en": "check",
+      "ko": "점검 (머리)",
+      "d": "beam current stability check — 빔 전류 안정성 점검",
+      "ex": "Run a beam current stability check before the first lot."
+     },
+     {
+      "en": "failure",
+      "ko": "고장 (머리)",
+      "d": "precursor line heater failure — 전구체 배관 히터의 고장",
+      "ex": "A precursor line heater failure can cause particles in the film."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — 셀 배치",
-    "app": "FloorPlanner",
-    "doc": "core.def",
-    "run": "Select",
-    "canvas": "place",
-    "left": {
-     "title": "Cells",
-     "items": [
-      {
-       "name": "INV_X1",
-       "color": "#33506e"
-      },
-      {
-       "name": "NAND2",
-       "color": "#33506e"
-      },
-      {
-       "name": "DFF",
-       "color": "#33506e"
-      },
-      {
-       "name": "off-grid: 2",
-       "color": "#e05a4a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 명사 덩어리",
+    "intro": "맨 오른쪽 명사(머리)를 먼저 찾고 뜻을 고르세요.",
+    "questions": [
+     {
+      "prompt": "화면 라벨 'CHAMBER WALL TEMPERATURE SETPOINT 65 °C' 가 말하는 것은?",
+      "opts": [
+       "챔버 벽의 지금 온도가 65 °C 다",
+       "챔버 벽 온도의 설정값이 65 °C 다",
+       "65 °C 가 되면 챔버 벽이 설정된다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'SLURRY FLOW ALARM LIMIT 150 mL/min' 은 무엇인가?",
+      "opts": [
+       "슬러리 유량 알람이 지금 울리고 있다",
+       "슬러리 유량이 지금 150 mL/min 이다",
+       "슬러리 유량이 이 값 아래면 알람이 울리는 기준값이다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Do not measure inside the wafer edge exclusion zone.' 무엇을 하지 말라는가?",
+      "opts": [
+       "웨이퍼 가장자리의 측정 제외 구역 안에서 재지 마라",
+       "웨이퍼 가장자리를 제외하고 재지 마라",
+       "구역을 나누어 재지 마라"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 증착",
+    "intro": "CVD · ALD · PVD 화면과 문서에서 만나는 말입니다.",
+    "items": [
+     {
+      "en": "precursor",
+      "ko": "전구체 (원료)",
+      "d": "반응해서 막이 되는 원료 물질 — 예: TEOS",
+      "ex": "The precursor is vaporized and carried into the chamber by nitrogen."
+     },
+     {
+      "en": "deposition rate",
+      "ko": "증착 속도",
+      "d": "단위 시간당 쌓이는 두께 (Å/min)",
+      "ex": "The deposition rate is monitored on every tenth wafer."
+     },
+     {
+      "en": "pulse / purge",
+      "ko": "원료 넣기 / 빼기",
+      "d": "ALD 한 사이클의 두 동작",
+      "ex": "Each ALD cycle consists of a precursor pulse and a nitrogen purge."
+     },
+     {
+      "en": "target",
+      "ko": "타깃 (금속 원판)",
+      "d": "PVD 에서 원자를 떼어 내는 금속 덩어리",
+      "ex": "Replace the target when the target life reaches 1,000 kWh."
+     },
+     {
+      "en": "uniformity",
+      "ko": "균일도",
+      "d": "웨이퍼 안 두께가 고른 정도 (%)",
+      "ex": "Thickness uniformity must be within 2% across the wafer."
+     },
+     {
+      "en": "film thickness",
+      "ko": "막 두께",
+      "d": "증착의 성적표 — Å 또는 nm",
+      "ex": "Film thickness is measured at 49 points on each monitor wafer."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 장비 계열별 화면 값",
+    "doc": {
+     "name": "TOOL PARAMETER QUICK SHEET",
+     "no": "QS-0211",
+     "rev": "A"
     },
-    "log": [
-     "> place 128 cells",
-     "> WARNING: 2 cells off-grid"
+    "heading": "Key parameters by tool family (교재 예시)",
+    "cols": [
+     "TOOL",
+     "PARAMETER",
+     "TYPICAL VALUE",
+     "UNIT",
+     "WHAT IT TELLS YOU"
     ],
-    "status": "Placed: 128   Off-grid: 2   Zoom: 200%",
-    "gloss": [
+    "rows": [
      [
-      "Place / placement",
-      "배치"
+      "CVD",
+      "DEP RATE",
+      "1500",
+      "Å/min",
+      "how fast the film grows"
      ],
      [
-      "grid",
-      "격자"
+      "ALD",
+      "GPC",
+      "1.0",
+      "Å/cycle",
+      "thickness added per cycle"
      ],
      [
-      "off-grid",
-      "격자를 벗어남"
+      "PVD",
+      "DC POWER",
+      "12",
+      "kW",
+      "how hard the target is sputtered"
      ],
      [
-      "cell",
-      "셀(표준 소자)"
+      "TRACK",
+      "SPIN SPEED",
+      "1500",
+      "rpm",
+      "resist thickness (faster = thinner)"
+     ],
+     [
+      "SCANNER",
+      "DOSE",
+      "25.0",
+      "mJ/cm²",
+      "amount of light on the resist"
+     ],
+     [
+      "CMP",
+      "DOWN FORCE",
+      "3.0",
+      "psi",
+      "how hard the wafer is pressed"
+     ],
+     [
+      "IMPLANT",
+      "DOSE",
+      "5.0E15",
+      "/cm²",
+      "number of ions per area"
      ]
-    ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "The same word can mean different things on different tools. Check the unit first."
+    }
    },
    {
     "type": "quiz",
-    "title": "확인 (1)",
-    "intro": "다음 영어 표현의 뜻을 고르시오.",
+    "title": "확인 퀴즈 (2) — 장비와 단위",
+    "intro": "위 빠른 참조표 QS-0211 을 근거로 답하세요.",
     "questions": [
      {
-      "prompt": "화면에 'Each layer corresponds to one mask.'라고 표시되었다. 무슨 뜻인가?",
+      "prompt": "화면에 'DOSE 5.0E15 /cm²' 가 떠 있다. 어느 장비인가?",
       "opts": [
-       "각 층은 하나의 마스크에 대응한다",
-       "각 마스크는 여러 층을 덮는다",
-       "층과 마스크는 관련이 없다"
+       "스캐너 — 빛의 양",
+       "CMP — 누르는 힘",
+       "이온주입 — 면적당 이온 개수"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "트랙의 'SPIN SPEED' 를 1500 rpm 에서 2000 rpm 으로 올리면 감광액 두께는?",
+      "opts": [
+       "얇아진다 (faster = thinner)",
+       "두꺼워진다",
+       "변하지 않는다"
       ],
       "ans": 0
      },
      {
-      "prompt": "지시서의 'Place the wiring on layer M1'은 무엇을 지시하는가?",
+      "prompt": "'Film thickness: 1,000 Å' 를 nm 로 바꾸면?",
       "opts": [
-       "배선을 M1 층에 놓아라",
-       "M1 층을 삭제하라",
-       "배선의 굵기를 M1로 하라"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'This pattern is too narrow'라는 경고의 의미로 가장 알맞은 것은?",
-      "opts": [
-       "이 패턴은 너무 넓다",
-       "이 패턴은 너무 좁다(가늘다)",
-       "이 패턴은 위치가 틀렸다"
+       "1 nm",
+       "100 nm",
+       "10 nm"
       ],
       "ans": 1
      }
@@ -6794,306 +7053,379 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (2) 치수",
-    "intro": "선폭·간격 등 수치 규칙에 쓰이는 용어다.",
+    "title": "핵심 용어 (3) — 노광 · CMP",
+    "intro": "트랙 · 스캐너 · CMP 화면의 말입니다.",
     "items": [
      {
-      "en": "line width",
-      "ko": "선폭",
-      "d": "도형 한 개의 굵기. 너무 얇으면 끊긴다.",
-      "ex": "The minimum line width on this layer is 0.25 μm."
+      "en": "resist",
+      "ko": "감광액",
+      "d": "빛을 받으면 성질이 바뀌는 막",
+      "ex": "The resist is spin-coated and soft-baked at 100 °C for 60 seconds."
      },
      {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "이웃한 두 패턴 사이의 빈 거리. 너무 좁으면 합선된다.",
-      "ex": "Keep the spacing between metal lines at least 0.3 μm."
-     },
-     {
-      "en": "pitch",
-      "ko": "피치",
-      "d": "선폭과 간격을 합한 반복 주기(중심 간 거리).",
-      "ex": "The line pitch is fixed at 0.5 μm."
-     },
-     {
-      "en": "critical dimension",
-      "ko": "임계 치수(CD)",
-      "d": "패턴에서 가장 작고 중요한 치수. 수율을 좌우한다.",
-      "ex": "The critical dimension must stay within ±10%."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (2)",
-    "intro": "부등호와 치수 규칙을 정확히 해석하시오.",
-    "questions": [
-     {
-      "prompt": "규칙에 'Spacing shall be no less than 0.3 μm'라고 적혀 있다. 올바른 해석은?",
-      "opts": [
-       "간격은 0.3 μm를 넘으면 안 된다",
-       "간격은 0.3 μm 미만이면 안 된다(0.3 이상)",
-       "간격은 정확히 0.3 μm여야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The line pitch is fixed at 0.5 μm.' 여기서 pitch가 뜻하는 것은?",
-      "opts": [
-       "선폭만의 값",
-       "선폭 + 간격의 반복 주기",
-       "간격만의 값"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'Minimum line width = 0.25 μm'인데 화면 패턴의 선폭이 0.20 μm이다. 판단은?",
-      "opts": [
-       "규칙 위반 (너무 가늘다)",
-       "규칙 만족",
-       "간격 규칙과 무관"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) 정렬과 겹침",
-    "intro": "층 정렬과 겹침 판단에 쓰이는 용어다.",
-    "items": [
-     {
-      "en": "alignment",
-      "ko": "정렬",
-      "d": "위층 패턴이 아래층에 정확히 맞춰진 상태.",
-      "ex": "Check the alignment between the via and the metal below."
+      "en": "reticle",
+      "ko": "레티클 (회로 원판)",
+      "d": "무늬가 그려진 유리판 — 마스크",
+      "ex": "Load the reticle and check its ID before exposure."
      },
      {
       "en": "overlay",
-      "ko": "오버레이(정렬 오차)",
-      "d": "층과 층 사이의 위치 어긋남 정도.",
-      "ex": "The overlay error is within the allowed limit."
+      "ko": "정렬 오차",
+      "d": "이번 층과 아래층의 어긋남 (nm)",
+      "ex": "Overlay shall be no more than 3.0 nm in both X and Y."
      },
      {
-      "en": "registration mark",
-      "ko": "정렬 기준 마크",
-      "d": "층을 맞추기 위해 웨이퍼에 새긴 기준점.",
-      "ex": "The tool reads the registration mark to align the layers."
+      "en": "down force",
+      "ko": "누르는 힘",
+      "d": "CMP 에서 웨이퍼를 패드에 누르는 힘 (psi)",
+      "ex": "Increasing the down force raises the removal rate."
      },
      {
-      "en": "overlap",
-      "ko": "겹침",
-      "d": "두 도형이 서로 포개진 상태. 규칙 없는 겹침은 불량.",
-      "ex": "The via must fully overlap the underlying metal."
+      "en": "slurry",
+      "ko": "연마액",
+      "d": "미세 입자가 든 약액 — 화학 + 기계 연마",
+      "ex": "Slurry is supplied to the pad at 200 mL/min."
+     },
+     {
+      "en": "removal rate",
+      "ko": "제거 속도",
+      "d": "CMP 의 성적표 (Å/min)",
+      "ex": "The removal rate must be between 2000 and 3000 Å/min."
      }
     ]
    },
    {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — CMP 장비 개요",
+    "doc": {
+     "name": "CMP-300 Tool Overview",
+     "no": "TO-0300",
+     "sec": "2",
+     "rev": "C",
+     "page": "2-1"
+    },
+    "heading": "2  How the Polisher Works",
+    "steps": [
+     "The wafer is held face down by the carrier and pressed onto the pad.",
+     "The platen is rotated at 93 rpm, and the carrier is rotated in the same direction.",
+     {
+      "t": "Slurry is supplied to the center of the pad at 200 mL/min.",
+      "note": {
+       "kind": "note",
+       "en": "The slurry flow alarm limit is 150 mL/min."
+      }
+     },
+     {
+      "t": "The pad conditioner is used to restore the pad surface during polishing.",
+      "note": {
+       "kind": "caution",
+       "en": "A low sweep rate causes pad glazing and a lower removal rate."
+      }
+     },
+     "Polishing is stopped by the endpoint system when the motor current changes."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Do not open the polisher door while the platen is rotating."
+    },
+    "gloss": [
+     [
+      "face down",
+      "앞면이 아래로"
+     ],
+     [
+      "restore",
+      "되살리다"
+     ],
+     [
+      "glazing",
+      "패드가 매끈해짐"
+     ],
+     [
+      "motor current",
+      "모터 전류"
+     ]
+    ]
+   },
+   {
     "type": "quiz",
-    "title": "확인 (3)",
-    "intro": "정렬·겹침 관련 영어 메시지를 해석하시오.",
+    "title": "확인 퀴즈 (3) — 수동태와 목적",
+    "intro": "위 CMP 개요 TO-0300 의 문장을 읽고 답하세요.",
     "questions": [
      {
-      "prompt": "DRC 결과에 'Misalignment detected'가 떴다. 무슨 뜻인가?",
+      "prompt": "'The wafer is held face down by the carrier.' 웨이퍼를 잡는 부품은?",
       "opts": [
-       "정렬 오차가 발견되었다",
-       "정렬이 완벽하다",
-       "선폭이 초과되었다"
+       "패드(pad)",
+       "플래튼(platen)",
+       "캐리어(carrier)"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'The pad conditioner is used to restore the pad surface.' 패드 컨디셔너의 역할은?",
+      "opts": [
+       "패드 표면을 되살린다",
+       "웨이퍼를 누른다",
+       "슬러리를 공급한다"
       ],
       "ans": 0
      },
      {
-      "prompt": "'The via must fully overlap the underlying metal by at least 0.05 μm.' 요구 사항은?",
+      "prompt": "'Polishing is stopped by the endpoint system when the motor current changes.' 연마는 무엇에 의해 멈추나?",
       "opts": [
-       "비아가 금속과 절대 겹치면 안 된다",
-       "비아가 아래 금속을 최소 0.05 μm 감싸며 완전히 겹쳐야 한다",
-       "비아 간격을 0.05 μm로 하라"
+       "정해진 시간",
+       "끝점 시스템 — 모터 전류 변화로",
+       "작업자가 문을 열어서"
       ],
       "ans": 1
-     },
-     {
-      "prompt": "경고 'Two patterns on the same layer overlap.'의 의미는?",
-      "opts": [
-       "같은 층의 두 패턴이 겹쳐 있다",
-       "두 패턴이 서로 다른 층에 있다",
-       "두 패턴의 간격이 넓다"
-      ],
-      "ans": 0
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (4) 격자와 규칙",
-    "intro": "격자·좌표·설계 규칙 관련 용어다.",
+    "title": "핵심 용어 (4) — 이온주입",
+    "intro": "이온주입 화면과 문서의 말입니다. 단위와 지수 표기에 주의하세요.",
     "items": [
      {
-      "en": "grid",
-      "ko": "격자",
-      "d": "화면의 눈금. 모든 꼭짓점이 이 위에 놓여야 한다.",
-      "ex": "All vertices must sit on the manufacturing grid."
+      "en": "energy",
+      "ko": "에너지 (keV)",
+      "d": "이온을 얼마나 세게 가속하나 — 깊이를 정한다",
+      "ex": "Higher energy places the dopant deeper in the silicon."
      },
      {
-      "en": "snap",
-      "ko": "스냅",
-      "d": "도형을 가장 가까운 격자 점에 자동으로 붙이는 기능.",
-      "ex": "Turn on Snap to Grid before moving the pattern."
+      "en": "beam current",
+      "ko": "빔 전류 (mA · µA)",
+      "d": "흐르는 이온의 양 — 주입 시간을 정한다",
+      "ex": "The beam current is measured by the Faraday cup before each wafer."
      },
      {
-      "en": "design rule",
-      "ko": "설계 규칙",
-      "d": "선폭·간격 등 배치가 지켜야 할 수치 규칙 모음.",
-      "ex": "This layout must pass all design rules."
+      "en": "dose",
+      "ko": "주입량 (ions/cm²)",
+      "d": "면적당 박힌 이온 개수 — 지수 표기",
+      "ex": "The target dose is 5.0E15 ions per square centimeter."
      },
      {
-      "en": "clearance",
-      "ko": "이격 거리",
-      "d": "서로 다른 물체 사이에 확보해야 하는 최소 여유 간격.",
-      "ex": "Maintain enough clearance between the via and the edge."
+      "en": "tilt / twist",
+      "ko": "기울임 / 돌림 각도",
+      "d": "채널링을 막으려 웨이퍼를 기울이고 돌린다",
+      "ex": "The wafer is tilted 7 degrees in order to reduce channeling."
+     },
+     {
+      "en": "Faraday cup",
+      "ko": "패러데이 컵",
+      "d": "빔 전류를 재는 부품",
+      "ex": "The Faraday cup is used to measure the beam current."
+     },
+     {
+      "en": "channeling",
+      "ko": "채널링",
+      "d": "이온이 결정 사이로 너무 깊이 미끄러지는 현상",
+      "ex": "Channeling makes the junction deeper than designed."
      }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 이온주입 빔 준비",
+    "doc": {
+     "name": "IMP-900 Operating Manual",
+     "no": "OM-0900",
+     "sec": "6",
+     "rev": "B",
+     "page": "6-4"
+    },
+    "heading": "6  Beam Setup Before the First Lot",
+    "steps": [
+     "Select the recipe. The energy, dose, and tilt are loaded from the recipe.",
+     {
+      "t": "Tune the beam until the beam current is at least 2.0 mA.",
+      "note": {
+       "kind": "note",
+       "en": "The beam current is read from the Faraday cup in mA or µA."
+      }
+     },
+     "Run a beam current stability check for 60 seconds.",
+     {
+      "t": "The dose is controlled by the scan speed so that every wafer receives the same dose.",
+      "note": {
+       "kind": "caution",
+       "en": "A dose error larger than ±2% shall be treated as a lot hold."
+      }
+     },
+     "Record the final dose and beam current in the lot log."
+    ],
+    "callout": {
+     "kind": "danger",
+     "en": "High voltage. Do not open the source housing unless the tool is locked out."
+    },
+    "gloss": [
+     [
+      "tune",
+      "맞추다(조정)"
+     ],
+     [
+      "scan speed",
+      "스캔 속도"
+     ],
+     [
+      "source housing",
+      "이온원 덮개"
+     ],
+     [
+      "lot hold",
+      "lot 보류"
+     ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 (4)",
-    "intro": "격자·규칙 관련 화면 표현을 해석하시오.",
+    "title": "확인 퀴즈 (4) — 지수 표기와 단위",
+    "intro": "이온주입 매뉴얼 OM-0900 을 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "DRC 결과에 'Off-grid vertex'가 표시되었다. 무슨 뜻인가?",
+      "prompt": "목표 dose 5.0E15 /cm², 측정 4.8E15 /cm². 'A dose error larger than ±2% shall be treated as a lot hold.' 판단은?",
       "opts": [
-       "꼭짓점이 격자 위에 있다",
-       "꼭짓점이 격자에서 벗어나 있다",
-       "격자 간격을 넓혀야 한다"
+       "정상 — E15 가 같으니 같은 값이다",
+       "lot 보류 — 4% 차이로 ±2% 를 넘는다",
+       "측정 오차라 무시한다"
       ],
       "ans": 1
      },
      {
-      "prompt": "'This layout must pass all design rules.'는 무엇을 요구하는가?",
+      "prompt": "빔 전류 화면이 '1800 µA'. 'at least 2.0 mA' 를 만족하는가?",
       "opts": [
-       "레이아웃이 모든 설계 규칙을 통과해야 한다",
-       "설계 규칙을 새로 만들어야 한다",
-       "레이아웃을 삭제해야 한다"
+       "만족하지 않는다 — 1800 µA = 1.8 mA",
+       "만족한다 — 1800 이 2.0 보다 크다",
+       "단위가 달라 판단할 수 없다"
       ],
       "ans": 0
      },
      {
-      "prompt": "상태바에 'X: 1.400  Y: 0.800  Grid: 0.005'가 보인다. 'Grid: 0.005'의 의미는?",
+      "prompt": "'The dose is controlled by the scan speed so that every wafer receives the same dose.' so that 뒤는?",
       "opts": [
-       "패턴의 선폭이 0.005",
-       "격자 최소 눈금 간격이 0.005 μm",
-       "간격 규칙이 0.005"
+       "스캔 속도의 단위",
+       "도즈를 재는 부품",
+       "그렇게 하는 목적 — 모든 웨이퍼에 같은 도즈"
       ],
-      "ans": 1
+      "ans": 2
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "LAYOUT PLACEMENT PROCEDURE",
+    "mtitle": "TOOL OVERVIEW SENTENCES — FOUR FAMILIES",
     "paras": [
-     "1. Open the layout file and confirm the active layer shown in the layer panel.",
-     "레이아웃 파일을 열고, 레이어 패널에 표시된 활성 층(active layer)이 맞는지 확인한다.",
-     "2. Enable 'Snap to Grid' before moving or placing any pattern.",
-     "패턴을 옮기거나 놓기 전에 'Snap to Grid'(격자 스냅)를 반드시 켠다.",
-     "3. Verify that each line width is no less than the minimum value listed in the rule table.",
-     "각 선폭이 규칙 표에 적힌 최소값 이상인지 확인한다. ('no less than' = 이상)",
-     "4. Ensure the spacing between adjacent patterns on the same layer meets the minimum spacing rule.",
-     "같은 층의 이웃한 패턴 사이 간격이 최소 간격 규칙을 만족하는지 확인한다.",
-     "5. NOTE: Vias must fully overlap the metal below; check the enclosure value on all four sides.",
-     "참고: 비아는 아래 금속을 완전히 감싸야 한다. 네 방향 모두 감싸는 여유(enclosure) 값을 확인한다."
+     "CVD: The precursor is vaporized and carried into the chamber by nitrogen.",
+     "해설: 전구체는 기화되어 질소에 의해 챔버로 운반된다. (is vaporized · is carried by — 수동태, by 뒤가 운반하는 것)",
+     "TRACK: The resist is spin-coated so that the film thickness is uniform across the wafer.",
+     "해설: 감광액은 웨이퍼 전체에서 두께가 고르도록 회전 도포된다. (so that 뒤 = 목적)",
+     "CMP: The pad conditioner is used to keep the removal rate stable.",
+     "해설: 패드 컨디셔너는 제거 속도를 일정하게 유지하는 데 쓰인다. (is used to + 동사 = 목적)",
+     "IMPLANT: The wafer is tilted 7 degrees in order to reduce channeling.",
+     "해설: 채널링을 줄이기 위해 웨이퍼를 7도 기울인다. (in order to = 목적)"
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DESIGN RULE CHECK (DRC) — READING THE REPORT",
+    "mtitle": "SPEC SHEET EXCERPT — ONE LINE PER TOOL (교재 예시)",
     "paras": [
-     "Run 'Check Rules' to generate the DRC report before releasing the layer.",
-     "층을 넘기기 전에 'Check Rules'를 실행해 DRC 리포트를 생성한다.",
-     "Each line lists the rule name, the measured value, and the location.",
-     "각 줄에는 규칙 이름, 측정값, 위치가 표시된다.",
-     "Example entry: 'Spacing violation: 0.22 μm (min 0.30 μm) at (1.40, 0.80)'.",
-     "예시 항목: '간격 위반: 0.22 μm (최소 0.30 μm), 위치 (1.40, 0.80)' — 측정값이 최소값보다 작아 위반이다.",
-     "WARNING: Do not release a layer while any red 'violation' entry remains in the report.",
-     "경고: 리포트에 빨간색 'violation'(위반) 항목이 하나라도 남아 있으면 층을 넘기지 말 것.",
-     "If a violation is a known exception, mark it as 'waived' only with supervisor approval.",
-     "위반이 이미 알려진 예외라면, 반드시 감독자 승인 하에만 'waived'(면제)로 표시한다."
-    ]
-   },
-   {
-    "type": "manual",
-    "mtitle": "CAUTION NOTES ON PLACEMENT",
-    "paras": [
-     "CAUTION: Two patterns on the same layer must never overlap unless the rule allows it.",
-     "주의: 같은 층의 두 패턴은 규칙이 허용하지 않는 한 절대 겹쳐서는 안 된다.",
-     "Keep sufficient clearance between any pattern and the chip boundary.",
-     "모든 패턴과 칩 경계 사이에 충분한 이격 거리(clearance)를 유지한다.",
-     "Do not place any vertex off the manufacturing grid; off-grid points cause fabrication errors.",
-     "어떤 꼭짓점도 제조 격자를 벗어나게 두지 말 것. 격자를 벗어난 점은 제조 오류를 일으킨다.",
-     "After any move, re-run the rule check to confirm the layout still passes.",
-     "패턴을 옮긴 뒤에는 반드시 규칙 검사를 다시 실행해 레이아웃이 여전히 통과하는지 확인한다."
+     "CVD film thickness: within ±3% of the target (1000 Å).",
+     "해설: 목표 1000 Å 의 ±3% → 970 ~ 1030 Å. 10강의 경계 읽기 그대로.",
+     "SCANNER overlay: no more than 3.0 nm in X and Y.",
+     "해설: X 와 Y 둘 다 3.0 nm 이하. 하나라도 넘으면 불합격.",
+     "CMP removal rate: between 2000 and 3000 Å/min.",
+     "해설: 2000 ~ 3000 Å/min(양 끝 포함이 보통).",
+     "IMPLANT dose: within ±2% of the target (5.0E15 /cm²).",
+     "해설: 4.9E15 ~ 5.1E15. 지수(E15)가 같은지 먼저 보고, 앞 숫자를 비교한다."
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "enclosure",
-    "intro": "아래 시뮬레이터에서 여러 layer를 켜고 끄며(visible/hidden) 각 층의 패턴이 어떻게 겹쳐 보이는지 관찰하세요. M1, M2, VIA 층을 하나씩 표시해 보고, 어느 층 위에 어떤 패턴이 놓였는지, 비아가 아래 금속을 제대로 감싸고 있는지(overlap/enclosure) 눈으로 판단해 보세요. 레이어 이름과 상태 표시가 모두 영어로 나오므로, 화면의 영어 라벨을 읽는 연습도 함께 하세요."
+    "which": "tools",
+    "mode": "nouns",
+    "intro": "먼저 **명사 덩어리** 실습입니다. 장비 화면의 라벨이 나옵니다. **맨 오른쪽 명사(머리)** 를 찾고, 오른쪽부터 \"~의\"로 읽은 뜻을 고르세요. 고르면 **of 로 풀어 쓴 영어**가 함께 나옵니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "checkRules",
-    "intro": "아래 DRC 시뮬레이터에서 'Check Rules'를 실행해 규칙 위반을 찾아보세요. 리포트에 뜨는 'Spacing violation', 'Width violation', 'Off-grid vertex' 같은 영어 항목을 읽고, 측정값과 최소 규칙값(min)을 비교해 어떤 패턴이 왜 위반인지 판단하세요. 위반 위치 좌표 (X, Y)를 화면에서 찾아 확인하고, 위반이 모두 사라져 'No violations'가 뜰 때까지 배치를 점검하세요."
+    "which": "tools",
+    "mode": "family",
+    "intro": "다음은 **장비 계열 맞히기** 실습입니다. 처음 보는 화면 한 줄을 보고 **어느 장비(CVD · ALD · PVD · TRACK · SCANNER · CMP · IMPLANT)** 의 화면인지 고르세요. 단서는 **단어와 단위**입니다. 같은 DOSE 라도 단위가 다르면 다른 장비입니다."
+   },
+   {
+    "type": "sim",
+    "which": "tools",
+    "mode": "specs",
+    "intro": "마지막은 **장비별 규격 판정** 실습입니다. 장비마다 다른 단위(Å · nm · mA · µA)와 **지수 표기(E15)** 가 나옵니다. 측정값을 규격과 **같은 단위로 바꾼 뒤** PASS / FAIL 을 고르세요."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "외국인 엔지니어가 배치 검토 결과를 묻는다.",
+      "sit": "처음 배치된 장비에서 외국인 엔지니어에게 라벨 뜻을 묻는다",
       "q": {
-       "en": "Did the M1 layer pass the design rule check?",
-       "ko": "M1 층이 설계 규칙 검사를 통과했나요?"
+       "en": "What does \"pad conditioner sweep rate low\" mean on this screen?",
+       "ko": "이 화면의 \"pad conditioner sweep rate low\" 는 무슨 뜻이에요?"
       },
       "a": {
-       "en": "Not yet. There is one spacing violation at (1.40, 0.80): 0.22 μm, below the 0.30 μm minimum.",
-       "ko": "아직요. (1.40, 0.80) 위치에 간격 위반이 하나 있습니다. 0.22 μm로 최소 0.30 μm보다 작습니다."
+       "en": "It means the conditioner arm is moving too slowly across the pad. If it stays low, the pad gets glazed and the removal rate drops.",
+       "ko": "컨디셔너 암이 패드 위를 너무 느리게 왕복한다는 뜻이에요. 계속 낮으면 패드가 매끈해지고 제거 속도가 떨어집니다."
       }
      },
      {
-      "sit": "엔지니어가 비아 배치를 확인해 달라고 한다.",
+      "sit": "CMP 제거 속도를 보고한다",
       "q": {
-       "en": "Can you confirm the via fully overlaps the metal below?",
-       "ko": "비아가 아래 금속을 완전히 감싸는지 확인해 줄 수 있나요?"
+       "en": "What is the removal rate on the last monitor wafer?",
+       "ko": "마지막 모니터 웨이퍼의 제거 속도가 얼마예요?"
       },
       "a": {
-       "en": "Yes. The enclosure is 0.06 μm on all four sides, which meets the 0.05 μm rule.",
-       "ko": "네. 네 방향 모두 감싸는 여유가 0.06 μm로, 0.05 μm 규칙을 만족합니다."
+       "en": "It was 2,450 angstroms per minute, which is within the spec of 2,000 to 3,000.",
+       "ko": "분당 2,450 옹스트롬으로, 규격 2,000 ~ 3,000 안입니다."
       }
      },
      {
-      "sit": "엔지니어가 위반 항목 처리를 지시한다.",
+      "sit": "이온주입 dose 를 확인한다",
       "q": {
-       "en": "Please fix the off-grid vertex before you release the layer.",
-       "ko": "층을 넘기기 전에 격자를 벗어난 꼭짓점을 수정해 주세요."
+       "en": "Is the dose on target for this lot?",
+       "ko": "이 lot 의 도즈가 목표에 맞나요?"
       },
       "a": {
-       "en": "Understood. I will snap it back to the grid and re-run the rule check.",
-       "ko": "알겠습니다. 격자에 다시 스냅한 뒤 규칙 검사를 다시 돌리겠습니다."
+       "en": "Not quite. We measured 4.8E15 against a target of 5.0E15. That is a 4% error, so I put the lot on hold.",
+       "ko": "아닙니다. 목표 5.0E15 에 4.8E15 가 측정됐습니다. 4% 오차라 lot 을 보류했습니다."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 단어는 바뀌어도 읽는 법은 같다",
     "points": [
-     "패턴 배치는 **layer**, **line width**, **spacing**, **alignment**, **overlap**, **grid** 여섯 축으로 판단한다.",
-     "부등호 해석이 핵심이다: **no less than**(이상), **min/max**, ≥/≤ 를 정확히 읽어야 위반을 잡는다.",
-     "**DRC report**의 영어 항목(Spacing violation, Width violation, Off-grid vertex)을 측정값 vs 최소값으로 대조해 판단한다.",
-     "**Snap to Grid**를 켜고, 모든 꼭짓점을 격자 위에 두며, 이동 후 반드시 규칙 검사를 재실행한다.",
-     "빨간 **violation** 항목이 남으면 층을 넘기지 않으며, 예외는 감독자 승인 하에만 **waived** 처리한다."
+     "낯선 장비는 **뼈대**부터: 무엇이 들어오나 · 어디서 처리하나 · 무엇을 조절하나 · 무엇으로 재나. 상태어와 SP / PV 는 그대로다.",
+     "**명사 덩어리는 오른쪽부터** — 맨 오른쪽이 머리. chamber wall temperature setpoint = 챔버 벽 온도의 **설정값**.",
+     "장비 설명서는 **수동태(is held by)** 와 **목적(is used to · in order to · so that)** 으로 부품의 역할을 말한다.",
+     "장비마다 성적표와 단위가 다르다: 두께 **Å** · 노광 dose **mJ/cm²** · overlay **nm** · CMP **psi · Å/min** · 이온주입 **keV · /cm²**.",
+     "같은 단어(**dose**)도 단위가 장비를 알려 준다. 판정 전에는 **단위를 맞추고**(µA → mA), **지수(E15)** 를 먼저 본다."
     ],
-    "done": "이제 영어 배치 지시문과 화면 규칙을 읽고 **규칙 위반 여부를 스스로 판단**할 수 있습니다. 수고하셨습니다!"
+    "done": "이제 여러분은 처음 보는 장비 화면 앞에서도 **\"무엇의 무엇인가, 단위는 무엇인가\"** 부터 읽어 낼 수 있습니다. **Read right to left, check the unit.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "NEW TOOL CHECKLIST",
+      "items": [
+       [
+        "Find the [head] noun.",
+        "머리 명사"
+       ],
+       [
+        "Read the [unit].",
+        "단위"
+       ],
+       [
+        "Find [by] and [to].",
+        "누가 · 왜"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },

@@ -20,8 +20,7 @@ const chapter = args.find((a) => !a.startsWith('--')) || 'w9';
 const URL = opt('url', 'http://localhost:5174');
 const SHOTS = opt('shots', '');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/fieldEnglishLecture.manifest.json'), 'utf8'));
-const entries = manifest[chapter];
-if (!entries) { console.error(`${chapter} 강의 매니페스트 없음`); process.exit(1); }
+const entries = manifest[chapter] || []; // 음성이 아직 하나도 없으면 아래에서 대본의 펜 표시 위치만 본다
 
 // 화면과 같은 찾기 함수를 페이지에 심는다(모듈 export 를 걷어 전역으로)
 const penSrc = fs.readFileSync(path.join(ROOT, 'src/simulators/fieldEnglishPen.js'), 'utf8')
@@ -97,6 +96,24 @@ if (fs.existsSync(scriptFile)) {
     const miss = cues.filter((_, j) => !res[j]);
     total += cues.length; missing += miss.length;
     console.log(`#${sl.i} (음성 없음) · 펜 ${cues.length - miss.length}/${cues.length}${miss.length ? ' — 못 찾음: ' + miss.map((c) => `${c.k}:${c.x}#${c.n}`).join(' | ') : ''}`);
+    if (SHOTS) {
+      // 음성이 없으면 펜이 그려지지 않으므로, 찾은 자리에 임시 상자(밑줄=빨강 · 동그라미=주황 · 형광펜=노랑)와 순번을 그려 찍는다 — '의도한 쪽'을 눈으로 확인하려고
+      await page.evaluate((cs) => {
+        const body = document.querySelector('.fes-ld-body');
+        const layer = document.createElement('div'); layer.className = 'fes-pen-preview';
+        Object.assign(layer.style, { position: 'absolute', left: 0, top: 0, pointerEvents: 'none', zIndex: 5 });
+        const col = { u: '#ff5468', o: '#ff9f1c', h: '#ffd23f' };
+        cs.forEach((c, j) => window.__fesPen.findTextRects(body, c.x, c.n).forEach((r, q) => {
+          const d = document.createElement('div');
+          Object.assign(d.style, { position: 'absolute', left: `${r.x - 2}px`, top: `${r.y - 2}px`, width: `${r.w + 4}px`, height: `${r.h + 4}px`, border: `2px solid ${col[c.k]}`, borderRadius: '4px' });
+          if (q === 0) { const t = document.createElement('span'); t.textContent = String(j + 1); Object.assign(t.style, { position: 'absolute', left: '-14px', top: '-10px', font: '700 10px monospace', color: '#000', background: col[c.k], borderRadius: '6px', padding: '0 3px' }); d.appendChild(t); }
+          layer.appendChild(d);
+        }));
+        body.appendChild(layer); body.scrollTop = 0;
+      }, cues);
+      await page.locator('.fes-ld-slide').screenshot({ path: path.join(SHOTS, `${chapter}-${String(sl.i).padStart(2, '0')}-preview.png`) });
+      await page.evaluate(() => document.querySelectorAll('.fes-pen-preview').forEach((x) => x.remove()));
+    }
   }
 }
 console.log(`\n펜 표시 ${total - missing}/${total} 화면에서 찾음${errors.length ? ` · 페이지 오류 ${errors.length}: ${errors[0]}` : ''}`);

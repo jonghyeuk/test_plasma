@@ -1489,6 +1489,7 @@ export function gasExplain(c) {
  *           at least / a minimum of / no less than → ≥ · above / greater than / more than / over → >
  *           greater than or equal to → ≥ · less than or equal to → ≤
  *           within ±d (of s) → [s-d, s+d] · between a and b → [a, b] (exclusive 라고 적혀 있으면 (a, b))
+ *           기준값 s 는 문장 속 '(setpoint|target|nominal) (값' 에서 읽고, 없으면 인자 setpoint 를 쓴다
  */
 export function parseLimit(phrase, setpoint) {
   const p = ` ${String(phrase || '').toLowerCase()} `;
@@ -1502,7 +1503,7 @@ export function parseLimit(phrase, setpoint) {
   if ((m = p.match(new RegExp(`within ±\\s*${N}`)))) {
     const d = parseFloat(m[1]);
     const pct = new RegExp(`within ±\\s*${N}\\s*%`).test(p);
-    const s = num(new RegExp(`setpoint \\(?${N}`)) ?? setpoint;
+    const s = num(new RegExp(`(?:setpoint|target|nominal) \\(?${N}`)) ?? setpoint; // 기준값 — '(the setpoint|target|nominal) (10 mTorr)' (11강: target)
     if (s == null) return null;
     const w = pct ? (s * d) / 100 : d;
     return { lo: s - w, hi: s + w, loInc: true, hiInc: true };
@@ -1611,3 +1612,70 @@ export const CC_WHY = {
   R3: 'R3 — if any qual wafer fails: 한 장이라도 불합격이면 옛 판으로 되돌린다.',
   R4: 'R4 — need not be re-qualified, provided that … within ±10%: 10% 안의 시간 변경은 시험 없이 적용할 수 있다.',
 };
+
+/* =========================================================================
+ * 11강 다른 장비 계열 읽기 — 명사 덩어리 · 장비 계열 맞히기 · 장비별 규격 판정
+ *   교재: 명사 덩어리는 맨 오른쪽이 머리, 오른쪽부터 '~의'(of)로 읽는다. 단어보다 단위가 장비를 알려 준다
+ *         (노광 dose mJ/cm² · 이온주입 dose /cm²). 판정 전에 단위를 맞추고(µA → mA) 지수(E15)를 먼저 본다.
+ *   화면 값·규격은 교재 예시(전형적인 크기). 경계 판정은 10강의 parseLimit · inLimit 을 그대로 쓴다.
+ * ====================================================================== */
+
+/** 명사 덩어리 — groups 는 한 덩어리로 읽는 이름 단위(예: 'pad conditioner'). 머리 = 마지막 덩어리 */
+export function nounHead(groups) { return groups[groups.length - 1]; }
+/** of 로 풀어 쓰기 — 오른쪽부터: rate of the sweep of the pad conditioner */
+export function ofChain(groups) { return groups.slice().reverse().map((g) => `the ${g}`).join(' of '); } // 기계적으로 풀어 쓴 것 — 머리가 맨 앞에 온다
+export const NOUN_ITEMS = [
+  { id: 'n1', groups: ['pad conditioner', 'sweep', 'rate'], opts: ['속도를 왕복시키는 패드 컨디셔너', '패드 컨디셔너의 왕복 속도', '패드를 컨디셔너로 왕복하는 비율'], ans: 1 },
+  { id: 'n2', groups: ['chamber wall', 'temperature', 'setpoint'], opts: ['챔버 벽 온도의 설정값', '챔버 벽의 지금 온도', '설정된 챔버 벽'], ans: 0 },
+  { id: 'n3', groups: ['wafer edge', 'exclusion', 'zone'], opts: ['웨이퍼 가장자리를 제외한 전체', '구역에서 제외된 웨이퍼', '웨이퍼 가장자리의 (측정) 제외 구역'], ans: 2 },
+  { id: 'n4', groups: ['slurry', 'flow', 'alarm', 'limit'], opts: ['슬러리 유량 알람이 울림', '슬러리 유량 알람의 한계값', '알람 때문에 제한된 슬러리 유량'], ans: 1 },
+  { id: 'n5', groups: ['beam current', 'stability', 'check'], opts: ['빔 전류 안정성 점검', '안정된 빔 전류', '점검으로 안정된 빔'], ans: 0 },
+  { id: 'n6', groups: ['precursor line', 'heater', 'failure'], opts: ['고장 난 전구체', '전구체 배관을 데우는 실패한 작업', '전구체 배관 히터의 고장'], ans: 2 },
+  { id: 'n7', groups: ['focus', 'offset', 'correction'], opts: ['초점 오프셋 보정', '보정된 초점', '오프셋이 생긴 초점'], ans: 0 },
+];
+
+/* ── 장비 계열 맞히기 — 단서 규칙(위에서부터). 같은 DOSE 라도 단위로 가른다 ── */
+export const TOOL_FAMILIES = ['CVD', 'ALD', 'PVD', 'TRACK', 'SCANNER', 'CMP', 'IMPLANT'];
+const TOOL_RULES = [
+  ['IMPLANT', /\bkeV\b|BEAM CURRENT|TILT|E1\d\s*\/cm²|FARADAY/i],
+  ['SCANNER', /mJ\/cm²|FOCUS|OVERLAY|RETICLE/i],
+  ['TRACK', /SPIN|BAKE|DEVELOP|RESIST/i],
+  ['CMP', /PLATEN|SLURRY|DOWN FORCE|PAD\b|REMOVAL RATE/i],
+  ['PVD', /TARGET LIFE|DC POWER|SPUTTER/i],
+  ['ALD', /\bALD\b|\bGPC\b|PULSE/i],
+  ['CVD', /TEOS|DEP RATE|PRECURSOR|SiH4/i],
+];
+export function toolOf(line) { const r = TOOL_RULES.find(([, re]) => re.test(line)); return r ? r[0] : null; }
+export const TOOL_LINES = [
+  { id: 't1', line: 'DOWN FORCE  3.0 psi    PLATEN SPEED  93 rpm', tool: 'CMP', why: 'down force(psi) · platen — 웨이퍼를 패드에 누르는 CMP.' },
+  { id: 't2', line: 'DOSE  25.0 mJ/cm²    FOCUS  -20 nm', tool: 'SCANNER', why: 'dose 단위가 mJ/cm²(빛의 양) + focus — 노광 스캐너.' },
+  { id: 't3', line: 'ENERGY  40 keV    DOSE  5.0E15 /cm²', tool: 'IMPLANT', why: 'keV · dose 단위 /cm²(이온 개수) — 이온주입. 위 줄과 같은 DOSE 지만 단위가 다르다.' },
+  { id: 't4', line: 'SPIN SPEED  1500 rpm    SOFT BAKE  100 °C / 60 s', tool: 'TRACK', why: 'spin · bake — 감광액을 바르고 굽는 트랙. rpm 만 보면 CMP 와 헷갈린다.' },
+  { id: 't5', line: 'TEOS FLOW  1.2 g/min    DEP RATE  1500 Å/min', tool: 'CVD', why: 'TEOS(전구체) · dep rate — CVD 산화막.' },
+  { id: 't6', line: 'ALD CYCLES  120    GPC  1.0 Å/cycle', tool: 'ALD', why: 'cycle · GPC(사이클당 두께) — ALD.' },
+  { id: 't7', line: 'DC POWER  12 kW    TARGET LIFE  820 kWh', tool: 'PVD', why: 'DC power · target life — 타깃을 때리는 PVD(스퍼터).' },
+  { id: 't8', line: 'BEAM CURRENT  2.4 mA    TILT / TWIST  7° / 22°', tool: 'IMPLANT', why: 'beam current · tilt 7° — 채널링을 막는 이온주입.' },
+  { id: 't9', line: 'SLURRY FLOW  200 mL/min    PAD LIFE  62 %', tool: 'CMP', why: 'slurry · pad — CMP.' },
+  { id: 't10', line: 'OVERLAY X / Y  2.1 / 2.8 nm    RETICLE  R-4471', tool: 'SCANNER', why: 'overlay · reticle — 노광 스캐너.' },
+];
+
+/* ── 장비별 규격 판정 — num 은 규격과 같은 단위로 바꾼 값, shown 은 화면에 보이는 그대로 ── */
+export function parseSci(s) { return parseFloat(String(s).replace(/,/g, '').replace(/×\s*10\^?/, 'e')); }
+export const SPEC_ITEMS = [
+  { id: 's1', tool: 'IMPLANT', spec: 'Dose: within ±2% of the target (5.0E15 /cm²).', shown: '4.8E15 /cm²', num: parseSci('4.8E15'), pass: false,
+    why: '±2% of 5.0E15 → 4.9E15 ~ 5.1E15. 4.8E15 는 4% 낮다 — E15 가 같아도 앞 숫자를 비교한다.' },
+  { id: 's2', tool: 'IMPLANT', spec: 'Beam current must be at least 2.0 mA.', shown: '1800 µA', num: 1.8, pass: false,
+    why: '1800 µA = 1.8 mA. 2.0 mA 보다 작다 — 단위를 맞추면 1800 > 2.0 이 아니다.' },
+  { id: 's3', tool: 'CVD', spec: 'Film thickness: within ±3% of the target (1000 Å).', shown: '1,028 Å', num: 1028, pass: true,
+    why: '±3% of 1000 → 970 ~ 1030 Å. 1028 Å 은 안.' },
+  { id: 's4', tool: 'SCANNER', spec: 'Overlay shall be no more than 3.0 nm.', shown: 'X 2.1 nm / Y 3.2 nm', num: 3.2, pass: false,
+    why: 'X 와 Y 둘 다 3.0 이하여야 한다. Y 3.2 nm 가 넘는다 — 큰 쪽으로 판정.' },
+  { id: 's5', tool: 'CMP', spec: 'Removal rate: between 2000 and 3000 Å/min.', shown: '2,450 Å/min', num: 2450, pass: true,
+    why: '2000 ~ 3000 Å/min 안. 쉼표(2,450)는 천 단위 구분이다.' },
+  { id: 's6', tool: 'ALD', spec: 'Growth per cycle must be below 1.2 Å/cycle.', shown: '1.2 Å/cycle', num: 1.2, pass: false,
+    why: 'below = 미만. 경계값 1.2 는 불합격 — 10강의 경계 읽기.' },
+  { id: 's7', tool: 'TRACK', spec: 'Soft bake temperature: within ±1 °C of the setpoint (100 °C).', shown: '100.6 °C', num: 100.6, pass: true,
+    why: '99 ~ 101 °C 안.' },
+  { id: 's8', tool: 'CVD', spec: 'Film thickness: within ±3% of the target (1000 Å).', shown: '97 nm', num: 970, pass: true,
+    why: '97 nm = 970 Å (1 nm = 10 Å). 경계값 970 Å 은 within 이라 포함 — 합격.' },
+];

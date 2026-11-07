@@ -38,6 +38,7 @@ import {
   LOTO_CARDS, lotoInit, lotoAct,
   GAS_TLV, GAS_ACTIONS, GAS_CASES, gasLevel, gasAction, gasExplain,
   LIMIT_ITEMS, RCP_FIELDS, RCP_RUNS, rcpCheck, CC_RULES, CC_ACTIONS, CC_CASES, CC_WHY, ccDecide,
+  NOUN_ITEMS, nounHead, ofChain, TOOL_FAMILIES, TOOL_LINES, toolOf, SPEC_ITEMS,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -2566,6 +2567,117 @@ function ChangeControlLab() {
   );
 }
 
+/* ── 11강 · 명사 덩어리 (맨 오른쪽이 머리) ── */
+function NounChainLab() {
+  const [ans, setAns] = useState({});
+  const right = NOUN_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">장비 화면 라벨입니다. <b>맨 오른쪽 명사(머리)</b>를 먼저 찾고, 오른쪽부터 "~의"로 읽은 뜻을 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {NOUN_ITEMS.map((it, n) => {
+          const a = ans[it.id], head = nounHead(it.groups);
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 13.5, color: C.text, letterSpacing: 0.5 }}>
+                {n + 1}. {it.groups.map((g, k) => (
+                  <span key={k} style={a != null && g === head ? { color: C.amber, fontWeight: 800 } : undefined}>{g.toUpperCase()}{k < it.groups.length - 1 ? ' ' : ''}</span>
+                ))}
+              </div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {it.opts.map((o, j) => (
+                  <button key={j} className={`fes-chip ${a === j ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && j === it.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: j }))}>{o}</button>
+                ))}
+              </div>
+              {a != null && (
+                <div style={{ marginTop: 6, fontSize: 12.5, color: a === it.ans ? C.emerald : C.amber }}>
+                  {a === it.ans ? '✔' : '✘'} 머리: <b>{head}</b> — <span style={{ fontFamily: C.mono }}>{ofChain(it.groups)}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {NOUN_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 11강 · 장비 계열 맞히기 (단어와 단위가 단서) ── */
+function ToolFamilyLab() {
+  const [ans, setAns] = useState({});
+  const right = TOOL_LINES.filter((t) => ans[t.id] === toolOf(t.line)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">처음 보는 화면 한 줄입니다. <b>단어와 단위</b>를 단서로 어느 장비의 화면인지 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {TOOL_LINES.map((t) => {
+          const a = ans[t.id], truth = toolOf(t.line);
+          return (
+            <div key={t.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 13, color: C.cyan, whiteSpace: 'pre-wrap' }}>{t.line}</div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {TOOL_FAMILIES.map((f) => (
+                  <button key={f} className={`fes-chip ${a === f ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && f === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === f ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [t.id]: f }))}>{f}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {t.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {TOOL_LINES.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 11강 · 장비별 규격 판정 (단위 맞추기 · 지수 표기) ── */
+function ToolSpecLab() {
+  const [ans, setAns] = useState({});
+  const right = SPEC_ITEMS.filter((it) => ans[it.id] === (it.pass ? 'PASS' : 'FAIL')).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">장비마다 다른 단위와 지수 표기입니다. 측정값을 <b>규격과 같은 단위로 바꾼 뒤</b> PASS / FAIL 을 고르세요(교재 예시 규격).</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {SPEC_ITEMS.map((it) => {
+          const a = ans[it.id], truth = it.pass ? 'PASS' : 'FAIL';
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontSize: 11, color: C.dim, fontFamily: C.mono, letterSpacing: 1 }}>{it.tool}</div>
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text, marginTop: 2 }}>SPEC: {it.spec} <SpeakBtn text={it.spec} /></div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                <span style={{ fontSize: 12, color: C.dim }}>SCREEN: <b style={{ color: C.cyan, fontFamily: C.mono }}>{it.shown}</b></span>
+                <div className="fes-btnrow">
+                  {['PASS', 'FAIL'].map((v) => (
+                    <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                      style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: v }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {SPEC_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -3910,6 +4022,8 @@ const SIM_REGISTRY = {
   safety: (sl) => (sl.mode === 'loto' ? <LotoLab /> : sl.mode === 'gas' ? <GasAlarmLab /> : <SafetyModalLab />),
   // 10강 레시피·변경 관리 — 경계 판정 · 실행 기록 판정 · 변경 관리 결정
   recipe: (sl) => (sl.mode === 'run' ? <RecipeRunLab /> : sl.mode === 'change' ? <ChangeControlLab /> : <RecipeLimitLab />),
+  // 11강 다른 장비 계열 읽기 — 명사 덩어리 · 장비 계열 맞히기 · 장비별 규격 판정
+  tools: (sl) => (sl.mode === 'family' ? <ToolFamilyLab /> : sl.mode === 'specs' ? <ToolSpecLab /> : <NounChainLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -4307,9 +4421,9 @@ const CM_PART_EQUIP = [
 const CM_PART_DOCS = [
   { ch: 'CH 9', t: '안전 작업 — LOTO · 가스 · 작업 허가', d: 'shall · must · should · may · need not (규정문의 조동사)' },
   { ch: 'CH 10', t: '레시피 · 변경 관리', d: 'unless · only if · not to exceed · at least · within ± (조건과 경계)' },
+  { ch: 'CH 11', t: '다른 장비 계열 읽기', d: '증착 · 노광 · CMP · 이온주입 — 명사 덩어리 · 수동태 · 단위' },
 ];
 const CM_PART_DESIGN = [
-  { ch: 'CH 11', t: '패턴 배치', d: 'layer 배치 · 선폭 · 간격' },
   { ch: 'CH 12', t: 'DRC 오류', d: 'DRC (Design Rule Check) 오류 해석' },
   { ch: 'CH 13', t: 'LVS 검증', d: 'LVS (Layout Versus Schematic) 비교' },
 ];

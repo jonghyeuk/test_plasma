@@ -1,0 +1,352 @@
+/* ═══ 현장 실무영어 11강 「다른 장비 계열 읽기 — 증착 · 노광 · CMP · 이온주입」 원고 ═══
+   2부 셋째 강. 1부는 식각 장비 하나로 배웠다. 다른 장비로 가면 단어는 바뀌지만 읽는 법은 같다는 것을 보인다.
+   영어 축: ① 명사 덩어리(compound noun) — 오른쪽 끝이 머리(head), 오른쪽부터 "~의"로 읽는다
+            ② 장비 설명서의 수동태(is held by · is removed by)와 목적 표현(is used to · in order to · so that)
+            ③ 장비마다 다른 단위와 지수 표기(Å · psi · mJ/cm² · keV · 5.0E15 /cm²)
+   이 파일이 11강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w11
+   수치: 각 장비 화면의 값과 규격은 이 교재의 예시(전형적인 크기)다 — 화면에 '교재 예시'라고 밝힌다.
+         근거로 쓰는 일반 사실: 1 Å = 0.1 nm · 이온주입 dose 단위 ions/cm² · 채널링을 피하려 7° 기울임이 흔하다 ·
+         노광 dose 단위 mJ/cm² · CMP down force 단위 psi. 엔진(fieldEnglishLabs.js 11강 절)과 같은 숫자를 쓰고 테스트가 대조한다. */
+export default {
+  id: 'w11',
+  title: '다른 장비 계열 읽기 — 증착 · 노광 · CMP · 이온주입',
+  slides: [
+    {
+      type: 'story',
+      icon: '🔄',
+      title: '순환 근무 첫날, 처음 보는 화면',
+      text: '석 달 동안 식각 장비만 본 민지가 이번 주부터 순환 근무(**rotation**)로 CMP 구역에 배치됐다. 화면을 여니 처음 보는 말이 가득하다. **PLATEN 2 DOWN FORCE 3.0 psi**, **SLURRY FLOW 200 mL/min**, 그리고 노란 줄 하나 — **PAD CONDITIONER SWEEP RATE LOW**. 민지가 중얼거린다. "패드… 컨디셔너… 스윕… 비율이 낮다? 뭐가 낮다는 거지?" 옆의 선배가 웃으며 말한다. "명사가 줄줄이 붙으면 **맨 오른쪽**부터 읽어. rate 가 주인공이야. 무엇의 rate? sweep 의. 무엇의 sweep? pad conditioner 의." 민지가 다시 읽는다. "패드 컨디셔너의, 왕복의, 속도가 낮다." 선배가 고개를 끄덕인다. "식각에서 배운 거 그대로야. **SP / PV**, **ALARM / WARNING**, 단위. 장비가 바뀌면 단어만 바뀌고, 읽는 법은 안 바뀌어." 오늘은 증착 · 노광 · CMP · 이온주입 장비를 한 바퀴 돈다.',
+      figs: [
+        { kind: 'hmi', tool: 'CMP POLISHER · PLATEN 2', status: 'RUN', state: 'run', rows: [['DOWN FORCE', '3.0 psi'], ['SLURRY FLOW', '200 mL/min'], ['PLATEN SPEED', '93 rpm']], banner: { en: 'PAD CONDITIONER SWEEP RATE LOW', ko: '패드 컨디셔너 왕복 속도 낮음', level: 'warn' } },
+      ],
+    },
+    {
+      type: 'scene',
+      title: '오늘의 현장 · 상황 설정',
+      where: '순환 근무 첫 주 — 증착(CVD · ALD · PVD), 노광(트랙 · 스캐너), CMP, 이온주입 구역을 하루씩 돈다.',
+      tool: '장비마다 다른 HMI 화면, 장비 개요서(tool overview), 공정 조건 표.',
+      situation: '처음 보는 단어와 단위가 쏟아진다. 하지만 화면의 뼈대와 문장 구조는 식각 장비와 같다.',
+      meet: ['명사 덩어리 pad conditioner sweep rate', '수동태 is held by · is removed by', '목적 is used to · in order to', '단위 Å · psi · mJ/cm² · keV · E15'],
+      goal: '처음 보는 장비 화면에서 "무엇의 무엇인가"와 "단위가 무엇인가"를 읽어 내기.',
+      bg: 'w11',
+    },
+    {
+      type: 'read',
+      title: '처음 보는 장비 앞에서 — 뼈대는 같다',
+      intro: '반도체 장비는 종류가 많지만 화면과 문서의 뼈대는 거의 같다. 낯선 장비를 만나면 먼저 이 뼈대를 찾는다.',
+      paras: [
+        '**무엇이 들어오나** — 웨이퍼, 그리고 가스(gas) · 약액(chemical) · 슬러리(slurry) · 이온(ion) 중 하나 이상. 화면에는 보통 유량(**FLOW**)으로 나온다.',
+        '**어디서 처리하나** — 챔버(chamber), 코터 컵(coater cup), 플래튼(platen), 엔드 스테이션(end station). 이름은 달라도 "웨이퍼가 처리되는 곳"이다.',
+        '**무엇으로 조절하나** — 압력 · 온도 · 전력 · 회전 속도 · 누르는 힘 · 에너지. 화면은 1부에서 본 그대로 **SP / PV** 쌍으로 보여 준다.',
+        '**결과를 무엇으로 재나** — 두께(thickness), 제거 속도(removal rate), 선폭(CD), 정렬 오차(overlay), 주입량(dose). 장비마다 다른 이 숫자가 그 장비의 "성적표"다.',
+        '**상태어와 알람은 같다** — IDLE · RUN · ALARM · WARNING · INTERLOCK, 그리고 9강 · 10강의 규정문(shall · unless · not to exceed)도 그대로 나온다.',
+        '그래서 오늘 새로 배울 것은 두 가지뿐이다. **장비마다 다른 명사와 단위**, 그리고 그 명사들이 **줄줄이 붙었을 때 읽는 법**.',
+      ],
+      figs: [
+        { kind: 'step', title: 'SAME SKELETON', items: [['What comes [in]?', '들어오는 것'], ['Where is it [processed]?', '처리하는 곳'], ['What is [controlled]?', '조절하는 값'], ['What is [measured]?', '결과 측정']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '명사 덩어리는 오른쪽부터 — compound noun',
+      intro: '장비 화면의 영어는 자리가 좁아 명사를 줄줄이 붙인다. 이것을 compound noun(명사 덩어리)이라고 한다. 읽는 규칙은 하나다.',
+      paras: [
+        '**맨 오른쪽 명사가 머리(head)** — 그 말이 "무엇인가"를 정한다. 나머지는 모두 그것을 꾸민다.',
+        '**오른쪽부터 "~의"로 읽는다** — chamber wall temperature setpoint → 설정값(setpoint) ← 온도의 ← 챔버 벽의. 즉 "챔버 벽 온도의 **설정값**". 온도가 아니라 설정값을 말하는 줄이다.',
+        '**of 로 풀어 보면 확실하다** — the setpoint **of** the temperature **of** the chamber wall. 영어 설명서에서는 이렇게 풀어 쓴 문장도 자주 나온다.',
+        '**두 단어가 한 덩어리인 것도 있다** — pad conditioner(패드 컨디셔너), beam current(빔 전류), wafer edge(웨이퍼 가장자리)는 붙어서 하나의 이름이다. 덩어리끼리 오른쪽부터 읽는다.',
+        '**머리를 틀리면 판단이 틀린다** — SLURRY FLOW ALARM LIMIT 은 "슬러리 유량 알람의 **한계값**"이다. 알람이 울렸다는 말이 아니라, 알람이 울리는 기준값을 말하는 칸이다.',
+      ],
+      figs: [
+        { kind: 'note', title: 'READ RIGHT TO LEFT', en: 'chamber wall temperature [setpoint] = the setpoint of the temperature of the chamber wall', ko: '맨 오른쪽(setpoint)이 주인공 — 오른쪽부터 "~의"로 읽는다.' },
+      ],
+    },
+    {
+      type: 'read',
+      title: '증착 장비 — CVD · ALD · PVD',
+      intro: '막을 쌓는 장비다. 무엇으로 쌓는지에 따라 화면의 단어가 다르다.',
+      paras: [
+        '**CVD(화학 기상 증착)** — 가스가 반응해 막이 된다. 원료를 **precursor(전구체)** 라고 하고, 예: TEOS 는 산화막 원료다. 화면: **TEOS FLOW 1.2 g/min**, **DEP RATE 1500 Å/min**.',
+        '**ALD(원자층 증착)** — 원료를 한 번 넣고(pulse) 빼고(purge) 다음 원료를 넣는 것을 한 사이클(cycle)로 반복한다. 화면: **ALD CYCLES 120**, **GPC 1.0 Å/cycle**(growth per cycle, 사이클당 두께).',
+        '**PVD(물리 기상 증착, sputter)** — 금속 덩어리(**target**)를 이온으로 때려 떨어진 원자가 웨이퍼에 붙는다. 화면: **DC POWER 12 kW**, **TARGET LIFE 820 kWh**(타깃을 얼마나 썼나).',
+        '**Å(옹스트롬)** — 증착 두께의 단위. **1 Å = 0.1 nm**. 1,000 Å 은 100 nm 다.',
+        '증착의 성적표는 **thickness(두께)** 와 **uniformity(균일도, %)** 다. 예: "Film thickness: within ±3% of the target (1000 Å)."',
+      ],
+      figs: [
+        { kind: 'hmi', tool: 'CVD · CH B', status: 'RUN', state: 'run', rows: [['TEOS FLOW', '1.2 g/min'], ['DEP RATE', '1500 Å/min'], ['FILM THICKNESS', '1,028 Å']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '노광 장비 — 트랙(track)과 스캐너(scanner)',
+      intro: '회로 무늬를 웨이퍼에 옮기는 구역이다. 감광액을 바르고 굽는 트랙과, 빛을 쏘는 스캐너가 한 줄로 붙어 있다.',
+      paras: [
+        '**트랙 — coat · bake · develop** — 감광액(**resist**)을 웨이퍼를 돌려 바르고(**spin coat**, 단위 rpm), 굽고(**soft bake**, °C · s), 노광 뒤 현상한다(**develop**).',
+        '**스캐너 — reticle · dose · focus** — 회로 원판(**reticle**)의 무늬를 빛으로 옮긴다. 빛의 양이 **dose**, 단위는 **mJ/cm²**. 초점 위치는 **focus**, 단위 nm.',
+        '**overlay(정렬 오차)** — 이번 층이 아래층과 얼마나 어긋났는가. X · Y 방향으로 nm 단위로 잰다. 예: "Overlay shall be no more than 3.0 nm."',
+        '**CD(Critical Dimension, 선폭)** — 만든 무늬의 폭. 노광의 성적표는 CD 와 overlay 다.',
+        '주의: 노광의 **dose(mJ/cm², 빛의 양)** 와 이온주입의 **dose(/cm², 이온의 개수)** 는 같은 단어지만 전혀 다른 양이다. **단위**가 어느 장비인지 알려 준다.',
+      ],
+      figs: [
+        { kind: 'hmi', tool: 'SCANNER · LOT 2417', status: 'RUN', state: 'run', rows: [['DOSE', '25.0 mJ/cm²'], ['FOCUS', '-20 nm'], ['OVERLAY X / Y', '2.1 / 2.8 nm']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: 'CMP · 이온주입 — 누르는 힘과 이온의 에너지',
+      intro: '두 장비 모두 화면의 숫자가 식각 · 증착과 단위부터 다르다.',
+      paras: [
+        '**CMP(화학 기계적 연마)** — 웨이퍼를 머리(**carrier / head**)로 잡아 회전하는 판(**platen**) 위 패드에 눌러 깎는다. 누르는 힘 **down force**(psi), 연마액 **slurry flow**(mL/min), 판 회전 **platen speed**(rpm).',
+        '**pad conditioner** — 패드 표면을 다이아몬드 원판으로 긁어 거칠기를 살린다. 왕복 속도가 **sweep rate**. 낮아지면 패드가 매끈해져 제거 속도(**removal rate**, Å/min)가 떨어진다.',
+        '**이온주입(implant)** — 불순물 이온을 가속해 웨이퍼에 박는다. 이온의 세기 **energy**(keV), 흐르는 양 **beam current**(mA · µA), 박힌 개수 **dose**(ions/cm²).',
+        '**지수 표기** — dose 는 **5.0E15 /cm²** 처럼 쓴다. E15 는 10의 15제곱. 4.8E15 와 5.0E15 는 숫자로 4%나 차이 난다.',
+        '**tilt(기울임)** — 이온이 결정 사이로 너무 깊이 미끄러지는 것(**channeling**)을 막으려 웨이퍼를 기울인다. **7°** 가 흔하다.',
+        '**µA 와 mA** — 1 mA = 1,000 µA. 화면 단위와 규격 단위가 다르면 먼저 같은 단위로 바꾼다.',
+      ],
+      figs: [
+        { kind: 'hmi', tool: 'IMPLANTER · END STATION', status: 'RUN', state: 'run', rows: [['ENERGY', '40 keV'], ['BEAM CURRENT', '2.4 mA'], ['DOSE', '5.0E15 /cm²'], ['TILT / TWIST', '7° / 22°']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '장비 설명서의 문장 — 수동태와 목적 표현',
+      intro: '장비 개요서(tool overview)는 "무엇이 무엇에 의해, 무엇을 위해" 움직이는지를 설명한다. 그래서 두 가지 문형이 반복된다.',
+      paras: [
+        '**수동태 — is + 과거분사 + by** — "The wafer **is held by** the carrier." 웨이퍼는 캐리어에 **의해** 잡힌다. by 뒤가 실제로 일을 하는 부품이다.',
+        '**by 가 없는 수동태** — "The slurry **is supplied** at 200 mL/min." 누가 하는지보다 무엇이 일어나는지가 중요할 때 쓴다.',
+        '**목적 — is used to / is used for** — "The Faraday cup **is used to** measure the beam current." 이 부품이 무엇을 하려고 있는지. to 뒤는 동사, for 뒤는 명사(-ing).',
+        '**목적 — in order to / so that** — "The wafer is tilted 7° **in order to** reduce channeling." "The pad is conditioned **so that** the removal rate stays stable."',
+        '읽는 순서: ① 주어(무엇이) → ② **by** 뒤(누가) → ③ **to / so that** 뒤(왜). 처음 보는 부품 이름이 나와도 이 세 칸만 채우면 그 부품의 역할이 보인다.',
+      ],
+      figs: [
+        { kind: 'step', title: 'READ A TOOL SENTENCE', items: [['[What] is acted on?', '무엇이'], ['[By] what part?', '무엇에 의해'], ['[To] do what?', '무엇을 위해']] },
+      ],
+    },
+    {
+      type: 'acr',
+      title: '약어 · 단위',
+      intro: '장비 계열마다 다른 약어와 단위입니다.',
+      items: [
+        { ab: 'CVD', full: 'Chemical Vapor Deposition', ko: '화학 기상 증착 — 가스 반응으로 막을 쌓는다' },
+        { ab: 'ALD', full: 'Atomic Layer Deposition', ko: '원자층 증착 — 한 사이클에 한 층씩' },
+        { ab: 'PVD', full: 'Physical Vapor Deposition', ko: '물리 기상 증착(스퍼터) — 타깃 원자를 떼어 붙인다' },
+        { ab: 'CMP', full: 'Chemical Mechanical Planarization', ko: '화학 기계적 연마 — 눌러 깎아 평평하게' },
+        { ab: 'CD', full: 'Critical Dimension', ko: '선폭 — 노광·식각의 성적표' },
+        { ab: 'GPC', full: 'Growth Per Cycle', ko: 'ALD 사이클당 두께 (Å/cycle)' },
+        { ab: 'Å', full: 'angstrom', ko: '옹스트롬 — 1 Å = 0.1 nm' },
+        { ab: 'psi', full: 'pounds per square inch', ko: '압력·누르는 힘 단위 — CMP down force' },
+        { ab: 'keV', full: 'kilo-electron-volt', ko: '이온 에너지 단위 — 클수록 깊이 박힌다' },
+        { ab: 'E15', full: '× 10¹⁵', ko: '지수 표기 — 5.0E15 = 5.0 × 10¹⁵' },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (1) — 명사 덩어리 읽기',
+      intro: '맨 오른쪽이 머리입니다. 예문에서 머리가 무엇인지 먼저 찾으세요.',
+      items: [
+        { en: 'setpoint', ko: '설정값 (머리)', d: 'chamber wall temperature setpoint — 챔버 벽 온도의 설정값', ex: 'Raise the chamber wall temperature setpoint to 65 °C.' },
+        { en: 'rate', ko: '속도 · 비율 (머리)', d: 'pad conditioner sweep rate — 패드 컨디셔너의 왕복 속도', ex: 'The pad conditioner sweep rate dropped below the lower limit.' },
+        { en: 'limit', ko: '한계값 (머리)', d: 'slurry flow alarm limit — 슬러리 유량 알람의 한계값', ex: 'The slurry flow alarm limit is set to 150 mL/min.' },
+        { en: 'zone', ko: '구역 (머리)', d: 'wafer edge exclusion zone — 웨이퍼 가장자리 제외 구역', ex: 'Do not measure inside the wafer edge exclusion zone.' },
+        { en: 'check', ko: '점검 (머리)', d: 'beam current stability check — 빔 전류 안정성 점검', ex: 'Run a beam current stability check before the first lot.' },
+        { en: 'failure', ko: '고장 (머리)', d: 'precursor line heater failure — 전구체 배관 히터의 고장', ex: 'A precursor line heater failure can cause particles in the film.' },
+      ],
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (1) — 명사 덩어리',
+      intro: '맨 오른쪽 명사(머리)를 먼저 찾고 뜻을 고르세요.',
+      questions: [
+        { prompt: "화면 라벨 'CHAMBER WALL TEMPERATURE SETPOINT 65 °C' 가 말하는 것은?", opts: ['챔버 벽의 지금 온도가 65 °C 다', '챔버 벽 온도의 설정값이 65 °C 다', '65 °C 가 되면 챔버 벽이 설정된다'], ans: 1 },
+        { prompt: "'SLURRY FLOW ALARM LIMIT 150 mL/min' 은 무엇인가?", opts: ['슬러리 유량 알람이 지금 울리고 있다', '슬러리 유량이 지금 150 mL/min 이다', '슬러리 유량이 이 값 아래면 알람이 울리는 기준값이다'], ans: 2 },
+        { prompt: "'Do not measure inside the wafer edge exclusion zone.' 무엇을 하지 말라는가?", opts: ['웨이퍼 가장자리의 측정 제외 구역 안에서 재지 마라', '웨이퍼 가장자리를 제외하고 재지 마라', '구역을 나누어 재지 마라'], ans: 0 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (2) — 증착',
+      intro: 'CVD · ALD · PVD 화면과 문서에서 만나는 말입니다.',
+      items: [
+        { en: 'precursor', ko: '전구체 (원료)', d: '반응해서 막이 되는 원료 물질 — 예: TEOS', ex: 'The precursor is vaporized and carried into the chamber by nitrogen.' },
+        { en: 'deposition rate', ko: '증착 속도', d: '단위 시간당 쌓이는 두께 (Å/min)', ex: 'The deposition rate is monitored on every tenth wafer.' },
+        { en: 'pulse / purge', ko: '원료 넣기 / 빼기', d: 'ALD 한 사이클의 두 동작', ex: 'Each ALD cycle consists of a precursor pulse and a nitrogen purge.' },
+        { en: 'target', ko: '타깃 (금속 원판)', d: 'PVD 에서 원자를 떼어 내는 금속 덩어리', ex: 'Replace the target when the target life reaches 1,000 kWh.' },
+        { en: 'uniformity', ko: '균일도', d: '웨이퍼 안 두께가 고른 정도 (%)', ex: 'Thickness uniformity must be within 2% across the wafer.' },
+        { en: 'film thickness', ko: '막 두께', d: '증착의 성적표 — Å 또는 nm', ex: 'Film thickness is measured at 49 points on each monitor wafer.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      variant: 'parts',
+      title: '매뉴얼 표본 — 장비 계열별 화면 값',
+      doc: { name: 'TOOL PARAMETER QUICK SHEET', no: 'QS-0211', rev: 'A' },
+      heading: 'Key parameters by tool family (교재 예시)',
+      cols: ['TOOL', 'PARAMETER', 'TYPICAL VALUE', 'UNIT', 'WHAT IT TELLS YOU'],
+      rows: [
+        ['CVD', 'DEP RATE', '1500', 'Å/min', 'how fast the film grows'],
+        ['ALD', 'GPC', '1.0', 'Å/cycle', 'thickness added per cycle'],
+        ['PVD', 'DC POWER', '12', 'kW', 'how hard the target is sputtered'],
+        ['TRACK', 'SPIN SPEED', '1500', 'rpm', 'resist thickness (faster = thinner)'],
+        ['SCANNER', 'DOSE', '25.0', 'mJ/cm²', 'amount of light on the resist'],
+        ['CMP', 'DOWN FORCE', '3.0', 'psi', 'how hard the wafer is pressed'],
+        ['IMPLANT', 'DOSE', '5.0E15', '/cm²', 'number of ions per area'],
+      ],
+      callout: { kind: 'note', en: 'The same word can mean different things on different tools. Check the unit first.' },
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (2) — 장비와 단위',
+      intro: '위 빠른 참조표 QS-0211 을 근거로 답하세요.',
+      questions: [
+        { prompt: "화면에 'DOSE 5.0E15 /cm²' 가 떠 있다. 어느 장비인가?", opts: ['스캐너 — 빛의 양', 'CMP — 누르는 힘', '이온주입 — 면적당 이온 개수'], ans: 2 },
+        { prompt: "트랙의 'SPIN SPEED' 를 1500 rpm 에서 2000 rpm 으로 올리면 감광액 두께는?", opts: ['얇아진다 (faster = thinner)', '두꺼워진다', '변하지 않는다'], ans: 0 },
+        { prompt: "'Film thickness: 1,000 Å' 를 nm 로 바꾸면?", opts: ['1 nm', '100 nm', '10 nm'], ans: 1 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (3) — 노광 · CMP',
+      intro: '트랙 · 스캐너 · CMP 화면의 말입니다.',
+      items: [
+        { en: 'resist', ko: '감광액', d: '빛을 받으면 성질이 바뀌는 막', ex: 'The resist is spin-coated and soft-baked at 100 °C for 60 seconds.' },
+        { en: 'reticle', ko: '레티클 (회로 원판)', d: '무늬가 그려진 유리판 — 마스크', ex: 'Load the reticle and check its ID before exposure.' },
+        { en: 'overlay', ko: '정렬 오차', d: '이번 층과 아래층의 어긋남 (nm)', ex: 'Overlay shall be no more than 3.0 nm in both X and Y.' },
+        { en: 'down force', ko: '누르는 힘', d: 'CMP 에서 웨이퍼를 패드에 누르는 힘 (psi)', ex: 'Increasing the down force raises the removal rate.' },
+        { en: 'slurry', ko: '연마액', d: '미세 입자가 든 약액 — 화학 + 기계 연마', ex: 'Slurry is supplied to the pad at 200 mL/min.' },
+        { en: 'removal rate', ko: '제거 속도', d: 'CMP 의 성적표 (Å/min)', ex: 'The removal rate must be between 2000 and 3000 Å/min.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      title: '매뉴얼 표본 — CMP 장비 개요',
+      doc: { name: 'CMP-300 Tool Overview', no: 'TO-0300', sec: '2', rev: 'C', page: '2-1' },
+      heading: '2  How the Polisher Works',
+      steps: [
+        'The wafer is held face down by the carrier and pressed onto the pad.',
+        'The platen is rotated at 93 rpm, and the carrier is rotated in the same direction.',
+        { t: 'Slurry is supplied to the center of the pad at 200 mL/min.', note: { kind: 'note', en: 'The slurry flow alarm limit is 150 mL/min.' } },
+        { t: 'The pad conditioner is used to restore the pad surface during polishing.', note: { kind: 'caution', en: 'A low sweep rate causes pad glazing and a lower removal rate.' } },
+        'Polishing is stopped by the endpoint system when the motor current changes.',
+      ],
+      callout: { kind: 'warning', en: 'Do not open the polisher door while the platen is rotating.' },
+      gloss: [['face down', '앞면이 아래로'], ['restore', '되살리다'], ['glazing', '패드가 매끈해짐'], ['motor current', '모터 전류']],
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (3) — 수동태와 목적',
+      intro: '위 CMP 개요 TO-0300 의 문장을 읽고 답하세요.',
+      questions: [
+        { prompt: "'The wafer is held face down by the carrier.' 웨이퍼를 잡는 부품은?", opts: ['패드(pad)', '플래튼(platen)', '캐리어(carrier)'], ans: 2 },
+        { prompt: "'The pad conditioner is used to restore the pad surface.' 패드 컨디셔너의 역할은?", opts: ['패드 표면을 되살린다', '웨이퍼를 누른다', '슬러리를 공급한다'], ans: 0 },
+        { prompt: "'Polishing is stopped by the endpoint system when the motor current changes.' 연마는 무엇에 의해 멈추나?", opts: ['정해진 시간', '끝점 시스템 — 모터 전류 변화로', '작업자가 문을 열어서'], ans: 1 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (4) — 이온주입',
+      intro: '이온주입 화면과 문서의 말입니다. 단위와 지수 표기에 주의하세요.',
+      items: [
+        { en: 'energy', ko: '에너지 (keV)', d: '이온을 얼마나 세게 가속하나 — 깊이를 정한다', ex: 'Higher energy places the dopant deeper in the silicon.' },
+        { en: 'beam current', ko: '빔 전류 (mA · µA)', d: '흐르는 이온의 양 — 주입 시간을 정한다', ex: 'The beam current is measured by the Faraday cup before each wafer.' },
+        { en: 'dose', ko: '주입량 (ions/cm²)', d: '면적당 박힌 이온 개수 — 지수 표기', ex: 'The target dose is 5.0E15 ions per square centimeter.' },
+        { en: 'tilt / twist', ko: '기울임 / 돌림 각도', d: '채널링을 막으려 웨이퍼를 기울이고 돌린다', ex: 'The wafer is tilted 7 degrees in order to reduce channeling.' },
+        { en: 'Faraday cup', ko: '패러데이 컵', d: '빔 전류를 재는 부품', ex: 'The Faraday cup is used to measure the beam current.' },
+        { en: 'channeling', ko: '채널링', d: '이온이 결정 사이로 너무 깊이 미끄러지는 현상', ex: 'Channeling makes the junction deeper than designed.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      title: '매뉴얼 표본 — 이온주입 빔 준비',
+      doc: { name: 'IMP-900 Operating Manual', no: 'OM-0900', sec: '6', rev: 'B', page: '6-4' },
+      heading: '6  Beam Setup Before the First Lot',
+      steps: [
+        'Select the recipe. The energy, dose, and tilt are loaded from the recipe.',
+        { t: 'Tune the beam until the beam current is at least 2.0 mA.', note: { kind: 'note', en: 'The beam current is read from the Faraday cup in mA or µA.' } },
+        'Run a beam current stability check for 60 seconds.',
+        { t: 'The dose is controlled by the scan speed so that every wafer receives the same dose.', note: { kind: 'caution', en: 'A dose error larger than ±2% shall be treated as a lot hold.' } },
+        'Record the final dose and beam current in the lot log.',
+      ],
+      callout: { kind: 'danger', en: 'High voltage. Do not open the source housing unless the tool is locked out.' },
+      gloss: [['tune', '맞추다(조정)'], ['scan speed', '스캔 속도'], ['source housing', '이온원 덮개'], ['lot hold', 'lot 보류']],
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (4) — 지수 표기와 단위',
+      intro: '이온주입 매뉴얼 OM-0900 을 근거로 판단하세요.',
+      questions: [
+        { prompt: "목표 dose 5.0E15 /cm², 측정 4.8E15 /cm². 'A dose error larger than ±2% shall be treated as a lot hold.' 판단은?", opts: ['정상 — E15 가 같으니 같은 값이다', 'lot 보류 — 4% 차이로 ±2% 를 넘는다', '측정 오차라 무시한다'], ans: 1 },
+        { prompt: "빔 전류 화면이 '1800 µA'. 'at least 2.0 mA' 를 만족하는가?", opts: ['만족하지 않는다 — 1800 µA = 1.8 mA', '만족한다 — 1800 이 2.0 보다 크다', '단위가 달라 판단할 수 없다'], ans: 0 },
+        { prompt: "'The dose is controlled by the scan speed so that every wafer receives the same dose.' so that 뒤는?", opts: ['스캔 속도의 단위', '도즈를 재는 부품', '그렇게 하는 목적 — 모든 웨이퍼에 같은 도즈'], ans: 2 },
+      ],
+    },
+    {
+      type: 'manual',
+      mtitle: 'TOOL OVERVIEW SENTENCES — FOUR FAMILIES',
+      paras: [
+        'CVD: The precursor is vaporized and carried into the chamber by nitrogen.',
+        '해설: 전구체는 기화되어 질소에 의해 챔버로 운반된다. (is vaporized · is carried by — 수동태, by 뒤가 운반하는 것)',
+        'TRACK: The resist is spin-coated so that the film thickness is uniform across the wafer.',
+        '해설: 감광액은 웨이퍼 전체에서 두께가 고르도록 회전 도포된다. (so that 뒤 = 목적)',
+        'CMP: The pad conditioner is used to keep the removal rate stable.',
+        '해설: 패드 컨디셔너는 제거 속도를 일정하게 유지하는 데 쓰인다. (is used to + 동사 = 목적)',
+        'IMPLANT: The wafer is tilted 7 degrees in order to reduce channeling.',
+        '해설: 채널링을 줄이기 위해 웨이퍼를 7도 기울인다. (in order to = 목적)',
+      ],
+    },
+    {
+      type: 'manual',
+      mtitle: 'SPEC SHEET EXCERPT — ONE LINE PER TOOL (교재 예시)',
+      paras: [
+        'CVD film thickness: within ±3% of the target (1000 Å).',
+        '해설: 목표 1000 Å 의 ±3% → 970 ~ 1030 Å. 10강의 경계 읽기 그대로.',
+        'SCANNER overlay: no more than 3.0 nm in X and Y.',
+        '해설: X 와 Y 둘 다 3.0 nm 이하. 하나라도 넘으면 불합격.',
+        'CMP removal rate: between 2000 and 3000 Å/min.',
+        '해설: 2000 ~ 3000 Å/min(양 끝 포함이 보통).',
+        'IMPLANT dose: within ±2% of the target (5.0E15 /cm²).',
+        '해설: 4.9E15 ~ 5.1E15. 지수(E15)가 같은지 먼저 보고, 앞 숫자를 비교한다.',
+      ],
+    },
+    {
+      type: 'sim',
+      which: 'tools',
+      mode: 'nouns',
+      intro: '먼저 **명사 덩어리** 실습입니다. 장비 화면의 라벨이 나옵니다. **맨 오른쪽 명사(머리)** 를 찾고, 오른쪽부터 "~의"로 읽은 뜻을 고르세요. 고르면 **of 로 풀어 쓴 영어**가 함께 나옵니다.',
+    },
+    {
+      type: 'sim',
+      which: 'tools',
+      mode: 'family',
+      intro: '다음은 **장비 계열 맞히기** 실습입니다. 처음 보는 화면 한 줄을 보고 **어느 장비(CVD · ALD · PVD · TRACK · SCANNER · CMP · IMPLANT)** 의 화면인지 고르세요. 단서는 **단어와 단위**입니다. 같은 DOSE 라도 단위가 다르면 다른 장비입니다.',
+    },
+    {
+      type: 'sim',
+      which: 'tools',
+      mode: 'specs',
+      intro: '마지막은 **장비별 규격 판정** 실습입니다. 장비마다 다른 단위(Å · nm · mA · µA)와 **지수 표기(E15)** 가 나옵니다. 측정값을 규격과 **같은 단위로 바꾼 뒤** PASS / FAIL 을 고르세요.',
+    },
+    {
+      type: 'comm',
+      items: [
+        { sit: '처음 배치된 장비에서 외국인 엔지니어에게 라벨 뜻을 묻는다', q: { en: 'What does "pad conditioner sweep rate low" mean on this screen?', ko: '이 화면의 "pad conditioner sweep rate low" 는 무슨 뜻이에요?' }, a: { en: 'It means the conditioner arm is moving too slowly across the pad. If it stays low, the pad gets glazed and the removal rate drops.', ko: '컨디셔너 암이 패드 위를 너무 느리게 왕복한다는 뜻이에요. 계속 낮으면 패드가 매끈해지고 제거 속도가 떨어집니다.' } },
+        { sit: 'CMP 제거 속도를 보고한다', q: { en: 'What is the removal rate on the last monitor wafer?', ko: '마지막 모니터 웨이퍼의 제거 속도가 얼마예요?' }, a: { en: 'It was 2,450 angstroms per minute, which is within the spec of 2,000 to 3,000.', ko: '분당 2,450 옹스트롬으로, 규격 2,000 ~ 3,000 안입니다.' } },
+        { sit: '이온주입 dose 를 확인한다', q: { en: 'Is the dose on target for this lot?', ko: '이 lot 의 도즈가 목표에 맞나요?' }, a: { en: 'Not quite. We measured 4.8E15 against a target of 5.0E15. That is a 4% error, so I put the lot on hold.', ko: '아닙니다. 목표 5.0E15 에 4.8E15 가 측정됐습니다. 4% 오차라 lot 을 보류했습니다.' } },
+      ],
+    },
+    {
+      type: 'wrap',
+      title: '정리 — 단어는 바뀌어도 읽는 법은 같다',
+      points: [
+        '낯선 장비는 **뼈대**부터: 무엇이 들어오나 · 어디서 처리하나 · 무엇을 조절하나 · 무엇으로 재나. 상태어와 SP / PV 는 그대로다.',
+        '**명사 덩어리는 오른쪽부터** — 맨 오른쪽이 머리. chamber wall temperature setpoint = 챔버 벽 온도의 **설정값**.',
+        '장비 설명서는 **수동태(is held by)** 와 **목적(is used to · in order to · so that)** 으로 부품의 역할을 말한다.',
+        '장비마다 성적표와 단위가 다르다: 두께 **Å** · 노광 dose **mJ/cm²** · overlay **nm** · CMP **psi · Å/min** · 이온주입 **keV · /cm²**.',
+        '같은 단어(**dose**)도 단위가 장비를 알려 준다. 판정 전에는 **단위를 맞추고**(µA → mA), **지수(E15)** 를 먼저 본다.',
+      ],
+      done: '이제 여러분은 처음 보는 장비 화면 앞에서도 **"무엇의 무엇인가, 단위는 무엇인가"** 부터 읽어 낼 수 있습니다. **Read right to left, check the unit.**',
+      figs: [
+        { kind: 'step', title: 'NEW TOOL CHECKLIST', items: [['Find the [head] noun.', '머리 명사'], ['Read the [unit].', '단위'], ['Find [by] and [to].', '누가 · 왜']] },
+      ],
+    },
+  ],
+};
