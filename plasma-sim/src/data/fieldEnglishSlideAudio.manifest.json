@@ -251,34 +251,6 @@
   "h": "9c22fdf2b6",
   "sec": 11
  },
- "도면과 실제가 다르면? 야간 근무 중 후배 기술자가 화면을 보다가 당신을 부릅니다. 검증 리포트 맨 위에 빨간 글씨로 LVS FAILED 라고 떠 있습니다. 그 아래에는 1 mismatch, 2 missing devices, 1 short. 후배가 묻습니다. \"선배님, 이거 레이아웃을 잘못 그린 건가요, 아니면 회로도가 틀린 건가요?\" 당신은 침착하게 설명합니다. LVS(Layout Versus Schematic) 는 설계자가 그린 schematic(회로도)과 실제로 그려진 layout(레이아웃)이 전기적으로 똑같은지를 자동으로 비교하는 검증입니다. 두 개를 각각 netlist(넷리스트)로 뽑아서 소자 하나하나, 연결선 하나하나를 대조합니다. match 가 뜨면 통과, mismatch 가 뜨면 어딘가 다르다는 뜻이죠. 현장에서 우리가 읽어야 할 것은 바로 이 영문 리포트입니다. 어느 소자가 빠졌는지(missing), 어디가 붙어버렸는지(short), 어디가 끊어졌는지(open) — 영어 한 줄을 정확히 읽어내는 것이 오늘의 목표입니다.": {
-  "h": "b29e1f2a0f",
-  "sec": 72
- },
- "LVS란 무엇인가 LVS는 '내가 그린 그림'과 '내가 의도한 회로'가 같은지 확인하는 검증입니다. LVS = Layout Versus Schematic. 이름 그대로 layout(실제 배치된 도형)과 schematic(설계자가 의도한 회로도)을 서로(Versus) 비교하는 검증입니다. 화면에는 보통 Compare Layout vs. Schematic 또는 LVS Run 이라는 메뉴로 나타납니다. 비교의 핵심은 도형을 직접 보는 게 아니라 netlist(넷리스트)로 변환해서 대조한다는 점입니다. 넷리스트는 '어떤 소자가, 어떤 핀끼리, 어떤 선(net)으로 연결되어 있는가'를 글자로 적어놓은 목록입니다. 레이아웃에서는 layout extraction(레이아웃 추출) 과정을 통해 실제 그려진 도형에서 자동으로 넷리스트를 뽑아냅니다. 화면 로그에 Extracting devices..., Building connectivity... 같은 영문이 흘러갑니다. 두 넷리스트가 완전히 같으면 리포트에 LVS clean 또는 Match 가 표시되고, 하나라도 다르면 Mismatch 와 함께 오류 목록이 나옵니다. 우리가 현장에서 읽어야 하는 것이 바로 이 오류 목록입니다. LVS가 검증하는 것은 '모양'이 아니라 'connectivity(연결 관계)'입니다. 선이 예쁘게 그려졌는지가 아니라, 전기적으로 같은 회로인지를 봅니다. 그래서 오류 메시지도 대부분 '무엇이 무엇에 잘못 연결/미연결되었다'는 문장입니다.": {
-  "h": "75ea1d1bbf",
-  "sec": 95
- },
- "검증 흐름 속에서의 LVS LVS는 혼자 돌아가지 않습니다. DRC·LVS·PEX로 이어지는 검증 흐름의 한 단계입니다. 먼저 DRC(Design Rule Check) 가 돌아갑니다. 이것은 선 간격·폭 같은 '물리적 규칙'을 지켰는지 보는 검사로, '그릴 수 있는 모양인가'를 판단합니다. LVS와는 별개의 검증입니다. DRC가 통과해도 LVS 는 따로 해야 합니다. DRC는 '잘 그렸다'만 보지, '설계 의도와 같은 회로인가'는 보지 않기 때문입니다. 모양은 규칙을 지켰어도 엉뚱한 net에 연결될 수 있습니다. 현장 화면에서는 보통 DRC → LVS → PEX 순서로 버튼이 배치되어 있고, 각각 Clean / Errors 상태를 표시합니다. LVS가 clean이 되어야 다음 단계로 넘어갑니다. PEX(Parasitic Extraction) 는 LVS가 통과된 뒤 기생 저항·기생 용량을 뽑아내는 후속 단계입니다. LVS가 틀리면 PEX 결과도 믿을 수 없으므로, LVS clean이 전제 조건입니다. 정리하면 DRC = 모양 검사, LVS = 연결 검사, PEX = 성능 예측입니다. 현장에서 \"LVS 못 넘어가서 PEX 못 돌린다\"는 말은 이 순서 때문입니다.": {
-  "h": "3cff81eb94",
-  "sec": 78
- },
- "LVS 오류의 종류를 읽는 법 영문 리포트에 반복적으로 등장하는 오류 유형은 정해져 있습니다. 유형만 알면 절반은 읽은 것입니다. Missing device(누락 소자): schematic에는 있는데 layout에는 없는 소자입니다. 리포트에는 Device in schematic but not in layout 형태로 나옵니다. 설계자가 의도한 트랜지스터를 레이아웃에서 안 그렸다는 뜻입니다. Extra device(잉여 소자): 반대로 layout에는 있는데 schematic에는 없는 소자입니다. Device in layout but not in schematic — 필요 없는 소자를 실수로 더 그린 경우입니다. Incorrect connection(잘못된 연결): 소자는 맞는데 연결된 net(노드)이 다른 경우입니다. Net mismatch 또는 terminal connected to wrong net 처럼 표시됩니다. 트랜지스터의 게이트가 엉뚱한 선에 붙은 상황이죠. Short(단락): 원래 떨어져 있어야 할 두 개의 net이 하나로 붙어버린 것입니다. 리포트의 Nets shorted together 또는 Short between VDD and VSS 같은 문장은 매우 위험한 신호입니다. 전원-접지 단락은 소자 파손으로 이어집니다. Open(단선): 원래 하나로 이어져야 할 net이 중간에 끊어진 것입니다. Open net 또는 Net is not fully connected 로 나타나며, 신호가 목적지까지 도달하지 못합니다. 정리하면 소자 개수 문제는 missing/extra device, 연결 문제는 incorrect connection/short/open 입니다. 리포트를 읽을 때 '개수 이야기인가, 연결 이야기인가'부터 구분하면 원인 파악이 빨라집니다.": {
-  "h": "62f4630690",
-  "sec": 101
- },
- "화면과 리포트에서 오류가 보이는 방식 LVS 결과는 텍스트 리포트와 GUI 하이라이트, 두 가지 형태로 함께 제공됩니다. 리포트 최상단에는 항상 총평이 한 줄로 뜹니다. LVS PASSED / LVS FAILED, 또는 Layout matches schematic / Layout does NOT match schematic. 이 한 줄로 통과 여부를 즉시 판단합니다. 그 아래 Summary(요약) 표에는 유형별 개수가 나옵니다. 예: Unmatched devices: 2, Unmatched nets: 1, Property errors: 0. Unmatched 는 '짝을 못 찾은' 이라는 뜻으로 mismatch의 구체적 표현입니다. GUI에서는 문제 지점을 색으로 강조합니다. Highlight errors 버튼을 누르면 short난 net이 빨간색, open난 net이 노란색으로 레이아웃 위에 표시됩니다. 화면 안내문 Click an error to zoom to location 을 따라가면 됩니다. 각 오류에는 위치 정보가 붙습니다. at (X, Y) 좌표나 on net CLK, device M12 처럼 어느 소자·어느 선인지 지목합니다. 이 식별자를 설계자에게 그대로 전달하면 소통이 정확해집니다. 마지막으로 Cross-probing(크로스 프로빙) 기능은 리포트의 오류를 클릭하면 schematic과 layout에서 같은 지점을 동시에 띄워줍니다. 안내문 Select in schematic and layout 를 이해하면 원인을 눈으로 대조할 수 있습니다.": {
-  "h": "4bbe3295b2",
-  "sec": 94
- },
- "LVS VERIFICATION PROCEDURE 1. Load both the schematic netlist and the layout view before starting the run. 1. 실행 전에 회로도 넷리스트와 레이아웃 뷰를 모두 불러옵니다. 2. Select Verify > LVS and click Run to begin the comparison. 2. Verify > LVS 메뉴를 선택하고 Run을 눌러 비교를 시작합니다. 3. Wait until the status bar shows LVS PASSED or LVS FAILED. 3. 상태 표시줄에 LVS PASSED 또는 LVS FAILED가 나올 때까지 기다립니다. 4. If the run fails, open the report and read the Summary section first. 4. 실패하면 리포트를 열고 Summary(요약) 항목부터 읽습니다. NOTE: A device shown 'in schematic but not in layout' is a missing device. 참고: '회로도엔 있으나 레이아웃엔 없음'으로 표시된 소자는 누락 소자입니다. WARNING: Do NOT tape out the design while any short or open remains unresolved. 경고: short(단락)나 open(단선)이 해결되지 않은 상태로 절대 최종 제출(tape out)하지 마십시오.": {
-  "h": "e3caee041d",
-  "sec": 74
- },
- "READING THE LVS ERROR REPORT Summary: Unmatched devices = 2, Unmatched nets = 1, Property errors = 0. 요약: 짝을 못 찾은 소자 2개, 짝을 못 찾은 배선 1개, 속성 오류 0개. Error 1: Device M12 exists in layout but not in schematic (extra device). 오류 1: 소자 M12가 레이아웃엔 있으나 회로도엔 없음 (잉여 소자). Error 2: Terminal 'gate' of M7 is connected to net N4; expected net CLK. 오류 2: M7의 게이트 단자가 N4에 연결됨; 원래는 CLK에 연결되어야 함 (잘못된 연결). Error 3: Net VOUT is open; two segments are not joined. 오류 3: 배선 VOUT가 끊겨 있음; 두 구간이 이어지지 않음 (단선). Action: Fix each error, then re-run LVS until the report shows LVS clean. 조치: 각 오류를 수정한 뒤, 리포트가 LVS clean으로 나올 때까지 LVS를 다시 실행합니다.": {
-  "h": "f82c7d38f8",
-  "sec": 66
- },
  "야간 근무 인계, 영어 리포트 한 장 새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 shift report 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. Problem: Chamber A pressure spiked to 12 mTorr during etch step 3. Cause: APC throttle valve stuck at 40%. Action: Aborted lot, switched to Chamber B, notified equipment engineer. Result: Lot recovered, chamber A placed DOWN pending PM. 당신이 할 일은 영작이 아니다. 이 problem–cause–action–result 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 장비부터 디자인 검증까지 현장 전체를 아우르는 영어 보고문을 읽고, 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.": {
   "h": "737544ab31",
   "sec": 67

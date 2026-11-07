@@ -1795,3 +1795,96 @@ export const SPC_CASES = [
 ];
 /** 사례의 정답 — 걸린 규칙 중 첫째(교재: Rule 1 이 가장 급하다), 없으면 none */
 export function spcAnswer(c) { const r = spcCheck(c.pts); return r.length ? r[0] : 'none'; }
+
+/* =========================================================================
+ * 13강 벤더 · 서비스 엔지니어와 소통 — 티켓 긴급도 · 되읽기 · 서비스 요청 메일
+ *   교재: 긴급도(교재 예시 — 실제는 장비사 SLA) S1 정지 · 대안 없음 / S2 정지 · 대안 있음 또는 웨이퍼 위험 /
+ *         S3 가동 · 위험 없음 / S4 질문 · 자료. 되읽기 — 숫자는 한 자리씩(one-five), 0 은 zero, 소수 point,
+ *         지수 E minus, 글자는 ICAO 음성 기호 알파벳(교재 철자 Alpha · Juliet).
+ * ====================================================================== */
+
+/** 사실 → 긴급도. question 이 가장 먼저(장애가 아니다), 그다음 정지 여부 · 대안 · 웨이퍼 위험 */
+export function severityOf(f) {
+  if (f.question) return 'S4';
+  if (f.down) return f.workaround ? 'S2' : 'S1';
+  return f.waferRisk ? 'S2' : 'S3';
+}
+export const SEVERITY_LEVELS = [
+  { id: 'S1', ko: 'S1 — 정지 · 대안 없음' },
+  { id: 'S2', ko: 'S2 — 대안 있음 · 웨이퍼 위험' },
+  { id: 'S3', ko: 'S3 — 가동 · 위험 없음' },
+  { id: 'S4', ko: 'S4 — 질문 · 자료' },
+];
+export const SEVERITY_CASES = [
+  { id: 'v1', text: 'ET-05 is down with BASE PRESSURE HIGH. No other tool is qualified for this recipe.', f: { down: true, workaround: false } },
+  { id: 'v2', text: 'ET-05 is down, but ET-06 is qualified for the same recipe and has free capacity.', f: { down: true, workaround: true } },
+  { id: 'v3', text: 'ET-05 is running, but particle counts on monitor wafers doubled in the last 12 hours.', f: { down: false, waferRisk: true } },
+  { id: 'v4', text: 'ET-05 is running normally. The HMI shows the chamber temperature with the wrong unit (°F instead of °C).', f: { down: false, waferRisk: false } },
+  { id: 'v5', text: 'We would like the latest revision of the maintenance manual for the match unit.', f: { question: true } },
+  { id: 'v6', text: 'ET-05 is running. A warning "FAN SPEED LOW" appears twice a day and clears by itself. Wafer results are normal.', f: { down: false, waferRisk: false } },
+];
+export const SEVERITY_WHY = {
+  S1: '정지 + 대안 없음 → 생산이 멈춘다.',
+  S2: '정지했지만 대안이 있거나, 가동 중이어도 웨이퍼가 위험하다.',
+  S3: '가동 중이고 웨이퍼 위험이 없다 — 급하지 않은 장애.',
+  S4: '장애가 아니라 질문 · 자료 요청.',
+};
+
+/* ── 되읽기 ── */
+export const NATO = {
+  A: 'Alpha', B: 'Bravo', C: 'Charlie', D: 'Delta', E: 'Echo', F: 'Foxtrot', G: 'Golf', H: 'Hotel', I: 'India', J: 'Juliet',
+  K: 'Kilo', L: 'Lima', M: 'Mike', N: 'November', O: 'Oscar', P: 'Papa', Q: 'Quebec', R: 'Romeo', S: 'Sierra', T: 'Tango',
+  U: 'Uniform', V: 'Victor', W: 'Whiskey', X: 'X-ray', Y: 'Yankee', Z: 'Zulu',
+};
+export const DIGIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+/** 값 → 되읽기. '15' → 'one-five', '4.2' → 'four point two', '1.0E-5' → 'one point zero E minus five' */
+export function readBackValue(v) {
+  const s = String(v).toUpperCase();
+  const m = s.match(/^(\d+)(?:\.(\d+))?(?:E(-?)(\d+))?$/);
+  if (!m) throw new Error(`not a value: ${v}`);
+  const digits = (str, sep) => str.split('').map((d) => DIGIT_WORDS[+d]).join(sep);
+  let out = digits(m[1], '-');
+  if (m[2] != null) out += ` point ${digits(m[2], ' ')}`;
+  if (m[4] != null) out += ` E ${m[3] ? 'minus ' : ''}${digits(m[4], ' ')}`;
+  return out;
+}
+/** 부품 · 티켓 번호 → 되읽기. 하이픈으로 나뉜 덩어리마다: 글자는 음성 기호, 숫자는 한 자리씩. 덩어리 사이는 ', ' */
+export function readBackCode(code) {
+  return String(code).toUpperCase().split('-').map((g) => g.split('').map((ch) => (/\d/.test(ch) ? DIGIT_WORDS[+ch] : NATO[ch])).join(' ')).join(', ');
+}
+/** 실습 문항 — kind 'value' 는 readBackValue(value) + ' ' + unit, 'code' 는 readBackCode(value). ans 는 손으로 적은 정답 위치 */
+export const READBACK_ITEMS = [
+  { id: 'r1', said: 'Set the reflected power limit to fifteen watts.', kind: 'value', value: '15', unit: 'watts',
+    opts: ['five-zero watts', 'one-five watts', 'one point five watts'], ans: 1, why: 'fifteen(15) — teen 은 끝소리만 다르다. 한 자리씩: one-five.' },
+  { id: 'r2', said: 'The part number is K X four zero seven one B.', kind: 'code', value: 'KX-4071-B',
+    opts: ['Kilo X-ray, four zero seven one, Bravo', 'Kilo X-ray, four zero seven one, Delta', 'Kilo Echo, four zero seven one, Bravo'], ans: 0, why: 'B 는 Bravo — D(Delta)와 전화로 거의 같게 들린다.' },
+  { id: 'r3', said: 'Base pressure should be below one point zero E minus five Torr.', kind: 'value', value: '1.0E-5', unit: 'Torr',
+    opts: ['one point zero E five Torr', 'ten E minus five Torr', 'one point zero E minus five Torr'], ans: 2, why: 'E minus 를 빼먹으면 값이 10의 10제곱 배 달라진다.' },
+  { id: 'r4', said: 'Torque the lid bolts to thirteen newton-meters.', kind: 'value', value: '13', unit: 'newton-meters',
+    opts: ['one-three newton-meters', 'three-zero newton-meters', 'three-one newton-meters'], ans: 0, why: 'thirteen(13) 과 thirty(30) — 한 자리씩 one-three.' },
+  { id: 'r5', said: 'Your ticket number is S R two zero six one eight.', kind: 'code', value: 'SR-20618',
+    opts: ['Foxtrot Romeo, two zero six one eight', 'Sierra Romeo, two zero six one eight', 'Sierra Romeo, two zero six eight one'], ans: 1, why: 'S 는 Sierra(F 는 Foxtrot). 숫자 순서도 그대로.' },
+  { id: 'r6', said: 'Set the match load to forty-five percent.', kind: 'value', value: '45', unit: 'percent',
+    opts: ['five-four percent', 'four percent', 'four-five percent'], ans: 2, why: 'forty-five(45) → four-five.' },
+  { id: 'r7', said: 'The tool ID is M E one two.', kind: 'code', value: 'ME-12',
+    opts: ['Mike Echo, one two', 'November Echo, one two', 'Mike Golf, one two'], ans: 0, why: 'M 은 Mike(N 은 November), E 는 Echo(G 는 Golf).' },
+];
+export function readBackOf(it) { return it.kind === 'code' ? readBackCode(it.value) : `${readBackValue(it.value)} ${it.unit}`; }
+
+/* ── 서비스 요청 메일 — 칸마다 문장 고르기 ── */
+export const EMAIL_SLOTS = [
+  { id: 'subject', ko: '제목', opts: ['URGENT!!! HELP', 'SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)', 'Problem with our tool'], ans: 1,
+    why: '장비 · 증상 · 시각 · 영향이 한 줄에. 느낌표는 정보가 아니다.' },
+  { id: 'opening', ko: '인사 · 소개', opts: ['Hi Support team, this is Jisu Park from the etch night shift at Fab 2.', 'You must answer quickly.', 'Hello.'], ans: 0,
+    why: '누구인지 · 어디인지를 한 줄로.' },
+  { id: 'facts', ko: '사실', opts: ['Something happened last night.', 'The pressure is bad and nothing works.', 'Base pressure has been 4.2E-5 Torr since 23:05 KST (limit 1.0E-5). The tool is down.'], ans: 2,
+    why: '값 · 한계 · 시각(시간대 포함) · 상태를 숫자로.' },
+  { id: 'checked', ko: '확인한 것', opts: ['We ruled out the gauge and the turbo pump. A leak at the lid O-ring is suspected.', 'The O-ring is broken.', 'We checked everything.'], ans: 0,
+    why: '12강 — 배제한 것과 의심하는 것을 확신의 정도대로. 확인 안 한 것을 확정처럼 쓰지 않는다.' },
+  { id: 'request', ko: '요청', opts: ['Fix it.', 'Could you send an FSE to inspect the lid seal, or advise on the next check?', 'Please do something ASAP.'], ans: 1,
+    why: '무엇을 해 달라는지 구체적으로, 정중하게.' },
+  { id: 'impact', ko: '영향과 기한', opts: ['Reply immediately.', 'Whenever you have time.', 'No other tool can run this recipe, and two lots are on hold. We would appreciate a reply by 06:00 KST.'], ans: 2,
+    why: '기한에는 이유(영향)를 숫자로 붙인다.' },
+  { id: 'closing', ko: '첨부 · 맺음', opts: ['Alarm log and pressure trend are attached. Thank you for your support.', 'This is your fault.', 'Thanks.'], ans: 0,
+    why: '첨부를 밝히고 감사로 맺는다.' },
+];

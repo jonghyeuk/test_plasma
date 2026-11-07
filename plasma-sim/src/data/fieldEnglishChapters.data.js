@@ -8263,465 +8263,726 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w13",
-  "title": "LVS 검증",
+  "title": "벤더 · 서비스 엔지니어와 소통 — 티켓 · 통화 · 메일",
   "slides": [
    {
     "type": "story",
-    "icon": "🔍",
-    "title": "도면과 실제가 다르면?",
-    "text": "야간 근무 중 후배 기술자가 화면을 보다가 당신을 부릅니다. 검증 리포트 맨 위에 빨간 글씨로 **LVS FAILED** 라고 떠 있습니다. 그 아래에는 **1 mismatch, 2 missing devices, 1 short**. 후배가 묻습니다. \"선배님, 이거 레이아웃을 잘못 그린 건가요, 아니면 회로도가 틀린 건가요?\" 당신은 침착하게 설명합니다. **LVS(Layout Versus Schematic)** 는 설계자가 그린 **schematic**(회로도)과 실제로 그려진 **layout**(레이아웃)이 전기적으로 똑같은지를 자동으로 비교하는 검증입니다. 두 개를 각각 **netlist**(넷리스트)로 뽑아서 소자 하나하나, 연결선 하나하나를 대조합니다. **match** 가 뜨면 통과, **mismatch** 가 뜨면 어딘가 다르다는 뜻이죠. 현장에서 우리가 읽어야 할 것은 바로 이 영문 리포트입니다. 어느 소자가 빠졌는지(**missing**), 어디가 붙어버렸는지(**short**), 어디가 끊어졌는지(**open**) — 영어 한 줄을 정확히 읽어내는 것이 오늘의 목표입니다.",
-    "art": "lvs"
+    "icon": "📞",
+    "title": "\"Did you say fifteen or fifty?\"",
+    "text": "새벽 3시. 지수는 장비사 원격 지원 창구와 통화 중이다. 상대는 미국에 있는 지원 엔지니어. 잡음 섞인 목소리가 들린다. \"**Set the reflected power limit to fifteen watts, then restart the match.**\" 지수는 50 을 입력하려다 손을 멈춘다. fifteen 이었나, fifty 였나? 영어에서 teen 과 ty 는 끝소리만 다르다. 지수가 말한다. \"**Sorry, did you say fifteen or fifty?**\" \"Fifteen — **one-five**.\" 지수가 다시 읽어 준다. \"**Let me read that back: reflected power limit, one-five watts, then restart the match.**\" \"That's correct.\" 통화 끝에 엔지니어가 교체 부품 번호를 불러 준다. \"K X four zero seven one B.\" 지수는 받아 적고 한 번 더 확인한다. \"**Kilo X-ray, four zero seven one, Bravo?**\" B 를 D 로 적었다면 다른 부품이 3주 뒤에 도착했을 것이다. 통화의 영어는 유창함이 아니라 **틀리지 않게 확인하는 기술**이다.",
+    "figs": [
+     {
+      "kind": "note",
+      "title": "READ BACK",
+      "en": "Let me read that back: one-five watts.",
+      "ko": "다시 읽어 드릴게요: 일-오(15) 와트."
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "검증 데스크. 회로도와 레이아웃을 나란히 띄워 둔 화면 앞.",
-    "tool": "LVS(Layout Versus Schematic) 리포트와 넷리스트 비교.",
-    "situation": "도면과 실제가 다르다는 mismatch가 떴다.",
+    "where": "새벽의 장비 앞 — 장비사 지원 포털(티켓 화면), 헤드셋, 메일함.",
+    "tool": "서비스 요청 티켓(service request), 원격 지원 통화, 부품 요청 · 반송(RMA) 메일.",
+    "situation": "장비가 멈췄다. 해외 지원팀에 티켓을 열고, 전화로 지시를 받고, 부품을 받아야 한다. 숫자 하나, 글자 하나가 틀리면 몇 시간 · 몇 주가 날아간다.",
     "meet": [
-     "LVS REPORT",
-     "matched · mismatch",
-     "layout ≠ schematic",
-     "NOT CLEAN"
+     "되묻기 Did you say fifteen or fifty?",
+     "되읽기 Let me read that back.",
+     "음성 기호 Kilo · X-ray · Bravo",
+     "티켓 제목 · 긴급도 S1~S4",
+     "정중한 요청 Could you … by …"
     ],
-    "goal": "두 넷리스트를 비교해 \"일치 / 불일치\"를 읽기.",
+    "goal": "지원팀이 한 번에 알아듣게 쓰고, 들은 것을 틀리지 않게 확인하기.",
     "bg": "w13"
    },
    {
     "type": "read",
-    "title": "LVS란 무엇인가",
-    "intro": "LVS는 '내가 그린 그림'과 '내가 의도한 회로'가 같은지 확인하는 검증입니다.",
+    "title": "벤더와 일하는 세 가지 길 — 티켓 · 통화 · 메일",
+    "intro": "장비사(vendor) 지원은 보통 세 갈래로 온다. 갈래마다 영어의 모양이 다르다.",
     "paras": [
-     "**LVS = Layout Versus Schematic**. 이름 그대로 **layout**(실제 배치된 도형)과 **schematic**(설계자가 의도한 회로도)을 서로(**Versus**) 비교하는 검증입니다. 화면에는 보통 **Compare Layout vs. Schematic** 또는 **LVS Run** 이라는 메뉴로 나타납니다.",
-     "비교의 핵심은 도형을 직접 보는 게 아니라 **netlist**(넷리스트)로 변환해서 대조한다는 점입니다. 넷리스트는 '어떤 소자가, 어떤 핀끼리, 어떤 선(**net**)으로 연결되어 있는가'를 글자로 적어놓은 목록입니다.",
-     "레이아웃에서는 **layout extraction**(레이아웃 추출) 과정을 통해 실제 그려진 도형에서 자동으로 넷리스트를 뽑아냅니다. 화면 로그에 **Extracting devices...**, **Building connectivity...** 같은 영문이 흘러갑니다.",
-     "두 넷리스트가 완전히 같으면 리포트에 **LVS clean** 또는 **Match** 가 표시되고, 하나라도 다르면 **Mismatch** 와 함께 오류 목록이 나옵니다. 우리가 현장에서 읽어야 하는 것이 바로 이 오류 목록입니다.",
-     "LVS가 검증하는 것은 '모양'이 아니라 '**connectivity**(연결 관계)'입니다. 선이 예쁘게 그려졌는지가 아니라, 전기적으로 같은 회로인지를 봅니다. 그래서 오류 메시지도 대부분 '무엇이 무엇에 잘못 연결/미연결되었다'는 문장입니다."
+     "**Ticket / Service Request(SR)** — 지원 포털에 여는 요청서. 번호가 붙는다(예: **SR-20618**). 이후 모든 메일과 통화는 이 번호로 이어진다. 그래서 첫 줄(제목)이 가장 중요하다.",
+     "**Remote support call** — 지원 엔지니어(**TSE**, technical support engineer)와의 통화. 지시를 받고, 값을 불러 주고, 결과를 보고한다. 글이 없으니 **되묻고 되읽는 것**이 안전장치다.",
+     "**Email** — 부품 요청, 반송(**RMA**), 정리 보고. 기록이 남으므로 숫자 · 부품 번호 · 기한을 정확히 쓴다.",
+     "현장 방문이 필요하면 장비사 서비스 엔지니어(**FSE**, field service engineer)가 온다. 이때 쓰는 말: \"**Could you send an FSE on site?**\"",
+     "세 갈래 모두에서 쓰는 것이 12강의 확신 표현이다. 지원팀은 우리 말만 듣고 판단한다 — **suspected** 와 **confirmed** 를 섞으면 엉뚱한 부품이 온다."
     ],
     "figs": [
      {
-      "kind": "log",
-      "title": "LVS REPORT",
-      "lines": [
-       "Nets matched:    1044",
-       "Devices matched: 512",
-       "[MISMATCH]: 1 net",
-       "→ layout ≠ schematic"
+      "kind": "hmi",
+      "tool": "VENDOR SUPPORT PORTAL",
+      "status": "OPEN",
+      "state": "run",
+      "rows": [
+       [
+        "TICKET",
+        "SR-20618"
+       ],
+       [
+        "SEVERITY",
+        "S1 — Tool down",
+        "warn"
+       ],
+       [
+        "ASSIGNED",
+        "TSE · Remote"
+       ]
       ]
-     },
-     {
-      "kind": "sticker",
-      "level": "danger",
-      "en": "LVS: NOT CLEAN",
-      "ko": "LVS 미일치"
      }
     ]
    },
    {
     "type": "read",
-    "title": "검증 흐름 속에서의 LVS",
-    "intro": "LVS는 혼자 돌아가지 않습니다. DRC·LVS·PEX로 이어지는 검증 흐름의 한 단계입니다.",
+    "title": "티켓 제목 한 줄 — 장비 · 증상 · 시각 · 영향",
+    "intro": "지원팀은 하루에 티켓 수백 개를 본다. 제목 한 줄로 무엇이, 언제부터, 얼마나 급한지가 보여야 먼저 잡힌다.",
     "paras": [
-     "먼저 **DRC(Design Rule Check)** 가 돌아갑니다. 이것은 선 간격·폭 같은 '물리적 규칙'을 지켰는지 보는 검사로, '그릴 수 있는 모양인가'를 판단합니다. LVS와는 별개의 검증입니다.",
-     "DRC가 통과해도 **LVS** 는 따로 해야 합니다. DRC는 '잘 그렸다'만 보지, '설계 의도와 같은 회로인가'는 보지 않기 때문입니다. 모양은 규칙을 지켰어도 엉뚱한 net에 연결될 수 있습니다.",
-     "현장 화면에서는 보통 **DRC → LVS → PEX** 순서로 버튼이 배치되어 있고, 각각 **Clean / Errors** 상태를 표시합니다. LVS가 clean이 되어야 다음 단계로 넘어갑니다.",
-     "**PEX(Parasitic Extraction)** 는 LVS가 통과된 뒤 기생 저항·기생 용량을 뽑아내는 후속 단계입니다. LVS가 틀리면 PEX 결과도 믿을 수 없으므로, LVS clean이 전제 조건입니다.",
-     "정리하면 **DRC = 모양 검사, LVS = 연결 검사, PEX = 성능 예측**입니다. 현장에서 \"LVS 못 넘어가서 PEX 못 돌린다\"는 말은 이 순서 때문입니다."
+     "좋은 제목의 공식: **Tool ID | Symptom | Since when | Impact**. 예: \"**ET-05 | Base pressure high since 23:05 | Tool down**\".",
+     "나쁜 제목: \"URGENT!!! HELP\", \"Problem with our tool\". 급하다는 말만 있고 무엇이 문제인지 없다. 느낌표는 순서를 앞당기지 못한다.",
+     "**Severity(긴급도)** — 지원팀이 순서를 정하는 등급. 이 교재의 예시: **S1** 장비 정지 · 대안 없음 / **S2** 장비 정지지만 대안 있음, 또는 웨이퍼 위험 / **S3** 가동 중 · 웨이퍼 위험 없음 / **S4** 질문 · 자료 요청.",
+     "긴급도는 느낌이 아니라 **사실**로 정한다: 장비가 멈췄나? 같은 일을 할 다른 장비가 있나? 웨이퍼가 위험한가? 실제 등급 정의는 장비사와의 계약(**SLA**)이 정한다.",
+     "등급을 부풀리면(S3 를 S1 로) 한두 번은 빨리 오지만, 그 뒤로 우리 티켓을 믿지 않는다. 12강의 원칙 그대로 — **사실만큼만** 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SEVERITY (교재 예시)",
+      "items": [
+       [
+        "[S1] Tool down, no workaround",
+        "정지 · 대안 없음"
+       ],
+       [
+        "[S2] Down with workaround, or wafer risk",
+        "대안 있음 · 웨이퍼 위험"
+       ],
+       [
+        "[S3] Running, no wafer risk",
+        "가동 · 위험 없음"
+       ],
+       [
+        "[S4] Question or document request",
+        "질문 · 자료"
+       ]
+      ]
+     }
     ]
    },
    {
     "type": "read",
-    "title": "LVS 오류의 종류를 읽는 법",
-    "intro": "영문 리포트에 반복적으로 등장하는 오류 유형은 정해져 있습니다. 유형만 알면 절반은 읽은 것입니다.",
+    "title": "통화의 영어 — 되묻기와 되읽기",
+    "intro": "전화에는 글이 없다. 잡음 · 억양 · 속도 때문에 숫자와 이름이 가장 자주 틀린다. 그래서 통화에는 정해진 확인 문장이 있다.",
     "paras": [
-     "**Missing device**(누락 소자): schematic에는 있는데 layout에는 없는 소자입니다. 리포트에는 **Device in schematic but not in layout** 형태로 나옵니다. 설계자가 의도한 트랜지스터를 레이아웃에서 안 그렸다는 뜻입니다.",
-     "**Extra device**(잉여 소자): 반대로 layout에는 있는데 schematic에는 없는 소자입니다. **Device in layout but not in schematic** — 필요 없는 소자를 실수로 더 그린 경우입니다.",
-     "**Incorrect connection**(잘못된 연결): 소자는 맞는데 연결된 **net**(노드)이 다른 경우입니다. **Net mismatch** 또는 **terminal connected to wrong net** 처럼 표시됩니다. 트랜지스터의 게이트가 엉뚱한 선에 붙은 상황이죠.",
-     "**Short**(단락): 원래 떨어져 있어야 할 두 개의 net이 하나로 붙어버린 것입니다. 리포트의 **Nets shorted together** 또는 **Short between VDD and VSS** 같은 문장은 매우 위험한 신호입니다. 전원-접지 단락은 소자 파손으로 이어집니다.",
-     "**Open**(단선): 원래 하나로 이어져야 할 net이 중간에 끊어진 것입니다. **Open net** 또는 **Net is not fully connected** 로 나타나며, 신호가 목적지까지 도달하지 못합니다.",
-     "정리하면 소자 개수 문제는 **missing/extra device**, 연결 문제는 **incorrect connection/short/open** 입니다. 리포트를 읽을 때 '개수 이야기인가, 연결 이야기인가'부터 구분하면 원인 파악이 빨라집니다."
+     "**못 알아들었을 때** — \"Sorry, could you repeat that?\" \"Could you say that more slowly?\" 모르는 채로 \"Yes\"라고 하지 않는다.",
+     "**둘 중 하나가 헷갈릴 때** — \"**Did you say fifteen or fifty?**\" 고를 것을 같이 말하면 상대가 정확히 짚어 준다.",
+     "**뜻을 확인할 때** — \"Just to confirm, you mean the **upper** match, not the lower one?\" — 내가 이해한 것을 문장으로 돌려준다.",
+     "**지시를 받은 뒤** — \"**Let me read that back:** …\" 받은 값과 순서를 그대로 다시 읽는다. 상대가 \"That's correct\" 또는 \"Negative, …\"로 고쳐 준다.",
+     "**끝낼 때** — \"So the next step is …, and I will call you back by 04:00.\" 다음 할 일과 다음 연락 시각을 확인하고 끊는다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "CALL NOTES — SR-20618",
+      "lines": [
+       "03:12  TSE: set REFL limit [15 W] — read back OK",
+       "03:15  TSE: restart match — done",
+       "03:20  Part: KX-4071-B — read back OK"
+      ]
+     }
     ]
    },
    {
     "type": "read",
-    "title": "화면과 리포트에서 오류가 보이는 방식",
-    "intro": "LVS 결과는 텍스트 리포트와 GUI 하이라이트, 두 가지 형태로 함께 제공됩니다.",
+    "title": "숫자와 글자 읽어 주기 — one-five · Bravo · point",
+    "intro": "값과 번호를 불러 줄 때는 듣는 사람이 헷갈릴 수 없는 방식으로 읽는다.",
     "paras": [
-     "리포트 최상단에는 항상 총평이 한 줄로 뜹니다. **LVS PASSED / LVS FAILED**, 또는 **Layout matches schematic / Layout does NOT match schematic**. 이 한 줄로 통과 여부를 즉시 판단합니다.",
-     "그 아래 **Summary**(요약) 표에는 유형별 개수가 나옵니다. 예: **Unmatched devices: 2**, **Unmatched nets: 1**, **Property errors: 0**. **Unmatched** 는 '짝을 못 찾은' 이라는 뜻으로 mismatch의 구체적 표현입니다.",
-     "GUI에서는 문제 지점을 색으로 강조합니다. **Highlight errors** 버튼을 누르면 short난 net이 빨간색, open난 net이 노란색으로 레이아웃 위에 표시됩니다. 화면 안내문 **Click an error to zoom to location** 을 따라가면 됩니다.",
-     "각 오류에는 위치 정보가 붙습니다. **at (X, Y)** 좌표나 **on net CLK**, **device M12** 처럼 어느 소자·어느 선인지 지목합니다. 이 식별자를 설계자에게 그대로 전달하면 소통이 정확해집니다.",
-     "마지막으로 **Cross-probing**(크로스 프로빙) 기능은 리포트의 오류를 클릭하면 schematic과 layout에서 같은 지점을 동시에 띄워줍니다. 안내문 **Select in schematic and layout** 를 이해하면 원인을 눈으로 대조할 수 있습니다."
+     "**teen 과 ty** — fif**teen**(15) 과 **fif**ty(50), thir**teen**(13) 과 **thir**ty(30)는 끝소리 · 강세만 다르다. 중요한 값은 **한 자리씩** 다시 읽는다: 15 → \"**one-five**\", 50 → \"**five-zero**\".",
+     "**0 은 zero** — \"oh\"라고 읽으면 글자 O 와 헷갈린다. 부품 번호 4071 → \"four zero seven one\".",
+     "**소수점과 지수** — 4.2 → \"four **point** two\", 1.0E-5 → \"one point zero **E minus** five\". E 와 minus 를 빼먹으면 값이 10만 배 달라진다.",
+     "**글자는 음성 기호 알파벳으로** — B · D · P · V · E · G, M · N, F · S 는 전화로 거의 구분이 안 된다. 국제 표준(ICAO) 단어로 읽는다: **Bravo · Delta · Papa · Victor · Echo · Golf**, **Mike · November**, **Foxtrot · Sierra**.",
+     "부품 번호 KX-4071-B → \"**Kilo X-ray, four zero seven one, Bravo**\". 하이픈은 보통 읽지 않고 잠깐 끊는다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SAY IT CLEARLY",
+      "items": [
+       [
+        "15 → [one-five]",
+        "한 자리씩"
+       ],
+       [
+        "4071 → four [zero] seven one",
+        "zero"
+       ],
+       [
+        "1.0E-5 → one [point] zero [E minus] five",
+        "점 · 지수"
+       ],
+       [
+        "B → [Bravo]",
+        "음성 기호"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "부품 요청과 반송 — P/N · lead time · RMA",
+    "intro": "부품을 받고 돌려보내는 메일은 칸이 정해진 문서에 가깝다. 빠진 칸이 있으면 메일이 한 번 더 오간다 — 그만큼 장비가 더 멈춘다.",
+    "paras": [
+     "**부품 요청에 꼭 들어갈 것** — part number(**P/N**), 수량(**Qty**), 장비 ID, 받을 곳(**ship to**), 필요한 날짜. 예: \"P/N KX-4071-B, Qty 1, for ET-05, ship to Fab 2 receiving, needed by Nov 10.\"",
+     "**lead time(납기)** — 주문에서 도착까지 걸리는 시간. \"**in stock**\"이면 바로 보내고, \"lead time 3 weeks\"면 3주다. 급하면 \"Is there a local stock or a loaner?\"(근처 재고나 대여품이 있나요?)라고 묻는다.",
+     "**RMA(Return Material Authorization)** — 고장 난 부품을 장비사로 돌려보내기 위한 승인 번호. 번호 없이 보내면 받지 않는다. 상자에 RMA 번호를 적는다.",
+     "**FA(Failure Analysis) request** — 장비사에 고장 원인 분석을 요청하는 것. 12강의 근본 원인을 찾는 데 쓴다. \"Please include an FA report with the RMA.\"",
+     "**warranty(보증)** — 보증 기간 안이면 무상이다. \"Is this part still under warranty?\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "PARTS REQUEST",
+      "status": "PENDING",
+      "state": "idle",
+      "rows": [
+       [
+        "P/N",
+        "KX-4071-B"
+       ],
+       [
+        "QTY",
+        "1"
+       ],
+       [
+        "LEAD TIME",
+        "In stock (Singapore)"
+       ],
+       [
+        "RMA",
+        "RMA-77314"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "정중하게 재촉하기 — 요청의 사다리와 에스컬레이션",
+    "intro": "지원이 늦을 때 화를 내면 더 늦어진다. 영어에는 같은 요청을 정중함 · 강도에 따라 고르는 사다리가 있다.",
+    "paras": [
+     "**가볍게** — \"**Could you** check the status of SR-20618?\" \"**Would it be possible to** get an update today?\"",
+     "**기한을 붙여서** — \"**We need** the part **by** Nov 10 **because** the tool is down.\" 기한과 그 이유(영향)를 같이 쓴다. 이유 없는 기한은 무시되기 쉽다.",
+     "**에스컬레이션** — 정해진 시간 안에 진전이 없을 때 윗단계 지원으로 올려 달라고 요청한다: \"This is now impacting production: two lots are on hold. **Could we escalate this to Level 2 support?**\"",
+     "**하지 않을 것** — \"ASAP!!!\", \"This is your fault.\", \"Reply immediately.\" 감정은 정보가 아니다. 영향(멈춘 시간 · 대기 lot 수 · 기한)을 숫자로 쓰는 것이 가장 강한 재촉이다.",
+     "고마움도 정해진 말이 있다: \"Thank you for the quick support.\" \"I appreciate your help on this.\" 다음 티켓의 속도를 바꾼다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "REQUEST LADDER",
+      "items": [
+       [
+        "[Could you] …?",
+        "가볍게"
+       ],
+       [
+        "[Would it be possible to] …?",
+        "더 정중하게"
+       ],
+       [
+        "[We need] … [by] … [because] …",
+        "기한 + 이유"
+       ],
+       [
+        "[Could we escalate] this?",
+        "에스컬레이션"
+       ]
+      ]
+     }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "LVS 검증 화면과 리포트에서 반복되는 핵심 약어입니다.",
+    "intro": "장비사 지원 창구와 메일에서 반복해서 나오는 약어입니다.",
     "items": [
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃과 회로도 비교 검증"
+      "ab": "SR",
+      "full": "Service Request",
+      "ko": "서비스 요청 — 지원 티켓, 번호가 붙는다"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 (LVS와 함께 도는 검증)"
+      "ab": "TSE",
+      "full": "Technical Support Engineer",
+      "ko": "원격 기술 지원 엔지니어"
      },
      {
-      "ab": "ERC",
-      "full": "Electrical Rule Check",
-      "ko": "전기 규칙 검사 (short/open 등 전기 오류 점검)"
+      "ab": "FSE",
+      "full": "Field Service Engineer",
+      "ko": "현장 방문 서비스 엔지니어"
      },
      {
-      "ab": "PEX",
-      "full": "Parasitic Extraction",
-      "ko": "기생 성분 추출 (LVS 후속 단계)"
+      "ab": "SLA",
+      "full": "Service Level Agreement",
+      "ko": "지원 수준 계약 — 긴급도별 응답 시간"
      },
      {
-      "ab": "VDD",
-      "full": "Voltage Drain-Drain",
-      "ko": "양(+) 전원 전압 노드"
+      "ab": "P/N",
+      "full": "Part Number",
+      "ko": "부품 번호"
      },
      {
-      "ab": "VSS",
-      "full": "Voltage Source-Source",
-      "ko": "접지(0V) 노드"
+      "ab": "Qty",
+      "full": "Quantity",
+      "ko": "수량"
+     },
+     {
+      "ab": "RMA",
+      "full": "Return Material Authorization",
+      "ko": "반송 승인 번호 — 없으면 받지 않는다"
+     },
+     {
+      "ab": "FA",
+      "full": "Failure Analysis",
+      "ko": "고장 원인 분석"
+     },
+     {
+      "ab": "ETA",
+      "full": "Estimated Time of Arrival",
+      "ko": "도착 예정 시각"
+     },
+     {
+      "ab": "KST",
+      "full": "Korea Standard Time",
+      "ko": "한국 시간 — 해외 상대에겐 시간대를 꼭 붙인다"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) — 비교의 대상",
-    "intro": "무엇과 무엇을 비교하는지, 그 재료가 되는 용어들입니다.",
+    "title": "핵심 용어 (1) — 통화에서 확인하기",
+    "intro": "통화에서 숫자와 지시를 틀리지 않게 확인하는 문장입니다.",
     "items": [
      {
-      "en": "netlist",
-      "ko": "넷리스트",
-      "d": "소자와 연결 관계를 글자로 적은 목록",
-      "ex": "The tool converts the layout into a netlist before comparison."
+      "en": "Could you repeat that?",
+      "ko": "다시 말씀해 주시겠어요?",
+      "d": "못 알아들었을 때 — 모르는 채로 Yes 하지 않는다",
+      "ex": "Sorry, the line is noisy. Could you repeat that?"
      },
      {
-      "en": "schematic",
-      "ko": "회로도",
-      "d": "설계자가 의도한 회로의 원본 도면",
-      "ex": "This device exists in the schematic but not in the layout."
+      "en": "Did you say … or …?",
+      "ko": "…라고 하셨나요, …라고 하셨나요?",
+      "d": "둘 중 헷갈릴 때 선택지를 함께 말한다",
+      "ex": "Did you say fifteen or fifty?"
      },
      {
-      "en": "layout",
-      "ko": "레이아웃",
-      "d": "실제 마스크로 그려진 물리적 배치",
-      "ex": "LVS extracts a netlist from the layout automatically."
+      "en": "Just to confirm",
+      "ko": "확인하자면",
+      "d": "내가 이해한 내용을 문장으로 돌려준다",
+      "ex": "Just to confirm, you mean the upper match, not the lower one?"
      },
      {
-      "en": "device",
-      "ko": "소자",
-      "d": "트랜지스터·저항 등 회로의 개별 부품",
-      "ex": "Two devices could not be matched between the two netlists."
+      "en": "Let me read that back",
+      "ko": "다시 읽어 드릴게요",
+      "d": "받은 값 · 순서를 그대로 다시 읽는다",
+      "ex": "Let me read that back: reflected power limit, one-five watts."
      },
      {
-      "en": "net",
-      "ko": "노드/배선",
-      "d": "전기적으로 같은 하나의 연결선",
-      "ex": "The signal net CLK is not fully connected."
+      "en": "That's correct / Negative",
+      "ko": "맞습니다 / 아닙니다",
+      "d": "되읽기에 대한 대답",
+      "ex": "Negative, the limit is one-five, not five-zero."
      },
      {
-      "en": "connectivity",
-      "ko": "연결 관계",
-      "d": "소자들이 어떤 선으로 이어져 있는가",
-      "ex": "LVS checks connectivity, not the shape of the wires."
+      "en": "call you back",
+      "ko": "다시 전화하다",
+      "d": "다음 연락 시각을 정하고 끊는다",
+      "ex": "I will run the check and call you back by 04:00 KST."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — LVS 비교",
-    "app": "LVS Studio",
-    "doc": "chip_top",
-    "run": "Run",
-    "canvas": "lvs",
-    "left": {
-     "title": "Nets",
-     "items": [
-      {
-       "name": "matched 1044",
-       "color": "#2f7d5b"
-      },
-      {
-       "name": "MISMATCH 1",
-       "color": "#e05a4a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 통화에서 확인하기",
+    "intro": "통화 상황에서 가장 알맞은 말을 고르세요.",
+    "questions": [
+     {
+      "prompt": "지원 엔지니어가 'Set the limit to fif…' 하는데 잡음에 묻혔다. 가장 알맞은 말은?",
+      "opts": [
+       "Yes, okay.",
+       "Did you say fifteen or fifty?",
+       "I will set it to fifty."
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "지시를 다 받았다. 실행하기 전에 할 말은?",
+      "opts": [
+       "Let me read that back: …",
+       "Thank you, bye.",
+       "Why?"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "내가 'Fifty watts'라고 되읽었더니 'Negative, one-five.' 라는 답이 왔다. 뜻은?",
+      "opts": [
+       "50 이 맞다",
+       "설정하지 마라",
+       "아니다, 15 다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 숫자와 글자 읽기",
+    "intro": "전화로 값과 번호를 불러 줄 때의 규칙입니다.",
+    "items": [
+     {
+      "en": "one-five",
+      "ko": "일-오 (15 를 한 자리씩)",
+      "d": "teen / ty 혼동을 막는다",
+      "ex": "The limit is fifteen — one-five — watts."
+     },
+     {
+      "en": "zero",
+      "ko": "영 (oh 아님)",
+      "d": "글자 O 와 헷갈리지 않게",
+      "ex": "The part number is four zero seven one."
+     },
+     {
+      "en": "point",
+      "ko": "점 (소수점)",
+      "d": "4.2 → four point two",
+      "ex": "The pressure is four point two E minus five Torr."
+     },
+     {
+      "en": "E minus",
+      "ko": "지수 (×10의 마이너스)",
+      "d": "1.0E-5 → one point zero E minus five",
+      "ex": "Base pressure must be below one point zero E minus five."
+     },
+     {
+      "en": "Bravo / Delta",
+      "ko": "B / D 의 음성 기호",
+      "d": "전화로 거의 같게 들리는 글자를 단어로",
+      "ex": "That is Bravo, not Delta."
+     },
+     {
+      "en": "Mike / November",
+      "ko": "M / N 의 음성 기호",
+      "d": "비음 둘을 구분",
+      "ex": "The tool ID is Mike Echo, one two."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 헷갈리는 글자와 음성 기호",
+    "doc": {
+     "name": "PHONETIC ALPHABET — QUICK CARD",
+     "no": "QC-ICAO",
+     "rev": "—"
     },
-    "log": [
-     "> run LVS: layout vs schematic",
-     "> nets matched: 1044",
-     "> MISMATCH: 1 net",
-     "> result: NOT equivalent"
+    "heading": "Letters that sound alike on the phone (ICAO spelling alphabet)",
+    "cols": [
+     "GROUP",
+     "LETTERS",
+     "SAY",
+     "EXAMPLE"
     ],
-    "status": "Devices: 512   Nets: 1045   Mismatch: 1",
+    "rows": [
+     [
+      "B-D-P-V",
+      "B · D · P · V",
+      "Bravo · Delta · Papa · Victor",
+      "KX-4071-B → … Bravo"
+     ],
+     [
+      "E-G",
+      "E · G",
+      "Echo · Golf",
+      "E-chuck → Echo chuck"
+     ],
+     [
+      "M-N",
+      "M · N",
+      "Mike · November",
+      "ME-12 → Mike Echo, one two"
+     ],
+     [
+      "F-S",
+      "F · S",
+      "Foxtrot · Sierra",
+      "SR-20618 → Sierra Romeo …"
+     ],
+     [
+      "digits",
+      "0 · 13 · 15",
+      "zero · one-three · one-five",
+      "4071 → four zero seven one"
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Read part numbers and ticket numbers letter by letter and digit by digit. Then ask the other person to read them back."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 번호 불러 주기",
+    "intro": "위 빠른 참조 카드를 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "부품 번호 'KX-4071-B' 를 전화로 불러 줄 때 가장 안전한 것은?",
+      "opts": [
+       "Kay ex four oh seven one bee",
+       "Kilo X-ray, four zero seven one, Bravo",
+       "KX four thousand seventy-one B"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "티켓 번호 'SR-20618' 을 불러 줄 때 S 를 무엇으로 읽나?",
+      "opts": [
+       "Foxtrot",
+       "Echo",
+       "Sierra"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'one point zero E minus five' 에서 'E minus' 를 빼먹고 'one point zero five'라고 들으면?",
+      "opts": [
+       "값이 완전히 달라진다 — 1.0E-5 가 1.05 로",
+       "같은 값이다",
+       "단위만 달라진다"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 티켓과 메일",
+    "intro": "지원 티켓과 메일의 칸 이름, 그리고 정중한 요청 표현입니다.",
+    "items": [
+     {
+      "en": "severity",
+      "ko": "긴급도",
+      "d": "지원팀이 순서를 정하는 등급 (S1~S4, 계약마다 정의)",
+      "ex": "We opened the ticket as Severity 1 because the tool is down."
+     },
+     {
+      "en": "workaround",
+      "ko": "임시 우회 방법",
+      "d": "정식 해결 전에 일을 계속할 길",
+      "ex": "ET-06 can run the same recipe, so we have a workaround."
+     },
+     {
+      "en": "impact",
+      "ko": "영향",
+      "d": "멈춘 시간 · 대기 lot 수 등 — 숫자로",
+      "ex": "Impact: two lots on hold, about 50 wafers."
+     },
+     {
+      "en": "Could you …?",
+      "ko": "…해 주시겠어요?",
+      "d": "가장 기본의 정중한 요청",
+      "ex": "Could you send an FSE on site tomorrow morning?"
+     },
+     {
+      "en": "We need … by …",
+      "ko": "…까지 …이 필요합니다",
+      "d": "기한 — 이유(영향)와 함께",
+      "ex": "We need the part by Nov 10 because the tool is down."
+     },
+     {
+      "en": "escalate",
+      "ko": "상위 단계로 올리다",
+      "d": "진전이 없을 때 정중하게",
+      "ex": "Could we escalate this to Level 2 support?"
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 서비스 요청 메일",
+    "from": "Jisu Park <jisu.park@fab.example>",
+    "to": "Vendor Support <support@vendor.example>",
+    "subject": "SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)",
+    "lines": [
+     "Hi Support team,",
+     "This is Jisu Park from the etch night shift at Fab 2.",
+     "What happened: Base pressure on ET-05 has been 4.2E-5 Torr since 23:05 KST (limit 1.0E-5). The tool is down.",
+     "What we checked: We [ruled out] the gauge and the turbo pump. A leak at the lid O-ring is [suspected].",
+     "Request: [Could you] send an FSE to inspect the lid seal, or advise on the next check?",
+     "Impact: No other tool can run this recipe, and two lots are on hold. We would appreciate a reply [by] 06:00 KST.",
+     "Attached: alarm log and pressure trend (last 12 h)."
+    ],
+    "sign": "Thank you for your support. Jisu Park (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 메일 읽기",
+    "intro": "위 서비스 요청 메일을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "제목 'SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)' 에 들어 있지 않은 것은?",
+      "opts": [
+       "장비 ID",
+       "증상이 시작된 시각",
+       "교체할 부품 번호"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'A leak at the lid O-ring is suspected.' 를 읽은 지원팀이 이해할 것은?",
+      "opts": [
+       "누설은 아직 의심 단계 — 확정이 아니다",
+       "누설이 확정되었다",
+       "누설은 배제되었다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "이 메일이 S1 인 근거로 쓴 사실은?",
+      "opts": [
+       "보낸 사람이 야간 근무라서",
+       "장비가 멈췄고 이 레시피를 돌릴 다른 장비가 없어서",
+       "메일에 첨부가 있어서"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 부품과 반송",
+    "intro": "부품 요청 · 반송 메일에 들어가는 말입니다.",
+    "items": [
+     {
+      "en": "part number (P/N)",
+      "ko": "부품 번호",
+      "d": "한 글자만 틀려도 다른 부품이 온다",
+      "ex": "Please confirm P/N KX-4071-B before shipping."
+     },
+     {
+      "en": "lead time",
+      "ko": "납기",
+      "d": "주문에서 도착까지 걸리는 시간",
+      "ex": "The lead time is three weeks, but there is one in stock in Singapore."
+     },
+     {
+      "en": "in stock",
+      "ko": "재고 있음",
+      "d": "바로 보낼 수 있음",
+      "ex": "The O-ring kit is in stock and can ship today."
+     },
+     {
+      "en": "loaner",
+      "ko": "대여품",
+      "d": "수리 기간 동안 빌려 쓰는 부품",
+      "ex": "Is a loaner available while our unit is repaired?"
+     },
+     {
+      "en": "RMA number",
+      "ko": "반송 승인 번호",
+      "d": "없으면 장비사가 받지 않는다",
+      "ex": "Write the RMA number on the outside of the box."
+     },
+     {
+      "en": "under warranty",
+      "ko": "보증 기간 안",
+      "d": "무상 수리 · 교체 대상",
+      "ex": "The match unit is still under warranty until March."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 부품 반송(RMA) 절차",
+    "doc": {
+     "name": "Vendor Parts Return Guide",
+     "no": "VPG-0102",
+     "sec": "2",
+     "rev": "E",
+     "page": "2-1"
+    },
+    "heading": "2  Returning a Failed Part",
+    "steps": [
+     "Request an RMA number through the support portal before shipping.",
+     {
+      "t": "Include the SR number, P/N, serial number, and a short failure description.",
+      "note": {
+       "kind": "note",
+       "en": "Parts returned without an RMA number will be refused."
+      }
+     },
+     {
+      "t": "Purge and clean the part if it was exposed to process gases.",
+      "note": {
+       "kind": "warning",
+       "en": "Attach a decontamination certificate. Contaminated parts shall not be shipped without it."
+      }
+     },
+     "Pack the part in the original packaging, and write the RMA number on the outside of the box.",
+     "If you need a failure analysis, check \"FA requested\" on the RMA form."
+    ],
+    "callout": {
+     "kind": "caution",
+     "en": "Return the failed part within 30 days, or you may be charged for the replacement."
+    },
     "gloss": [
      [
-      "LVS",
-      "레이아웃-회로도 비교"
+      "serial number",
+      "일련번호"
      ],
      [
-      "Netlist",
-      "넷리스트(연결표)"
+      "decontamination certificate",
+      "오염 제거 확인서"
      ],
      [
-      "matched",
-      "일치"
+      "be refused",
+      "거절되다"
      ],
      [
-      "mismatch",
-      "불일치"
-     ],
-     [
-      "equivalent",
-      "동등(일치)"
+      "be charged",
+      "비용이 청구되다"
      ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "리포트 문장의 의미를 해석해 보세요.",
+    "title": "확인 퀴즈 (4) — 반송 절차",
+    "intro": "위 부품 반송 절차 VPG-0102 를 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "리포트에 'Device in schematic but not in layout' 이 뜨면 무슨 뜻인가?",
+      "prompt": "RMA 번호를 받기 전에 고장 부품을 먼저 보냈다. 어떻게 되나?",
       "opts": [
-       "회로도에는 있으나 레이아웃에 그려지지 않은 누락 소자(missing device)",
-       "레이아웃에 잘못 추가된 잉여 소자(extra device)",
-       "두 배선이 붙어버린 단락(short)"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'LVS checks connectivity' 에서 connectivity가 의미하는 것은?",
-      "opts": [
-       "도형의 모양과 크기",
-       "소자들이 어떤 선으로 연결되어 있는가",
-       "칩의 소비 전력"
+       "장비사가 알아서 번호를 붙인다",
+       "거절된다 — 번호 없이 보낸 부품은 받지 않는다",
+       "보증이 늘어난다"
       ],
       "ans": 1
      },
      {
-      "prompt": "화면에 'Extracting devices...' 로그가 흐른다. 지금 진행 중인 작업은?",
+      "prompt": "공정 가스에 노출된 부품이다. 상자에 무엇을 붙여야 하나?",
       "opts": [
-       "레이아웃에서 소자를 뽑아 넷리스트를 만드는 중",
-       "회로도를 인쇄하는 중",
-       "전원을 차단하는 중"
+       "영수증",
+       "사진",
+       "오염 제거 확인서(decontamination certificate)"
       ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) — 결과와 판정",
-    "intro": "비교 결과가 어떻게 표현되는지에 관한 용어들입니다.",
-    "items": [
-     {
-      "en": "match",
-      "ko": "일치",
-      "d": "두 넷리스트가 전기적으로 동일함",
-      "ex": "The layout matches the schematic. LVS passed."
+      "ans": 2
      },
      {
-      "en": "mismatch",
-      "ko": "불일치",
-      "d": "두 넷리스트가 어딘가 다름",
-      "ex": "A net mismatch was found on the output node."
-     },
-     {
-      "en": "unmatched",
-      "ko": "짝을 못 찾음",
-      "d": "대응되는 상대를 찾지 못한 소자/노드",
-      "ex": "There are 2 unmatched devices in the summary."
-     },
-     {
-      "en": "missing device",
-      "ko": "누락 소자",
-      "d": "회로도엔 있으나 레이아웃엔 없는 소자",
-      "ex": "A missing device means it was not drawn in the layout."
-     },
-     {
-      "en": "extra device",
-      "ko": "잉여 소자",
-      "d": "레이아웃엔 있으나 회로도엔 없는 소자",
-      "ex": "Please delete the extra device that is not in the schematic."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "TERM",
-      "en": "The [layout] must match the [schematic].",
-      "ko": "레이아웃과 회로도가 일치해야 한다."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "판정 관련 영어 표현을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "Summary에 'Unmatched nets: 1' 이라고 적혀 있다. 무슨 의미인가?",
+      "prompt": "'Return the failed part within 30 days, or you may be charged.' 40일 뒤에 보내면?",
       "opts": [
-       "모든 배선이 정상 연결되었다",
-       "대응되는 짝을 찾지 못한 배선이 1개 있다",
-       "배선을 1개 새로 추가해야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The layout matches the schematic' 을 현장 판정으로 옮기면?",
-      "opts": [
-       "LVS 통과 — 레이아웃과 회로도가 동일함",
-       "LVS 실패 — 재작업 필요",
-       "검증이 아직 시작되지 않음"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) — 연결 오류",
-    "intro": "가장 자주 마주치고, 가장 위험한 연결 관련 오류 용어입니다.",
-    "items": [
-     {
-      "en": "short",
-      "ko": "단락",
-      "d": "떨어져야 할 두 net이 하나로 붙음",
-      "ex": "Warning: a short between VDD and VSS was detected."
-     },
-     {
-      "en": "open",
-      "ko": "단선",
-      "d": "이어져야 할 net이 중간에 끊김",
-      "ex": "This net is open; the signal cannot reach the input."
-     },
-     {
-      "en": "incorrect connection",
-      "ko": "잘못된 연결",
-      "d": "소자가 엉뚱한 net에 연결됨",
-      "ex": "The gate is connected to the wrong net."
-     },
-     {
-      "en": "terminal",
-      "ko": "단자/핀",
-      "d": "소자에서 배선이 붙는 접점",
-      "ex": "This terminal is connected to the wrong net."
-     },
-     {
-      "en": "highlight",
-      "ko": "강조 표시",
-      "d": "오류 지점을 색으로 표시함",
-      "ex": "Click Highlight errors to see the short in red."
-     },
-     {
-      "en": "re-run",
-      "ko": "재실행",
-      "d": "수정 후 검증을 다시 돌림",
-      "ex": "Fix the error and re-run LVS until it is clean."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "연결 오류 문장을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "'A short between VDD and VSS was detected' 가 위험한 이유는?",
-      "opts": [
-       "전원과 접지가 붙어 과전류·소자 파손으로 이어질 수 있어서",
-       "단순히 색이 예쁘지 않아서",
-       "검증 시간이 길어져서"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'This net is open' 이 뜻하는 상태는?",
-      "opts": [
-       "배선이 끊겨 신호가 목적지에 도달하지 못함",
-       "배선이 정상적으로 연결됨",
-       "배선이 두 개로 붙어버림"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'The gate is connected to the wrong net' 은 어떤 오류 유형인가?",
-      "opts": [
-       "incorrect connection (잘못된 연결)",
-       "missing device (누락 소자)",
-       "extra device (잉여 소자)"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (4) — 진행과 마무리",
-    "intro": "검증을 돌리고 마무리하는 단계에서 쓰는 용어들입니다.",
-    "items": [
-     {
-      "en": "run",
-      "ko": "실행",
-      "d": "검증을 한 번 돌리는 동작",
-      "ex": "Click Run to start the LVS comparison."
-     },
-     {
-      "en": "clean",
-      "ko": "오류 없음",
-      "d": "오류가 하나도 없는 상태",
-      "ex": "Re-run until the report is LVS clean."
-     },
-     {
-      "en": "summary",
-      "ko": "요약",
-      "d": "오류를 유형별로 몰아 보여주는 칸",
-      "ex": "Read the summary section of the report first."
-     },
-     {
-      "en": "cross-probing",
-      "ko": "크로스 프로빙",
-      "d": "리포트-도면을 연동해 같은 지점 표시",
-      "ex": "Use cross-probing to find the net in both views."
-     },
-     {
-      "en": "tape out",
-      "ko": "최종 제출",
-      "d": "설계를 제조 단계로 넘기는 것",
-      "ex": "Do not tape out until LVS is clean."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (4)",
-    "intro": "진행·마무리 표현을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "'Re-run until the report is LVS clean' 이 지시하는 행동은?",
-      "opts": [
-       "오류가 0이 될 때까지 수정 후 검증을 반복한다",
-       "한 번만 돌리고 끝낸다",
-       "리포트를 삭제한다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'Do not tape out until LVS is clean' 의 의미는?",
-      "opts": [
-       "LVS 오류가 남은 채로 제조 단계로 넘기지 말라",
-       "LVS를 건너뛰고 바로 제조하라",
-       "clean이면 검증을 멈춰라"
+       "교체품 비용이 청구될 수 있다",
+       "아무 일도 없다",
+       "RMA 번호가 바뀐다"
       ],
       "ans": 0
      }
@@ -8729,100 +8990,119 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "manual",
-    "mtitle": "LVS VERIFICATION PROCEDURE",
+    "mtitle": "REMOTE SUPPORT CALL — A SAFE SCRIPT",
     "paras": [
-     "1. Load both the schematic netlist and the layout view before starting the run.",
-     "1. 실행 전에 회로도 넷리스트와 레이아웃 뷰를 모두 불러옵니다.",
-     "2. Select Verify > LVS and click Run to begin the comparison.",
-     "2. Verify > LVS 메뉴를 선택하고 Run을 눌러 비교를 시작합니다.",
-     "3. Wait until the status bar shows LVS PASSED or LVS FAILED.",
-     "3. 상태 표시줄에 LVS PASSED 또는 LVS FAILED가 나올 때까지 기다립니다.",
-     "4. If the run fails, open the report and read the Summary section first.",
-     "4. 실패하면 리포트를 열고 Summary(요약) 항목부터 읽습니다.",
-     "NOTE: A device shown 'in schematic but not in layout' is a missing device.",
-     "참고: '회로도엔 있으나 레이아웃엔 없음'으로 표시된 소자는 누락 소자입니다.",
-     "WARNING: Do NOT tape out the design while any short or open remains unresolved.",
-     "경고: short(단락)나 open(단선)이 해결되지 않은 상태로 절대 최종 제출(tape out)하지 마십시오."
+     "Hi, this is Jisu from Fab 2. I am calling about SR-20618, ET-05.",
+     "해설: 시작 — 이름 · 소속 · 티켓 번호 · 장비 ID. 상대가 티켓을 여는 동안 기다린다.",
+     "Sorry, did you say fifteen or fifty?",
+     "해설: 헷갈리는 숫자는 두 후보를 같이 말해 고르게 한다.",
+     "Let me read that back: reflected power limit, one-five watts, then restart the match.",
+     "해설: 지시를 받으면 값과 순서를 그대로 되읽는다. 상대의 \"That's correct\" 를 들은 뒤에 실행한다.",
+     "So the next step is a leak check at the lid, and I will call you back by 04:00 KST.",
+     "해설: 끝낼 때 다음 할 일과 다음 연락 시각(시간대 포함)을 정한다."
     ]
    },
    {
     "type": "manual",
-    "mtitle": "READING THE LVS ERROR REPORT",
+    "mtitle": "TICKET SEVERITY — HOW TO CHOOSE (교재 예시)",
     "paras": [
-     "Summary: Unmatched devices = 2, Unmatched nets = 1, Property errors = 0.",
-     "요약: 짝을 못 찾은 소자 2개, 짝을 못 찾은 배선 1개, 속성 오류 0개.",
-     "Error 1: Device M12 exists in layout but not in schematic (extra device).",
-     "오류 1: 소자 M12가 레이아웃엔 있으나 회로도엔 없음 (잉여 소자).",
-     "Error 2: Terminal 'gate' of M7 is connected to net N4; expected net CLK.",
-     "오류 2: M7의 게이트 단자가 N4에 연결됨; 원래는 CLK에 연결되어야 함 (잘못된 연결).",
-     "Error 3: Net VOUT is open; two segments are not joined.",
-     "오류 3: 배선 VOUT가 끊겨 있음; 두 구간이 이어지지 않음 (단선).",
-     "Action: Fix each error, then re-run LVS until the report shows LVS clean.",
-     "조치: 각 오류를 수정한 뒤, 리포트가 LVS clean으로 나올 때까지 LVS를 다시 실행합니다."
+     "S1: The tool is down, and there is no workaround.",
+     "해설: 장비 정지 + 같은 일을 할 대안 없음. 생산이 멈춘다.",
+     "S2: The tool is down but a workaround exists, or wafers are at risk.",
+     "해설: 정지했지만 다른 장비로 돌릴 수 있거나, 가동 중이어도 웨이퍼가 위험하다(예: 파티클 증가).",
+     "S3: The tool is running, and there is no risk to wafers.",
+     "해설: 가동 중 + 웨이퍼 위험 없음. 예: 화면 표시 오류, 저절로 풀리는 경고.",
+     "S4: A question or a request for documents.",
+     "해설: 질문 · 매뉴얼 · 교육 자료 요청. 실제 정의는 장비사와의 계약(SLA)을 따른다."
     ]
    },
    {
     "type": "sim",
-    "which": "lvs",
-    "mode": "netlist",
-    "intro": "아래 시뮬레이터에서 schematic 넷리스트와 layout 넷리스트를 나란히 비교해 보세요. 각 소자와 net을 짝지어 가며 어디서 mismatch가 발생하는지 직접 찾아보고, 화면의 영문 판정(LVS PASSED / FAILED)을 소리 내어 읽어 봅니다."
+    "which": "vendor",
+    "mode": "severity",
+    "intro": "먼저 **티켓 긴급도** 실습입니다. 상황 카드를 읽고 **S1 · S2 · S3 · S4** 중 하나를 고르세요(교재 예시 기준). 판단은 느낌이 아니라 세 가지 **사실**로 합니다: 장비가 멈췄나 · 대안이 있나 · 웨이퍼가 위험한가."
    },
    {
     "type": "sim",
-    "which": "lvs",
-    "mode": "lvsFix",
-    "intro": "이번에는 오류가 포함된 케이스입니다. missing device, short, open 중 어떤 유형인지 영문 오류 메시지를 읽고 분류해 보세요. 오류를 수정한 뒤 다시 실행하여 리포트가 LVS clean으로 바뀌는지 확인합니다."
+    "which": "vendor",
+    "mode": "readback",
+    "intro": "다음은 **되읽기** 실습입니다. 지원 엔지니어가 전화로 불러 준 값이나 번호가 나옵니다. 가장 안전한 **되읽기(read back)** 를 고르세요 — 숫자는 **한 자리씩**, 0 은 **zero**, 글자는 **음성 기호**로."
+   },
+   {
+    "type": "sim",
+    "which": "vendor",
+    "mode": "email",
+    "intro": "마지막은 **서비스 요청 메일** 실습입니다. 메일을 칸(제목 · 인사 · 사실 · 확인한 것 · 요청 · 영향과 기한 · 맺음)으로 나눴습니다. 칸마다 **지원팀이 한 번에 알아듣는** 문장을 고르세요. 다 고르면 완성된 메일이 나옵니다."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "해외 설계 엔지니어가 LVS 리포트를 함께 검토하며 상황을 확인한다.",
+      "sit": "지원 엔지니어가 값을 불러 준다",
       "q": {
-       "en": "The report says two devices are unmatched. Can you tell which side they are on?",
-       "ko": "리포트에 소자 2개가 짝을 못 찾았다고 나오네요. 어느 쪽에 있는 건지 알려줄 수 있나요?"
+       "en": "Set the reflected power limit to fifteen watts, then restart the match.",
+       "ko": "반사 전력 한계를 15 와트로 설정하고 매치를 재시작하세요."
       },
       "a": {
-       "en": "One is a missing device in the layout, and the other is an extra device not in the schematic.",
-       "ko": "하나는 레이아웃에서 누락된 소자이고, 다른 하나는 회로도에 없는 잉여 소자입니다."
+       "en": "Let me read that back: reflected power limit, one-five watts, then restart the match. Is that correct?",
+       "ko": "다시 읽어 드릴게요: 반사 전력 한계 일-오 와트, 그다음 매치 재시작. 맞습니까?"
       }
      },
      {
-      "sit": "엔지니어가 가장 위험한 오류부터 확인하려 한다.",
+      "sit": "부품 번호를 확인한다",
       "q": {
-       "en": "Is there any short or open in the power nets? That's my top priority.",
-       "ko": "전원 배선에 단락이나 단선이 있나요? 그게 제일 급합니다."
+       "en": "The replacement part is K X four zero seven one B.",
+       "ko": "교체 부품은 K X 4 0 7 1 B 입니다."
       },
       "a": {
-       "en": "Yes, there is a short between VDD and VSS. I highlighted it in red on the layout.",
-       "ko": "네, VDD와 VSS 사이에 단락이 있습니다. 레이아웃에서 빨간색으로 강조해 두었습니다."
+       "en": "Copy. Kilo X-ray, four zero seven one, Bravo. Is it in stock, and what is the lead time to Korea?",
+       "ko": "알겠습니다. 킬로 엑스레이, 4 0 7 1, 브라보. 재고가 있나요, 한국까지 납기는 얼마인가요?"
       }
      },
      {
-      "sit": "수정 후 재검증 계획을 공유한다.",
+      "sit": "진전이 없어 에스컬레이션을 요청한다",
       "q": {
-       "en": "Okay, please fix the wrong connection first, then re-run and send me the result.",
-       "ko": "좋아요, 잘못된 연결부터 고치고 다시 돌린 뒤 결과를 보내주세요."
+       "en": "We are still analyzing the logs. We will get back to you.",
+       "ko": "아직 로그를 분석 중입니다. 다시 연락드리겠습니다."
       },
       "a": {
-       "en": "Understood. I will re-run LVS and let you know when the report is clean.",
-       "ko": "알겠습니다. LVS를 다시 실행하고 리포트가 clean으로 나오면 알려드리겠습니다."
+       "en": "Thank you. This is now impacting production: the tool has been down for six hours and two lots are on hold. Could we escalate this to Level 2 support?",
+       "ko": "감사합니다. 이제 생산에 영향이 있습니다 — 장비가 6시간째 멈췄고 두 lot 이 보류 중입니다. Level 2 지원으로 올려 주실 수 있을까요?"
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 한 번에 알아듣게, 틀리지 않게",
     "points": [
-     "**LVS(Layout Versus Schematic)** 는 layout과 schematic을 각각 **netlist**로 뽑아 전기적 동일성을 비교하는 검증이다.",
-     "판정은 한 줄로 나온다: **LVS PASSED / Match** 는 통과, **LVS FAILED / Mismatch** 는 재작업.",
-     "소자 개수 문제는 **missing device / extra device**, 연결 문제는 **incorrect connection / short / open** 으로 구분해 읽는다.",
-     "**short**(VDD-VSS 단락)와 **open**(배선 단선)은 가장 위험하며 해결 전 tape out 금지.",
-     "검증 흐름은 **DRC(모양) → LVS(연결) → PEX(성능)** 이며, LVS clean이어야 다음 단계로 간다.",
-     "리포트는 **Summary → Error 목록 → 위치(net/device 식별자)** 순으로 읽고, GUI의 **Highlight errors** 로 위치를 확인한다."
+     "지원은 세 갈래: **ticket(SR) · call · email**. 모든 연락을 **티켓 번호**로 잇는다.",
+     "티켓 제목 공식: **Tool ID | Symptom | Since when | Impact**. 긴급도는 느낌이 아니라 **사실**(정지 · 대안 · 웨이퍼 위험)로.",
+     "통화: 못 들으면 **Could you repeat that?**, 헷갈리면 **Did you say … or …?**, 받으면 **Let me read that back.**",
+     "숫자는 **한 자리씩**(one-five), 0 은 **zero**, 소수 · 지수는 **point · E minus**, 글자는 **Bravo · Delta · Mike · November**.",
+     "부품: **P/N · Qty · lead time · RMA**. 재촉은 감정이 아니라 **영향을 숫자로** — 그리고 **Could we escalate this?**"
     ],
-    "done": "이제 영문 LVS 리포트에서 **어떤 오류가 어디서** 났는지 스스로 읽어낼 수 있습니다. **한 줄의 영어를 정확히 읽는 힘**이 현장의 판단력입니다."
+    "done": "이제 여러분은 해외 지원팀과 **티켓 · 통화 · 메일**로 일할 때, 상대가 한 번에 알아듣게 쓰고 들은 것을 틀리지 않게 확인할 수 있습니다. **Say it once, read it back.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "BEFORE YOU HANG UP",
+      "items": [
+       [
+        "[Read back] the values.",
+        "되읽기"
+       ],
+       [
+        "Confirm the [next step].",
+        "다음 할 일"
+       ],
+       [
+        "Agree on the [next call time].",
+        "다음 연락 시각"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },

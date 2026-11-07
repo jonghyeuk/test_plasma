@@ -41,6 +41,7 @@ import {
   NOUN_ITEMS, nounHead, ofChain, TOOL_FAMILIES, TOOL_LINES, toolOf, SPEC_ITEMS,
   CERTAINTY_LEVELS, CERTAINTY_ITEMS, certaintyOf, TS_CAUSES, TS_CASES, TS_VERDICTS, tsNarrow,
   SPC_CHART, SPC_ANSWERS, SPC_CASES, spcCheck, spcInSpec, spcAnswer,
+  severityOf, SEVERITY_LEVELS, SEVERITY_CASES, SEVERITY_WHY, READBACK_ITEMS, readBackOf, EMAIL_SLOTS,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -2794,6 +2795,112 @@ function SpcRuleLab() {
   );
 }
 
+/* ── 13강 · 티켓 긴급도 (교재 예시 기준) ── */
+function SeverityLab() {
+  const [ans, setAns] = useState({});
+  const right = SEVERITY_CASES.filter((c) => ans[c.id] === severityOf(c.f)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">상황 카드를 읽고 긴급도를 고르세요(교재 예시 — 실제 정의는 장비사 계약 SLA). 근거는 세 가지 사실: <b>멈췄나 · 대안이 있나 · 웨이퍼가 위험한가</b>.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {SEVERITY_CASES.map((c, n) => {
+          const a = ans[c.id], truth = severityOf(c.f);
+          return (
+            <div key={c.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {c.text} <SpeakBtn text={c.text} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {SEVERITY_LEVELS.map((l) => (
+                  <button key={l.id} className={`fes-chip ${a === l.id ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && l.id === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === l.id ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [c.id]: l.id }))}>{l.ko}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {truth} — {SEVERITY_WHY[truth]}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {SEVERITY_CASES.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 13강 · 되읽기 (한 자리씩 · zero · point · E minus · 음성 기호) ── */
+function ReadbackLab() {
+  const [ans, setAns] = useState({});
+  const right = READBACK_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">지원 엔지니어가 전화로 불러 준 말입니다. 가장 안전한 <b>되읽기(read back)</b>를 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {READBACK_ITEMS.map((it, n) => {
+          const a = ans[it.id];
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontSize: 11, color: C.dim, fontFamily: C.mono, letterSpacing: 1 }}>TSE SAYS</div>
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.cyan, marginTop: 2 }}>{n + 1}. “{it.said}” <SpeakBtn text={it.said} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {it.opts.map((o, j) => (
+                  <button key={j} className={`fes-chip ${a === j ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && j === it.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: j }))}>Let me read that back: {o}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === it.ans ? C.emerald : C.amber }}>{a === it.ans ? '✔' : '✘'} <b style={{ fontFamily: C.mono }}>{readBackOf(it)}</b> — {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {READBACK_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 13강 · 서비스 요청 메일 (칸마다 문장 고르기 → 완성 메일) ── */
+function VendorEmailLab() {
+  const [ans, setAns] = useState({});
+  const done = EMAIL_SLOTS.every((sl) => ans[sl.id] != null);
+  const right = EMAIL_SLOTS.filter((sl) => ans[sl.id] === sl.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">칸마다 지원팀이 <b>한 번에 알아듣는</b> 문장을 고르세요. 다 고르면 완성된 메일이 나옵니다.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {EMAIL_SLOTS.map((sl) => {
+          const a = ans[sl.id];
+          return (
+            <div key={sl.id} className="fes-dev-status">
+              <div className="fes-dev-sub">{sl.ko.toUpperCase()} · {sl.id.toUpperCase()}</div>
+              <div style={{ display: 'grid', gap: 5 }}>
+                {sl.opts.map((o, j) => (
+                  <button key={j} className="fes-btn" disabled={a != null} onClick={() => setAns((p) => ({ ...p, [sl.id]: j }))}
+                    style={{ textAlign: 'left', justifyContent: 'flex-start', ...(a != null && j === sl.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : {}) }}>{o}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === sl.ans ? C.emerald : C.amber }}>{a === sl.ans ? '✔' : '✘'} {sl.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {EMAIL_SLOTS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+      {done && (
+        <div className="fes-doc fes-doc-email" style={{ marginTop: 12 }}>
+          <div className="fes-mail-hd"><div><span>To</span> Vendor Support</div><div><span>Subject</span> <b>{EMAIL_SLOTS[0].opts[EMAIL_SLOTS[0].ans]}</b></div></div>
+          <div className="fes-mail-body">{EMAIL_SLOTS.slice(1).map((sl) => <p key={sl.id}>{sl.opts[sl.ans]}</p>)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -4142,6 +4249,8 @@ const SIM_REGISTRY = {
   tools: (sl) => (sl.mode === 'family' ? <ToolFamilyLab /> : sl.mode === 'specs' ? <ToolSpecLab /> : <NounChainLab />),
   // 12강 트러블슈팅 — 확신 등급 · 원인 좁히기 · 관리도 규칙
   trouble: (sl) => (sl.mode === 'narrow' ? <NarrowCauseLab /> : sl.mode === 'spc' ? <SpcRuleLab /> : <CertaintyLab />),
+  // 13강 벤더 소통 — 티켓 긴급도 · 되읽기 · 서비스 요청 메일
+  vendor: (sl) => (sl.mode === 'readback' ? <ReadbackLab /> : sl.mode === 'email' ? <VendorEmailLab /> : <SeverityLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -4541,10 +4650,9 @@ const CM_PART_DOCS = [
   { ch: 'CH 10', t: '레시피 · 변경 관리', d: 'unless · only if · not to exceed · at least · within ± (조건과 경계)' },
   { ch: 'CH 11', t: '다른 장비 계열 읽기', d: '증착 · 노광 · CMP · 이온주입 — 명사 덩어리 · 수동태 · 단위' },
   { ch: 'CH 12', t: '트러블슈팅 문서', d: 'confirmed · likely · suspected · ruled out · caused by ↔ results in · OOC' },
+  { ch: 'CH 13', t: '벤더 · 서비스 엔지니어와 소통', d: '티켓 · 통화 · 메일 — read back · one-five · Bravo · Could we escalate?' },
 ];
-const CM_PART_DESIGN = [
-  { ch: 'CH 13', t: 'LVS 검증', d: 'LVS (Layout Versus Schematic) 비교' },
-];
+const CM_PART_DESIGN = [];
 
 function CourseMap() {
   return (
@@ -4580,7 +4688,7 @@ function CourseMap() {
           {CM_PART_DOCS.map((c) => (
             <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
           ))}
-          <div className="fes-cm-part-h fes-b" style={{ marginTop: 10, opacity: 0.75 }}>설계 영어 · 장비 강으로 개편 중</div>
+          {CM_PART_DESIGN.length > 0 && <div className="fes-cm-part-h fes-b" style={{ marginTop: 10, opacity: 0.75 }}>설계 영어 · 장비 강으로 개편 중</div>}
           {CM_PART_DESIGN.map((c) => (
             <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
           ))}
