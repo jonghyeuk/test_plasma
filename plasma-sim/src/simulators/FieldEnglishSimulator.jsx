@@ -42,6 +42,7 @@ import {
   CERTAINTY_LEVELS, CERTAINTY_ITEMS, certaintyOf, TS_CAUSES, TS_CASES, TS_VERDICTS, tsNarrow,
   SPC_CHART, SPC_ANSWERS, SPC_CASES, spcCheck, spcInSpec, spcAnswer,
   severityOf, SEVERITY_LEVELS, SEVERITY_CASES, SEVERITY_WHY, READBACK_ITEMS, readBackOf, EMAIL_SLOTS,
+  HANDOVER_ROWS, HANDOVER_PROBLEM, handoverSeverity,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -150,7 +151,7 @@ export const CH_ART = {
 /**
  * FieldEnglishSimulator — 반도체 현장 실무영어 시뮬레이터 (서고 drop-in)
  * ---------------------------------------------------------------------------
- * 목적: 디자인 툴 사용법이 아니라, 가상 장비/디자인 시뮬레이션을 통해
+ * 목적: 장비 조작법이 아니라, 가상 장비·문서 시뮬레이션을 통해
  *       "현장 영어를 읽고 판단하는" 훈련. 매주 4단계 루프를 반복한다.
  *          가상 매뉴얼 읽기 → 시뮬레이션 조작 → 로그·오류 해석 → 영문 보고
  *
@@ -1097,7 +1098,7 @@ function WriteBlock({ prompt, hint, model }) {
 const W1_ROLES = [
   { icon: '🛠️', role: 'Equipment Engineer', duty: 'Operates and maintains process equipment; reads English alarms and manuals.', ko: '장비 엔지니어 — 장비 운전·정비, 영문 알람·매뉴얼 해석' },
   { icon: '🧪', role: 'Process Engineer', duty: 'Sets recipes and analyzes process logs and English data sheets.', ko: '공정 엔지니어 — 레시피 설정, 영문 로그·데이터 분석' },
-  { icon: '📐', role: 'Design Engineer', duty: 'Draws layouts and fixes DRC / LVS errors written in English.', ko: '설계 엔지니어 — 레이아웃 작성, 영문 DRC/LVS 오류 수정' },
+  { icon: '🧰', role: 'Field Service Engineer', duty: 'Works with vendors through English tickets, calls, and parts requests.', ko: '서비스 엔지니어 — 영문 티켓·통화·부품 요청으로 장비사와 협업' },
 ];
 const W1_GLOSSARY = [
   { en: 'Wafer', ko: '웨이퍼', d: '반도체를 만드는 얇은 원판.', ex: 'Load the wafer onto the chuck.' },
@@ -1125,8 +1126,8 @@ const W1_SENT = [
 const W1_TOUR = [
   { ic: '🖥️', area: 'Equipment · 장비', en: '“Load the wafer and pump down.”', ko: '영어 지시로 장비를 운전' },
   { ic: '🚨', area: 'Alarm · 알람', en: '“Stopped by the interlock.”', ko: '영문 알람을 해석' },
-  { ic: '📐', area: 'DRC · 디자인 규칙 검사', en: '“METAL1.SPACING violation.”', ko: 'DRC = Design Rule Check · 디자인 오류 읽기' },
-  { ic: '🔗', area: 'LVS · 레이아웃 검증', en: '“Missing device in the layout.”', ko: 'LVS = Layout Versus Schematic · 레이아웃 vs 회로도' },
+  { ic: '⚠️', area: 'Safety · 안전 규정', en: '“The line shall be purged before the break.”', ko: 'shall · must · should — 규정문의 조동사' },
+  { ic: '📞', area: 'Vendor · 벤더 소통', en: '“Let me read that back.”', ko: '티켓 · 통화 · 메일 — 되읽기와 에스컬레이션' },
   { ic: '📝', area: 'Report · 보고', en: '“Problem / Cause / Action…”', ko: '영문 현장 보고서' },
 ];
 // 현장 영어가 나오는 3곳 — 매뉴얼 · 지시문 · HMI 화면
@@ -2901,6 +2902,43 @@ function VendorEmailLab() {
   );
 }
 
+/* ── 14강 · 인계 항목 분류 (Critical / Minor + Problem 줄) ── */
+function HandoverTriageLab() {
+  const [sev, setSev] = useState({});
+  const [prob, setProb] = useState(null);
+  const right = HANDOVER_ROWS.filter((r) => sev[r.id] === handoverSeverity(r.f)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        야간조 인계 로그입니다. 항목마다 <b>Critical</b>(안전 위험 · 생산 정지 · 규격 이탈 웨이퍼)인지 <b>Minor</b>(모니터링 · 대기만 필요)인지 고른 뒤, 보고문 <b>Problem</b> 줄을 고르세요. (교재의 Critical / Minor 정의를 인계 항목에 옮긴 이 실습의 기준)
+      </p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {HANDOVER_ROWS.map((r) => {
+          const a = sev[r.id], truth = handoverSeverity(r.f);
+          return (
+            <div key={r.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{r.line} <SpeakBtn text={r.line} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {['Critical', 'Minor'].map((v) => (
+                  <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setSev((p) => ({ ...p, [r.id]: v }))}>{v}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {r.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 12.5, color: C.dim, margin: '8px 0' }}>{Object.keys(sev).length} / {HANDOVER_ROWS.length} 분류 · 맞힘 {right}</div>
+      <PickRow prompt={HANDOVER_PROBLEM.prompt} options={HANDOVER_PROBLEM.opts.map((o, j) => ({ id: j, label: o }))}
+        picked={prob} answer={HANDOVER_PROBLEM.ans} onPick={setProb} />
+      {prob != null && <div style={{ marginTop: 8, fontSize: 12.5, color: prob === HANDOVER_PROBLEM.ans ? C.emerald : C.amber }}>{prob === HANDOVER_PROBLEM.ans ? '✔' : '✘'} {HANDOVER_PROBLEM.why}</div>}
+      <div className="fes-btnrow" style={{ marginTop: 10 }}><button className="fes-btn ghost" onClick={() => { setSev({}); setProb(null); }}>Reset</button></div>
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -4258,7 +4296,7 @@ const SIM_REGISTRY = {
       : sl.mode === 'checkRules' ? <CheckRulesLab />
         : sl.mode === 'counts' ? <DrcCountLab /> : <><ArtImage which="drc" cap="Design Rule Check — 레이아웃 상면도(top view). 통과(PASS)와 위반(VIOLATION) 예시. 아래에서 직접 판정 연습." /><DrcLab /></>),
   lvs: (sl) => (sl.mode === 'netlist' ? <NetlistLab /> : sl.mode === 'lvsFix' ? <LvsFixLab /> : <><ArtImage which="lvs" cap="Layout Versus Schematic — 회로도(reference)와 레이아웃(extracted) 넷리스트 비교. 아래에서 직접 판정 연습." /><LvsLab /></>),
-  report: (sl) => (sl.mode === 'pcar' ? <PcarReportLab /> : sl.mode === 'drcReport' ? <DrcReportLab /> : <ReportLab />),
+  report: (sl) => (sl.mode === 'pcar' ? <PcarReportLab /> : sl.mode === 'handover' ? <HandoverTriageLab /> : sl.mode === 'drcReport' ? <DrcReportLab /> : <ReportLab />),
   partDiagram: (sl) => (sl.mode === 'tool' ? <ToolLayoutLab /> : sl.mode === 'gasLog' ? <GasLineLab /> : <PartDiagram parts={W2_PARTS} />),
   devicePanel: (sl) => (sl.mode === 'procedure' ? <ProcedurePanel />
     : sl.mode === 'spPv' ? <SpPvPanel />
@@ -4696,8 +4734,8 @@ function CourseMap() {
       </div>
       <div className="fes-cm-part fes-cm-part-full">
         <div className="fes-cm-part-h fes-c">종합 · 평가</div>
-        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 14</span><div><b>종합 현장 보고</b><span>장비 이상 → 식각 비정상 → DRC 오류 → 영문 보고서까지 한 흐름</span></div></div>
-        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 8·15</span><div><b>중간 점검 · 종합 점검</b><span>CH 8: 장비·운전·로그·알람 / CH 15: + Layer·DRC·LVS 종합</span></div></div>
+        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 14</span><div><b>종합 현장 보고</b><span>장비 이상 → 원인 확인 → 벤더 요청 → 영문 인계 보고서까지 한 흐름</span></div></div>
+        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 8·15</span><div><b>중간 점검 · 종합 점검</b><span>CH 8: 장비·운전·로그·알람 / CH 15: + 안전·레시피·장비 계열·트러블슈팅·벤더 종합</span></div></div>
       </div>
     </div>
   );

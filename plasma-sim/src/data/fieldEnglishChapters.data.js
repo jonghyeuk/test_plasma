@@ -4791,7 +4791,7 @@ export const CONTENT_CHAPTERS = [
     "title": "중간 점검 정리",
     "points": [
      "장비 구성 · 운전 · 로그 · 알람 영어를 점검했다.",
-     "다음 챕터(CH 9)부터는 디자인(Layer·DRC·LVS)으로 넘어간다."
+     "다음 챕터(CH 9)부터는 2부 — 안전 규정 · 레시피 · 다른 장비 · 트러블슈팅 · 벤더 소통으로 넘어간다."
     ],
     "done": "**중간 점검 완료 ✓**"
    }
@@ -9114,7 +9114,7 @@ export const CONTENT_CHAPTERS = [
     "type": "story",
     "icon": "📋",
     "title": "야간 근무 인계, 영어 리포트 한 장",
-    "text": "새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 **shift report** 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. **Problem:** Chamber A pressure spiked to 12 mTorr during etch step 3. **Cause:** APC throttle valve stuck at 40%. **Action:** Aborted lot, switched to Chamber B, notified equipment engineer. **Result:** Lot recovered, chamber A placed **DOWN** pending PM. 당신이 할 일은 영작이 아니다. 이 **problem–cause–action–result** 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 장비부터 디자인 검증까지 현장 전체를 아우르는 영어 보고문을 읽고, 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.",
+    "text": "새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 **shift report** 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. **Problem:** Chamber A pressure spiked to 12 mTorr during etch step 3. **Cause:** APC throttle valve stuck at 40%. **Action:** Aborted lot, switched to Chamber B, notified equipment engineer. **Result:** Lot recovered, chamber A placed **DOWN** pending PM. 당신이 할 일은 영작이 아니다. 이 **problem–cause–action–result** 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 1부의 장비 보고에 2부에서 배운 것 — 안전 경보, 레시피 변경, 트러블슈팅의 확신 표현, 벤더 티켓 — 을 더해, 현장 전체를 아우르는 영어 보고문을 읽고 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.",
     "art": "passdown"
    },
    {
@@ -9129,7 +9129,7 @@ export const CONTENT_CHAPTERS = [
      "인계 문장 hand over",
      "SIGN OFF"
     ],
-    "goal": "장비 이상→식각→DRC→보고까지 한 흐름을 영어로 정리·인계하기.",
+    "goal": "장비 이상 → 원인 확인 → 벤더 요청 → 인계까지 한 흐름을 영어로 정리하기.",
     "bg": "w14"
    },
    {
@@ -9159,14 +9159,15 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "read",
-    "title": "장비·공정·디자인을 아우르는 종합 보고",
-    "intro": "종합 현장 보고는 장비 고장 하나만 다루지 않는다. 공정 이상, 검사 결과, 심지어 디자인 규칙 위반까지 같은 틀로 묶인다.",
+    "title": "장비·공정·벤더를 아우르는 종합 보고",
+    "intro": "종합 현장 보고는 장비 고장 하나만 다루지 않는다. 안전 경보, 공정 이상, 레시피 변경, 벤더 지원까지 같은 틀로 묶인다.",
     "paras": [
      "장비 측(equipment): 알람, 인터록, 밸브·로봇 고장 등이 **Problem**이 되고, 부품 교체·챔버 전환이 **Action**이 된다. HMI 로그가 1차 근거다.",
      "공정 측(process): SPC 관리도 이탈, 두께 드리프트, 파티클 급증(**particle excursion**) 등이 Problem으로 잡히며, 보통 **yield loss**(수율 손실)와 연결된다.",
-     "검사·디자인 측(design/inspection): **DRC**(Design Rule Check) 위반, 레이아웃 간격 오류, 마스크 결함 등이 보고된다. 이때도 '위반 내용–원인–수정–재검증 결과'로 서술된다.",
-     "세 측 모두 결국 같은 **P–C–A–R** 구조이므로, 분야가 바뀜어도 읽는 방법은 동일하다. 단어만 분야별로 다를 뿐이다.",
-     "또한 각 보고에는 **impact**(영향 범위: 몇 로트, 몇 장)와 **follow-up owner**(후속 담당: 장비/공정/설계 엔지니어)가 명시된다. 구두 보고 시 이 둘을 빼면 반드시 되묻는다."
+     "안전·변경·지원 측(safety/change/vendor): 가스 경보와 LOTO(9강), 레시피 변경 요청과 ECN 승인 대기(10강), 벤더 티켓(**SR**)과 부품 대기(13강)도 보고에 들어간다. 이때도 '무엇이–왜–무엇을 했고–지금 어떤가'로 서술된다.",
+     "세 측 모두 결국 같은 **P–C–A–R** 구조이므로, 분야가 바뀌어도 읽는 방법은 동일하다. 단어만 분야별로 다를 뿐이다.",
+     "**Cause** 칸에는 12강의 확신 표현을 그대로 쓴다: **confirmed / was found**(확정) · **most likely**(가능성 높음) · **suspected**(의심) · **ruled out**(배제). 확인하지 않은 원인을 확정처럼 쓰면 다음 조가 엉뚱한 부품을 간다.",
+     "또한 각 보고에는 **impact**(영향 범위: 몇 로트, 몇 장)와 **follow-up owner**(후속 담당: 장비·공정 엔지니어 또는 벤더)가 명시된다. 구두 보고 시 이 둘을 빼면 반드시 되묻는다."
     ]
    },
    {
@@ -9212,12 +9213,12 @@ export const CONTENT_CHAPTERS = [
      {
       "ab": "ECN",
       "full": "Engineering Change Notice",
-      "ko": "설계·공정 변경 통지."
+      "ko": "승인된 변경 통지 — 레시피·공정 변경에 붙는 번호(10강)."
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사. 레이아웃이 제조 규칙을 지키는지 자동 검증."
+      "ab": "SR",
+      "full": "Service Request",
+      "ko": "서비스 요청 — 벤더 지원 티켓, 번호로 연락을 잇는다(13강)."
      },
      {
       "ab": "SPC",
@@ -9544,76 +9545,76 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "glossary",
-    "title": "설계·검증(DRC) 관련 어휘 (4)",
-    "intro": "디자인 룰 체크와 검증 화면에서 나오는 영어. 장비가 아닌 '설계' 상황 보고도 같은 구조로 읽는다.",
+    "title": "2부를 묶는 보고 어휘 (4) — 확신 · 잠금 · 변경 · 벤더",
+    "intro": "9~13강에서 배운 말이 인계 보고에서 어떻게 쓰이는지 모았습니다. 보고문에서 이 말을 보면 \"지금 무엇이 남아 있는가\"를 읽어 내세요.",
     "items": [
      {
-      "en": "violation",
-      "ko": "규칙 위반",
-      "d": "레이아웃이 제조 규칙(design rule)을 어긴 지점.",
-      "ex": "The DRC report shows 8 spacing violations in the layout."
+      "en": "suspected / confirmed",
+      "ko": "의심 / 확정",
+      "d": "원인의 확신 정도(12강) — 확정 전에는 조치하지 않는다",
+      "ex": "A leak at the lid O-ring is suspected; the helium leak check is in progress."
      },
      {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "패턴 사이의 최소 거리 규칙.",
-      "ex": "Minimum metal spacing must be at least 0.10 um."
+      "en": "ruled out",
+      "ko": "배제된",
+      "d": "확인해서 원인이 아님 — 다음 조가 같은 확인을 반복하지 않게",
+      "ex": "Gauge error was ruled out: the second gauge reads the same value."
      },
      {
-      "en": "clean (DRC clean)",
-      "ko": "위반 없음",
-      "d": "검사 결과 오류가 하나도 없는 상태.",
-      "ex": "After the fix, the layout came back DRC clean."
+      "en": "locked out",
+      "ko": "잠금 걸린",
+      "d": "LOTO 중(9강) — 단 사람만 자물쇠를 푼다",
+      "ex": "Chamber A is locked out by J. Lee; do not remove the tag."
      },
      {
-      "en": "waive",
-      "ko": "예외 처리하다",
-      "d": "검토 후 특정 위반을 의도된 것으로 인정해 넘김.",
-      "ex": "The two known violations were waived with reviewer approval."
+      "en": "ECN pending",
+      "ko": "변경 승인 대기",
+      "d": "레시피 변경이 아직 승인 전(10강) — 현재 판 그대로",
+      "ex": "ECN-0412 is still pending, so Rev C stays in production."
      },
      {
-      "en": "layer",
-      "ko": "레이어(층)",
-      "d": "마스크/공정 단계별 설계 층.",
-      "ex": "The violation is on the metal-1 layer, not poly."
+      "en": "OOC, in spec",
+      "ko": "관리 이탈, 규격 안",
+      "d": "평소와 달라졌지만 불량은 아님(12강)",
+      "ex": "Etch rate went OOC on Rule 2, but all points are within spec."
      },
      {
-      "en": "re-run",
-      "ko": "재실행",
-      "d": "수정 후 검사를 다시 돌림.",
-      "ex": "Please re-run the DRC after applying the spacing fix."
+      "en": "SR open",
+      "ko": "벤더 티켓 진행 중",
+      "d": "벤더 지원을 기다리는 중(13강) — 번호와 다음 연락 시각을 넘긴다",
+      "ex": "SR-20618 is open as S1; the vendor will call back at 07:00 KST."
      }
     ]
    },
    {
     "type": "quiz",
     "title": "읽고 판단하기 (4)",
-    "intro": "DRC·검증 화면의 영어 메시지를 올바르게 해석하세요.",
+    "intro": "2부 표현이 들어간 인계 문장을 해석하세요.",
     "questions": [
      {
-      "prompt": "'The layout came back DRC clean.'의 뜻은?",
+      "prompt": "인계 로그: 'A leak at the lid O-ring is suspected; the helium leak check is in progress.' 다음 조가 할 일은?",
       "opts": [
-       "검사 결과 위반이 하나도 없다",
-       "검사에서 위반이 8개 나왔다",
-       "레이아웃을 지워야 한다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'The two known violations were waived with reviewer approval.' 어떻게 읽나?",
-      "opts": [
-       "두 위반이 심각해서 작업이 중단됐다",
-       "알려진 두 위반은 검토자 승인으로 예외 처리됐다",
-       "두 위반이 자동으로 수정됐다"
+       "O-ring 을 바로 교체한다",
+       "누설 검사 결과를 확인한 뒤 조치한다",
+       "장비를 정상 가동한다"
       ],
       "ans": 1
      },
      {
-      "prompt": "검증 보고서에 'Please re-run the DRC after applying the spacing fix'라고 있다. 다음 할 일은?",
+      "prompt": "'Chamber A is locked out by J. Lee; do not remove the tag.' 이 자물쇠는 누가 풀 수 있나?",
       "opts": [
-       "간격 수정을 적용한 뒤 DRC를 다시 돌린다",
-       "수정 없이 그대로 출하한다",
-       "간격을 더 줄인다"
+       "다음 조 작업자 누구나",
+       "반장이 대신",
+       "자물쇠를 건 J. Lee 본인"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Etch rate went OOC on Rule 2, but all points are within spec.' 웨이퍼는?",
+      "opts": [
+       "불량이 아니다 — 평소와 달라진 신호일 뿐",
+       "모두 불량이라 폐기한다",
+       "규격 밖이다"
       ],
       "ans": 0
      }
@@ -9730,9 +9731,9 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "triage",
-    "intro": "아래 DRC(Design Rule Check) 결과 화면을 살펴보세요. 디자인 검증 단계에서 나오는 영어 위반 메시지(violation)를 읽고, 어떤 것이 Critical이고 어떤 것이 Minor인지, 그리고 보고문의 Problem 항목으로 무엇을 써 넣을지 판단하는 연습입니다. 장비뿐 아니라 설계 검증 상황도 같은 P–C–A–R 구조로 보고됩니다."
+    "which": "report",
+    "mode": "handover",
+    "intro": "이번에는 **인계 항목 분류** 실습입니다. 야간조 인계 로그의 항목을 하나씩 읽고 **Critical**(안전 위험 · 생산 정지 · 규격 이탈 웨이퍼)인지 **Minor**(모니터링 · 대기만 필요)인지 고른 뒤, 보고문 **Problem** 줄로 가장 알맞은 문장을 고르세요. 2부에서 배운 경보 · 레시피 · OOC · 벤더 티켓 표현이 섞여 있습니다."
    },
    {
     "type": "sim",
@@ -9786,7 +9787,8 @@ export const CONTENT_CHAPTERS = [
      "상태어 **UP / DOWN / IDLE**, 심각도 **Critical / Major / Minor**, 확실성 **confirmed / suspected**를 정확히 구분한다.",
      "**temporary workaround**와 **pending PM**은 '문제가 남아 있다'는 강한 신호로 읽는다.",
      "구두 보고는 **Result(현재 상태)**를 가장 먼저 말하고, 이어서 원인·조치·후속을 붙인다.",
-     "장비 HMI, DRC 검증, 종합 보고서 모두 같은 P–C–A–R 구조를 공유한다 — 영작이 아니라 정확한 읽기·판단이 핵심이다."
+     "2부의 말이 보고에 그대로 들어온다: **suspected / ruled out**(확신), **locked out**(잠금), **ECN pending**(변경 대기), **OOC, in spec**(관리 이탈), **SR open**(벤더 대기).",
+     "장비 HMI, 인수인계 로그, 벤더 티켓, 종합 보고서 모두 같은 P–C–A–R 구조를 공유한다 — 영작이 아니라 정확한 읽기·판단이 핵심이다."
     ],
     "done": "이제 낯선 영어 보고문 한 장을 받아도 **무슨 일이 있었고, 지금 라인이 어떤 상태인지**를 3분 안에 읽고 판단해 구두로 보고할 수 있다. 수고했다!"
    }
@@ -9801,21 +9803,22 @@ export const CONTENT_CHAPTERS = [
     "type": "story",
     "icon": "🎓",
     "title": "종합 점검 안내",
-    "text": "장비·공정·디자인 전체를 종합합니다. **로그 · 매뉴얼 · Design Rule · DRC/LVS 오류**를 읽고 답하세요.",
+    "text": "1부(장비 화면 · 운전 · 로그 · 알람 · PM)와 2부(안전 규정 · 레시피 · 다른 장비 · 트러블슈팅 · 벤더 소통 · 종합 보고)를 한 번에 점검합니다. **조동사 · 경계어 · 명사 덩어리 · 확신 표현 · 되읽기** — 문장 하나에서 판단을 바꾸는 말을 찾아 답하세요.",
     "art": "finalcheck"
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
     "where": "전 과정을 마친 종합 점검.",
-    "tool": "장비 + 설계 전 영역의 화면·리포트.",
-    "situation": "마지막으로 읽고·판단하고·영어로 보고한다.",
+    "tool": "장비 화면 · 규정 · 레시피 표 · 트러블슈팅 문서 · 벤더 티켓 · 인계 보고서.",
+    "situation": "마지막으로 읽고 · 판단하고 · 영어로 보고한다.",
     "meet": [
-     "장비 + 설계 종합",
-     "최종 체크리스트",
-     "DRC / LVS CLEAN"
+     "1부 장비 · 운전 · 알람",
+     "2부 규정 · 레시피 · 장비 계열",
+     "확신 · 되읽기 · 보고",
+     "최종 체크리스트"
     ],
-    "goal": "배운 모든 현장 영어를 실제 흐름에서 통합 적용하기.",
+    "goal": "배운 현장 영어를 실제 흐름에서 통합 적용하기.",
     "bg": "w15"
    },
    {
@@ -9825,19 +9828,19 @@ export const CONTENT_CHAPTERS = [
      "name": "Field Report Template",
      "no": "FRT-15",
      "sec": "1.0",
-     "rev": "A",
+     "rev": "B",
      "page": "1-1"
     },
     "heading": "1.0  Writing an English Field Report",
     "steps": [
-     "Describe the equipment [issue] (what the HMI/alarm showed).",
-     "State the process result (e.g., etch abnormal, out of spec).",
-     "Report the design check (DRC / LVS clean or not).",
-     "Give the [action taken] and the current status."
+     "Describe the equipment [issue] (what the HMI or alarm showed).",
+     "State the process result (for example, out of spec or OOC).",
+     "State how certain the cause is (confirmed, suspected, or ruled out).",
+     "Give the [action taken], any vendor ticket (SR), and the current status."
     ],
     "callout": {
      "kind": "note",
-     "en": "Read → judge → report: the whole loop in English."
+     "en": "Read, judge, and report: the whole loop in English."
     },
     "gloss": [
      [
@@ -9845,8 +9848,8 @@ export const CONTENT_CHAPTERS = [
       "문제"
      ],
      [
-      "abnormal",
-      "비정상"
+      "OOC",
+      "관리 이탈"
      ],
      [
       "action taken",
@@ -9860,33 +9863,33 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "quiz",
-    "title": "① 장비·운전·알람 종합",
-    "intro": "전반부 내용을 확인합니다.",
+    "title": "① 장비 · 운전 · 알람 종합",
+    "intro": "1부(1~7강) 내용을 확인합니다.",
     "questions": [
      {
       "prompt": "“Ignite the plasma.” 의 뜻은?",
       "opts": [
-       "플라즈마를 점화하라",
        "가스를 잠가라",
+       "플라즈마를 점화하라",
        "챔버를 열어라"
       ],
-      "ans": 0
+      "ans": 1
      },
      {
       "prompt": "“reflected power” 는 무엇인가?",
       "opts": [
-       "매칭 불량으로 되돌아오는 RF 전력",
        "공급되는 전력",
-       "챔버 온도"
+       "챔버 온도",
+       "매칭 불량으로 되돌아오는 RF 전력"
       ],
-      "ans": 0
+      "ans": 2
      },
      {
       "prompt": "“Replace the pump oil.” 는 어떤 활동인가?",
       "opts": [
        "유지보수(PM)",
        "운전",
-       "설계"
+       "보고"
       ],
       "ans": 0
      }
@@ -9894,35 +9897,103 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "quiz",
-    "title": "② Layer · Design Rule",
-    "intro": "디자인 기본 용어를 확인합니다.",
+    "title": "② 안전 · 레시피",
+    "intro": "9강(규정문의 조동사)과 10강(조건 · 경계)을 확인합니다.",
     "questions": [
      {
-      "prompt": "Layer “Metal” 은 무엇인가?",
+      "prompt": "'The tool need not be vented for a software-only update.' 의 뜻은?",
       "opts": [
-       "금속 배선",
-       "게이트",
-       "기판"
+       "벤트하지 않아도 된다",
+       "벤트하면 안 된다",
+       "반드시 벤트해야 한다"
       ],
       "ans": 0
      },
      {
-      "prompt": "Design Rule 의 “spacing” 은?",
+      "prompt": "'Reflected power must be below 20 W.' 측정값 20 W 는?",
       "opts": [
-       "패턴 사이 간격",
-       "패턴의 폭",
-       "겹침"
+       "합격 — 경계와 같다",
+       "판정할 수 없다",
+       "불합격 — below 는 경계를 포함하지 않는다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'The recipe shall not be edited unless an ECN has been approved.' ECN 이 PENDING 이면?",
+      "opts": [
+       "고쳐도 된다",
+       "고칠 수 없다 — 승인이 먼저다",
+       "고친 뒤 승인받으면 된다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "③ 장비 계열 · 트러블슈팅",
+    "intro": "11강(명사 덩어리 · 단위)과 12강(확신 · 관리도)을 확인합니다.",
+    "questions": [
+     {
+      "prompt": "화면 라벨 'SLURRY FLOW ALARM LIMIT 150 mL/min' 은?",
+      "opts": [
+       "슬러리 유량 알람이 지금 울린다",
+       "슬러리 유량 알람의 한계값이 150 이다",
+       "슬러리 유량이 지금 150 이다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "보고: 'The leak is most likely at the lid O-ring.' 원인은?",
+      "opts": [
+       "가능성이 높지만 아직 확정 전이다",
+       "확정되었다",
+       "배제되었다"
       ],
       "ans": 0
      },
      {
-      "prompt": "“enclosure” 의 뜻은?",
+      "prompt": "식각 속도가 UCL(106)을 넘은 107, 규격은 90~110. 이 점은?",
       "opts": [
-       "한 레이어가 다른 레이어를 감싸는 양",
-       "최소 폭",
-       "누설"
+       "OOS — 불량이다",
+       "정상이다",
+       "OOC 지만 규격 안 — 조사할 신호다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "④ 벤더 소통 · 보고",
+    "intro": "13강(티켓 · 통화)과 14강(종합 보고)을 확인합니다.",
+    "questions": [
+     {
+      "prompt": "지원 엔지니어: 'Set the limit to fifteen watts.' 가장 안전한 되읽기는?",
+      "opts": [
+       "Let me read that back: five-zero watts.",
+       "Let me read that back: one-five watts.",
+       "Okay, fifty."
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "장비가 멈췄고 같은 레시피를 돌릴 다른 장비가 없다. 티켓 긴급도는(교재 예시)?",
+      "opts": [
+       "S1",
+       "S3",
+       "S4"
       ],
       "ans": 0
+     },
+     {
+      "prompt": "구두 인계에서 가장 먼저 말할 것은?",
+      "opts": [
+       "원인 분석의 자세한 과정",
+       "내가 한 일의 순서",
+       "Result — 지금 장비 · 로트의 상태"
+      ],
+      "ans": 2
      }
     ],
     "figs": [
@@ -9937,8 +10008,13 @@ export const CONTENT_CHAPTERS = [
         "OK"
        ],
        [
-        "Design",
-        "DRC/LVS CLEAN",
+        "Safety · Recipe",
+        "NO OPEN ITEMS",
+        "ok"
+       ],
+       [
+        "Vendor",
+        "SR-20618 CLOSED",
         "ok"
        ]
       ]
@@ -9946,79 +10022,12 @@ export const CONTENT_CHAPTERS = [
     ]
    },
    {
-    "type": "quiz",
-    "title": "③ DRC 오류",
-    "intro": "영문 DRC 오류를 해석합니다.",
-    "questions": [
-     {
-      "prompt": "DRC = ?",
-      "opts": [
-       "Design Rule Check",
-       "Data Read Check",
-       "Device Run Control"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“METAL1.SPACING violation” 의 뜻은?",
-      "opts": [
-       "Metal1 간격 규칙 위반",
-       "선폭 정상",
-       "소자 누락"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“insufficient spacing” 은?",
-      "opts": [
-       "간격이 부족하다",
-       "간격이 넓다",
-       "폭이 크다"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "④ LVS 검증",
-    "intro": "영문 LVS 오류를 해석합니다.",
-    "questions": [
-     {
-      "prompt": "LVS = ?",
-      "opts": [
-       "Layout Versus Schematic",
-       "Low Voltage System",
-       "Layer Verify Step"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“Missing device in the layout.” 는 어떤 오류?",
-      "opts": [
-       "레이아웃에 소자가 빠짐",
-       "간격 위반",
-       "진공 이상"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“incorrect connection” 의 뜻은?",
-      "opts": [
-       "배선이 회로도와 다름",
-       "소자가 중복됨",
-       "색이 틀림"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
     "type": "wrap",
     "title": "수료 — 이 과정을 마치며",
     "points": [
-     "장비 운전·로그·알람 → 디자인 규칙·DRC·LVS → 종합 보고까지 마쳤다.",
-     "이제 현장 영어를 읽고 → 판단하고 → 보고할 수 있다."
+     "1부: 장비 화면 · 운전 절차 · 로그 · 알람 · PM 의 영어를 **읽고 판단**했다.",
+     "2부: 규정의 **조동사**, 레시피의 **조건과 경계**, 낯선 장비의 **명사 덩어리와 단위**, 원인의 **확신 표현**, 벤더와의 **되읽기**를 익혔다.",
+     "그리고 모든 것을 **Problem – Cause – Action – Result** 로 묶어 영어로 보고할 수 있다."
     ],
     "done": "🎓 **종합 점검 완료 · 전 과정 수료!**",
     "figs": [
@@ -10026,15 +10035,15 @@ export const CONTENT_CHAPTERS = [
       "kind": "sticker",
       "level": "info",
       "en": "FINAL CHECK — READ · JUDGE · REPORT",
-      "ko": "최종 점검 — 읽고·판단하고·보고"
+      "ko": "최종 점검 — 읽고 · 판단하고 · 보고"
      },
      {
       "kind": "log",
       "title": "FINAL CHECKLIST",
       "lines": [
-       "Equipment English   ✓",
-       "Design English      ✓",
-       "Report in English   ✓"
+       "Equipment English      ✓",
+       "Safety · Recipe English ✓",
+       "Vendor · Report English ✓"
       ]
      }
     ]

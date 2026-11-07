@@ -1888,3 +1888,35 @@ export const EMAIL_SLOTS = [
   { id: 'closing', ko: '첨부 · 맺음', opts: ['Alarm log and pressure trend are attached. Thank you for your support.', 'This is your fault.', 'Thanks.'], ans: 0,
     why: '첨부를 밝히고 감사로 맺는다.' },
 ];
+
+/* =========================================================================
+ * 14강 ② 인계 항목 분류 — Critical / Minor, 보고문 Problem 줄 (옛 DRC 분류 실습 자리)
+ *   교재: severity — Critical 은 라인 정지 · 안전 위험, Minor 는 모니터링 수준.
+ *   이 실습의 기준: 안전 위험 · 생산 정지(대안 없음) · 규격 이탈(OOS) 웨이퍼 = Critical, 모니터링 · 대기만 필요한 것 = Minor.
+ *   항목은 2부(9~13강)의 상황 — 가스 경보, 벤더 티켓, OOC, ECN 대기, 도즈 이탈, CMP 경고.
+ * ====================================================================== */
+export function handoverSeverity(f) { return f.safety || f.lineStop || f.oos ? 'Critical' : 'Minor'; }
+export const HANDOVER_ROWS = [
+  { id: 'h1', line: 'VMB-3: TGM-03 LEVEL 1 (Cl2 0.06 ppm) at 02:40. Line break stopped, area secured, ERT checking.', f: { safety: true },
+    why: '가스 경보 — 안전 위험(9강). 원인이 확인되고 해제(all-clear)될 때까지 Critical.' },
+  { id: 'h2', line: 'ET-05: down since 23:05, SR-20618 open as S1, part KX-4071-B ETA 09:00. No backup tool for this recipe.', f: { lineStop: true },
+    why: '정지 + 대안 없음 = 생산 정지(13강의 S1). Critical.' },
+  { id: 'h3', line: 'ET-06: etch rate OOC on Rule 2 (8 points above CL), all points within spec. Released after engineer review; monitoring.', f: {},
+    why: 'OOC 지만 규격 안(12강), 엔지니어 검토 후 가동 — 모니터링 수준. Minor.' },
+  { id: 'h4', line: 'ECN-0412 (ME pressure 10 → 12 mTorr) still pending. Rev C stays in production; no change made.', f: {},
+    why: '승인 대기 — 바뀐 것이 없다(10강). 기다리기만 하면 된다. Minor.' },
+  { id: 'h5', line: 'IMP-2: lot 2417 dose 4.8E15 against 5.0E15 target (-4%, spec ±2%). Lot on hold.', f: { oos: true },
+    why: '규격(±2%) 밖 — OOS 웨이퍼(11강). Critical.' },
+  { id: 'h6', line: 'CMP-2: pad conditioner sweep rate warning cleared after re-tune. NTF. Watch removal rate.', f: {},
+    why: '경고가 풀렸고 재현 안 됨(NTF) — 지켜보기만. Minor.' },
+];
+export const HANDOVER_PROBLEM = {
+  prompt: '보고문의 Problem 줄로 가장 알맞은 문장은?',
+  opts: [
+    'CMP-2 sweep rate warning cleared after re-tune.',
+    'Three critical items: gas alarm LEVEL 1 at VMB-3 (ERT checking), ET-05 down with no backup (SR-20618, part ETA 09:00), and lot 2417 on hold for dose -4%.',
+    'We opened SR-20618, secured the area, and put lot 2417 on hold.',
+  ],
+  ans: 1,
+  why: 'Problem 은 "무엇이 잘못됐고 얼마나 심각한가" — Critical 항목과 그 상태를 쓴다. 첫째는 Minor 만 적어 핵심을 놓쳤고, 셋째는 Action 문장이다.',
+};
