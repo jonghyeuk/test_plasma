@@ -138,7 +138,7 @@ function App() {
     {
       id: 'field-english',
       name: '현장 실무영어',
-      description: 'Field English · 장비 화면·알람·DRC/LVS 영어',
+      description: 'Field English · 장비 화면·알람·안전 규정·벤더 소통 영어',
       icon: '📖',
       color: 'from-indigo-500 to-blue-600',
       component: FieldEnglishSimulator

@@ -4791,7 +4791,7 @@ export const CONTENT_CHAPTERS = [
     "title": "중간 점검 정리",
     "points": [
      "장비 구성 · 운전 · 로그 · 알람 영어를 점검했다.",
-     "다음 챕터(CH 9)부터는 디자인(Layer·DRC·LVS)으로 넘어간다."
+     "다음 챕터(CH 9)부터는 2부 — 안전 규정 · 레시피 · 다른 장비 · 트러블슈팅 · 벤더 소통으로 넘어간다."
     ],
     "done": "**중간 점검 완료 ✓**"
    }
@@ -4799,1468 +4799,2253 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w9",
-  "title": "Layer 용어",
+  "title": "안전 작업 — LOTO · 가스 · 작업 허가",
   "slides": [
    {
     "type": "story",
-    "icon": "🧱",
-    "title": "층으로 읽는 반도체",
-    "text": "신입 기술자 지훈은 첫 출근날, 엔지니어가 모니터에 띄운 소자 **cross-section** 그림 앞에서 멈칫했다. 화면 맨 아래엔 회색 **substrate (Si)**, 그 위로 **well**, **active**, 빨간 **poly (gate)**, 그리고 위쪽 굵은 선들에는 **metal**이라 적혀 있었다. 선배가 물었다. \"This layer here — what is it?\" 지훈은 순간 당황했지만, 곧 깨달았다. 반도체는 결국 **bottom-up** 으로 층층이 쌓인 구조이고, 화면과 매뉴얼의 영어 단어는 각각 그 '층(**layer**)'의 이름일 뿐이라는 것을. 아래에서 위로 **substrate → well → active → poly → contact → metal** 순서만 머릿속에 넣으면, 낯선 영어 화면도 '지도'처럼 읽을 수 있다. 오늘 수업의 목표는 바로 이 층 이름을 영어로 '읽고 판단'하는 것이다.",
-    "art": "layers"
+    "icon": "☣️",
+    "title": "새벽 2시, 작업 허가서 한 장",
+    "text": "새벽 2시. 민수는 가스 밸브 박스(**VMB**) 앞에서 오늘 받은 **작업 허가서(Permit to Work)** 를 다시 읽는다. 작업은 염소(**Cl2**) 라인의 피팅 교체 — 가스 배관을 여는 **line break** 다. 허가서 한가운데 이런 줄이 있다. \"**The line shall be cycle-purged and verified before the line break.**\" 옆에 있던 선배가 묻는다. \"여기 should 라고 쓰여 있어, shall 이라고 쓰여 있어?\" 민수는 대수롭지 않게 답한다. \"그게 그거 아닌가요?\" 선배는 고개를 젓는다. \"should 면 권장이고, shall 이면 안 하면 위반이야.\" 그때 벽의 가스 감지기 화면이 노랗게 바뀐다. **TGM — Cl2 0.06 ppm — LEVEL 1 WARNING**. 허가서의 다음 줄: \"**If any gas alarm activates, work shall stop immediately.**\" 민수는 공구를 내려놓는다. 1부에서 우리는 화면 한 줄을 읽었다. 2부부터는 **규정문 한 단어**가 결정을 바꾸는 문서를 읽는다.",
+    "figs": [
+     {
+      "kind": "alarm",
+      "level": "warn",
+      "code": "TGM-03",
+      "en": "Cl2 0.06 ppm — LEVEL 1 WARNING. Stop work and report.",
+      "ko": "염소 0.06 ppm — 1차 경보. 작업 중지 후 보고."
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "이제 장비에서 설계로. 설계·계측 파트의 소자 단면도 앞.",
-    "tool": "칩 단면(cross-section)과 레이어 도면.",
-    "situation": "칩이 어떤 층으로 쌓이는지 아래에서 위로 읽는다.",
+    "where": "새벽의 가스 구역 — 가스 밸브 박스(VMB) 앞. 벽에는 가스 감지기(TGM) 화면이 있다.",
+    "tool": "작업 허가서(Permit to Work), 개인 자물쇠와 표찰(LOTO), 가스 감지기 화면, 물질안전보건자료(SDS).",
+    "situation": "염소 라인을 열기 전, 허가서의 영어 조건을 하나씩 확인해야 한다. 그 사이 감지기에 1차 경보가 뜬다.",
     "meet": [
-     "레이어 metal·poly·substrate",
-     "cross-section",
-     "FEOL / BEOL"
+     "조동사 shall · must · should · may",
+     "LOTO 6단계",
+     "가스 경보 LEVEL 1 / LEVEL 2",
+     "작업 허가서 PTW · line break",
+     "SDS 유해 문구 H330"
     ],
-    "goal": "칩을 층(layer) 단위로 읽고 화면 용어의 \"위치\"를 알기.",
+    "goal": "규정문의 조동사로 \"반드시 / 권장 / 해도 됨 / 안 해도 됨\"을 가르고, 경보 한 줄로 지금 할 일을 정하기.",
     "bg": "w9"
    },
    {
     "type": "read",
-    "title": "소자 단면과 적층 순서 (아래→위)",
-    "intro": "반도체 소자를 옆에서 자른 단면(**cross-section**)으로 보면, 아래에서 위로 정해진 순서대로 층이 쌓입니다.",
+    "title": "2부의 시작 — 단어에서 규정문으로",
+    "intro": "1부(1~8강)는 화면 라벨과 짧은 명령문을 알아보는 연습이었다. 2부는 문장이 길어지고, 문장 안의 작은 단어 하나가 의무인지 권장인지를 가르는 문서를 읽는다.",
     "paras": [
-     "소자는 **cross-section** 으로 보면 아래에서 위로 층층이 쌓인 구조입니다. 순서는 **substrate (Si)** → **well** → **active** → **gate (poly)** → **contact / via** → **metal (interconnect)** 이며, 이 **bottom-up stack** 을 외워두면 모든 화면 용어의 '위치'를 알 수 있습니다.",
-     "맨 아래층인 **substrate** 는 순수 실리콘 **wafer** 본체입니다. 모든 소자가 이 위에 만들어지므로 '바닥'이자 기준면(reference plane)이 됩니다.",
-     "각 층은 도면(**layout**)에서는 서로 다른 색의 **layer** 로 그려지고, 실제 소자에서는 물리적으로 쌓인 박막(thin film)이 됩니다. 즉 화면의 **layer** = 실물의 한 층입니다.",
-     "매뉴얼과 HMI 화면에서 **\"Metal 1\"**, **\"poly\"**, **\"active\"** 같은 단어는 이 적층 순서 중 특정 층을 가리키는 이름입니다. 순서를 알면 낯선 영어 단어도 '어느 높이의 층인지'로 해석할 수 있습니다.",
-     "공정 관점에서는 아래쪽(**substrate ~ contact**)을 **FEOL (Front-End-Of-Line)**, 위쪽 배선(**metal / via**)을 **BEOL (Back-End-Of-Line)** 이라 부르며, 적층 순서가 곧 공정 순서와 대응됩니다."
+     "1부의 영어는 **label(라벨)** 과 **imperative(명령문)** 였다. RF ON, \"Close the gate valve.\" — 무엇을 하라는지만 알면 됐다.",
+     "안전 규정·작업 허가서·SDS 같은 문서는 다르다. 같은 동작이라도 앞에 붙은 **조동사(modal verb)** 에 따라 \"반드시 해야 한다\"가 되기도, \"하면 좋다\"가 되기도 한다.",
+     "예를 들어 \"The operator **shall** wear a face shield.\" 는 의무다. 안 쓰면 규정 위반이다. \"The operator **should** wear a face shield.\" 는 권장이다. 이 차이를 놓치면 지켜야 할 것을 선택 사항으로 읽게 된다.",
+     "안전 문서는 대개 장비사가 아니라 **사업장(fab)과 표준(SEMI·OSHA·ISO)** 에서 온다. 그래서 장비 매뉴얼보다 문장이 길고 조건(**if / unless / until / before**)이 많다.",
+     "오늘 다룰 세 문서: **LOTO 절차서**(정비 전 에너지 차단), **가스 경보 대응 절차**(감지기가 울렸을 때), **작업 허가서와 SDS**(위험 작업의 조건과 물질의 위험)."
     ],
     "figs": [
      {
-      "kind": "stack",
-      "layers": [
+      "kind": "note",
+      "title": "PART 2",
+      "en": "Read the [modal verb] first: it tells you whether a step is required.",
+      "ko": "조동사부터 읽어라 — 그 단계가 의무인지 알려 준다."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "shall · must · should · may — 조동사의 강도",
+    "intro": "규정문을 읽을 때 가장 먼저 볼 단어는 동사 앞의 조동사다. 표준 문서(ISO 지침)는 이 단어들의 뜻을 정해 두고 쓴다.",
+    "paras": [
+     "**shall** — 요구사항(requirement). 지키지 않으면 규정 위반이다. 표준·사업장 규정에서 가장 강한 말이다. **shall not** 은 금지다.",
+     "**must** — 장비 매뉴얼과 안전 표지에서 shall 과 같은 무게(반드시)로 쓴다. **must not** 은 금지다. (ISO 표준 문서는 must 를 법·물리 같은 외부 제약에만 쓰지만, 현장 매뉴얼에서는 그냥 \"반드시\"로 읽으면 된다.)",
+     "**should** — 권고(recommendation). 하는 것이 좋지만, 정당한 이유가 있으면 다르게 할 수 있다. 의무가 아니다.",
+     "**may** — 허용(permission). 해도 된다. 예: \"The technician **may** use a torque wrench with a digital readout.\" 다른 공구를 써도 위반이 아니다.",
+     "**need not** — 의무가 아님. \"안 해도 된다\"이지, \"하지 마라\"가 아니다. 반대로 **must not** 은 \"하지 마라\"다. 두 말은 우리말로 옮기면 비슷해 보여 가장 자주 헷갈린다.",
+     "**may not** 은 주의한다. \"하면 안 된다\"(금지)로도, \"아닐 수도 있다\"(가능성)로도 읽힌다. 그래서 표준은 금지에 may not 대신 **shall not** 을 쓴다. 현장에서 may not 을 만나면 문맥을 확인하고, 애매하면 묻는다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "STRENGTH",
+      "items": [
        [
-        "METAL",
-        "금속 배선",
-        "#c8e6d4"
+        "[shall] / [must] — required",
+        "반드시"
        ],
        [
-        "CONTACT",
-        "접속",
-        "#e6dcc0"
+        "[should] — recommended",
+        "권장"
        ],
        [
-        "POLY",
-        "폴리실리콘",
-        "#d4c8e6"
+        "[may] — permitted",
+        "해도 됨"
        ],
        [
-        "ACTIVE",
-        "활성 영역",
-        "#e6d4c8"
-       ],
-       [
-        "WELL",
-        "웰",
-        "#c8dfe6"
-       ],
-       [
-        "SUBSTRATE",
-        "기판",
-        "#d9d2be"
+        "[need not] — not required",
+        "안 해도 됨"
        ]
-      ],
-      "cap": "칩은 층(layer)으로 쌓인다 — 아래에서 위로 읽는다."
-     },
-     {
-      "kind": "note",
-      "title": "TERM",
-      "en": "[FEOL] = transistors · [BEOL] = wiring.",
-      "ko": "FEOL=소자 형성, BEOL=배선."
+      ]
      }
     ]
    },
    {
     "type": "read",
-    "title": "맨 아래층: substrate · well · active",
-    "intro": "소자의 뿌리에 해당하는 세 층입니다. 트랜지스터가 '어디에, 어떤 극성으로' 만들어질지를 결정합니다.",
+    "title": "LOTO 다시 보기 — 잠그기 전과 잠근 후",
+    "intro": "7강에서 LOTO(잠금·표찰)를 \"정비 전에 거는 것\"으로 만났다. 실제 절차서는 여섯 단계이고, 순서가 바뀌면 의미가 없어진다.",
     "paras": [
-     "**substrate** 는 소자의 기반이 되는 실리콘 몸체입니다. 화면 라벨로 **\"Sub\"**, **\"Si substrate\"**, **\"P-sub\"** 등으로 나타나며, 보통 P형(P-type) 실리콘을 씁니다.",
-     "**well** 은 **substrate** 안에 만드는 넓은 도핑 영역입니다. **N-well** 은 PMOS 트랜지스터를, **P-well** 은 NMOS 트랜지스터를 담는 '방(pocket)' 역할을 합니다. 화면의 **\"NW\" / \"PW\"** 가 이것입니다.",
-     "**active** (또는 **active area**, **OD**)는 트랜지스터가 실제로 동작하는 영역입니다. 이 영역 밖은 **field oxide / STI** 로 절연되어 소자끼리 서로 간섭하지 않게 격리(isolation)됩니다.",
-     "즉 순서상 **substrate** 위에 **well** 을 만들고, 그 안에 **active** 영역을 정의합니다. **active** 영역 안에서 **source**, **drain**, 채널(channel)이 형성됩니다.",
-     "매뉴얼에서 **\"Define the active region inside the well\"** 같은 문장을 만나면, '웰 안에 소자 동작 영역을 잡는다'는 뜻으로 읽으면 됩니다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "게이트층: poly · gate oxide · source/drain",
-    "intro": "트랜지스터의 '스위치'를 이루는 핵심 층들입니다. 이 부분 영어 용어가 화면·매뉴얼에 가장 자주 등장합니다.",
-    "paras": [
-     "**gate** 는 트랜지스터를 켜고 끄는 전극입니다. 재료로 폴리실리콘을 쓰기 때문에 화면·도면에서는 흔히 **poly** 라는 층 이름으로 표시됩니다. 즉 **\"poly\" = gate layer** 로 이해하면 됩니다.",
-     "**gate** 와 **active** 사이에는 아주 얇은 절연막인 **gate oxide (GOX)** 가 있습니다. 두께가 나노미터 수준이라 품질 관리가 매우 중요하며, 매뉴얼에 **\"gate oxide thickness\"** 스펙이 자주 나옵니다.",
-     "**gate** 양옆의 **active** 영역이 각각 **source** 와 **drain** 이 됩니다. 전류가 **source → channel → drain** 으로 흐르며, 이 흐름을 **gate** 전압이 제어합니다.",
-     "적층 순서로 보면 **active** 위에 **gate oxide**, 그 위에 **poly (gate)** 가 올라갑니다. 따라서 단면도에서 **poly** 는 **active** 보다 한 층 위에 그려집니다.",
-     "HMI/매뉴얼 표현 예: **\"Inspect the poly gate for bridging\"** → '폴리 게이트가 서로 붙었는지(단락) 검사하라'. **\"S/D implant\"** → source/drain 도핑 주입 공정을 뜻합니다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "배선층: contact · via · metal (interconnect)",
-    "intro": "소자를 만든 뒤, 각 부분을 전기적으로 연결하는 위층 배선 구조입니다.",
-    "paras": [
-     "**contact** 는 아래쪽 소자(**active / poly**)와 첫 번째 금속층을 세로로 이어주는 연결 기둥(plug)입니다. 화면 라벨 **\"CO\" / \"CONT\"** 가 이것입니다.",
-     "**metal (interconnect)** 은 소자들을 가로로 연결하는 전선입니다. 여러 층으로 쌓이며 아래부터 **Metal 1 (M1)**, **Metal 2 (M2)** … 순으로 번호가 커집니다. 번호가 클수록 더 위층입니다.",
-     "**via** 는 금속층과 금속층 사이(예: **M1 ↔ M2**)를 세로로 잇는 연결입니다. **contact** 는 '소자↔금속', **via** 는 '금속↔금속' 연결이라는 점이 핵심 차이입니다.",
-     "금속층 사이의 절연막은 **ILD (Inter-Layer Dielectric)** / **IMD** 라 부르며, 서로 다른 배선이 합선되지 않도록 막아줍니다.",
-     "적층 순서 정리: **… active/poly → contact → M1 → via → M2 → via → M3 …** 로, 위로 갈수록 배선이 굵어지고 전원(power)·신호(signal) 배선을 나눠 담습니다.",
-     "매뉴얼 표현 예: **\"Route the signal on Metal 2 and drop a via to Metal 1\"** → '신호를 M2로 배선하고 via로 M1에 연결하라'."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "화면·매뉴얼에서 layer 용어 읽는 법",
-    "intro": "현장에서는 이 층 이름들이 도면 색상, HMI 라벨, 검사 리포트 형태로 계속 등장합니다. 읽는 규칙을 정리합니다.",
-    "paras": [
-     "레이아웃 툴/검사 화면에서 각 **layer** 는 색과 이름표로 구분됩니다. 예: **active(초록), poly(빨강), contact(검정 점), metal(파랑)**. 색만 봐도 어느 층인지 판단할 수 있어야 합니다.",
-     "층 이름은 보통 대문자 약어로 표시됩니다: **OD/AA = active**, **PO/GT = poly gate**, **CO = contact**, **M1/M2 = metal**, **VIA/V1 = via**, **NW/PW = well**. 약어를 층 위치로 변환해 읽으세요.",
-     "검사 리포트의 **\"Layer: METAL1, Defect: bridge\"** 같은 문장은 '금속1 층에서 다리처럼 붙는 결함 발견'을 뜻합니다. 즉 **layer 이름 + 결함(defect) 유형** 조합으로 읽습니다.",
-     "**cross-section** 이미지(SEM 단면 사진)에서는 아래→위 순서가 그대로 보입니다. 층 두께(thickness)와 정렬(alignment)을 눈으로 확인하는 것이 기술자의 주요 판단 업무입니다.",
-     "정렬 관련 표현 **\"contact not landed on active\"** → '컨택이 액티브 위에 제대로 안 닿음(오정렬)'. 이런 문장을 즉시 뜻으로 읽어 불량 여부를 판단해야 합니다."
-    ]
-   },
-   {
-    "type": "acr",
-    "title": "약어",
-    "intro": "레이어·단면 관련 화면과 문서에서 자주 보이는 약어입니다.",
-    "items": [
-     {
-      "ab": "STI",
-      "full": "Shallow Trench Isolation",
-      "ko": "얕은 트렌치 소자 격리 (active 사이를 절연)"
-     },
-     {
-      "ab": "GOX",
-      "full": "Gate Oxide",
-      "ko": "게이트 산화막 (gate와 active 사이 얇은 절연막)"
-     },
-     {
-      "ab": "S/D",
-      "full": "Source/Drain",
-      "ko": "소스/드레인 (전류 입출력 영역)"
-     },
-     {
-      "ab": "M1",
-      "full": "Metal 1",
-      "ko": "첫 번째 금속 배선층 (가장 아래 금속)"
-     },
-     {
-      "ab": "ILD",
-      "full": "Inter-Layer Dielectric",
-      "ko": "층간 절연막 (금속층 사이 절연)"
-     },
-     {
-      "ab": "OD",
-      "full": "Oxide Definition",
-      "ko": "액티브(active) 영역을 정의하는 레이어 이름"
-     },
-     {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 위반 검사 (선폭·간격 등)"
-     },
-     {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃과 회로도 일치 검증"
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (1) 바닥층",
-    "intro": "소자의 뿌리를 이루는 아래쪽 층 이름입니다.",
-    "items": [
-     {
-      "en": "substrate",
-      "ko": "기판",
-      "d": "소자가 만들어지는 바닥 실리콘 몸체 (맨 아래층).",
-      "ex": "All devices are built on top of the silicon substrate."
-     },
-     {
-      "en": "wafer",
-      "ko": "웨이퍼",
-      "d": "얇고 둥근 실리콘 판; substrate의 실물 형태.",
-      "ex": "The wafer is loaded into the chamber before processing."
-     },
-     {
-      "en": "well",
-      "ko": "웰",
-      "d": "substrate 안에 만든 넓은 도핑 영역; 트랜지스터를 담는 방.",
-      "ex": "PMOS transistors are placed inside the N-well."
-     },
-     {
-      "en": "active area",
-      "ko": "활성 영역",
-      "d": "트랜지스터가 실제로 동작하는 영역 (OD/AA).",
-      "ex": "Define the active area inside the well before the gate step."
-     }
-    ]
-   },
-   {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — 레이어 편집",
-    "app": "LayoutPro",
-    "doc": "chip_top.gds",
-    "run": "Select",
-    "canvas": "layout",
-    "left": {
-     "title": "Layers",
-     "items": [
-      {
-       "name": "METAL1",
-       "color": "#2f7d5b"
-      },
-      {
-       "name": "POLY",
-       "color": "#6a4d8f"
-      },
-      {
-       "name": "ACTIVE",
-       "color": "#8f6a3d"
-      },
-      {
-       "name": "CONTACT",
-       "color": "#c9d4e2"
-      },
-      {
-       "name": "WELL",
-       "color": "#3a6a86",
-       "on": false
-      }
-     ]
-    },
-    "log": [
-     "> open chip_top.gds",
-     "> loaded 5 layers ... done"
-    ],
-    "status": "X: 12.40  Y: 8.10   Layer: METAL1   Zoom: 400%",
-    "gloss": [
-     [
-      "Layers",
-      "레이어(층) 목록"
-     ],
-     [
-      "Palette / swatch",
-      "색상 견본"
-     ],
-     [
-      "visible ☑",
-      "표시 켜짐"
-     ],
-     [
-      "Zoom",
-      "확대율"
-     ]
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (1)",
-    "intro": "영어 층 이름의 뜻을 골라 보세요.",
-    "questions": [
-     {
-      "prompt": "화면에 'Si substrate'라고 표시되어 있습니다. 무엇을 뜻하나요?",
-      "opts": [
-       "소자가 올라가는 맨 아래 실리콘 기판",
-       "가장 위쪽 금속 배선층",
-       "게이트 절연막"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'PMOS transistors are placed inside the N-well.' 이 문장에서 N-well의 역할은?",
-      "opts": [
-       "금속 배선을 연결하는 통로",
-       "PMOS 트랜지스터를 담는 도핑 영역",
-       "웨이퍼를 고정하는 지지대"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "리포트에 'active area not defined'라고 나왔습니다. 의미는?",
-      "opts": [
-       "금속층이 너무 두껍다",
-       "트랜지스터 동작 영역이 지정되지 않았다",
-       "웨이퍼가 뒤집혀 있다"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) 게이트층",
-    "intro": "트랜지스터의 스위치를 이루는 층 이름입니다.",
-    "items": [
-     {
-      "en": "gate",
-      "ko": "게이트",
-      "d": "트랜지스터를 켜고 끄는 제어 전극.",
-      "ex": "The voltage on the gate controls the current flow."
-     },
-     {
-      "en": "poly (polysilicon)",
-      "ko": "폴리실리콘",
-      "d": "gate를 만드는 재료; 화면에서 gate 층 이름으로 쓰임.",
-      "ex": "Inspect the poly line for any bridging defect."
-     },
-     {
-      "en": "gate oxide",
-      "ko": "게이트 산화막",
-      "d": "gate와 active 사이의 매우 얇은 절연막 (GOX).",
-      "ex": "The gate oxide thickness must stay within spec."
-     },
-     {
-      "en": "source / drain",
-      "ko": "소스 / 드레인",
-      "d": "gate 양옆의 전류 입력·출력 영역.",
-      "ex": "Current flows from the source through the channel to the drain."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (2)",
-    "intro": "게이트층 용어의 뜻을 판단해 보세요.",
-    "questions": [
-     {
-      "prompt": "도면에서 'poly' 층은 실제로 무엇을 가리키나요?",
-      "opts": [
-       "소스/드레인 도핑 영역",
-       "폴리실리콘으로 만든 게이트 층",
-       "금속 배선층"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The gate oxide thickness must stay within spec.' 무엇을 관리하라는 뜻인가요?",
-      "opts": [
-       "게이트 절연막의 두께",
-       "웨이퍼의 지름",
-       "금속 배선의 개수"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "적층 순서상 poly(gate)는 어느 층 바로 위에 놓이나요?",
-      "opts": [
-       "Metal 2 위",
-       "active(+gate oxide) 위",
-       "substrate 아래"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) 배선층",
-    "intro": "소자를 연결하는 위쪽 배선 구조 용어입니다.",
-    "items": [
-     {
-      "en": "contact",
-      "ko": "컨택",
-      "d": "소자(active/poly)와 첫 금속층을 잇는 세로 연결.",
-      "ex": "The contact must land properly on the active area."
-     },
-     {
-      "en": "via",
-      "ko": "비아",
-      "d": "금속층과 금속층 사이(M1↔M2)를 잇는 세로 연결.",
-      "ex": "Drop a via to connect Metal 2 down to Metal 1."
-     },
-     {
-      "en": "metal (interconnect)",
-      "ko": "금속 배선",
-      "d": "소자들을 가로로 잇는 전선; M1, M2…로 적층.",
-      "ex": "Route the power line on the top metal layer."
-     },
-     {
-      "en": "field oxide / STI",
-      "ko": "필드 산화막 / 소자격리",
-      "d": "active 영역 사이를 절연해 소자를 격리하는 산화막.",
-      "ex": "STI isolates one active area from the next."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (3)",
-    "intro": "배선층 용어를 정확히 구분해 보세요.",
-    "questions": [
-     {
-      "prompt": "contact와 via의 차이를 바르게 설명한 것은?",
-      "opts": [
-       "contact는 소자↔금속, via는 금속↔금속 연결",
-       "둘 다 금속을 가로로 잇는 전선",
-       "contact는 절연막, via는 도핑 영역"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'Route the power line on the top metal layer.' 어디에 전원 배선을 하라는 뜻인가요?",
-      "opts": [
-       "가장 아래 substrate에",
-       "가장 위쪽 금속층에",
-       "게이트 산화막 안에"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "적층에서 M1과 M2 중 더 위층은?",
-      "opts": [
-       "M1이 더 위",
-       "M2가 더 위",
-       "항상 같은 높이"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (4) 도면·판독",
-    "intro": "층을 표현하고 검사할 때 쓰는 개념 용어입니다.",
-    "items": [
-     {
-      "en": "layer",
-      "ko": "레이어",
-      "d": "도면에서 한 공정층을 나타내는 색·이름 단위.",
-      "ex": "This defect is on the Metal 1 layer."
-     },
-     {
-      "en": "cross-section",
-      "ko": "단면",
-      "d": "소자를 옆에서 잘라 본 적층 구조 그림/사진.",
-      "ex": "Check the layer stack in the cross-section image."
-     },
-     {
-      "en": "layout",
-      "ko": "레이아웃",
-      "d": "위에서 내려다본 각 층의 평면 도면.",
-      "ex": "Open the layout and highlight the poly layer."
-     },
-     {
-      "en": "alignment",
-      "ko": "정렬",
-      "d": "위아래 층이 정확히 겹쳐 놓였는지의 상태.",
-      "ex": "The contact shows poor alignment to the active area."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "sticker",
-      "level": "info",
-      "en": "CROSS-SECTION VIEW",
-      "ko": "단면도(cross-section)"
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (4)",
-    "intro": "판독용 용어의 뜻을 골라 보세요.",
-    "questions": [
-     {
-      "prompt": "'Check the layer stack in the cross-section image.' 무엇을 확인하라는 뜻인가요?",
-      "opts": [
-       "웨이퍼의 무게",
-       "단면에서 층이 쌓인 순서와 상태",
-       "장비의 온도"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "검사 리포트 'Layer: METAL1, Defect: bridge'의 의미는?",
-      "opts": [
-       "금속1 층에서 배선이 서로 붙은 결함",
-       "게이트 산화막이 너무 얇음",
-       "웰이 잘못 도핑됨"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'The contact shows poor alignment to the active area.' 판단으로 옳은 것은?",
-      "opts": [
-       "정상이므로 통과",
-       "컨택이 액티브에 제대로 안 맞아 불량 가능성",
-       "금속층 두께 문제"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "manual",
-    "mtitle": "CROSS-SECTION LAYER STACK (BOTTOM-UP)",
-    "paras": [
-     "Layer 1 (bottom): Silicon substrate (P-type). This is the base for all devices.",
-     "맨 아래층: P형 실리콘 기판(substrate). 모든 소자의 바닥이 됩니다.",
-     "Layer 2: N-well / P-well formed in the substrate to hold the transistors.",
-     "2층: 트랜지스터를 담기 위해 기판 안에 만든 N-웰/P-웰.",
-     "Layer 3: Active area, isolated from neighbors by STI (field oxide).",
-     "3층: 액티브 영역. 옆 소자와는 STI(필드 산화막)로 격리됩니다.",
-     "Layer 4: Gate oxide, then poly gate on top of the active area.",
-     "4층: 게이트 산화막 위에 폴리(게이트)가 액티브 영역 위로 올라갑니다.",
-     "Layer 5: Contacts connect source/drain and poly up to Metal 1.",
-     "5층: 컨택이 소스/드레인과 폴리를 금속1(M1)까지 위로 연결합니다.",
-     "Layer 6 and above: Metal layers (M1, M2 …) linked by vias.",
-     "6층 이상: 금속층(M1, M2 …)들이 비아(via)로 서로 연결됩니다."
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "TERM",
-      "en": "Read the stack from [substrate] up to [metal].",
-      "ko": "기판부터 금속층까지 순서로 읽는다."
-     }
-    ]
-   },
-   {
-    "type": "manual",
-    "mtitle": "LAYER INSPECTION WORK INSTRUCTION",
-    "paras": [
-     "STEP 1. Open the cross-section SEM image and identify each layer bottom-up.",
-     "1단계: 단면 SEM 이미지를 열고 각 층을 아래에서 위로 식별하십시오.",
-     "STEP 2. Verify that every contact has landed fully on the active area.",
-     "2단계: 모든 컨택이 액티브 영역 위에 완전히 안착했는지 확인하십시오.",
-     "NOTE: A contact not landed on active is an alignment defect. Reject the lot.",
-     "참고: 액티브에 안착하지 못한 컨택은 정렬 불량입니다. 해당 로트를 불합격 처리하십시오.",
-     "STEP 3. Measure the gate oxide thickness and confirm it is within spec.",
-     "3단계: 게이트 산화막 두께를 측정하고 규격 이내인지 확인하십시오.",
-     "WARNING: Do not touch the poly gate line; bridging between gates causes a short.",
-     "경고: 폴리 게이트 라인을 건드리지 마십시오. 게이트 간 브리징은 단락을 유발합니다.",
-     "STEP 4. Record the layer name and defect type for any anomaly found.",
-     "4단계: 발견된 이상에 대해 레이어 이름과 결함 유형을 기록하십시오."
-    ]
-   },
-   {
-    "type": "sim",
-    "which": "layer",
-    "mode": "stack",
-    "intro": "아래 인터랙티브 화면에서 소자 단면의 각 층을 아래에서 위로 하나씩 눌러 보세요. **substrate → well → active → gate oxide → poly → contact → metal** 순서로 쌓이는 것을 확인하고, 각 층의 영어 이름과 위치를 눈으로 익히세요. 순서를 외우는 것이 목표입니다."
-   },
-   {
-    "type": "sim",
-    "which": "drc",
-    "mode": "readDrc",
-    "intro": "이번에는 **DRC (Design Rule Check)** 화면입니다. 레이어 간 최소 간격·선폭 규칙을 위반한 부분을 찾아 보세요. **\"spacing violation\"**, **\"width violation\"** 같은 영어 결과 문구가 무슨 뜻인지 읽고, 어느 **layer** 에서 문제가 났는지 판단하는 연습입니다."
-   },
-   {
-    "type": "sim",
-    "which": "lvs",
-    "intro": "마지막으로 **LVS (Layout Versus Schematic)** 화면입니다. 레이아웃의 층 연결(**contact/via/metal**)이 회로도와 일치하는지 비교합니다. **\"MATCH\"** 와 **\"MISMATCH\"** 결과를 읽고, 불일치가 어느 연결에서 났는지 해석해 보세요."
-   },
-   {
-    "type": "comm",
-    "items": [
-     {
-      "sit": "외국인 엔지니어가 단면 SEM 이미지를 함께 보며 층을 확인합니다.",
-      "q": {
-       "en": "This red line here — which layer is it?",
-       "ko": "여기 이 빨간 선, 어느 레이어인가요?"
-      },
-      "a": {
-       "en": "That is the poly gate, right above the active area.",
-       "ko": "그건 폴리 게이트입니다. 액티브 영역 바로 위쪽이에요."
-      }
-     },
-     {
-      "sit": "엔지니어가 컨택 정렬 상태를 묻습니다.",
-      "q": {
-       "en": "Did the contact land properly on the active area?",
-       "ko": "컨택이 액티브 영역 위에 제대로 안착했나요?"
-      },
-      "a": {
-       "en": "No, it is slightly off. This looks like an alignment defect.",
-       "ko": "아니요, 살짝 어긋났습니다. 정렬 불량으로 보입니다."
-      }
-     },
-     {
-      "sit": "배선층에 대해 확인합니다.",
-      "q": {
-       "en": "Which metal layer is the power line routed on?",
-       "ko": "전원 배선은 어느 금속층에 되어 있나요?"
-      },
-      "a": {
-       "en": "It is on Metal 2, connected down to Metal 1 by a via.",
-       "ko": "메탈2에 있고, 비아로 메탈1까지 연결되어 있습니다."
-      }
-     }
-    ]
-   },
-   {
-    "type": "wrap",
-    "title": "정리",
-    "points": [
-     "소자는 **cross-section** 으로 아래→위 적층: **substrate → well → active → gate oxide → poly → contact → metal**.",
-     "화면·도면의 **layer** 이름은 곧 실물 층의 위치다: **OD=active, PO=poly, CO=contact, M1/M2=metal, NW/PW=well**.",
-     "**contact** 는 소자↔금속, **via** 는 금속↔금속 연결. **M** 번호가 클수록 더 위층.",
-     "매뉴얼·리포트는 **layer 이름 + 결함/상태** 로 읽는다: 예 **'contact not landed on active' = 정렬 불량**.",
-     "**DRC** 는 설계 규칙 위반, **LVS** 는 레이아웃-회로도 일치 검증. 결과 문구(violation/MATCH/MISMATCH)를 뜻으로 판단한다."
-    ],
-    "done": "이제 낯선 영어 단면·HMI 화면도 **아래→위 층 순서**로 읽고 판단할 수 있습니다. **Layer 용어**, 완료!"
-   }
-  ]
- },
- {
-  "id": "w10",
-  "title": "Design Rule",
-  "slides": [
-   {
-    "type": "story",
-    "icon": "📐",
-    "title": "현장 이야기: 0.02um이 만든 재작업",
-    "text": "신입 공정 기술자 지훈은 마스크 레이아웃 검증 화면 앞에 앉았다. 화면 오른쪽에는 영어로 된 표 하나가 떠 있었다. **Design Rule Table**. 표에는 **Rule**, **Layer**, **Min Width**, **Min Spacing** 같은 영어 항목과 함께 숫자들이 um 단위로 빼곡히 적혀 있었다. 선배가 물었다. \"이 metal 라인 하나, 폭이 **0.18um**인데 룰은 **min width 0.20um**이야. 이거 통과야, 아니야?\" 지훈은 잠깐 멈칫했다. 값은 읽었지만, 영어 항목이 무엇을 요구하는지 정확히 몰랐다. 결국 이 한 줄을 잘못 읽어 **DRC violation**이 그대로 넘어갔고, 마스크는 재작업(rework) 대상이 되었다. 현장에서 영어 **Design Rule**을 '읽고 판단'하는 힘은, 설계 실력이 아니라 안전과 수율의 문제였다.",
-    "art": "designrule"
-   },
-   {
-    "type": "scene",
-    "title": "오늘의 현장 · 상황 설정",
-    "where": "레이아웃 검토 데스크.",
-    "tool": "디자인 룰 문서(rule deck)와 레이아웃 화면.",
-    "situation": "0.02µm 차이가 재작업(rework)을 불렀다. 규칙을 숫자로 읽어야 한다.",
-    "meet": [
-     "MIN WIDTH · SPACING 규칙",
-     "0.02µm 위반",
-     "DRC CLEAN 요구",
-     "재작업 rework"
-    ],
-    "goal": "설계 규칙을 숫자와 영어로 읽어 위반을 판단하기.",
-    "bg": "w10"
-   },
-   {
-    "type": "read",
-    "title": "Design Rule이란 무엇인가",
-    "intro": "디자인 규칙은 '만들 수 있는 도형'의 최소 조건을 정한 약속입니다.",
-    "paras": [
-     "**Design Rule**은 공정 장비가 실제로 재현할 수 있는 도형의 기하학적 한계를 규정한 규칙 모음입니다. 화면과 문서에서는 흔히 **design rules** 또는 **DR**로 표기됩니다.",
-     "각 규칙은 보통 **layer**(층), **rule name**(규칙 이름), **symbol/기호**, **value**(값), **description**(설명)으로 이루어진 표(**Design Rule Table**) 형태로 제공됩니다.",
-     "값의 단위는 대부분 **micron(um)** 또는 **nanometer(nm)**입니다. 화면에 `0.20 um` 또는 `200 nm`처럼 표기되며, 두 값이 같은 크기임을 즉시 환산해 읽을 수 있어야 합니다.",
-     "규칙의 목적은 **manufacturability**(제조 가능성)입니다. 너무 가늘거나 너무 가까운 패턴은 노광·식각에서 끊기거나 붙어(short) 불량이 됩니다. 즉 규칙은 '수율(yield)을 지키는 최소 안전선'입니다.",
-     "기술자의 핵심 임무는 도형을 '그리는' 것이 아니라, 측정된 값(**measured value**)이 규칙 값(**rule value**)을 **satisfy**(만족)하는지 **pass/fail**을 판단하는 것입니다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "핵심 규칙 5종: Width · Spacing · Overlap · Enclosure · Extension",
-    "intro": "현장 표에서 가장 자주 보는 다섯 가지 규칙 유형입니다.",
-    "paras": [
-     "**Minimum Width (min width)**: 한 도형이 가질 수 있는 가장 얇은 폭입니다. `Metal1 min width = 0.20 um`이면 폭이 0.20um보다 작으면 **violation**입니다. 너무 가늘면 라인이 끊어져(open) 전기가 통하지 않습니다.",
-     "**Minimum Spacing (min spacing)**: 같은 층의 서로 다른 두 도형 사이의 최소 간격입니다. 간격이 규칙보다 좁으면 두 배선이 붙어 **short**(단락)가 납니다. 화면에서는 `spacing`, `space`, `S`로 표기됩니다.",
-     "**Overlap**: 두 층이 서로 겹쳐야 하는 최소 겹침량입니다. 예를 들어 via와 metal은 반드시 일정 넓이 이상 겹쳐야 접촉(contact)이 안정적으로 형성됩니다.",
-     "**Enclosure**: 한 층이 다른 층을 '감싸는' 최소 여유입니다. `Metal enclosure of via = 0.05 um`은 via 둘레를 metal이 사방 0.05um 이상 덮어야 한다는 뜻입니다. 정렬 오차(misalignment)를 견디게 해줍니다.",
-     "**Extension**: 한 도형이 경계를 넘어 뻗어야 하는 최소 길이입니다. gate가 active 영역 밖으로 충분히 뻗어야(poly extension) 누설을 막습니다.",
-     "이 다섯 규칙은 각각 **min**(최소) 조건인지 **max**(최대) 조건인지 반드시 확인해야 합니다. min은 '이보다 크면 OK', max는 '이보다 작으면 OK'로 판단 방향이 정반대입니다."
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "DESIGN RULE",
-      "en": "Minimum spacing = [0.14 µm].",
-      "ko": "최소 간격 = 0.14µm"
-     }
-    ]
-   },
-   {
-    "type": "read",
-    "title": "규칙 표(Design Rule Table) 읽는 법",
-    "intro": "표의 열(column) 이름과 기호를 정확히 해석해야 판단이 흔들리지 않습니다.",
-    "paras": [
-     "**Rule / Rule Name** 열: 규칙의 식별자입니다. 흔히 `M1.W.1`, `V1.E.2`처럼 '층.유형.번호'로 코드화됩니다. `W`=width, `S`=space, `E`=enclosure/extension, `O`=overlap을 뜻하는 경우가 많습니다.",
-     "**Layer** 열: 규칙이 적용되는 층입니다. `POLY`, `ACTIVE`, `METAL1(M1)`, `VIA1(V1)`, `CONTACT(CO)` 등이 자주 등장합니다.",
-     "**Symbol** 열: `≥`(이상), `≤`(이하), `=`(정확히)로 판단 방향을 알려줍니다. `Min Width ≥ 0.20`은 '0.20 이상이어야 통과'라는 뜻입니다.",
-     "**Value / Min / Max** 열: 기준 수치입니다. `Min` 열의 값은 하한선, `Max` 열의 값은 상한선입니다. 두 값이 함께 있으면 '범위(range)' 규칙입니다.",
-     "**Description** 열: 규칙의 영어 설명 문장입니다. 예: `Minimum spacing between two Metal1 lines`. 이 문장을 읽고 '무엇과 무엇 사이'의 규칙인지 파악하는 것이 핵심입니다.",
-     "판단 절차: (1) 어떤 layer인지 확인 → (2) rule type(width/spacing/…)을 확인 → (3) symbol로 방향 확인 → (4) 측정값과 비교해 **pass** 또는 **fail** 결정."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "판단 실습의 사고 흐름과 단위 함정",
-    "intro": "값을 읽는 것과 '만족 여부를 판단'하는 것은 다른 능력입니다.",
-    "paras": [
-     "측정값 비교의 기본 문장: `measured 0.18 um < min 0.20 um → FAIL`. 부등호의 방향과 규칙이 min인지 max인지를 함께 봐야 합니다.",
-     "단위 함정 1 — **um vs nm**: `0.20 um`과 `200 nm`은 같은 값입니다. 화면마다 단위가 다르므로 `1 um = 1000 nm` 환산을 항상 염두에 둬야 합니다.",
-     "단위 함정 2 — **소수점 자리**: `0.020 um`과 `0.20 um`은 10배 차이입니다. 현장 화면의 작은 글씨에서 이 자리 실수가 실제 rework를 부릅니다.",
-     "**Waived / Waiver**: 일부 violation은 검토 후 '예외 승인'되어 무시됩니다. 리포트에서 `waived`로 표시된 항목은 실제 fail이 아닐 수 있으니 상태(status)를 함께 읽어야 합니다.",
-     "**Error vs Warning**: DRC 리포트는 심각도를 나눕니다. `error`는 반드시 수정, `warning`은 검토 후 판단입니다. 색상(빨강/노랑)과 함께 영어 라벨을 확인하세요.",
-     "최종 산출물은 언제나 하나의 영어 판정어입니다: **PASS**(clean) 또는 **FAIL**(violation). 이 한 단어를 정확히 도출하는 것이 이 수업의 목표입니다."
+     "**1. Prepare / Notify** — 영향받는 사람에게 장비를 멈춘다고 알린다. \"Notify affected personnel before shutdown.\"",
+     "**2. Shut down** — 정상 정지 순서로 멈춘다. 운전 중에 전원부터 끊으면 공정과 장비가 비정상으로 멈춘다.",
+     "**3. Isolate** — 에너지원을 하나씩 끊는다. 반도체 장비는 전기만이 아니다: **AC main breaker(주전원)**, **RF generator**, **CDA(압축공기, 공압)**, **process gas(공정 가스)**, **heater(열)**.",
+     "**4. Lock & Tag** — 끊은 지점마다 **본인의 자물쇠와 표찰**을 단다. 원칙은 **one person, one lock, one key** — 내 자물쇠의 열쇠는 나만 갖는다.",
+     "**5. Release stored energy** — 끊어도 남아 있는 에너지를 뺀다. 공압 라인의 잔압을 빼고(**bleed**), 가스 라인을 퍼지하고(**purge**), 뜨거운 부품은 식힌다.",
+     "**6. Verify (try-out)** — 정말 에너지가 없는지 확인한다. 시작 버튼을 눌러 장비가 **움직이지 않는지** 보고, 측정기로 **0 V** 를 확인한다. 이것이 **zero energy state(무에너지 상태)** 다. 확인 전에는 손대지 않는다."
     ],
     "figs": [
      {
       "kind": "sticker",
       "level": "danger",
-      "en": "0.02 µm SHORT → REWORK",
-      "ko": "0.02µm 부족 → 재작업"
+      "en": "DANGER — LOCKED OUT. DO NOT OPERATE.",
+      "ko": "위험 — 잠금 중. 조작 금지."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "가스 이름보다 성질을 읽어라 — toxic · pyrophoric · corrosive · oxidizer",
+    "intro": "가스 캐비닛과 배관 라벨에는 가스 이름과 함께 그 가스의 위험 성질이 영어로 적혀 있다. 대처 방법은 이름이 아니라 성질이 정한다.",
+    "paras": [
+     "**toxic(독성)** — 들이마시면 해롭다. 예: **AsH3(arsine)**, **PH3(phosphine)** — 이온주입에 쓰며 아주 낮은 농도에서도 위험하다.",
+     "**pyrophoric(자연발화성)** — 공기와 닿기만 해도 불이 붙는다. 대표가 **SiH4(silane)**. 그래서 SiH4 라인을 열 때는 공기가 닿지 않게 퍼지가 필수다.",
+     "**corrosive(부식성)** — 금속과 피부를 상하게 한다. 예: **Cl2**, **HBr** — 식각에 쓴다. 독성도 함께 있다.",
+     "**oxidizer(산화성)** — 스스로 타지 않지만 다른 것을 더 잘 타게 한다. 예: **NF3** — 챔버 세정에 쓴다.",
+     "농도 단위는 **ppm(백만분율)** 과 **ppb(십억분율)**. **1 ppm = 1,000 ppb**. 아주 독한 가스는 감지기가 ppb 로 표시하기도 하므로, 숫자보다 단위를 먼저 본다.",
+     "**TLV(Threshold Limit Value, 노출 기준)** 는 하루 8시간 일해도 대부분의 사람에게 해가 없다고 보는 평균 농도다. 예(ACGIH TLV-TWA): Cl2 **0.1 ppm**, SiH4 **5 ppm**, AsH3 **0.005 ppm**. 숫자가 작을수록 독한 가스다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "GAS CABINET GC-07",
+      "status": "ONLINE",
+      "state": "run",
+      "rows": [
+       [
+        "GAS",
+        "SiH4 (silane)"
+       ],
+       [
+        "HAZARD",
+        "PYROPHORIC · FLAMMABLE",
+        "warn"
+       ],
+       [
+        "CYL PRESS",
+        "1,250 psig"
+       ],
+       [
+        "EXHAUST",
+        "OK"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "경보 화면 읽기 — LEVEL 1 과 LEVEL 2 는 행동이 다르다",
+    "intro": "가스 감지기(TGM)는 보통 두 단계로 울린다. 단계마다 해야 할 일이 다르고, 경보 문구가 그 일을 영어 명령문으로 알려 준다.",
+    "paras": [
+     "**LEVEL 1 / WARNING** — 농도가 오르고 있다. 이 교재 실습에서는 **TLV 의 50%** 에 둔다. 할 일: \"Stop work, secure the area, and report to the supervisor.\" — 하던 작업을 멈추고, 그 자리를 안전하게 두고, 보고한다.",
+     "**LEVEL 2 / ALARM** — 위험 농도다. 이 교재 실습에서는 **TLV 100%** 에 둔다. 할 일: \"Evacuate immediately via the nearest exit.\" — 즉시 대피한다. 장비를 정리하거나 원인을 보러 가지 않는다.",
+     "대피 후의 핵심 문장: \"Do not re-enter until the ERT gives the all-clear.\" — 비상대응팀(**ERT**)이 **all-clear(해제)** 를 줄 때까지 다시 들어가지 않는다.",
+     "경보와 함께 장비가 스스로 가스를 끊기도 한다: \"Gas cabinet auto shut-off activated.\" 이건 장비가 한 일이지, 내가 대피하지 않아도 된다는 뜻이 아니다.",
+     "경보 단계 값은 **사업장마다 다르다**. 실제 현장에서는 그 사업장 절차서의 숫자를 따른다. 이 강에서 익힐 것은 숫자가 아니라 **\"단계 → 행동\"** 의 연결이다."
+    ],
+    "figs": [
+     {
+      "kind": "alarm",
+      "level": "danger",
+      "code": "TGM-03",
+      "en": "Cl2 0.12 ppm — LEVEL 2 ALARM. Evacuate immediately.",
+      "ko": "염소 0.12 ppm — 2차 경보. 즉시 대피."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "작업 허가서(Permit to Work) — 누가, 무엇을, 언제까지",
+    "intro": "가스 배관을 여는 일(line break), 불꽃이 나는 일(hot work), 좁은 공간에 들어가는 일(confined space)은 허가서 없이 시작할 수 없다. 허가서는 칸마다 정해진 영어를 쓴다.",
+    "paras": [
+     "**Scope of work** — 작업 범위. 예: \"Replace the VCR fitting on the Cl2 line at VMB-3.\" 범위 밖의 일은 허가되지 않은 일이다.",
+     "**Hazards / Isolation points** — 위험 요소와 차단 지점. 예: \"Cl2 (toxic, corrosive); isolate at VMB-3 valve V2.\"",
+     "**Precautions** — 조건. 여기에 조동사가 몰려 있다. \"The line **shall** be cycle-purged ...\", \"A second person **shall** be present.\"",
+     "**Authorized by / Issued to** — 허가한 사람과 받은 사람. 서명(**sign-off**)이 없으면 시작할 수 없다.",
+     "**Valid until** — 유효 기간. 예: \"Valid until 06:00 today.\" 시간을 넘기면 허가서가 만료(**expired**)되어 다시 받아야 한다.",
+     "**Cycle purge** — 진공으로 빼고 N2 로 채우기를 여러 번 반복해 배관 속 가스를 없애는 방법. 한 번의 퍼지로는 배관 구석에 남은 가스가 빠지지 않는다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "PERMIT PTW-1182",
+      "lines": [
+       "TYPE: [LINE BREAK] — Cl2, VMB-3",
+       "VALID UNTIL: 06:00",
+       "STATUS: [ISSUED] — awaiting sign-off"
+      ]
      }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "디자인 규칙 화면과 리포트에서 반복 등장하는 약어입니다.",
+    "intro": "안전 절차서·경보 화면·허가서에 반복해서 나오는 약어입니다.",
     "items": [
      {
-      "ab": "DR",
-      "full": "Design Rule",
-      "ko": "디자인 규칙, 제조 가능성을 위한 도형 규칙"
+      "ab": "LOTO",
+      "full": "Lockout / Tagout",
+      "ko": "잠금·표찰 — 정비 전 위험 에너지 차단"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "디자인 규칙 검사(위반 자동 검출)"
+      "ab": "PTW",
+      "full": "Permit to Work",
+      "ko": "작업 허가서 — 위험 작업의 조건·서명"
      },
      {
-      "ab": "W",
-      "full": "Width",
-      "ko": "폭(주로 min width 규칙 기호)"
+      "ab": "TGM",
+      "full": "Toxic Gas Monitor",
+      "ko": "독성 가스 감지기 — 농도 표시·경보"
      },
      {
-      "ab": "S",
-      "full": "Space / Spacing",
-      "ko": "간격(주로 min spacing 규칙 기호)"
+      "ab": "VMB",
+      "full": "Valve Manifold Box",
+      "ko": "가스 밸브 박스 — 가스를 장비별로 나눠 보내는 곳"
      },
      {
-      "ab": "ENC",
-      "full": "Enclosure",
-      "ko": "감쌈 여유(층이 다른 층을 덮는 양)"
+      "ab": "EMO",
+      "full": "Emergency Off",
+      "ko": "비상 정지 버튼 — 장비 전원 즉시 차단"
      },
      {
-      "ab": "EXT",
-      "full": "Extension",
-      "ko": "뻗음(경계를 넘어 연장되는 길이)"
+      "ab": "SDS",
+      "full": "Safety Data Sheet",
+      "ko": "물질안전보건자료 — 화학물질의 위험·조치 16개 항목"
      },
      {
-      "ab": "M1",
-      "full": "Metal 1",
-      "ko": "1번 금속 배선층"
+      "ab": "TLV",
+      "full": "Threshold Limit Value",
+      "ko": "노출 기준 — 하루 8시간 평균 허용 농도"
      },
      {
-      "ab": "V1",
-      "full": "Via 1",
-      "ko": "1번 비아(층간 연결 구멍)"
+      "ab": "ERT",
+      "full": "Emergency Response Team",
+      "ko": "비상대응팀 — 대피 해제(all-clear)를 준다"
      },
      {
-      "ab": "um",
-      "full": "Micron (Micrometer)",
-      "ko": "마이크론, 1um = 1000nm"
+      "ab": "SCBA",
+      "full": "Self-Contained Breathing Apparatus",
+      "ko": "공기호흡기 — 가스 누출 현장 진입용"
      },
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃-회로 일치 검증(DRC와 함께 자주 언급)"
+      "ab": "ppm / ppb",
+      "full": "parts per million / billion",
+      "ko": "백만분율 / 십억분율 — 1 ppm = 1,000 ppb"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) 규칙 유형",
-    "intro": "규칙 표의 rule type을 나타내는 영어 용어입니다.",
+    "title": "핵심 용어 (1) — 조동사 · 규정어",
+    "intro": "규정문에서 의무의 세기를 정하는 말입니다. 예문을 읽으며 \"반드시 / 권장 / 해도 됨 / 안 해도 됨 / 금지\" 중 무엇인지 가려 보세요.",
     "items": [
      {
-      "en": "minimum width",
-      "ko": "최소 폭",
-      "d": "도형이 가질 수 있는 가장 얇은 폭 하한선",
-      "ex": "The metal line must meet the minimum width of 0.20 um."
+      "en": "shall",
+      "ko": "~해야 한다 (요구)",
+      "d": "표준·규정의 의무. 안 지키면 위반",
+      "ex": "The operator shall wear chemical-resistant gloves when handling the bubbler."
      },
      {
-      "en": "minimum spacing",
-      "ko": "최소 간격",
-      "d": "같은 층 두 도형 사이 최소 거리 하한선",
-      "ex": "Check the minimum spacing between two adjacent Metal1 lines."
+      "en": "shall not / must not",
+      "ko": "~해서는 안 된다 (금지)",
+      "d": "금지. 예외 없음",
+      "ex": "Personnel must not enter the gas cabinet area without a buddy."
      },
      {
-      "en": "overlap",
-      "ko": "겹침",
-      "d": "두 층이 서로 겹쳐야 하는 최소 넓이",
-      "ex": "The via must have sufficient overlap with the metal above it."
+      "en": "should",
+      "ko": "~하는 것이 좋다 (권고)",
+      "d": "권장. 정당한 이유가 있으면 달리 할 수 있다",
+      "ex": "Leak checks should be performed at the start of each shift."
      },
      {
-      "en": "enclosure",
-      "ko": "감쌈 여유",
-      "d": "한 층이 다른 층을 사방으로 덮는 최소 여유",
-      "ex": "Metal enclosure of the via must be at least 0.05 um on all sides."
+      "en": "may",
+      "ko": "~해도 된다 (허용)",
+      "d": "선택 가능. 하지 않아도 위반 아님",
+      "ex": "The technician may use a digital torque wrench instead of a click type."
      },
      {
-      "en": "extension",
-      "ko": "연장",
-      "d": "도형이 경계를 넘어 뻗어야 하는 최소 길이",
-      "ex": "The poly extension beyond the active area must not be smaller than 0.10 um."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "log",
-      "title": "RULE DECK",
-      "lines": [
-       "MIN WIDTH    0.10 µm",
-       "MIN SPACING  0.14 µm",
-       "ENCLOSURE    0.05 µm"
-      ]
+      "en": "need not",
+      "ko": "~하지 않아도 된다 (의무 아님)",
+      "d": "\"하지 마라\"가 아니다",
+      "ex": "The tool need not be vented for a software-only update."
      },
      {
-      "kind": "note",
-      "title": "DESIGN RULE",
-      "en": "Minimum width = [0.10 µm].",
-      "ko": "최소 선폭 = 0.10µm"
-     }
-    ]
-   },
-   {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — 디자인 룰",
-    "app": "LayoutPro",
-    "doc": "m1_rules.drc",
-    "run": "Ruler",
-    "canvas": "rules",
-    "left": {
-     "title": "Rule Deck",
-     "items": [
-      {
-       "name": "MIN WIDTH 0.10"
-      },
-      {
-       "name": "MIN SPACING 0.14"
-      },
-      {
-       "name": "ENCLOSURE 0.05"
-      }
-     ]
-    },
-    "log": [
-     "> load rule deck N28_M1.drc",
-     "> ready"
-    ],
-    "status": "Ruler: 0.16µm   Rule: M1.S.1   Zoom: 600%",
-    "gloss": [
-     [
-      "Rule deck",
-      "규칙 세트"
-     ],
-     [
-      "Ruler",
-      "치수 자"
-     ],
-     [
-      "min spacing",
-      "최소 간격"
-     ],
-     [
-      "enclosure",
-      "겹침(감쌈)"
-     ]
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "영어 규칙 항목의 뜻을 고르세요.",
-    "questions": [
-     {
-      "prompt": "'Minimum spacing between two Metal1 lines'가 규정하는 것은?",
-      "opts": [
-       "한 metal 라인의 최소 폭",
-       "서로 다른 두 metal 라인 사이의 최소 간격",
-       "metal과 via의 겹침량"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'Metal enclosure of via = 0.05 um'의 의미로 맞는 것은?",
-      "opts": [
-       "via가 metal보다 0.05um 커야 한다",
-       "metal이 via를 사방 0.05um 이상 감싸야 한다",
-       "via 간 간격이 0.05um여야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "규칙이 'Min Width ≥ 0.20 um'이고 측정값이 0.18 um일 때 판정은?",
-      "opts": [
-       "PASS (통과)",
-       "FAIL (위반)",
-       "판정 불가"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) 판단·단위",
-    "intro": "만족 여부를 판단할 때 쓰는 영어 표현입니다.",
-    "items": [
-     {
-      "en": "satisfy / meet",
-      "ko": "만족하다",
-      "d": "측정값이 규칙 조건을 충족함",
-      "ex": "This line satisfies the minimum width rule."
-     },
-     {
-      "en": "violation",
-      "ko": "위반",
-      "d": "규칙을 어긴 상태, 수정 대상",
-      "ex": "The DRC found one spacing violation in the layout."
-     },
-     {
-      "en": "minimum",
-      "ko": "최소값(하한)",
-      "d": "이 값 이상이어야 통과하는 기준",
-      "ex": "The minimum contact size is 0.16 um."
-     },
-     {
-      "en": "maximum",
-      "ko": "최대값(상한)",
-      "d": "이 값 이하여야 통과하는 기준",
-      "ex": "The maximum metal width in this layer is 10 um."
-     },
-     {
-      "en": "micron (um)",
-      "ko": "마이크론",
-      "d": "길이 단위, 1um = 1000nm",
-      "ex": "All values in this table are given in microns (um)."
-     },
-     {
-      "en": "measured value",
-      "ko": "측정값",
-      "d": "실제 도형에서 측정된 수치",
-      "ex": "Compare the measured value with the rule value to decide pass or fail."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "단위와 판단 방향을 정확히 읽으세요.",
-    "questions": [
-     {
-      "prompt": "화면에 규칙이 '200 nm'로, 측정값이 '0.20 um'로 표기됐다. 두 값의 관계는?",
-      "opts": [
-       "측정값이 더 크다",
-       "측정값이 더 작다",
-       "두 값은 같다"
-      ],
-      "ans": 2
-     },
-     {
-      "prompt": "'maximum metal width = 10 um' 규칙에서 측정값 12 um는?",
-      "opts": [
-       "PASS",
-       "FAIL",
-       "waived"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "리포트 항목 상태가 'waived'로 표시되어 있다면 그 뜻은?",
-      "opts": [
-       "검토 후 예외 승인되어 무시됨",
-       "즉시 수정해야 하는 심각한 오류",
-       "측정에 실패한 항목"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) 층·표 항목",
-    "intro": "규칙 표의 열과 층 이름을 읽는 용어입니다.",
-    "items": [
-     {
-      "en": "layer",
-      "ko": "층",
-      "d": "규칙이 적용되는 마스크 층",
-      "ex": "Select the METAL1 layer to view its width rules."
-     },
-     {
-      "en": "rule value",
-      "ko": "규칙 값",
-      "d": "표에 명시된 기준 수치",
-      "ex": "The rule value for this spacing is 0.22 um."
-     },
-     {
-      "en": "description",
-      "ko": "설명",
-      "d": "규칙을 풀어 쓴 영어 문장",
-      "ex": "Read the description column to know what the rule checks."
-     },
-     {
-      "en": "active area",
-      "ko": "활성 영역",
-      "d": "트랜지스터가 형성되는 영역",
-      "ex": "The gate poly must extend beyond the active area."
-     },
-     {
-      "en": "via",
-      "ko": "비아",
-      "d": "금속 층간을 잇는 연결 구멍",
-      "ex": "Each via must be enclosed by metal on all sides."
-     },
-     {
-      "en": "contact",
-      "ko": "콘택",
-      "d": "실리콘과 금속을 잇는 하부 연결",
-      "ex": "The contact size must not be smaller than the minimum."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "표 항목과 판정 문장을 해석하세요.",
-    "questions": [
-     {
-      "prompt": "규칙 코드 'M1.S.1'에서 가운데 'S'가 가장 뜻할 가능성이 높은 것은?",
-      "opts": [
-       "Size",
-       "Spacing",
-       "Symbol"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The gate poly must extend beyond the active area.'가 요구하는 규칙 유형은?",
-      "opts": [
-       "extension (연장)",
-       "spacing (간격)",
-       "overlap (겹침)"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "판정 문장 'measured 0.25 um ≥ min 0.22 um'의 결과는?",
-      "opts": [
-       "PASS",
-       "FAIL",
-       "warning"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (4) 리포트·상태",
-    "intro": "DRC 리포트 화면에서 상태를 읽는 용어입니다.",
-    "items": [
-     {
-      "en": "DRC clean",
-      "ko": "위반 없음",
-      "d": "모든 규칙을 통과한 깨끗한 상태",
-      "ex": "The layout is DRC clean and ready for release."
-     },
-     {
-      "en": "error",
-      "ko": "오류(필수 수정)",
-      "d": "반드시 고쳐야 하는 심각한 위반",
-      "ex": "There are 3 errors that must be fixed before tape-out."
-     },
-     {
-      "en": "warning",
-      "ko": "경고(검토 요망)",
-      "d": "수정 여부를 검토해야 하는 항목",
-      "ex": "This warning may be waived after review."
-     },
-     {
-      "en": "pass / fail",
-      "ko": "통과 / 실패",
-      "d": "규칙 만족 여부의 최종 판정",
-      "ex": "Mark each rule as pass or fail in the report."
-     },
-     {
-      "en": "waiver",
-      "ko": "예외 승인",
-      "d": "위반이지만 검토 후 허용된 상태",
-      "ex": "A waiver was approved for this density violation."
+      "en": "prior to",
+      "ko": "~하기 전에",
+      "d": "before 의 문서체. 순서 조건",
+      "ex": "Verify zero energy prior to opening any panel."
      }
     ],
     "figs": [
      {
       "kind": "sticker",
       "level": "warn",
-      "en": "DRC CLEAN REQUIRED BEFORE TAPEOUT",
-      "ko": "테이프아웃 전 DRC 통과 필수"
+      "en": "Face shield shall be worn beyond this point.",
+      "ko": "이 지점부터 안면 보호구 착용 의무."
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 조동사의 강도",
+    "intro": "규정 문장의 조동사를 보고 그 줄이 무엇을 요구하는지 고르세요.",
+    "questions": [
+     {
+      "prompt": "허가서: 'A second person shall be present during the line break.' 이 줄의 뜻은?",
+      "opts": [
+       "두 번째 사람이 있으면 좋다",
+       "두 번째 사람이 반드시 있어야 한다 — 없으면 시작할 수 없다",
+       "두 번째 사람은 있어도 되고 없어도 된다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "매뉴얼: 'The tool need not be vented for a software-only update.' 소프트웨어만 업데이트할 때는?",
+      "opts": [
+       "벤트를 하면 안 된다",
+       "벤트를 반드시 해야 한다",
+       "벤트(대기압 복귀)를 하지 않아도 된다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Leak checks should be performed at the start of each shift.' 어떤 무게의 문장인가?",
+      "opts": [
+       "권장 — 하는 것이 좋다",
+       "의무 — 안 하면 위반이다",
+       "금지 — 하지 마라"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — LOTO 동작어",
+    "intro": "LOTO 절차서의 각 단계를 여는 동사와 상태어입니다.",
+    "items": [
+     {
+      "en": "isolate",
+      "ko": "차단하다",
+      "d": "에너지원(전기·공압·가스·열)을 장비에서 끊는 것",
+      "ex": "Isolate all energy sources, including CDA and process gas, before servicing."
+     },
+     {
+      "en": "de-energize",
+      "ko": "전원을 내리다",
+      "d": "전기 에너지를 없앤 상태로 만드는 것",
+      "ex": "De-energize the RF generator and wait five minutes for the capacitors to discharge."
+     },
+     {
+      "en": "bleed",
+      "ko": "잔압을 빼다",
+      "d": "닫은 뒤에도 배관에 남은 압력을 빼는 것",
+      "ex": "Bleed the residual pressure from the CDA line after closing the supply valve."
+     },
+     {
+      "en": "try-out",
+      "ko": "작동 시도 확인",
+      "d": "잠근 뒤 시작을 눌러 움직이지 않음을 확인하는 것",
+      "ex": "Perform a try-out: press START and confirm that the tool does not respond."
+     },
+     {
+      "en": "zero energy state",
+      "ko": "무에너지 상태",
+      "d": "모든 에너지원이 끊기고 남은 에너지도 없는 상태",
+      "ex": "Do not touch any part until a zero energy state has been verified."
+     },
+     {
+      "en": "remove a lock",
+      "ko": "자물쇠를 풀다",
+      "d": "단 사람만 풀 수 있다",
+      "ex": "Only the person who applied the lock may remove it."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — LOTO 절차서",
+    "doc": {
+     "name": "FAB-SAFE Lockout/Tagout Procedure",
+     "no": "SOP-EHS-012",
+     "sec": "4",
+     "rev": "F",
+     "page": "4-1"
+    },
+    "heading": "4  Energy Control Procedure — Etch Tool",
+    "steps": [
+     "Notify all affected personnel that the tool will be shut down for service.",
+     "Shut down the tool using the normal stop sequence.",
+     {
+      "t": "Isolate each energy source: AC main breaker, RF generator, CDA supply, and process gas at the VMB.",
+      "note": {
+       "kind": "note",
+       "en": "The RF generator has its own breaker. It shall be isolated separately."
+      }
+     },
+     "Apply your personal lock and tag to every isolation point.",
+     {
+      "t": "Release stored energy: bleed the CDA line and cycle-purge the gas line.",
+      "note": {
+       "kind": "caution",
+       "en": "The heater may remain hot for 30 minutes after power-off."
+      }
+     },
+     {
+      "t": "Verify zero energy: perform a try-out and measure 0 V at the main terminal.",
+      "note": {
+       "kind": "warning",
+       "en": "Do not begin work until the try-out has been completed."
+      }
+     }
+    ],
+    "callout": {
+     "kind": "danger",
+     "en": "Only the person who applied a lock shall remove it."
+    },
+    "gloss": [
+     [
+      "isolation point",
+      "차단 지점"
+     ],
+     [
+      "stored energy",
+      "잔류 에너지"
+     ],
+     [
+      "try-out",
+      "작동 시도 확인"
+     ],
+     [
+      "terminal",
+      "단자"
+     ]
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — LOTO 절차",
+    "intro": "절차서 문장을 읽고 올바른 판단을 고르세요.",
+    "questions": [
+     {
+      "prompt": "'The RF generator has its own breaker. It shall be isolated separately.' 이 문장이 경고하는 실수는?",
+      "opts": [
+       "RF 전원을 너무 일찍 켜는 것",
+       "RF 출력을 낮게 설정하는 것",
+       "주전원만 내리고 RF 전원은 살아 있는 채로 작업하는 것"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "자물쇠를 다 걸었다. 절차서 다음 줄은 'Release stored energy: bleed the CDA line.' 왜 필요한가?",
+      "opts": [
+       "밸브를 닫아도 배관 안에 압력이 남아 있기 때문에",
+       "자물쇠가 제대로 걸렸는지 보려고",
+       "공압이 부족해 보충하려고"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "'Only the person who applied a lock shall remove it.' 동료의 자물쇠가 걸려 있는데 동료가 퇴근했다. 맞는 것은?",
+      "opts": [
+       "급하면 내가 풀어도 된다",
+       "내가 풀지 않는다 — 절차에 따라 감독자에게 보고한다",
+       "절단기로 자르고 작업을 시작한다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 가스 · 경보",
+    "intro": "가스 라벨과 감지기 화면, 경보 문구에서 만나는 말입니다.",
+    "items": [
+     {
+      "en": "toxic",
+      "ko": "독성의",
+      "d": "흡입하면 해로운 — AsH3, PH3, Cl2",
+      "ex": "Arsine is extremely toxic even at very low concentrations."
+     },
+     {
+      "en": "pyrophoric",
+      "ko": "자연발화성의",
+      "d": "공기에 닿으면 저절로 불이 붙는 — SiH4",
+      "ex": "Silane is pyrophoric, so the line must be purged before it is opened."
+     },
+     {
+      "en": "corrosive",
+      "ko": "부식성의",
+      "d": "금속·피부를 상하게 하는 — Cl2, HBr",
+      "ex": "Chlorine is corrosive and attacks stainless steel when moisture is present."
+     },
+     {
+      "en": "concentration",
+      "ko": "농도",
+      "d": "ppm·ppb 로 표시",
+      "ex": "The monitor shows the Cl2 concentration in ppm."
+     },
+     {
+      "en": "evacuate",
+      "ko": "대피하다",
+      "d": "그 구역을 즉시 떠나는 것",
+      "ex": "Evacuate the area immediately when the LEVEL 2 alarm sounds."
+     },
+     {
+      "en": "all-clear",
+      "ko": "경보 해제",
+      "d": "비상대응팀이 재진입을 허락하는 것",
+      "ex": "Do not re-enter the area until the ERT gives the all-clear."
+     }
+    ],
+    "figs": [
+     {
+      "kind": "meter",
+      "name": "TGM-03  Cl2",
+      "sp": "0.05 (L1)",
+      "pv": "0.06",
+      "unit": "ppm",
+      "state": "warn",
+      "note": "PV is above the LEVEL 1 set point."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 가스 경보 대응",
+    "doc": {
+     "name": "FAB-SAFE Emergency Response Guide",
+     "no": "ERG-003",
+     "sec": "2",
+     "rev": "D",
+     "page": "2-3"
+    },
+    "heading": "2  Toxic Gas Alarm Response",
+    "steps": [
+     {
+      "t": "LEVEL 1 (WARNING): Stop work and secure the area. Report to the supervisor.",
+      "note": {
+       "kind": "note",
+       "en": "Do not open any gas line while a LEVEL 1 warning is active."
+      }
+     },
+     {
+      "t": "LEVEL 2 (ALARM): Evacuate immediately via the nearest exit.",
+      "note": {
+       "kind": "warning",
+       "en": "Do not stop to shut down tools or investigate the source."
+      }
+     },
+     "Go to the assembly point and report to the area warden.",
+     "Do not re-enter until the ERT gives the all-clear."
+    ],
+    "callout": {
+     "kind": "danger",
+     "en": "Only ERT members wearing SCBA may enter an area in LEVEL 2 alarm."
+    },
+    "gloss": [
+     [
+      "secure the area",
+      "현장을 안전하게 정리"
+     ],
+     [
+      "assembly point",
+      "집결 장소"
+     ],
+     [
+      "area warden",
+      "구역 안전 담당"
+     ],
+     [
+      "investigate",
+      "원인을 조사하다"
+     ]
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 경보 문장 판단",
+    "intro": "경보 대응 절차를 읽고 행동을 고르세요.",
+    "questions": [
+     {
+      "prompt": "LEVEL 2 경보. 절차서: 'Do not stop to shut down tools or investigate the source.' 맞는 행동은?",
+      "opts": [
+       "장비를 정리하지 않고 가장 가까운 출구로 바로 대피한다",
+       "하던 웨이퍼를 마저 꺼내고 대피한다",
+       "어디서 새는지 확인하고 대피한다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "대피 후 10분, 경보음이 멈췄다. 'Do not re-enter until the ERT gives the all-clear.' 들어가도 되는가?",
+      "opts": [
+       "경보음이 멈췄으니 들어간다",
+       "아니다 — 비상대응팀의 해제(all-clear)가 있어야 한다",
+       "감독자 혼자 판단해 들어간다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'Only ERT members wearing SCBA may enter an area in LEVEL 2 alarm.' 이 문장의 may 는?",
+      "opts": [
+       "권고 — 누구나 들어가는 것이 좋다",
+       "가능성 — 들어갈지도 모른다",
+       "허용 — 그 조건을 갖춘 사람만 들어갈 수 있다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 작업 허가서",
+    "intro": "허가서 양식의 칸 이름과, 그 칸에 들어가는 표현입니다.",
+    "items": [
+     {
+      "en": "permit to work",
+      "ko": "작업 허가서",
+      "d": "위험 작업의 범위·조건·서명을 적은 문서",
+      "ex": "A permit to work is required for any line break on a toxic gas line."
+     },
+     {
+      "en": "line break",
+      "ko": "배관 개방 작업",
+      "d": "가스·약액 배관을 여는 모든 작업",
+      "ex": "The line break shall not begin until the line has been cycle-purged."
+     },
+     {
+      "en": "cycle purge",
+      "ko": "반복 퍼지",
+      "d": "진공 배기와 N2 충전을 여러 번 반복",
+      "ex": "Cycle-purge the line at least ten times with nitrogen."
+     },
+     {
+      "en": "scope of work",
+      "ko": "작업 범위",
+      "d": "허가된 일의 경계 — 밖의 일은 허가 안 됨",
+      "ex": "Replacing the regulator is outside the scope of work on this permit."
+     },
+     {
+      "en": "sign off",
+      "ko": "서명하다 / 승인하다",
+      "d": "확인했다는 서명",
+      "ex": "The area owner must sign off the permit before work starts."
+     },
+     {
+      "en": "expire",
+      "ko": "만료되다",
+      "d": "유효 시간이 지나 효력을 잃음",
+      "ex": "This permit expires at 06:00; a new permit is required after that."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 작업 허가서",
+    "doc": {
+     "name": "Permit to Work — Line Break",
+     "no": "PTW-1182",
+     "sec": "—",
+     "rev": "A",
+     "page": "1/1"
+    },
+    "heading": "Line Break Permit — Cl2 line, VMB-3",
+    "intro": "Scope of work: Replace the VCR fitting downstream of valve V2. Valid until 06:00.",
+    "steps": [
+     {
+      "t": "The line shall be cycle-purged and verified before the line break.",
+      "note": {
+       "kind": "note",
+       "en": "Purge record: 10 cycles, N2, signed by the gas technician."
+      }
+     },
+     "A second person shall be present at all times during the work.",
+     "Respirators should be staged at the work area.",
+     {
+      "t": "If any gas alarm activates, work shall stop immediately.",
+      "note": {
+       "kind": "warning",
+       "en": "Resume only after the supervisor re-authorizes the permit."
+      }
+     },
+     "The permit holder may extend the work by one hour with the supervisor's approval."
+    ],
+    "callout": {
+     "kind": "caution",
+     "en": "This permit expires at 06:00. Work outside the scope requires a new permit."
+    },
+    "gloss": [
+     [
+      "downstream",
+      "(흐름의) 뒤쪽"
+     ],
+     [
+      "staged",
+      "미리 갖춰 둔"
+     ],
+     [
+      "re-authorize",
+      "다시 허가하다"
+     ],
+     [
+      "permit holder",
+      "허가서를 받은 사람"
+     ]
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (4) — 허가서 읽기",
+    "intro": "위 허가서 PTW-1182 의 문장을 근거로 판단하세요.",
+    "questions": [
+     {
+      "prompt": "작업 중 보니 레귤레이터도 교체가 필요해 보인다. 허가서의 범위는 'Replace the VCR fitting downstream of valve V2.' 맞는 것은?",
+      "opts": [
+       "같은 라인이니 함께 교체한다",
+       "권장 사항이므로 판단에 맡긴다",
+       "범위 밖이므로 새 허가서를 받아야 한다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Respirators should be staged at the work area.' 와 'A second person shall be present.' 를 비교하면?",
+      "opts": [
+       "둘 다 의무",
+       "호흡보호구 비치는 권장, 두 번째 사람은 의무",
+       "둘 다 권장"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "05:50, 작업이 20분 더 걸린다. 'The permit holder may extend the work by one hour with the supervisor's approval.' 어떻게 하나?",
+      "opts": [
+       "감독자 승인을 받으면 연장할 수 있다",
+       "승인 없이 20분 더 한다",
+       "연장은 금지되어 있다"
+      ],
+      "ans": 0
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DESIGN RULE CHECK - OPERATING PROCEDURE",
+    "mtitle": "SAFETY DATA SHEET — CHLORINE (Cl2), EXCERPT",
     "paras": [
-     "1. Load the layout and select the technology rule deck before running the check.",
-     "1. 검사를 실행하기 전에 레이아웃을 불러오고 공정 룰 덱(rule deck)을 선택합니다.",
-     "2. Verify that all measured values are displayed in microns (um).",
-     "2. 모든 측정값이 마이크론(um) 단위로 표시되는지 확인합니다. (단위 혼동 방지)",
-     "3. Run DRC and review each violation in the report by layer and rule name.",
-     "3. DRC를 실행하고, 리포트의 각 위반을 layer와 rule name 기준으로 검토합니다.",
-     "NOTE: A rule marked 'min' passes only when the measured value is greater than or equal to the rule value.",
-     "참고: 'min' 규칙은 측정값이 규칙 값 이상일 때만 통과합니다. (부등호 방향 주의)",
-     "WARNING: Do not release a layout that still contains errors. Warnings must be reviewed before waiver.",
-     "경고: error가 남아 있는 레이아웃은 배포(release)하지 마십시오. warning은 예외 승인 전에 반드시 검토합니다."
+     "SECTION 2. Hazard(s) identification — Signal word: DANGER.",
+     "해설: 2항은 이 물질의 위험을 요약한다. 신호어 DANGER 는 WARNING 보다 높은 단계다.",
+     "H270 May cause or intensify fire; oxidiser. H330 Fatal if inhaled. H314 Causes severe skin burns and eye damage.",
+     "해설: H 로 시작하는 유해 문구(hazard statement). 스스로 타지는 않지만 불을 키우고(H270), 들이마시면 치명적이며(H330), 피부·눈에 심한 화상을 입힌다(H314).",
+     "SECTION 4. First-aid measures — Inhalation: Remove the person to fresh air. Call for medical help immediately.",
+     "해설: 4항은 응급조치. 흡입 시 신선한 공기가 있는 곳으로 옮기고 즉시 의료 지원을 부른다. 단, 구조자도 보호구 없이 오염 구역에 들어가지 않는다.",
+     "SECTION 8. Exposure controls / personal protection — TLV-TWA 0.1 ppm. Use only with adequate exhaust ventilation.",
+     "해설: 8항은 노출 기준과 보호구. 8시간 평균 0.1 ppm, 충분한 배기 환기 안에서만 쓴다. 감지기의 경보 값은 이 숫자에서 출발한다."
+    ],
+    "figs": [
+     {
+      "kind": "sticker",
+      "level": "danger",
+      "icon": "☠",
+      "en": "DANGER — Fatal if inhaled.",
+      "ko": "위험 — 흡입하면 치명적."
+     }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "WORK INSTRUCTION - JUDGING A RULE TABLE",
+    "mtitle": "GENERAL SAFETY REQUIREMENTS — GAS AREA",
     "paras": [
-     "Step 1: Identify the layer and rule type (width, spacing, enclosure) from the table.",
-     "1단계: 표에서 layer와 규칙 유형(폭/간격/감쌈)을 먼저 파악합니다.",
-     "Step 2: Read the symbol column to confirm the direction ( >= for minimum, <= for maximum ).",
-     "2단계: symbol 열을 읽어 판단 방향을 확인합니다 (최소는 >=, 최대는 <=).",
-     "Step 3: Compare the measured value against the rule value and record PASS or FAIL.",
-     "3단계: 측정값을 규칙 값과 비교하여 PASS 또는 FAIL을 기록합니다.",
-     "CAUTION: 0.020 um and 0.20 um differ by ten times. Always check the decimal point.",
-     "주의: 0.020 um과 0.20 um은 10배 차이입니다. 소수점 자리를 항상 확인하십시오."
+     "1. Personnel shall complete gas safety training before entering the gas area.",
+     "해설: 가스 구역에 들어가기 전에 가스 안전 교육을 반드시 마쳐야 한다. (shall = 의무)",
+     "2. Personnel must not work alone on any toxic gas line.",
+     "해설: 독성 가스 라인에서 혼자 작업해서는 안 된다. (must not = 금지)",
+     "3. A portable gas detector should be carried during any line break.",
+     "해설: 배관 개방 작업 중에는 휴대용 가스 감지기를 지니는 것이 좋다. (should = 권장)",
+     "4. Visitors may enter the gas area only when escorted.",
+     "해설: 방문자는 안내자와 함께일 때만 들어갈 수 있다. (may … only when = 조건이 맞을 때만 허용)",
+     "5. A face shield need not be worn inside the control room.",
+     "해설: 통제실 안에서는 안면 보호구를 쓰지 않아도 된다. (need not = 의무 아님, 금지 아님)"
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "masks",
-    "intro": "아래 시뮬레이터에서 각 마스크 층(POLY, ACTIVE, METAL1, VIA1 등)을 켜고 끄며, 어떤 영어 층 이름이 어떤 도형에 해당하는지 눈으로 확인해 보세요. 층을 선택하면 그 층에 적용되는 규칙 항목이 강조됩니다. 층 이름의 영어 표기와 약어(M1, V1 등)를 함께 읽어 익히는 것이 목표입니다."
+    "which": "safety",
+    "mode": "modal",
+    "intro": "먼저 **규정 문장 판정** 실습입니다. 안전 규정집에서 뽑은 문장을 하나씩 읽고, 그 줄이 **반드시(required) / 금지(prohibited) / 권장(recommended) / 해도 됨(permitted) / 안 해도 됨(not required)** 중 무엇인지 고르세요. 판단의 근거는 동사 앞의 조동사 하나입니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "intro": "이번에는 실제 도형에 DRC를 돌려 봅니다. 도형의 width와 spacing 값을 바꿔 가며, 화면의 Design Rule Table 값과 비교해 PASS/FAIL이 어떻게 바뀌는지 직접 판단해 보세요. 위반이 발생하면 어떤 영어 규칙 이름(min width, min spacing 등)으로 표시되는지 확인하는 것이 핵심입니다."
+    "which": "safety",
+    "mode": "loto",
+    "intro": "다음은 **LOTO 순서** 실습입니다. 식각 장비 정비를 앞두고 영어 지시 카드가 섞여 있습니다. 지금 해도 되는 카드를 골라 순서대로 누르세요. 순서가 틀리면 왜 안 되는지 로그가 알려 줍니다. 카드 중에는 **절차서에 없는 지름길**도 섞여 있습니다."
    },
    {
     "type": "sim",
-    "which": "report",
-    "mode": "drcReport",
-    "intro": "마지막으로 DRC 리포트 화면을 읽습니다. error / warning / waived 상태와 각 위반의 layer, rule name, measured value를 표에서 찾아, 각 항목이 실제로 수정 대상인지 예외인지 영어 상태 라벨을 보고 판단해 보세요. 'DRC clean'이 되려면 무엇을 고쳐야 하는지 스스로 결론 내리는 연습입니다."
+    "which": "safety",
+    "mode": "gas",
+    "intro": "마지막은 **가스 경보 판독** 실습입니다. 감지기 화면의 가스·농도·**단위(ppm / ppb)** 를 읽고, 이 교재 설정(1차 = TLV 50%, 2차 = TLV 100%)으로 단계를 판정한 뒤, 그 단계에 맞는 영어 행동 지시를 고르세요."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "외국인 엔지니어가 규칙 표를 함께 보며 판단을 묻는다",
+      "sit": "해외 엔지니어가 허가서 조건을 확인한다",
       "q": {
-       "en": "This Metal1 line is measured at 0.18 um. The rule says minimum width 0.20 um. Does it pass?",
-       "ko": "이 Metal1 라인이 0.18um으로 측정됐어요. 규칙은 최소 폭 0.20um이고요. 통과인가요?"
+       "en": "Has the line been cycle-purged? The permit says it shall be verified before the break.",
+       "ko": "라인 반복 퍼지 했나요? 허가서에 개방 전에 확인해야 한다고 되어 있어요."
       },
       "a": {
-       "en": "No, it fails. 0.18 is less than the minimum of 0.20, so it is a width violation.",
-       "ko": "아니요, 실패입니다. 0.18은 최소값 0.20보다 작으므로 폭 위반입니다."
+       "en": "Yes. We did ten cycles with nitrogen, and the gas technician signed the purge record.",
+       "ko": "네. 질소로 10회 했고, 가스 기술자가 퍼지 기록에 서명했습니다."
       }
      },
      {
-      "sit": "리포트에 waived 항목이 보인다",
+      "sit": "작업 중 1차 경보가 울려 상황을 보고한다",
       "q": {
-       "en": "There is a spacing item here marked 'waived'. Do we need to fix it now?",
-       "ko": "여기 'waived'로 표시된 간격 항목이 있어요. 지금 수정해야 하나요?"
+       "en": "What is the status? I heard the gas monitor went off.",
+       "ko": "상황이 어때요? 가스 감지기가 울렸다고 들었어요."
       },
       "a": {
-       "en": "No, it was already reviewed and approved as a waiver, so we can leave it as is.",
-       "ko": "아니요, 이미 검토 후 예외 승인된 항목이라 그대로 두어도 됩니다."
+       "en": "We have a LEVEL 1 warning on TGM-03, chlorine at 0.06 ppm. We stopped work and secured the area. We are waiting for your instructions.",
+       "ko": "TGM-03 에 1차 경보, 염소 0.06 ppm 입니다. 작업을 멈추고 현장을 정리했습니다. 지시를 기다리고 있습니다."
       }
      },
      {
-      "sit": "배포 전 최종 확인",
+      "sit": "정비를 넘겨받기 전 LOTO 상태를 묻는다",
       "q": {
-       "en": "Can we release this layout? Is it DRC clean?",
-       "ko": "이 레이아웃 배포해도 될까요? DRC clean 상태인가요?"
+       "en": "Is the tool locked out? Can I start on the chamber?",
+       "ko": "장비 잠금 됐나요? 챔버 작업 시작해도 되나요?"
       },
       "a": {
-       "en": "Not yet. There are still two errors on the VIA1 enclosure rule. Let me fix them first.",
-       "ko": "아직요. VIA1 enclosure 규칙에 error가 두 개 남아 있어요. 먼저 그것부터 고치겠습니다."
+       "en": "All four points are locked and tagged, but the try-out is not done yet. Please wait until I verify zero energy.",
+       "ko": "네 곳 모두 잠금·표찰을 걸었지만 작동 확인은 아직입니다. 무에너지 상태를 확인할 때까지 기다려 주세요."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리: 규칙을 읽고 판단하는 힘",
+    "title": "정리 — 조동사가 행동을 정한다",
     "points": [
-     "**Design Rule**은 제조 가능성을 지키는 최소 안전선이며, **layer / rule / value / description** 열로 된 표로 제공된다.",
-     "핵심 규칙 5종: **min width**, **min spacing**, **overlap**, **enclosure**, **extension** — 각각 min/max 방향을 반드시 확인한다.",
-     "판단 절차: layer 확인 → rule type 확인 → **symbol(≥/≤)** 방향 확인 → **measured value**와 **rule value** 비교 → **PASS/FAIL** 결정.",
-     "단위 함정 주의: **1 um = 1000 nm**, 그리고 소수점 자리(0.020 vs 0.20)를 항상 확인한다.",
-     "리포트는 **error / warning / waived** 상태로 심각도를 구분한다. **DRC clean**이 되어야 배포(release)할 수 있다."
+     "2부는 **규정문**을 읽는다. 동사보다 먼저 **조동사**를 본다: **shall / must** = 반드시, **should** = 권장, **may** = 해도 됨, **need not** = 안 해도 됨, **shall not / must not** = 금지.",
+     "**need not** 과 **must not** 은 정반대다 — 하나는 \"안 해도 된다\", 하나는 \"하지 마라\".",
+     "LOTO 는 여섯 단계: **Notify → Shut down → Isolate → Lock & Tag → Release stored energy → Verify(try-out)**. 확인 전에는 손대지 않는다.",
+     "가스는 이름보다 **성질**(toxic · pyrophoric · corrosive · oxidizer)을 읽고, 농도는 숫자보다 **단위**(ppm / ppb)를 먼저 본다.",
+     "경보는 **단계 → 행동**: LEVEL 1 = Stop work and report, LEVEL 2 = Evacuate immediately. 재진입은 **all-clear** 뒤에만.",
+     "작업 허가서는 **scope · precautions · sign-off · valid until** — 범위 밖의 일, 만료된 허가서로는 일하지 않는다."
     ],
-    "done": "이제 여러분은 영어 **Design Rule Table**을 읽고 **PASS/FAIL**을 스스로 판단할 수 있습니다. **0.02um의 실수가 rework를 부른다** — 값이 아니라 '판단'을 읽어내는 기술자가 되었습니다."
+    "done": "이제 여러분은 안전 문서의 한 줄을 읽고 **그것이 의무인지, 권장인지, 금지인지** 가릴 수 있습니다. **Read the modal, then act.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "LOTO",
+      "items": [
+       [
+        "[Notify] affected personnel.",
+        "알리기"
+       ],
+       [
+        "[Isolate] every energy source.",
+        "차단"
+       ],
+       [
+        "[Lock] and [tag] each point.",
+        "잠금·표찰"
+       ],
+       [
+        "[Verify] zero energy.",
+        "무에너지 확인"
+       ]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "w10",
+  "title": "레시피 · 변경 관리",
+  "slides": [
+   {
+    "type": "story",
+    "icon": "🧾",
+    "title": "\"압력만 살짝 올려\"",
+    "text": "새벽 4시. 지수는 폴리 식각 장비의 레시피 **ETCH-POLY-01 Rev C** 를 보고 있다. 최근 웨이퍼 가장자리 식각량이 조금씩 모자란다. 옆 라인 선배가 지나가며 말한다. \"메인 에치 압력 10에서 12로만 살짝 올려 봐. 그럼 맞을 거야.\" 지수가 레시피 편집 화면을 열자 노란 글씨가 뜬다. **RECIPE LOCKED — Changes require an approved ECN.** 공정 규정집에는 이렇게 적혀 있다. \"**A production recipe shall not be edited unless an ECN has been approved.**\" 승인된 변경 통지(**ECN**)가 없으면 고칠 수 없다는 뜻이다. 그 아래 줄도 있다. \"**An approved change may be released only if at least two qual wafers pass.**\" 고쳐도 바로 쓰는 게 아니라, 시험 웨이퍼(**qual wafer**) 두 장이 합격해야 한다. 지수는 레시피를 닫고 변경 요청서(**ECR**)를 쓰기 시작한다. 오늘의 영어는 **unless · only if · at least** — 조건과 경계를 정하는 말이다.",
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "RECIPE EDITOR",
+      "status": "LOCKED",
+      "state": "fault",
+      "rows": [
+       [
+        "RECIPE",
+        "ETCH-POLY-01"
+       ],
+       [
+        "REVISION",
+        "Rev C"
+       ],
+       [
+        "STATUS",
+        "PRODUCTION",
+        "warn"
+       ]
+      ],
+      "banner": {
+       "en": "Changes require an approved ECN.",
+       "ko": "승인된 ECN 이 있어야 수정할 수 있다.",
+       "level": "warn"
+      }
+     }
+    ]
+   },
+   {
+    "type": "scene",
+    "title": "오늘의 현장 · 상황 설정",
+    "where": "새벽의 식각 장비 앞 — 레시피 편집 화면(Recipe Editor)과 공정 규정집.",
+    "tool": "레시피 표(step table), 끝점 검출(EPD) 화면, 변경 요청서(ECR), 시험 웨이퍼(qual wafer) 결과.",
+    "situation": "식각량이 조금 모자라 레시피를 바꾸고 싶다. 하지만 레시피는 잠겨 있고, 규정은 조건을 달아 둔다.",
+    "meet": [
+     "조건어 unless · only if · provided that",
+     "경계 not to exceed · at least · within ±",
+     "레시피 표 STEP · END · EPD",
+     "변경 관리 ECR → ECN → qual → release"
+    ],
+    "goal": "조건이 맞는지, 값이 경계 안인지 영어 문장 그대로 판단하기.",
+    "bg": "w10"
+   },
+   {
+    "type": "read",
+    "title": "레시피는 왜 잠겨 있나 — production recipe 와 revision",
+    "intro": "레시피(recipe)는 압력·가스·RF·시간 같은 공정 조건의 묶음이다. 같은 레시피를 쓰면 어느 장비, 어느 날이든 같은 결과가 나와야 한다.",
+    "paras": [
+     "양산에 쓰는 레시피를 **production recipe** 라고 한다. 누가 몰래 숫자 하나를 바꾸면 그 뒤에 흐른 웨이퍼 수백 장이 영향을 받는다. 그래서 장비는 레시피를 **locked(잠금)** 상태로 둔다.",
+     "레시피에는 판 번호가 붙는다. **Rev C** 는 세 번째 판이라는 뜻이다. 바꾸면 **Rev D** 가 되고, 옛 판은 지우지 않고 남겨 둔다. 문제가 생기면 옛 판으로 되돌리기(**roll back**) 위해서다.",
+     "바꾸는 길은 정해져 있다. 변경 요청(**ECR**) → 검토(**review**) → 승인된 변경 통지(**ECN**) → 시험 웨이퍼로 확인(**qualification**, 줄여서 **qual**) → 양산 적용(**release**).",
+     "이 길을 거치지 않은 변경을 현장에서는 **unauthorized change(무단 변경)** 라고 부른다. 결과가 좋아도 위반이다. 기록이 없으면 다음 사람이 원인을 찾을 수 없기 때문이다.",
+     "그래서 레시피 화면과 변경 규정의 영어는 거의 다 **조건문**이다 — 어떤 조건이 맞을 때만, 어떤 범위 안일 때만 허용한다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "RECIPE HISTORY",
+      "lines": [
+       "ETCH-POLY-01 Rev B — [ARCHIVED]",
+       "ETCH-POLY-01 Rev C — [PRODUCTION] since 2026-09-14",
+       "ETCH-POLY-01 Rev D — [DRAFT] ECR-0412 pending"
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "레시피 표 읽기 — STEP · END · TIME",
+    "intro": "레시피 화면은 대개 표다. 한 줄이 한 단계(step)이고, 칸마다 그 단계의 설정값(setpoint)이 들어 있다.",
+    "paras": [
+     "**STEP** — 단계 이름. 식각이라면 **STAB(stabilize, 안정화)** → **BT(breakthrough, 표면 산화막 뚫기)** → **ME(main etch, 본 식각)** → **OE(over etch, 추가 식각)** → **PUMP(배기)** 순서가 흔하다.",
+     "**END** — 그 단계가 언제 끝나는가. **TIME** 이면 정해진 시간이 지나면 끝나고, **EPD** 면 끝점 검출(endpoint detection)이 신호를 줄 때 끝난다.",
+     "**TIME (s)** — 초 단위 시간. EPD 단계에는 보통 **MAX 60** 처럼 최대 시간이 붙는다. 60초 안에 끝점이 안 나오면 장비는 그 단계를 멈추고 알람을 낸다(**step timeout**).",
+     "**PRESS (mTorr) · SRC / BIAS (W) · GAS (sccm)** — 압력, RF 전력(플라즈마를 만드는 source 와 이온을 끌어당기는 bias), 가스 유량. 1부에서 읽은 단위 그대로다.",
+     "표 아래에는 거의 항상 **허용 범위(tolerance)** 가 한 줄 붙는다. 예: \"Pressure within ±5% of the setpoint.\" — 실제 값이 이 범위를 벗어나면 그 웨이퍼는 의심받는다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "ETCH-POLY-01 · STEP 3",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "STEP",
+        "ME (main etch)"
+       ],
+       [
+        "END",
+        "EPD · MAX 60 s"
+       ],
+       [
+        "PRESS SP / PV",
+        "10.0 / 10.2 mTorr"
+       ],
+       [
+        "SRC / BIAS",
+        "600 / 120 W"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "끝점(EPD)과 over-etch — \"언제 멈추나\"를 읽기",
+    "intro": "식각은 시간이 아니라 \"막이 다 깎였는가\"로 멈추는 것이 이상적이다. 그 순간을 알려 주는 것이 끝점 검출(EPD)이다.",
+    "paras": [
+     "플라즈마는 빛을 낸다. 깎이는 막이 바뀌면 빛의 색(특정 파장의 세기)이 바뀐다. 이 변화를 **OES(optical emission spectroscopy)** 로 보다가 신호가 꺾이면 **endpoint detected** 다.",
+     "웨이퍼 가운데와 가장자리는 식각 속도가 조금 다르다. 끝점은 대개 \"먼저 뚫린 곳\"에서 잡히므로, 남은 곳을 마저 깎는 **over etch(OE)** 단계를 둔다.",
+     "OE 시간은 흔히 ME 시간의 비율로 적는다. 예: \"Over etch: **30% of the main etch time**.\" 끝점이 **40 s** 에 나왔다면 OE 는 **12 s** 다.",
+     "끝점이 너무 빨리 나오면(예: 10 s) 웨이퍼나 막이 잘못 들어온 것일 수 있고, 너무 늦거나 안 나오면 식각 속도가 떨어진 것이다. 그래서 규정은 정상 범위를 적어 둔다: \"Endpoint shall be detected **between 30 and 60 s**.\"",
+     "로그에서는 이렇게 보인다: STEP 3 ME — EPD triggered at 42.0 s / STEP 4 OE — 12.6 s (30% of ME). 숫자 두 개를 읽고 서로 맞는지 확인하는 것이 오늘 실습의 하나다."
+    ]
+   },
+   {
+    "type": "read",
+    "title": "경계가 포함되는가 — not to exceed · below · at least · within ±",
+    "intro": "허용 범위 문장은 숫자보다 그 앞의 말이 중요하다. 같은 \"20 W\"라도 20 W 가 합격인지 불합격인지가 말 하나로 갈린다.",
+    "paras": [
+     "**not to exceed 20 W / no more than 20 W / 20 W max** — 20 W 까지 허용(**≤ 20**). 20 W 는 합격.",
+     "**below 20 W / less than 20 W / under 20 W** — 20 W 보다 작아야 한다(**< 20**). 20 W 는 불합격.",
+     "**at least 5 min / a minimum of 5 min / no less than 5 min** — 5분 이상(**≥ 5**). 정확히 5분은 합격.",
+     "**above / greater than / more than 95%** — 95% 보다 커야 한다(**> 95**). **greater than or equal to** 는 같아도 된다(**≥**).",
+     "**within ±2 sccm of the setpoint** — 설정값 50 이면 **48 ~ 52**. 양 끝(48, 52)은 보통 포함한다. **between 30 and 60 s** 도 보통 양 끝을 포함한다 — 애매하면 문서는 **inclusive(포함)** / **exclusive(제외)** 를 적어 둔다.",
+     "정리: 숫자를 읽기 전에 **경계어**를 읽는다. 경계값에 걸린 측정값이 가장 자주 판단이 갈리는 곳이다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "BOUNDARY",
+      "items": [
+       [
+        "[not to exceed] 20 — ≤ 20",
+        "20 포함"
+       ],
+       [
+        "[below] 20 — < 20",
+        "20 제외"
+       ],
+       [
+        "[at least] 5 — ≥ 5",
+        "5 포함"
+       ],
+       [
+        "[within ±2] of 50 — 48 ~ 52",
+        "양 끝 포함"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "조건 연결어 — if · unless · provided that · only if",
+    "intro": "변경 규정은 \"이럴 때만 된다\"를 여러 방법으로 말한다. 연결어마다 조건이 걸리는 방향이 다르다.",
+    "paras": [
+     "**if** — ~이면. \"If the endpoint is not detected within 60 s, the step aborts.\" 조건이 맞으면 뒤의 일이 일어난다.",
+     "**unless** — ~이 아니면(= **if not**). \"The recipe shall not be edited unless an ECN has been approved.\" → ECN 승인이 **없으면** 고칠 수 없다. 우리말로 옮길 때 부정이 두 번 겹쳐 가장 자주 거꾸로 읽는다.",
+     "**only if** — 오직 ~일 때만. \"A change may be released only if two qual wafers pass.\" → 두 장 합격은 **반드시 있어야 하는 조건**이다. 그냥 if 보다 훨씬 좁다.",
+     "**provided that / as long as** — ~라는 조건이라면. \"The step time may be adjusted without qual, provided that the change is within ±10%.\" → 10% 안일 때만 그 예외가 허용된다.",
+     "**otherwise** — 그렇지 않으면. \"Verify two qual wafers; otherwise, keep the previous revision.\" **until** — ~할 때까지. \"Do not release the recipe until the qual results are recorded.\"",
+     "읽는 순서: ① 연결어를 찾는다 → ② 조건 부분과 결과 부분을 나눈다 → ③ 지금 사실이 조건을 만족하는지 본다. 이 세 단계를 실습에서 그대로 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "note",
+      "title": "READ IT",
+      "en": "[unless] = if not. [only if] = this condition is required.",
+      "ko": "unless = ~가 아니면. only if = 이 조건이 반드시 필요하다."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "변경 관리 흐름 — ECR → ECN → qual → release",
+    "intro": "레시피를 바꾸는 일은 한 사람의 판단이 아니라 기록이 남는 흐름이다. 단계마다 쓰는 영어 표현이 정해져 있다.",
+    "paras": [
+     "**ECR (Engineering Change Request)** — 무엇을, 왜, 얼마나 바꾸려는지 쓴 요청서. \"Request: increase ME pressure from 10 to 12 mTorr to improve edge etch rate.\"",
+     "**Review / Approval** — 공정·장비·품질 담당이 검토하고 승인한다. 승인되면 **ECN (Engineering Change Notice)** 번호가 붙는다. 상태는 **PENDING → APPROVED** 또는 **REJECTED**.",
+     "**Qualification (qual)** — 새 판으로 시험 웨이퍼를 돌려 규격 안인지 확인한다. 결과는 **PASS / FAIL** 로 적는다.",
+     "**Release / Effective date** — 합격하면 새 판을 양산에 적용한다. \"Rev D effective from 2026-11-10.\" 그 날부터 장비는 새 판만 쓴다.",
+     "**Roll back** — 시험이나 양산에서 문제가 나오면 옛 판으로 되돌린다. \"Roll back to Rev C and hold the lot.\" 옛 판을 지우지 않는 이유가 이것이다.",
+     "**Hold** — 판단이 끝날 때까지 웨이퍼 묶음(**lot**)을 멈춰 두는 것. 변경 관리 문장에서 자주 함께 나온다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "CHANGE FLOW",
+      "items": [
+       [
+        "[ECR] submitted",
+        "요청"
+       ],
+       [
+        "[ECN] approved",
+        "승인"
+       ],
+       [
+        "[qual] 2 wafers PASS",
+        "시험 합격"
+       ],
+       [
+        "[release] Rev D",
+        "양산 적용"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "acr",
+    "title": "약어",
+    "intro": "레시피 화면과 변경 관리 문서에 반복해서 나오는 약어입니다.",
+    "items": [
+     {
+      "ab": "EPD",
+      "full": "Endpoint Detection",
+      "ko": "끝점 검출 — 막이 다 깎인 순간을 잡는다"
+     },
+     {
+      "ab": "OES",
+      "full": "Optical Emission Spectroscopy",
+      "ko": "발광 분광 — 플라즈마 빛으로 끝점을 본다"
+     },
+     {
+      "ab": "ME / OE",
+      "full": "Main Etch / Over Etch",
+      "ko": "본 식각 / 추가 식각"
+     },
+     {
+      "ab": "BT",
+      "full": "Breakthrough",
+      "ko": "표면 자연 산화막을 뚫는 짧은 단계"
+     },
+     {
+      "ab": "SP / PV",
+      "full": "Setpoint / Process Value",
+      "ko": "설정값 / 실제값"
+     },
+     {
+      "ab": "ECR",
+      "full": "Engineering Change Request",
+      "ko": "변경 요청서"
+     },
+     {
+      "ab": "ECN",
+      "full": "Engineering Change Notice",
+      "ko": "승인된 변경 통지 — 번호가 붙는다"
+     },
+     {
+      "ab": "MOC",
+      "full": "Management of Change",
+      "ko": "변경 관리 — 이 흐름 전체를 부르는 말"
+     },
+     {
+      "ab": "Rev",
+      "full": "Revision",
+      "ko": "판 번호 — Rev C → Rev D"
+     },
+     {
+      "ab": "qual",
+      "full": "qualification",
+      "ko": "적격 시험 — 시험 웨이퍼로 확인"
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (1) — 조건 연결어",
+    "intro": "조건이 어느 쪽에 걸리는지 예문으로 확인하세요.",
+    "items": [
+     {
+      "en": "unless",
+      "ko": "~이 아니면 (= if not)",
+      "d": "조건이 없을 때 결과가 막힌다",
+      "ex": "Do not start the run unless the chamber has passed the leak check."
+     },
+     {
+      "en": "only if",
+      "ko": "오직 ~일 때만",
+      "d": "반드시 있어야 하는 조건",
+      "ex": "The lot may be released only if all qual wafers pass."
+     },
+     {
+      "en": "provided that",
+      "ko": "~라는 조건이라면",
+      "d": "예외를 허락하는 조건",
+      "ex": "Minor time changes are allowed, provided that they are within ±10%."
+     },
+     {
+      "en": "otherwise",
+      "ko": "그렇지 않으면",
+      "d": "조건이 안 맞을 때 할 일",
+      "ex": "Check the endpoint trace; otherwise, the over-etch time cannot be verified."
+     },
+     {
+      "en": "until",
+      "ko": "~할 때까지",
+      "d": "그 일이 끝날 때까지 다른 일은 안 됨",
+      "ex": "Keep the lot on hold until the engineer reviews the data."
+     },
+     {
+      "en": "in case of",
+      "ko": "~의 경우에는",
+      "d": "특정 상황에 대한 지시",
+      "ex": "In case of an endpoint timeout, abort the run and notify the process engineer."
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 조건 연결어",
+    "intro": "연결어를 찾고, 조건 부분이 지금 사실과 맞는지 판단하세요.",
+    "questions": [
+     {
+      "prompt": "'Do not start the run unless the chamber has passed the leak check.' 누설 검사를 아직 안 했다. 시작해도 되는가?",
+      "opts": [
+       "시작해도 된다 — 금지 조건이 아니다",
+       "시작하면 안 된다 — 누설 검사 통과가 먼저다",
+       "누설 검사는 시작 후에 한다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'The lot may be released only if all qual wafers pass.' 시험 웨이퍼 3장 중 2장 합격. 출하할 수 있는가?",
+      "opts": [
+       "3장 중 2장이면 과반이라 된다",
+       "감독자 판단에 따라 된다",
+       "안 된다 — 모든(all) 웨이퍼가 합격해야 한다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Minor time changes are allowed, provided that they are within ±10%.' 60초 단계를 64초로 바꾸려 한다(약 6.7%). 맞는 것은?",
+      "opts": [
+       "허용 범위 안이라 이 예외가 적용된다",
+       "10% 를 넘으므로 안 된다",
+       "provided that 은 권장이라 상관없다"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 레시피 표",
+    "intro": "레시피 화면의 칸 이름과 그 칸에 들어가는 말입니다.",
+    "items": [
+     {
+      "en": "step",
+      "ko": "단계",
+      "d": "레시피 표의 한 줄 — STAB · BT · ME · OE · PUMP",
+      "ex": "Step 3 is the main etch, and it ends on the endpoint signal."
+     },
+     {
+      "en": "setpoint",
+      "ko": "설정값",
+      "d": "장비가 맞추려는 목표 값(SP)",
+      "ex": "The pressure setpoint for the main etch is 10 mTorr."
+     },
+     {
+      "en": "endpoint",
+      "ko": "끝점",
+      "d": "막이 다 깎여 빛 신호가 바뀌는 순간",
+      "ex": "The endpoint was detected at 42 seconds into the main etch."
+     },
+     {
+      "en": "over-etch",
+      "ko": "추가 식각",
+      "d": "끝점 뒤 남은 곳을 마저 깎는 단계",
+      "ex": "The over-etch time is set to 30% of the main etch time."
+     },
+     {
+      "en": "tolerance",
+      "ko": "허용 범위",
+      "d": "설정값에서 벗어나도 되는 폭",
+      "ex": "The pressure tolerance is ±5% of the setpoint."
+     },
+     {
+      "en": "abort",
+      "ko": "중단하다",
+      "d": "그 단계·공정을 즉시 멈추는 것",
+      "ex": "The step aborts if the endpoint is not detected within 60 seconds."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 레시피 표 ETCH-POLY-01",
+    "doc": {
+     "name": "RECIPE SHEET — ETCH-POLY-01",
+     "no": "RCP-0117",
+     "rev": "C"
+    },
+    "heading": "Poly gate etch — step table (교재 예시)",
+    "cols": [
+     "STEP",
+     "END",
+     "TIME (s)",
+     "PRESS (mTorr)",
+     "SRC / BIAS (W)",
+     "GAS (sccm)"
+    ],
+    "rows": [
+     [
+      "1 STAB",
+      "TIME",
+      "15",
+      "10",
+      "0 / 0",
+      "HBr 150, Cl2 50"
+     ],
+     [
+      "2 BT",
+      "TIME",
+      "8",
+      "5",
+      "500 / 150",
+      "CF4 80"
+     ],
+     [
+      "3 ME",
+      "EPD",
+      "MAX 60",
+      "10",
+      "600 / 120",
+      "HBr 150, Cl2 50, O2 5"
+     ],
+     [
+      "4 OE",
+      "TIME",
+      "30% of ME",
+      "30",
+      "400 / 80",
+      "HBr 200, O2 5"
+     ],
+     [
+      "5 PUMP",
+      "TIME",
+      "10",
+      "base",
+      "0 / 0",
+      "—"
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Tolerance: pressure within ±5% of the setpoint, gas flow within ±2 sccm, RF power no more than 3% deviation. Endpoint shall be detected between 30 and 60 s."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 레시피 표 읽기",
+    "intro": "위 레시피 표 ETCH-POLY-01 을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "3단계(ME)의 END 칸은 'EPD', TIME 칸은 'MAX 60'. 뜻은?",
+      "opts": [
+       "60초 동안 무조건 식각한다",
+       "끝점이 나오면 끝나고, 60초 안에 안 나오면 멈춘다",
+       "끝점이 나온 뒤 60초 더 식각한다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "끝점이 40 s 에 나왔다. 'Over etch: 30% of ME' 이면 4단계 시간은?",
+      "opts": [
+       "12 s",
+       "30 s",
+       "18 s"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "ME 압력 PV 가 10.6 mTorr. 'pressure within ±5% of the setpoint' (SP 10) 로 판단하면?",
+      "opts": [
+       "범위 안 — 9.5 ~ 10.5 에 들어간다",
+       "정확히 경계라 합격이다",
+       "범위 밖 — 10.5 를 넘었다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 경계 표현",
+    "intro": "규격 문장의 숫자 앞에 붙는 말입니다. 경계값이 포함되는지 함께 익히세요.",
+    "items": [
+     {
+      "en": "not to exceed",
+      "ko": "~을 넘지 않게 (≤)",
+      "d": "경계값은 합격",
+      "ex": "Reflected power is not to exceed 20 W during the main etch."
+     },
+     {
+      "en": "below / less than",
+      "ko": "~보다 작게 (<)",
+      "d": "경계값은 불합격",
+      "ex": "Base pressure must be below 1.0E-5 Torr before the run starts."
+     },
+     {
+      "en": "at least",
+      "ko": "적어도 (≥)",
+      "d": "경계값은 합격",
+      "ex": "Purge the chamber for at least 5 minutes after the wet clean."
+     },
+     {
+      "en": "within ±",
+      "ko": "± 범위 안",
+      "d": "설정값 양쪽으로 같은 폭, 양 끝 포함이 보통",
+      "ex": "Gas flow must stay within ±2 sccm of the setpoint."
+     },
+     {
+      "en": "between … and …",
+      "ko": "~와 ~ 사이",
+      "d": "보통 양 끝 포함 — 애매하면 inclusive 를 적는다",
+      "ex": "The endpoint should be detected between 30 and 60 seconds."
+     },
+     {
+      "en": "inclusive / exclusive",
+      "ko": "포함 / 제외",
+      "d": "경계값을 넣는지 빼는지 밝히는 말",
+      "ex": "Accept values from 48 to 52 sccm, inclusive."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 변경 요청 메일 (ECR)",
+    "from": "Jisu Park <jisu.park@fab.example>",
+    "to": "Process Engineering <pe-etch@fab.example>",
+    "subject": "ECR-0412: ETCH-POLY-01 main etch pressure 10 → 12 mTorr",
+    "lines": [
+     "Hello team,",
+     "I would like to request a change to ETCH-POLY-01 Rev C.",
+     "Problem: The edge etch depth has been [below] the lower limit on 4 of the last 20 lots.",
+     "Proposed change: Increase the main etch pressure from 10 to 12 mTorr.",
+     "Qualification plan: Run 2 qual wafers. The change will be released [only if] both wafers pass.",
+     "If either wafer fails, we will [roll back] to Rev C and keep the lot on hold.",
+     "Please let me know if you need the endpoint traces."
+    ],
+    "sign": "Best regards, Jisu Park (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 경계와 조건",
+    "intro": "경계값에 걸린 값과 조건 문장을 판단하세요.",
+    "questions": [
+     {
+      "prompt": "'Reflected power is not to exceed 20 W.' 측정값이 정확히 20 W. 판정은?",
+      "opts": [
+       "합격 — 20 W 까지 허용",
+       "불합격 — 20 W 보다 작아야 한다",
+       "다시 측정해야만 알 수 있다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "'Base pressure must be below 1.0E-5 Torr.' 측정값이 1.0E-5 Torr. 판정은?",
+      "opts": [
+       "합격 — 경계와 같다",
+       "판정할 수 없다",
+       "불합격 — below 는 경계를 포함하지 않는다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "ECR 메일: 'The change will be released only if both wafers pass.' 한 장만 합격했다. 다음 행동은?",
+      "opts": [
+       "합격한 한 장 기준으로 적용한다",
+       "적용하지 않고, 메일대로 Rev C 로 되돌리고 lot 을 멈춘다",
+       "세 번째 웨이퍼를 돌려 둘이 합격하면 적용한다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 변경 관리",
+    "intro": "변경 요청부터 양산 적용까지 각 단계의 말입니다.",
+    "items": [
+     {
+      "en": "revision",
+      "ko": "판(판 번호)",
+      "d": "Rev C → Rev D. 옛 판은 남긴다",
+      "ex": "Rev D replaces Rev C, but Rev C is archived for roll back."
+     },
+     {
+      "en": "approve / reject",
+      "ko": "승인하다 / 반려하다",
+      "d": "검토 결과",
+      "ex": "The change review board approved ECR-0412 with one condition."
+     },
+     {
+      "en": "qualification (qual)",
+      "ko": "적격 시험",
+      "d": "새 판으로 시험 웨이퍼를 돌려 확인",
+      "ex": "Two qual wafers are required before the new revision is released."
+     },
+     {
+      "en": "release",
+      "ko": "양산에 적용하다",
+      "d": "합격한 새 판을 장비에 걸어 쓰기 시작",
+      "ex": "Rev D was released to production on November 10."
+     },
+     {
+      "en": "roll back",
+      "ko": "되돌리다",
+      "d": "옛 판으로 돌아가기",
+      "ex": "If the qual fails, roll back to the previous revision."
+     },
+     {
+      "en": "hold",
+      "ko": "보류하다",
+      "d": "판단이 끝날 때까지 lot 을 멈춰 둠",
+      "ex": "Put the lot on hold until the engineer reviews the qual data."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 변경 적용 절차",
+    "doc": {
+     "name": "Recipe Change Procedure",
+     "no": "SOP-PE-031",
+     "sec": "5",
+     "rev": "B",
+     "page": "5-2"
+    },
+    "heading": "5  Releasing an Approved Recipe Change",
+    "steps": [
+     "Confirm that the ECN status is APPROVED before editing the recipe.",
+     {
+      "t": "Save the new recipe as a new revision. Do not overwrite the current revision.",
+      "note": {
+       "kind": "note",
+       "en": "The previous revision is kept for roll back."
+      }
+     },
+     "Run two qual wafers with the new revision and measure the etch depth.",
+     {
+      "t": "Release the new revision only if both qual wafers are within the specification.",
+      "note": {
+       "kind": "caution",
+       "en": "If either wafer fails, roll back and hold the lot."
+      }
+     },
+     "Record the ECN number and the effective date in the recipe history."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Production recipes shall not be edited unless an ECN has been approved."
+    },
+    "gloss": [
+     [
+      "overwrite",
+      "덮어쓰다"
+     ],
+     [
+      "specification",
+      "규격"
+     ],
+     [
+      "effective date",
+      "적용 시작일"
+     ],
+     [
+      "recipe history",
+      "레시피 이력"
+     ]
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (4) — 절차 읽기",
+    "intro": "위 변경 적용 절차 SOP-PE-031 을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "'Do not overwrite the current revision.' 를 지키지 않으면 무엇을 잃는가?",
+      "opts": [
+       "장비 알람 기록",
+       "문제가 생겼을 때 되돌아갈 옛 판",
+       "ECN 번호"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "ECN 상태가 'PENDING' 이다. 지금 레시피를 고쳐도 되는가?",
+      "opts": [
+       "안 된다 — APPROVED 를 확인한 뒤에만",
+       "고쳐 두고 승인 뒤에 적용하면 된다",
+       "PENDING 은 승인과 같은 뜻이다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "두 장 모두 규격 안. 마지막으로 남은 일은?",
+      "opts": [
+       "아무 기록 없이 적용한다",
+       "옛 판을 지운다",
+       "ECN 번호와 적용 시작일을 레시피 이력에 적는다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "manual",
+    "mtitle": "RECIPE CHANGE CONTROL POLICY (교재 예시)",
+    "paras": [
+     "R1. A production recipe shall not be edited unless an ECN has been approved.",
+     "해설: 승인된 ECN 이 없으면 양산 레시피를 고칠 수 없다. (unless = if not)",
+     "R2. An approved change may be released only if at least two qual wafers pass.",
+     "해설: 승인된 변경도 시험 웨이퍼가 두 장 이상 합격해야만 적용할 수 있다. (only if = 필요조건, at least = 2 포함)",
+     "R3. If any qual wafer fails, the change shall be rolled back to the previous revision.",
+     "해설: 시험 웨이퍼가 한 장이라도 불합격이면 옛 판으로 되돌린다. (any = 한 장이라도)",
+     "R4. A step time change need not be re-qualified, provided that the change is within ±10% of the original value.",
+     "해설: 단계 시간 변경은 원래 값의 ±10% 안이면 다시 시험하지 않아도 된다. 단, R1(ECN 승인)은 그대로 적용된다."
+    ]
+   },
+   {
+    "type": "manual",
+    "mtitle": "ENDPOINT AND OVER-ETCH SETTINGS",
+    "paras": [
+     "The main etch ends when the endpoint is detected. If no endpoint is detected within 60 s, the step aborts.",
+     "해설: 본 식각은 끝점이 잡히면 끝난다. 60초 안에 끝점이 없으면 단계가 중단된다.",
+     "Over etch time = 30% of the actual main etch time, not of the maximum time.",
+     "해설: 추가 식각 시간은 최대 시간(60 s)이 아니라 실제 본 식각 시간의 30% 다. 끝점이 42 s 면 12.6 s.",
+     "An endpoint detected earlier than 30 s shall be treated as abnormal.",
+     "해설: 30초보다 일찍 잡힌 끝점은 비정상으로 본다 — 막이 얇거나 다른 웨이퍼가 들어왔을 수 있다.",
+     "In case of an endpoint timeout, hold the lot and notify the process engineer.",
+     "해설: 끝점 시간 초과가 나면 lot 을 멈추고 공정 엔지니어에게 알린다."
+    ]
+   },
+   {
+    "type": "sim",
+    "which": "recipe",
+    "mode": "limits",
+    "intro": "먼저 **경계 판정** 실습입니다. 규격 문장과 측정값이 나옵니다. 숫자보다 앞에 붙은 **경계어**(not to exceed · below · at least · within ± · between)를 먼저 읽고, 측정값이 **합격(PASS)** 인지 **불합격(FAIL)** 인지 고르세요. 경계값에 딱 걸린 값이 섞여 있습니다."
+   },
+   {
+    "type": "sim",
+    "which": "recipe",
+    "mode": "run",
+    "intro": "다음은 **레시피 실행 기록 판정** 실습입니다. ETCH-POLY-01 의 본 식각(ME) 실제값과 끝점 시각, 추가 식각(OE) 시간이 나옵니다. 표 아래 **허용 범위** 문장으로 각 값을 판정하고, OE 시간이 **실제 ME 시간의 30%** 와 맞는지도 확인하세요."
+   },
+   {
+    "type": "sim",
+    "which": "recipe",
+    "mode": "change",
+    "intro": "마지막은 **변경 관리 결정** 실습입니다. 변경 규정 R1~R4 와 상황(ECN 상태 · 시험 웨이퍼 결과 · 바꾸려는 값)을 읽고, 지금 할 일을 고르세요: **지금 고칠 수 없음 · 보류(시험 더 필요) · 적용(release) · 되돌림(roll back)**. 근거가 되는 규정 번호가 함께 나옵니다."
+   },
+   {
+    "type": "comm",
+    "items": [
+     {
+      "sit": "해외 엔지니어가 레시피를 바로 고치자고 한다",
+      "q": {
+       "en": "Can you just bump the main etch pressure to 12 mTorr tonight?",
+       "ko": "오늘 밤 메인 에치 압력을 12 mTorr 로 바로 올려 줄 수 있어요?"
+      },
+      "a": {
+       "en": "I can't edit it tonight. The recipe is locked unless an ECN is approved. I'll submit an ECR now and attach the edge etch data.",
+       "ko": "오늘 밤엔 못 고칩니다. ECN 승인 없이는 레시피가 잠겨 있어요. 지금 ECR 을 올리고 가장자리 식각 데이터를 붙이겠습니다."
+      }
+     },
+     {
+      "sit": "시험 웨이퍼 결과를 보고한다",
+      "q": {
+       "en": "How did the qual wafers look?",
+       "ko": "시험 웨이퍼 결과는 어땠어요?"
+      },
+      "a": {
+       "en": "Both qual wafers passed. Edge etch depth is within spec, and the endpoint came at 44 seconds. I'll release Rev D and record the ECN number.",
+       "ko": "두 장 모두 합격입니다. 가장자리 식각 깊이는 규격 안이고, 끝점은 44초에 나왔습니다. Rev D 를 적용하고 ECN 번호를 기록하겠습니다."
+      }
+     },
+     {
+      "sit": "끝점 시간 초과로 공정이 멈췄다",
+      "q": {
+       "en": "Why did the run abort at step 3?",
+       "ko": "3단계에서 왜 공정이 멈췄죠?"
+      },
+      "a": {
+       "en": "The endpoint was not detected within 60 seconds, so the step aborted. I put the lot on hold and I'm checking the OES trace now.",
+       "ko": "60초 안에 끝점이 안 잡혀서 단계가 중단됐습니다. lot 을 보류해 두고 지금 OES 신호를 확인하고 있습니다."
+      }
+     }
+    ]
+   },
+   {
+    "type": "wrap",
+    "title": "정리 — 조건을 나누고, 경계를 읽어라",
+    "points": [
+     "레시피는 **locked**. 바꾸는 길은 **ECR → ECN(approved) → qual → release**, 문제가 나면 **roll back**. 옛 판(**revision**)은 지우지 않는다.",
+     "레시피 표: **STEP · END(TIME / EPD) · TIME(MAX) · PRESS · RF · GAS**. OE 시간은 **실제 ME 시간**의 비율이다.",
+     "경계어: **not to exceed / no more than** = ≤ · **below / less than** = < · **at least** = ≥ · **within ±** = 양 끝 포함이 보통. 경계값에서 판단이 갈린다.",
+     "조건어: **unless** = if not · **only if** = 반드시 필요한 조건 · **provided that** = 예외를 허락하는 조건 · **otherwise** · **until**.",
+     "읽는 순서: **연결어 찾기 → 조건과 결과 나누기 → 지금 사실이 조건을 만족하는지**."
+    ],
+    "done": "이제 여러분은 레시피 화면과 변경 규정을 읽고 **\"지금 바꿔도 되는가, 이 값은 경계 안인가\"** 를 영어 문장 그대로 판단할 수 있습니다. **Split the condition, read the boundary.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "READ THE RULE",
+      "items": [
+       [
+        "Find the [connector].",
+        "연결어 찾기"
+       ],
+       [
+        "Split [condition] and [result].",
+        "조건 / 결과 나누기"
+       ],
+       [
+        "Check the [boundary].",
+        "경계 확인"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },
  {
   "id": "w11",
-  "title": "패턴 배치",
+  "title": "다른 장비 계열 읽기 — 증착 · 노광 · CMP · 이온주입",
   "slides": [
    {
     "type": "story",
-    "icon": "📐",
-    "title": "도면대로 놓였는가?",
-    "text": "신입 기술자 민수는 포토 공정 앞에서 영어로 된 **layout** 배치 지시서를 받는다. 화면에는 여러 색의 **layer**가 겹쳐 있고, 지시서에는 'Place the metal pattern on **layer** M1, keep **minimum spacing** 0.5 μm'라고 적혀 있다. 민수의 일은 새 패턴을 그리는 것이 아니라, 이미 배치된 패턴이 **line width**와 **spacing** 규칙에 맞는지 **읽고 판단**하는 것이다. 한 곳이라도 **alignment**가 틀어지거나 두 패턴이 **overlap**되면, 웨이퍼 수백 장이 불량이 된다. 오늘 민수가 배워야 할 것은 영어 배치 지시문을 정확히 해석하고, 화면의 **grid** 위 수치가 규칙을 위반하는지 눈으로 잡아내는 능력이다.",
-    "art": "placement"
-   },
-   {
-    "type": "scene",
-    "title": "오늘의 현장 · 상황 설정",
-    "where": "레이아웃 에디터 화면 앞.",
-    "tool": "셀 배치 도면(Rev C)과 그리드.",
-    "situation": "도면대로 놓였는지 확인한다. off-grid 셀이 보인다.",
-    "meet": [
-     "지시 PER THE DRAWING",
-     "배치 상태 placed",
-     "off-grid",
-     "도면 대조"
-    ],
-    "goal": "도면과 실제 배치를 대조해 \"맞다 / 틀리다\"를 판단하기.",
-    "bg": "w11"
-   },
-   {
-    "type": "read",
-    "title": "패턴 배치란 무엇인가",
-    "intro": "패턴 배치(layout placement)는 각 층의 도형을 정해진 위치·크기·간격 규칙에 맞게 놓는 작업이다.",
-    "paras": [
-     "반도체 소자는 여러 층(**layer**)의 패턴이 위아래로 쌓여 만들어진다. 각 **layer**는 실제 공정에서 하나의 **mask**(포토 마스크)에 대응하며, 화면에서는 서로 다른 색으로 표시된다.",
-     "**Layout**은 이 층들을 위에서 내려다본 평면도이다. 현장 기술자는 보통 이 **layout**을 직접 그리기보다, 배치가 규칙에 맞는지 **읽고 확인(review/verify)**하는 역할을 맡는다.",
-     "배치의 핵심 판단 기준은 네 가지다: 선의 굵기(**line width**), 도형 사이 간격(**spacing**), 층 정렬(**alignment**), 그리고 겹침(**overlap**) 여부.",
-     "지시서에는 항상 수치 규칙이 붙는다. 예: 'Keep **line width** ≥ 0.25 μm'. 이 문장은 '선 굵기를 0.25 마이크로미터 이상으로 유지하라'는 뜻이며, 이보다 얇으면 위반이다.",
-     "HMI/GUI 화면 하단에는 보통 **coordinate**(좌표)와 **grid** 값이 표시된다. 이 숫자를 읽어야 패턴이 규칙 안에 있는지 즉시 판단할 수 있다."
-    ],
+    "icon": "🔄",
+    "title": "순환 근무 첫날, 처음 보는 화면",
+    "text": "석 달 동안 식각 장비만 본 민지가 이번 주부터 순환 근무(**rotation**)로 CMP 구역에 배치됐다. 화면을 여니 처음 보는 말이 가득하다. **PLATEN 2 DOWN FORCE 3.0 psi**, **SLURRY FLOW 200 mL/min**, 그리고 노란 줄 하나 — **PAD CONDITIONER SWEEP RATE LOW**. 민지가 중얼거린다. \"패드… 컨디셔너… 스윕… 비율이 낮다? 뭐가 낮다는 거지?\" 옆의 선배가 웃으며 말한다. \"명사가 줄줄이 붙으면 **맨 오른쪽**부터 읽어. rate 가 주인공이야. 무엇의 rate? sweep 의. 무엇의 sweep? pad conditioner 의.\" 민지가 다시 읽는다. \"패드 컨디셔너의, 왕복의, 속도가 낮다.\" 선배가 고개를 끄덕인다. \"식각에서 배운 거 그대로야. **SP / PV**, **ALARM / WARNING**, 단위. 장비가 바뀌면 단어만 바뀌고, 읽는 법은 안 바뀌어.\" 오늘은 증착 · 노광 · CMP · 이온주입 장비를 한 바퀴 돈다.",
     "figs": [
      {
       "kind": "hmi",
-      "tool": "LAYOUT EDITOR",
+      "tool": "CMP POLISHER · PLATEN 2",
       "status": "RUN",
       "state": "run",
       "rows": [
        [
-        "Cells placed",
-        "128"
+        "DOWN FORCE",
+        "3.0 psi"
        ],
        [
-        "Off-grid",
-        "2",
-        "high"
+        "SLURRY FLOW",
+        "200 mL/min"
+       ],
+       [
+        "PLATEN SPEED",
+        "93 rpm"
+       ]
+      ],
+      "banner": {
+       "en": "PAD CONDITIONER SWEEP RATE LOW",
+       "ko": "패드 컨디셔너 왕복 속도 낮음",
+       "level": "warn"
+      }
+     }
+    ]
+   },
+   {
+    "type": "scene",
+    "title": "오늘의 현장 · 상황 설정",
+    "where": "순환 근무 첫 주 — 증착(CVD · ALD · PVD), 노광(트랙 · 스캐너), CMP, 이온주입 구역을 하루씩 돈다.",
+    "tool": "장비마다 다른 HMI 화면, 장비 개요서(tool overview), 공정 조건 표.",
+    "situation": "처음 보는 단어와 단위가 쏟아진다. 하지만 화면의 뼈대와 문장 구조는 식각 장비와 같다.",
+    "meet": [
+     "명사 덩어리 pad conditioner sweep rate",
+     "수동태 is held by · is removed by",
+     "목적 is used to · in order to",
+     "단위 Å · psi · mJ/cm² · keV · E15"
+    ],
+    "goal": "처음 보는 장비 화면에서 \"무엇의 무엇인가\"와 \"단위가 무엇인가\"를 읽어 내기.",
+    "bg": "w11"
+   },
+   {
+    "type": "read",
+    "title": "처음 보는 장비 앞에서 — 뼈대는 같다",
+    "intro": "반도체 장비는 종류가 많지만 화면과 문서의 뼈대는 거의 같다. 낯선 장비를 만나면 먼저 이 뼈대를 찾는다.",
+    "paras": [
+     "**무엇이 들어오나** — 웨이퍼, 그리고 가스(gas) · 약액(chemical) · 슬러리(slurry) · 이온(ion) 중 하나 이상. 화면에는 보통 유량(**FLOW**)으로 나온다.",
+     "**어디서 처리하나** — 챔버(chamber), 코터 컵(coater cup), 플래튼(platen), 엔드 스테이션(end station). 이름은 달라도 \"웨이퍼가 처리되는 곳\"이다.",
+     "**무엇으로 조절하나** — 압력 · 온도 · 전력 · 회전 속도 · 누르는 힘 · 에너지. 화면은 1부에서 본 그대로 **SP / PV** 쌍으로 보여 준다.",
+     "**결과를 무엇으로 재나** — 두께(thickness), 제거 속도(removal rate), 선폭(CD), 정렬 오차(overlay), 주입량(dose). 장비마다 다른 이 숫자가 그 장비의 \"성적표\"다.",
+     "**상태어와 알람은 같다** — IDLE · RUN · ALARM · WARNING · INTERLOCK, 그리고 9강 · 10강의 규정문(shall · unless · not to exceed)도 그대로 나온다.",
+     "그래서 오늘 새로 배울 것은 두 가지뿐이다. **장비마다 다른 명사와 단위**, 그리고 그 명사들이 **줄줄이 붙었을 때 읽는 법**."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SAME SKELETON",
+      "items": [
+       [
+        "What comes [in]?",
+        "들어오는 것"
+       ],
+       [
+        "Where is it [processed]?",
+        "처리하는 곳"
+       ],
+       [
+        "What is [controlled]?",
+        "조절하는 값"
+       ],
+       [
+        "What is [measured]?",
+        "결과 측정"
        ]
       ]
-     },
-     {
-      "kind": "note",
-      "title": "WORK INSTRUCTION",
-      "en": "Place the cells [per the drawing], Rev C.",
-      "ko": "도면(Rev C)대로 셀 배치."
      }
     ]
    },
    {
     "type": "read",
-    "title": "선폭·간격·피치의 물리적 의미",
-    "intro": "line width, spacing, pitch는 소자 성능과 수율을 직접 결정하는 치수 규칙이다.",
+    "title": "명사 덩어리는 오른쪽부터 — compound noun",
+    "intro": "장비 화면의 영어는 자리가 좁아 명사를 줄줄이 붙인다. 이것을 compound noun(명사 덩어리)이라고 한다. 읽는 규칙은 하나다.",
     "paras": [
-     "**Line width**(선폭)는 도형 한 개의 굵기다. 너무 얇으면 식각·현상 중에 끊기고(**open**), 전기가 흐르지 못한다. 그래서 규칙은 항상 최소값을 정한다: **minimum line width**.",
-     "**Spacing**(간격)은 이웃한 두 패턴 사이의 빈 거리다. 너무 좁으면 두 배선이 붙어 합선(**short**)되므로, **minimum spacing** 규칙이 존재한다.",
-     "**Pitch**(피치)는 '선폭 + 간격'을 합한 반복 주기다. 화면 규칙에 'Pitch = 0.5 μm'라고 나오면, 한 선의 중심에서 다음 선의 중심까지 거리가 0.5 μm라는 뜻이다.",
-     "이 세 값 중 가장 작고 중요한 치수를 **critical dimension (CD)**라 부른다. 공정 관리에서 CD가 규격을 벗어나면 즉시 알람이 뜬다.",
-     "영어 지시문에서 '≥'는 '이상', '≤'는 '이하', 'min'은 최소, 'max'는 최대를 뜻한다. 예: 'Spacing shall be **no less than** 0.3 μm'는 '간격은 0.3 μm 미만이면 안 된다'는 규칙이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "정렬·겹침·오정렬을 판단하기",
-    "intro": "층과 층 사이의 정렬(alignment)과 겹침(overlap)은 배치 판단의 핵심이다.",
-    "paras": [
-     "**Alignment**(정렬)는 위층 패턴이 아래층 패턴에 정확히 맞춰졌는지를 뜻한다. 두 층의 위치 어긋남 정도를 **overlay error**(오버레이 오차) 또는 **misalignment**라고 한다.",
-     "정렬을 돕기 위해 웨이퍼에는 **alignment mark** 또는 **registration mark**라는 십자·박스 모양 기준점이 새겨진다. 장비는 이 마크를 보고 층을 맞춘다.",
-     "**Overlap**(겹침)은 두 도형이 서로 포개지는 것이다. 의도된 겹침(예: **contact**이 배선 위에 놓임)은 정상이지만, 규칙에 없는 겹침은 불량이다.",
-     "지시문 예: 'The via must **fully overlap** the underlying metal by at least 0.05 μm.' — 비아가 아래 금속을 최소 0.05 μm 감싸며 완전히 겹쳐야 한다는 뜻. 이 감싸는 여유를 **enclosure**라고 한다.",
-     "화면에서 위반이 발생하면 보통 빨간색 하이라이트와 함께 'Overlap violation' 또는 'Misalignment detected' 같은 영어 메시지가 뜬다. 이 문구를 읽고 즉시 원인을 파악해야 한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "그리드·스냅·좌표 읽기",
-    "intro": "모든 배치는 격자(grid) 위에서 이루어지며, 좌표를 읽는 것이 판단의 출발점이다.",
-    "paras": [
-     "**Grid**(격자)는 화면에 깔린 보이지 않는 눈금이다. 모든 패턴의 꼭짓점은 이 **grid** 위 점에 놓여야 하며, 이 최소 눈금 간격을 **grid resolution** 또는 **manufacturing grid**라 한다.",
-     "**Snap**은 도형을 가장 가까운 **grid** 점에 자동으로 붙이는 기능이다. 'Snap to grid' 옵션이 켜져 있으면 좌표가 항상 눈금값의 정수배가 된다.",
-     "화면 좌표는 보통 (X, Y)로 표시된다. 원점을 **origin**이라 하며, 'Set **origin** to (0,0)'는 기준점을 좌하단으로 잡으라는 뜻이다.",
-     "좌표를 읽으면 치수를 직접 계산할 수 있다. 두 선의 X좌표가 각각 1.0과 1.4라면 중심 간 거리는 0.4 μm이고, 규칙이 'pitch ≥ 0.5'라면 이는 위반이다.",
-     "GUI 상태바의 'X: 1.400  Y: 0.800  Grid: 0.005' 같은 표시는 '현재 커서 좌표와 격자 해상도'를 알려준다. 이 값을 규칙과 대조하는 것이 현장 판단의 기본이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "영어는 화면 어디에 나타나는가",
-    "intro": "배치 영어는 지시서뿐 아니라 HMI/GUI 곳곳에 짧은 문구로 등장한다.",
-    "paras": [
-     "메뉴·버튼: 'Move', 'Align', 'Distribute', 'Snap to Grid', 'Check Rules' — 배치 조작 명령들이다.",
-     "레이어 패널: 각 층 옆에 'M1', 'M2', 'VIA', 'POLY' 같은 층 이름과 표시/숨김(**visible/hidden**), 잠금(**lock**) 상태가 영어로 나온다.",
-     "규칙 결과창(**DRC report**): 위반 항목이 'Spacing < 0.3 μm', 'Width violation', 'Off-grid vertex' 처럼 짧은 영어로 나열된다.",
-     "경고 팝업: 'WARNING: Two patterns on the same layer overlap.' 같은 완전한 문장으로 뜨기도 한다. 대문자 WARNING/CAUTION은 즉시 확인이 필요한 신호다.",
-     "이 모든 영어는 '작성'이 아니라 '해석'의 대상이다. 짧은 명사구와 부등호를 빠르게 읽어 규칙 위반 여부를 판단하는 훈련이 이 수업의 목표다."
+     "**맨 오른쪽 명사가 머리(head)** — 그 말이 \"무엇인가\"를 정한다. 나머지는 모두 그것을 꾸민다.",
+     "**오른쪽부터 \"~의\"로 읽는다** — chamber wall temperature setpoint → 설정값(setpoint) ← 온도의 ← 챔버 벽의. 즉 \"챔버 벽 온도의 **설정값**\". 온도가 아니라 설정값을 말하는 줄이다.",
+     "**of 로 풀어 보면 확실하다** — the setpoint **of** the temperature **of** the chamber wall. 영어 설명서에서는 이렇게 풀어 쓴 문장도 자주 나온다.",
+     "**두 단어가 한 덩어리인 것도 있다** — pad conditioner(패드 컨디셔너), beam current(빔 전류), wafer edge(웨이퍼 가장자리)는 붙어서 하나의 이름이다. 덩어리끼리 오른쪽부터 읽는다.",
+     "**머리를 틀리면 판단이 틀린다** — SLURRY FLOW ALARM LIMIT 은 \"슬러리 유량 알람의 **한계값**\"이다. 알람이 울렸다는 말이 아니라, 알람이 울리는 기준값을 말하는 칸이다."
     ],
     "figs": [
      {
-      "kind": "sticker",
-      "level": "caution",
-      "en": "CHECK PLACEMENT vs DRAWING",
-      "ko": "도면 대비 배치 확인"
+      "kind": "note",
+      "title": "READ RIGHT TO LEFT",
+      "en": "chamber wall temperature [setpoint] = the setpoint of the temperature of the chamber wall",
+      "ko": "맨 오른쪽(setpoint)이 주인공 — 오른쪽부터 \"~의\"로 읽는다."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "증착 장비 — CVD · ALD · PVD",
+    "intro": "막을 쌓는 장비다. 무엇으로 쌓는지에 따라 화면의 단어가 다르다.",
+    "paras": [
+     "**CVD(화학 기상 증착)** — 가스가 반응해 막이 된다. 원료를 **precursor(전구체)** 라고 하고, 예: TEOS 는 산화막 원료다. 화면: **TEOS FLOW 1.2 g/min**, **DEP RATE 1500 Å/min**.",
+     "**ALD(원자층 증착)** — 원료를 한 번 넣고(pulse) 빼고(purge) 다음 원료를 넣는 것을 한 사이클(cycle)로 반복한다. 화면: **ALD CYCLES 120**, **GPC 1.0 Å/cycle**(growth per cycle, 사이클당 두께).",
+     "**PVD(물리 기상 증착, sputter)** — 금속 덩어리(**target**)를 이온으로 때려 떨어진 원자가 웨이퍼에 붙는다. 화면: **DC POWER 12 kW**, **TARGET LIFE 820 kWh**(타깃을 얼마나 썼나).",
+     "**Å(옹스트롬)** — 증착 두께의 단위. **1 Å = 0.1 nm**. 1,000 Å 은 100 nm 다.",
+     "증착의 성적표는 **thickness(두께)** 와 **uniformity(균일도, %)** 다. 예: \"Film thickness: within ±3% of the target (1000 Å).\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "CVD · CH B",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "TEOS FLOW",
+        "1.2 g/min"
+       ],
+       [
+        "DEP RATE",
+        "1500 Å/min"
+       ],
+       [
+        "FILM THICKNESS",
+        "1,028 Å"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "노광 장비 — 트랙(track)과 스캐너(scanner)",
+    "intro": "회로 무늬를 웨이퍼에 옮기는 구역이다. 감광액을 바르고 굽는 트랙과, 빛을 쏘는 스캐너가 한 줄로 붙어 있다.",
+    "paras": [
+     "**트랙 — coat · bake · develop** — 감광액(**resist**)을 웨이퍼를 돌려 바르고(**spin coat**, 단위 rpm), 굽고(**soft bake**, °C · s), 노광 뒤 현상한다(**develop**).",
+     "**스캐너 — reticle · dose · focus** — 회로 원판(**reticle**)의 무늬를 빛으로 옮긴다. 빛의 양이 **dose**, 단위는 **mJ/cm²**. 초점 위치는 **focus**, 단위 nm.",
+     "**overlay(정렬 오차)** — 이번 층이 아래층과 얼마나 어긋났는가. X · Y 방향으로 nm 단위로 잰다. 예: \"Overlay shall be no more than 3.0 nm.\"",
+     "**CD(Critical Dimension, 선폭)** — 만든 무늬의 폭. 노광의 성적표는 CD 와 overlay 다.",
+     "주의: 노광의 **dose(mJ/cm², 빛의 양)** 와 이온주입의 **dose(/cm², 이온의 개수)** 는 같은 단어지만 전혀 다른 양이다. **단위**가 어느 장비인지 알려 준다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "SCANNER · LOT 2417",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "DOSE",
+        "25.0 mJ/cm²"
+       ],
+       [
+        "FOCUS",
+        "-20 nm"
+       ],
+       [
+        "OVERLAY X / Y",
+        "2.1 / 2.8 nm"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "CMP · 이온주입 — 누르는 힘과 이온의 에너지",
+    "intro": "두 장비 모두 화면의 숫자가 식각 · 증착과 단위부터 다르다.",
+    "paras": [
+     "**CMP(화학 기계적 연마)** — 웨이퍼를 머리(**carrier / head**)로 잡아 회전하는 판(**platen**) 위 패드에 눌러 깎는다. 누르는 힘 **down force**(psi), 연마액 **slurry flow**(mL/min), 판 회전 **platen speed**(rpm).",
+     "**pad conditioner** — 패드 표면을 다이아몬드 원판으로 긁어 거칠기를 살린다. 왕복 속도가 **sweep rate**. 낮아지면 패드가 매끈해져 제거 속도(**removal rate**, Å/min)가 떨어진다.",
+     "**이온주입(implant)** — 불순물 이온을 가속해 웨이퍼에 박는다. 이온의 세기 **energy**(keV), 흐르는 양 **beam current**(mA · µA), 박힌 개수 **dose**(ions/cm²).",
+     "**지수 표기** — dose 는 **5.0E15 /cm²** 처럼 쓴다. E15 는 10의 15제곱. 4.8E15 와 5.0E15 는 숫자로 4%나 차이 난다.",
+     "**tilt(기울임)** — 이온이 결정 사이로 너무 깊이 미끄러지는 것(**channeling**)을 막으려 웨이퍼를 기울인다. **7°** 가 흔하다.",
+     "**µA 와 mA** — 1 mA = 1,000 µA. 화면 단위와 규격 단위가 다르면 먼저 같은 단위로 바꾼다."
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "IMPLANTER · END STATION",
+      "status": "RUN",
+      "state": "run",
+      "rows": [
+       [
+        "ENERGY",
+        "40 keV"
+       ],
+       [
+        "BEAM CURRENT",
+        "2.4 mA"
+       ],
+       [
+        "DOSE",
+        "5.0E15 /cm²"
+       ],
+       [
+        "TILT / TWIST",
+        "7° / 22°"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "장비 설명서의 문장 — 수동태와 목적 표현",
+    "intro": "장비 개요서(tool overview)는 \"무엇이 무엇에 의해, 무엇을 위해\" 움직이는지를 설명한다. 그래서 두 가지 문형이 반복된다.",
+    "paras": [
+     "**수동태 — is + 과거분사 + by** — \"The wafer **is held by** the carrier.\" 웨이퍼는 캐리어에 **의해** 잡힌다. by 뒤가 실제로 일을 하는 부품이다.",
+     "**by 가 없는 수동태** — \"The slurry **is supplied** at 200 mL/min.\" 누가 하는지보다 무엇이 일어나는지가 중요할 때 쓴다.",
+     "**목적 — is used to / is used for** — \"The Faraday cup **is used to** measure the beam current.\" 이 부품이 무엇을 하려고 있는지. to 뒤는 동사, for 뒤는 명사(-ing).",
+     "**목적 — in order to / so that** — \"The wafer is tilted 7° **in order to** reduce channeling.\" \"The pad is conditioned **so that** the removal rate stays stable.\"",
+     "읽는 순서: ① 주어(무엇이) → ② **by** 뒤(누가) → ③ **to / so that** 뒤(왜). 처음 보는 부품 이름이 나와도 이 세 칸만 채우면 그 부품의 역할이 보인다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "READ A TOOL SENTENCE",
+      "items": [
+       [
+        "[What] is acted on?",
+        "무엇이"
+       ],
+       [
+        "[By] what part?",
+        "무엇에 의해"
+       ],
+       [
+        "[To] do what?",
+        "무엇을 위해"
+       ]
+      ]
      }
     ]
    },
    {
     "type": "acr",
-    "title": "약어",
-    "intro": "배치·규칙 검증에서 자주 쓰이는 약어들이다.",
+    "title": "약어 · 단위",
+    "intro": "장비 계열마다 다른 약어와 단위입니다.",
     "items": [
+     {
+      "ab": "CVD",
+      "full": "Chemical Vapor Deposition",
+      "ko": "화학 기상 증착 — 가스 반응으로 막을 쌓는다"
+     },
+     {
+      "ab": "ALD",
+      "full": "Atomic Layer Deposition",
+      "ko": "원자층 증착 — 한 사이클에 한 층씩"
+     },
+     {
+      "ab": "PVD",
+      "full": "Physical Vapor Deposition",
+      "ko": "물리 기상 증착(스퍼터) — 타깃 원자를 떼어 붙인다"
+     },
+     {
+      "ab": "CMP",
+      "full": "Chemical Mechanical Planarization",
+      "ko": "화학 기계적 연마 — 눌러 깎아 평평하게"
+     },
      {
       "ab": "CD",
       "full": "Critical Dimension",
-      "ko": "임계 치수 — 패턴에서 가장 작고 중요한 선폭/간격"
+      "ko": "선폭 — 노광·식각의 성적표"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 — 배치가 규칙을 지키는지 자동 검사"
+      "ab": "GPC",
+      "full": "Growth Per Cycle",
+      "ko": "ALD 사이클당 두께 (Å/cycle)"
      },
      {
-      "ab": "LW",
-      "full": "Line Width",
-      "ko": "선폭 — 도형 하나의 굵기"
+      "ab": "Å",
+      "full": "angstrom",
+      "ko": "옹스트롬 — 1 Å = 0.1 nm"
      },
      {
-      "ab": "OVL",
-      "full": "Overlay",
-      "ko": "오버레이 — 층과 층 사이 정렬 오차"
+      "ab": "psi",
+      "full": "pounds per square inch",
+      "ko": "압력·누르는 힘 단위 — CMP down force"
      },
      {
-      "ab": "GDS",
-      "full": "Graphic Data System",
-      "ko": "레이아웃 도형 데이터를 담는 표준 파일 형식"
+      "ab": "keV",
+      "full": "kilo-electron-volt",
+      "ko": "이온 에너지 단위 — 클수록 깊이 박힌다"
      },
      {
-      "ab": "μm",
-      "full": "Micrometer",
-      "ko": "마이크로미터 — 100만분의 1 m, 배치 치수의 기본 단위"
+      "ab": "E15",
+      "full": "× 10¹⁵",
+      "ko": "지수 표기 — 5.0E15 = 5.0 × 10¹⁵"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) 층과 패턴",
-    "intro": "배치의 기본 단위인 층과 패턴 관련 용어다.",
+    "title": "핵심 용어 (1) — 명사 덩어리 읽기",
+    "intro": "맨 오른쪽이 머리입니다. 예문에서 머리가 무엇인지 먼저 찾으세요.",
     "items": [
      {
-      "en": "layer",
-      "ko": "층",
-      "d": "패턴이 놓이는 하나의 공정 층. 화면에서 색으로 구분된다.",
-      "ex": "Place the wiring on layer M1, not on M2."
+      "en": "setpoint",
+      "ko": "설정값 (머리)",
+      "d": "chamber wall temperature setpoint — 챔버 벽 온도의 설정값",
+      "ex": "Raise the chamber wall temperature setpoint to 65 °C."
      },
      {
-      "en": "mask",
-      "ko": "마스크",
-      "d": "각 층 패턴을 웨이퍼에 옮기는 포토 원판.",
-      "ex": "Each layer corresponds to one photo mask."
+      "en": "rate",
+      "ko": "속도 · 비율 (머리)",
+      "d": "pad conditioner sweep rate — 패드 컨디셔너의 왕복 속도",
+      "ex": "The pad conditioner sweep rate dropped below the lower limit."
      },
      {
-      "en": "pattern",
-      "ko": "패턴",
-      "d": "층 위에 그려진 개별 도형(선, 사각형 등).",
-      "ex": "This pattern is too narrow; it may break during etch."
+      "en": "limit",
+      "ko": "한계값 (머리)",
+      "d": "slurry flow alarm limit — 슬러리 유량 알람의 한계값",
+      "ex": "The slurry flow alarm limit is set to 150 mL/min."
      },
      {
-      "en": "layout",
-      "ko": "레이아웃/배치도",
-      "d": "여러 층을 위에서 본 평면 배치도.",
-      "ex": "Open the layout and check the top metal layer."
+      "en": "zone",
+      "ko": "구역 (머리)",
+      "d": "wafer edge exclusion zone — 웨이퍼 가장자리 제외 구역",
+      "ex": "Do not measure inside the wafer edge exclusion zone."
+     },
+     {
+      "en": "check",
+      "ko": "점검 (머리)",
+      "d": "beam current stability check — 빔 전류 안정성 점검",
+      "ex": "Run a beam current stability check before the first lot."
+     },
+     {
+      "en": "failure",
+      "ko": "고장 (머리)",
+      "d": "precursor line heater failure — 전구체 배관 히터의 고장",
+      "ex": "A precursor line heater failure can cause particles in the film."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — 셀 배치",
-    "app": "FloorPlanner",
-    "doc": "core.def",
-    "run": "Select",
-    "canvas": "place",
-    "left": {
-     "title": "Cells",
-     "items": [
-      {
-       "name": "INV_X1",
-       "color": "#33506e"
-      },
-      {
-       "name": "NAND2",
-       "color": "#33506e"
-      },
-      {
-       "name": "DFF",
-       "color": "#33506e"
-      },
-      {
-       "name": "off-grid: 2",
-       "color": "#e05a4a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 명사 덩어리",
+    "intro": "맨 오른쪽 명사(머리)를 먼저 찾고 뜻을 고르세요.",
+    "questions": [
+     {
+      "prompt": "화면 라벨 'CHAMBER WALL TEMPERATURE SETPOINT 65 °C' 가 말하는 것은?",
+      "opts": [
+       "챔버 벽의 지금 온도가 65 °C 다",
+       "챔버 벽 온도의 설정값이 65 °C 다",
+       "65 °C 가 되면 챔버 벽이 설정된다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'SLURRY FLOW ALARM LIMIT 150 mL/min' 은 무엇인가?",
+      "opts": [
+       "슬러리 유량 알람이 지금 울리고 있다",
+       "슬러리 유량이 지금 150 mL/min 이다",
+       "슬러리 유량이 이 값 아래면 알람이 울리는 기준값이다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Do not measure inside the wafer edge exclusion zone.' 무엇을 하지 말라는가?",
+      "opts": [
+       "웨이퍼 가장자리의 측정 제외 구역 안에서 재지 마라",
+       "웨이퍼 가장자리를 제외하고 재지 마라",
+       "구역을 나누어 재지 마라"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 증착",
+    "intro": "CVD · ALD · PVD 화면과 문서에서 만나는 말입니다.",
+    "items": [
+     {
+      "en": "precursor",
+      "ko": "전구체 (원료)",
+      "d": "반응해서 막이 되는 원료 물질 — 예: TEOS",
+      "ex": "The precursor is vaporized and carried into the chamber by nitrogen."
+     },
+     {
+      "en": "deposition rate",
+      "ko": "증착 속도",
+      "d": "단위 시간당 쌓이는 두께 (Å/min)",
+      "ex": "The deposition rate is monitored on every tenth wafer."
+     },
+     {
+      "en": "pulse / purge",
+      "ko": "원료 넣기 / 빼기",
+      "d": "ALD 한 사이클의 두 동작",
+      "ex": "Each ALD cycle consists of a precursor pulse and a nitrogen purge."
+     },
+     {
+      "en": "target",
+      "ko": "타깃 (금속 원판)",
+      "d": "PVD 에서 원자를 떼어 내는 금속 덩어리",
+      "ex": "Replace the target when the target life reaches 1,000 kWh."
+     },
+     {
+      "en": "uniformity",
+      "ko": "균일도",
+      "d": "웨이퍼 안 두께가 고른 정도 (%)",
+      "ex": "Thickness uniformity must be within 2% across the wafer."
+     },
+     {
+      "en": "film thickness",
+      "ko": "막 두께",
+      "d": "증착의 성적표 — Å 또는 nm",
+      "ex": "Film thickness is measured at 49 points on each monitor wafer."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 장비 계열별 화면 값",
+    "doc": {
+     "name": "TOOL PARAMETER QUICK SHEET",
+     "no": "QS-0211",
+     "rev": "A"
     },
-    "log": [
-     "> place 128 cells",
-     "> WARNING: 2 cells off-grid"
+    "heading": "Key parameters by tool family (교재 예시)",
+    "cols": [
+     "TOOL",
+     "PARAMETER",
+     "TYPICAL VALUE",
+     "UNIT",
+     "WHAT IT TELLS YOU"
     ],
-    "status": "Placed: 128   Off-grid: 2   Zoom: 200%",
-    "gloss": [
+    "rows": [
      [
-      "Place / placement",
-      "배치"
+      "CVD",
+      "DEP RATE",
+      "1500",
+      "Å/min",
+      "how fast the film grows"
      ],
      [
-      "grid",
-      "격자"
+      "ALD",
+      "GPC",
+      "1.0",
+      "Å/cycle",
+      "thickness added per cycle"
      ],
      [
-      "off-grid",
-      "격자를 벗어남"
+      "PVD",
+      "DC POWER",
+      "12",
+      "kW",
+      "how hard the target is sputtered"
      ],
      [
-      "cell",
-      "셀(표준 소자)"
+      "TRACK",
+      "SPIN SPEED",
+      "1500",
+      "rpm",
+      "resist thickness (faster = thinner)"
+     ],
+     [
+      "SCANNER",
+      "DOSE",
+      "25.0",
+      "mJ/cm²",
+      "amount of light on the resist"
+     ],
+     [
+      "CMP",
+      "DOWN FORCE",
+      "3.0",
+      "psi",
+      "how hard the wafer is pressed"
+     ],
+     [
+      "IMPLANT",
+      "DOSE",
+      "5.0E15",
+      "/cm²",
+      "number of ions per area"
      ]
-    ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "The same word can mean different things on different tools. Check the unit first."
+    }
    },
    {
     "type": "quiz",
-    "title": "확인 (1)",
-    "intro": "다음 영어 표현의 뜻을 고르시오.",
+    "title": "확인 퀴즈 (2) — 장비와 단위",
+    "intro": "위 빠른 참조표 QS-0211 을 근거로 답하세요.",
     "questions": [
      {
-      "prompt": "화면에 'Each layer corresponds to one mask.'라고 표시되었다. 무슨 뜻인가?",
+      "prompt": "화면에 'DOSE 5.0E15 /cm²' 가 떠 있다. 어느 장비인가?",
       "opts": [
-       "각 층은 하나의 마스크에 대응한다",
-       "각 마스크는 여러 층을 덮는다",
-       "층과 마스크는 관련이 없다"
+       "스캐너 — 빛의 양",
+       "CMP — 누르는 힘",
+       "이온주입 — 면적당 이온 개수"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "트랙의 'SPIN SPEED' 를 1500 rpm 에서 2000 rpm 으로 올리면 감광액 두께는?",
+      "opts": [
+       "얇아진다 (faster = thinner)",
+       "두꺼워진다",
+       "변하지 않는다"
       ],
       "ans": 0
      },
      {
-      "prompt": "지시서의 'Place the wiring on layer M1'은 무엇을 지시하는가?",
+      "prompt": "'Film thickness: 1,000 Å' 를 nm 로 바꾸면?",
       "opts": [
-       "배선을 M1 층에 놓아라",
-       "M1 층을 삭제하라",
-       "배선의 굵기를 M1로 하라"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'This pattern is too narrow'라는 경고의 의미로 가장 알맞은 것은?",
-      "opts": [
-       "이 패턴은 너무 넓다",
-       "이 패턴은 너무 좁다(가늘다)",
-       "이 패턴은 위치가 틀렸다"
+       "1 nm",
+       "100 nm",
+       "10 nm"
       ],
       "ans": 1
      }
@@ -6268,875 +7053,1209 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (2) 치수",
-    "intro": "선폭·간격 등 수치 규칙에 쓰이는 용어다.",
+    "title": "핵심 용어 (3) — 노광 · CMP",
+    "intro": "트랙 · 스캐너 · CMP 화면의 말입니다.",
     "items": [
      {
-      "en": "line width",
-      "ko": "선폭",
-      "d": "도형 한 개의 굵기. 너무 얇으면 끊긴다.",
-      "ex": "The minimum line width on this layer is 0.25 μm."
+      "en": "resist",
+      "ko": "감광액",
+      "d": "빛을 받으면 성질이 바뀌는 막",
+      "ex": "The resist is spin-coated and soft-baked at 100 °C for 60 seconds."
      },
      {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "이웃한 두 패턴 사이의 빈 거리. 너무 좁으면 합선된다.",
-      "ex": "Keep the spacing between metal lines at least 0.3 μm."
-     },
-     {
-      "en": "pitch",
-      "ko": "피치",
-      "d": "선폭과 간격을 합한 반복 주기(중심 간 거리).",
-      "ex": "The line pitch is fixed at 0.5 μm."
-     },
-     {
-      "en": "critical dimension",
-      "ko": "임계 치수(CD)",
-      "d": "패턴에서 가장 작고 중요한 치수. 수율을 좌우한다.",
-      "ex": "The critical dimension must stay within ±10%."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 (2)",
-    "intro": "부등호와 치수 규칙을 정확히 해석하시오.",
-    "questions": [
-     {
-      "prompt": "규칙에 'Spacing shall be no less than 0.3 μm'라고 적혀 있다. 올바른 해석은?",
-      "opts": [
-       "간격은 0.3 μm를 넘으면 안 된다",
-       "간격은 0.3 μm 미만이면 안 된다(0.3 이상)",
-       "간격은 정확히 0.3 μm여야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The line pitch is fixed at 0.5 μm.' 여기서 pitch가 뜻하는 것은?",
-      "opts": [
-       "선폭만의 값",
-       "선폭 + 간격의 반복 주기",
-       "간격만의 값"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'Minimum line width = 0.25 μm'인데 화면 패턴의 선폭이 0.20 μm이다. 판단은?",
-      "opts": [
-       "규칙 위반 (너무 가늘다)",
-       "규칙 만족",
-       "간격 규칙과 무관"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) 정렬과 겹침",
-    "intro": "층 정렬과 겹침 판단에 쓰이는 용어다.",
-    "items": [
-     {
-      "en": "alignment",
-      "ko": "정렬",
-      "d": "위층 패턴이 아래층에 정확히 맞춰진 상태.",
-      "ex": "Check the alignment between the via and the metal below."
+      "en": "reticle",
+      "ko": "레티클 (회로 원판)",
+      "d": "무늬가 그려진 유리판 — 마스크",
+      "ex": "Load the reticle and check its ID before exposure."
      },
      {
       "en": "overlay",
-      "ko": "오버레이(정렬 오차)",
-      "d": "층과 층 사이의 위치 어긋남 정도.",
-      "ex": "The overlay error is within the allowed limit."
+      "ko": "정렬 오차",
+      "d": "이번 층과 아래층의 어긋남 (nm)",
+      "ex": "Overlay shall be no more than 3.0 nm in both X and Y."
      },
      {
-      "en": "registration mark",
-      "ko": "정렬 기준 마크",
-      "d": "층을 맞추기 위해 웨이퍼에 새긴 기준점.",
-      "ex": "The tool reads the registration mark to align the layers."
+      "en": "down force",
+      "ko": "누르는 힘",
+      "d": "CMP 에서 웨이퍼를 패드에 누르는 힘 (psi)",
+      "ex": "Increasing the down force raises the removal rate."
      },
      {
-      "en": "overlap",
-      "ko": "겹침",
-      "d": "두 도형이 서로 포개진 상태. 규칙 없는 겹침은 불량.",
-      "ex": "The via must fully overlap the underlying metal."
+      "en": "slurry",
+      "ko": "연마액",
+      "d": "미세 입자가 든 약액 — 화학 + 기계 연마",
+      "ex": "Slurry is supplied to the pad at 200 mL/min."
+     },
+     {
+      "en": "removal rate",
+      "ko": "제거 속도",
+      "d": "CMP 의 성적표 (Å/min)",
+      "ex": "The removal rate must be between 2000 and 3000 Å/min."
      }
     ]
    },
    {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — CMP 장비 개요",
+    "doc": {
+     "name": "CMP-300 Tool Overview",
+     "no": "TO-0300",
+     "sec": "2",
+     "rev": "C",
+     "page": "2-1"
+    },
+    "heading": "2  How the Polisher Works",
+    "steps": [
+     "The wafer is held face down by the carrier and pressed onto the pad.",
+     "The platen is rotated at 93 rpm, and the carrier is rotated in the same direction.",
+     {
+      "t": "Slurry is supplied to the center of the pad at 200 mL/min.",
+      "note": {
+       "kind": "note",
+       "en": "The slurry flow alarm limit is 150 mL/min."
+      }
+     },
+     {
+      "t": "The pad conditioner is used to restore the pad surface during polishing.",
+      "note": {
+       "kind": "caution",
+       "en": "A low sweep rate causes pad glazing and a lower removal rate."
+      }
+     },
+     "Polishing is stopped by the endpoint system when the motor current changes."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Do not open the polisher door while the platen is rotating."
+    },
+    "gloss": [
+     [
+      "face down",
+      "앞면이 아래로"
+     ],
+     [
+      "restore",
+      "되살리다"
+     ],
+     [
+      "glazing",
+      "패드가 매끈해짐"
+     ],
+     [
+      "motor current",
+      "모터 전류"
+     ]
+    ]
+   },
+   {
     "type": "quiz",
-    "title": "확인 (3)",
-    "intro": "정렬·겹침 관련 영어 메시지를 해석하시오.",
+    "title": "확인 퀴즈 (3) — 수동태와 목적",
+    "intro": "위 CMP 개요 TO-0300 의 문장을 읽고 답하세요.",
     "questions": [
      {
-      "prompt": "DRC 결과에 'Misalignment detected'가 떴다. 무슨 뜻인가?",
+      "prompt": "'The wafer is held face down by the carrier.' 웨이퍼를 잡는 부품은?",
       "opts": [
-       "정렬 오차가 발견되었다",
-       "정렬이 완벽하다",
-       "선폭이 초과되었다"
+       "패드(pad)",
+       "플래튼(platen)",
+       "캐리어(carrier)"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'The pad conditioner is used to restore the pad surface.' 패드 컨디셔너의 역할은?",
+      "opts": [
+       "패드 표면을 되살린다",
+       "웨이퍼를 누른다",
+       "슬러리를 공급한다"
       ],
       "ans": 0
      },
      {
-      "prompt": "'The via must fully overlap the underlying metal by at least 0.05 μm.' 요구 사항은?",
+      "prompt": "'Polishing is stopped by the endpoint system when the motor current changes.' 연마는 무엇에 의해 멈추나?",
       "opts": [
-       "비아가 금속과 절대 겹치면 안 된다",
-       "비아가 아래 금속을 최소 0.05 μm 감싸며 완전히 겹쳐야 한다",
-       "비아 간격을 0.05 μm로 하라"
+       "정해진 시간",
+       "끝점 시스템 — 모터 전류 변화로",
+       "작업자가 문을 열어서"
       ],
       "ans": 1
-     },
-     {
-      "prompt": "경고 'Two patterns on the same layer overlap.'의 의미는?",
-      "opts": [
-       "같은 층의 두 패턴이 겹쳐 있다",
-       "두 패턴이 서로 다른 층에 있다",
-       "두 패턴의 간격이 넓다"
-      ],
-      "ans": 0
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (4) 격자와 규칙",
-    "intro": "격자·좌표·설계 규칙 관련 용어다.",
+    "title": "핵심 용어 (4) — 이온주입",
+    "intro": "이온주입 화면과 문서의 말입니다. 단위와 지수 표기에 주의하세요.",
     "items": [
      {
-      "en": "grid",
-      "ko": "격자",
-      "d": "화면의 눈금. 모든 꼭짓점이 이 위에 놓여야 한다.",
-      "ex": "All vertices must sit on the manufacturing grid."
+      "en": "energy",
+      "ko": "에너지 (keV)",
+      "d": "이온을 얼마나 세게 가속하나 — 깊이를 정한다",
+      "ex": "Higher energy places the dopant deeper in the silicon."
      },
      {
-      "en": "snap",
-      "ko": "스냅",
-      "d": "도형을 가장 가까운 격자 점에 자동으로 붙이는 기능.",
-      "ex": "Turn on Snap to Grid before moving the pattern."
+      "en": "beam current",
+      "ko": "빔 전류 (mA · µA)",
+      "d": "흐르는 이온의 양 — 주입 시간을 정한다",
+      "ex": "The beam current is measured by the Faraday cup before each wafer."
      },
      {
-      "en": "design rule",
-      "ko": "설계 규칙",
-      "d": "선폭·간격 등 배치가 지켜야 할 수치 규칙 모음.",
-      "ex": "This layout must pass all design rules."
+      "en": "dose",
+      "ko": "주입량 (ions/cm²)",
+      "d": "면적당 박힌 이온 개수 — 지수 표기",
+      "ex": "The target dose is 5.0E15 ions per square centimeter."
      },
      {
-      "en": "clearance",
-      "ko": "이격 거리",
-      "d": "서로 다른 물체 사이에 확보해야 하는 최소 여유 간격.",
-      "ex": "Maintain enough clearance between the via and the edge."
+      "en": "tilt / twist",
+      "ko": "기울임 / 돌림 각도",
+      "d": "채널링을 막으려 웨이퍼를 기울이고 돌린다",
+      "ex": "The wafer is tilted 7 degrees in order to reduce channeling."
+     },
+     {
+      "en": "Faraday cup",
+      "ko": "패러데이 컵",
+      "d": "빔 전류를 재는 부품",
+      "ex": "The Faraday cup is used to measure the beam current."
+     },
+     {
+      "en": "channeling",
+      "ko": "채널링",
+      "d": "이온이 결정 사이로 너무 깊이 미끄러지는 현상",
+      "ex": "Channeling makes the junction deeper than designed."
      }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 이온주입 빔 준비",
+    "doc": {
+     "name": "IMP-900 Operating Manual",
+     "no": "OM-0900",
+     "sec": "6",
+     "rev": "B",
+     "page": "6-4"
+    },
+    "heading": "6  Beam Setup Before the First Lot",
+    "steps": [
+     "Select the recipe. The energy, dose, and tilt are loaded from the recipe.",
+     {
+      "t": "Tune the beam until the beam current is at least 2.0 mA.",
+      "note": {
+       "kind": "note",
+       "en": "The beam current is read from the Faraday cup in mA or µA."
+      }
+     },
+     "Run a beam current stability check for 60 seconds.",
+     {
+      "t": "The dose is controlled by the scan speed so that every wafer receives the same dose.",
+      "note": {
+       "kind": "caution",
+       "en": "A dose error larger than ±2% shall be treated as a lot hold."
+      }
+     },
+     "Record the final dose and beam current in the lot log."
+    ],
+    "callout": {
+     "kind": "danger",
+     "en": "High voltage. Do not open the source housing unless the tool is locked out."
+    },
+    "gloss": [
+     [
+      "tune",
+      "맞추다(조정)"
+     ],
+     [
+      "scan speed",
+      "스캔 속도"
+     ],
+     [
+      "source housing",
+      "이온원 덮개"
+     ],
+     [
+      "lot hold",
+      "lot 보류"
+     ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 (4)",
-    "intro": "격자·규칙 관련 화면 표현을 해석하시오.",
+    "title": "확인 퀴즈 (4) — 지수 표기와 단위",
+    "intro": "이온주입 매뉴얼 OM-0900 을 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "DRC 결과에 'Off-grid vertex'가 표시되었다. 무슨 뜻인가?",
+      "prompt": "목표 dose 5.0E15 /cm², 측정 4.8E15 /cm². 'A dose error larger than ±2% shall be treated as a lot hold.' 판단은?",
       "opts": [
-       "꼭짓점이 격자 위에 있다",
-       "꼭짓점이 격자에서 벗어나 있다",
-       "격자 간격을 넓혀야 한다"
+       "정상 — E15 가 같으니 같은 값이다",
+       "lot 보류 — 4% 차이로 ±2% 를 넘는다",
+       "측정 오차라 무시한다"
       ],
       "ans": 1
      },
      {
-      "prompt": "'This layout must pass all design rules.'는 무엇을 요구하는가?",
+      "prompt": "빔 전류 화면이 '1800 µA'. 'at least 2.0 mA' 를 만족하는가?",
       "opts": [
-       "레이아웃이 모든 설계 규칙을 통과해야 한다",
-       "설계 규칙을 새로 만들어야 한다",
-       "레이아웃을 삭제해야 한다"
+       "만족하지 않는다 — 1800 µA = 1.8 mA",
+       "만족한다 — 1800 이 2.0 보다 크다",
+       "단위가 달라 판단할 수 없다"
       ],
       "ans": 0
      },
      {
-      "prompt": "상태바에 'X: 1.400  Y: 0.800  Grid: 0.005'가 보인다. 'Grid: 0.005'의 의미는?",
+      "prompt": "'The dose is controlled by the scan speed so that every wafer receives the same dose.' so that 뒤는?",
       "opts": [
-       "패턴의 선폭이 0.005",
-       "격자 최소 눈금 간격이 0.005 μm",
-       "간격 규칙이 0.005"
+       "스캔 속도의 단위",
+       "도즈를 재는 부품",
+       "그렇게 하는 목적 — 모든 웨이퍼에 같은 도즈"
       ],
-      "ans": 1
+      "ans": 2
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "LAYOUT PLACEMENT PROCEDURE",
+    "mtitle": "TOOL OVERVIEW SENTENCES — FOUR FAMILIES",
     "paras": [
-     "1. Open the layout file and confirm the active layer shown in the layer panel.",
-     "레이아웃 파일을 열고, 레이어 패널에 표시된 활성 층(active layer)이 맞는지 확인한다.",
-     "2. Enable 'Snap to Grid' before moving or placing any pattern.",
-     "패턴을 옮기거나 놓기 전에 'Snap to Grid'(격자 스냅)를 반드시 켠다.",
-     "3. Verify that each line width is no less than the minimum value listed in the rule table.",
-     "각 선폭이 규칙 표에 적힌 최소값 이상인지 확인한다. ('no less than' = 이상)",
-     "4. Ensure the spacing between adjacent patterns on the same layer meets the minimum spacing rule.",
-     "같은 층의 이웃한 패턴 사이 간격이 최소 간격 규칙을 만족하는지 확인한다.",
-     "5. NOTE: Vias must fully overlap the metal below; check the enclosure value on all four sides.",
-     "참고: 비아는 아래 금속을 완전히 감싸야 한다. 네 방향 모두 감싸는 여유(enclosure) 값을 확인한다."
+     "CVD: The precursor is vaporized and carried into the chamber by nitrogen.",
+     "해설: 전구체는 기화되어 질소에 의해 챔버로 운반된다. (is vaporized · is carried by — 수동태, by 뒤가 운반하는 것)",
+     "TRACK: The resist is spin-coated so that the film thickness is uniform across the wafer.",
+     "해설: 감광액은 웨이퍼 전체에서 두께가 고르도록 회전 도포된다. (so that 뒤 = 목적)",
+     "CMP: The pad conditioner is used to keep the removal rate stable.",
+     "해설: 패드 컨디셔너는 제거 속도를 일정하게 유지하는 데 쓰인다. (is used to + 동사 = 목적)",
+     "IMPLANT: The wafer is tilted 7 degrees in order to reduce channeling.",
+     "해설: 채널링을 줄이기 위해 웨이퍼를 7도 기울인다. (in order to = 목적)"
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DESIGN RULE CHECK (DRC) — READING THE REPORT",
+    "mtitle": "SPEC SHEET EXCERPT — ONE LINE PER TOOL (교재 예시)",
     "paras": [
-     "Run 'Check Rules' to generate the DRC report before releasing the layer.",
-     "층을 넘기기 전에 'Check Rules'를 실행해 DRC 리포트를 생성한다.",
-     "Each line lists the rule name, the measured value, and the location.",
-     "각 줄에는 규칙 이름, 측정값, 위치가 표시된다.",
-     "Example entry: 'Spacing violation: 0.22 μm (min 0.30 μm) at (1.40, 0.80)'.",
-     "예시 항목: '간격 위반: 0.22 μm (최소 0.30 μm), 위치 (1.40, 0.80)' — 측정값이 최소값보다 작아 위반이다.",
-     "WARNING: Do not release a layer while any red 'violation' entry remains in the report.",
-     "경고: 리포트에 빨간색 'violation'(위반) 항목이 하나라도 남아 있으면 층을 넘기지 말 것.",
-     "If a violation is a known exception, mark it as 'waived' only with supervisor approval.",
-     "위반이 이미 알려진 예외라면, 반드시 감독자 승인 하에만 'waived'(면제)로 표시한다."
-    ]
-   },
-   {
-    "type": "manual",
-    "mtitle": "CAUTION NOTES ON PLACEMENT",
-    "paras": [
-     "CAUTION: Two patterns on the same layer must never overlap unless the rule allows it.",
-     "주의: 같은 층의 두 패턴은 규칙이 허용하지 않는 한 절대 겹쳐서는 안 된다.",
-     "Keep sufficient clearance between any pattern and the chip boundary.",
-     "모든 패턴과 칩 경계 사이에 충분한 이격 거리(clearance)를 유지한다.",
-     "Do not place any vertex off the manufacturing grid; off-grid points cause fabrication errors.",
-     "어떤 꼭짓점도 제조 격자를 벗어나게 두지 말 것. 격자를 벗어난 점은 제조 오류를 일으킨다.",
-     "After any move, re-run the rule check to confirm the layout still passes.",
-     "패턴을 옮긴 뒤에는 반드시 규칙 검사를 다시 실행해 레이아웃이 여전히 통과하는지 확인한다."
+     "CVD film thickness: within ±3% of the target (1000 Å).",
+     "해설: 목표 1000 Å 의 ±3% → 970 ~ 1030 Å. 10강의 경계 읽기 그대로.",
+     "SCANNER overlay: no more than 3.0 nm in X and Y.",
+     "해설: X 와 Y 둘 다 3.0 nm 이하. 하나라도 넘으면 불합격.",
+     "CMP removal rate: between 2000 and 3000 Å/min.",
+     "해설: 2000 ~ 3000 Å/min(양 끝 포함이 보통).",
+     "IMPLANT dose: within ±2% of the target (5.0E15 /cm²).",
+     "해설: 4.9E15 ~ 5.1E15. 지수(E15)가 같은지 먼저 보고, 앞 숫자를 비교한다."
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "enclosure",
-    "intro": "아래 시뮬레이터에서 여러 layer를 켜고 끄며(visible/hidden) 각 층의 패턴이 어떻게 겹쳐 보이는지 관찰하세요. M1, M2, VIA 층을 하나씩 표시해 보고, 어느 층 위에 어떤 패턴이 놓였는지, 비아가 아래 금속을 제대로 감싸고 있는지(overlap/enclosure) 눈으로 판단해 보세요. 레이어 이름과 상태 표시가 모두 영어로 나오므로, 화면의 영어 라벨을 읽는 연습도 함께 하세요."
+    "which": "tools",
+    "mode": "nouns",
+    "intro": "먼저 **명사 덩어리** 실습입니다. 장비 화면의 라벨이 나옵니다. **맨 오른쪽 명사(머리)** 를 찾고, 오른쪽부터 \"~의\"로 읽은 뜻을 고르세요. 고르면 **of 로 풀어 쓴 영어**가 함께 나옵니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "checkRules",
-    "intro": "아래 DRC 시뮬레이터에서 'Check Rules'를 실행해 규칙 위반을 찾아보세요. 리포트에 뜨는 'Spacing violation', 'Width violation', 'Off-grid vertex' 같은 영어 항목을 읽고, 측정값과 최소 규칙값(min)을 비교해 어떤 패턴이 왜 위반인지 판단하세요. 위반 위치 좌표 (X, Y)를 화면에서 찾아 확인하고, 위반이 모두 사라져 'No violations'가 뜰 때까지 배치를 점검하세요."
+    "which": "tools",
+    "mode": "family",
+    "intro": "다음은 **장비 계열 맞히기** 실습입니다. 처음 보는 화면 한 줄을 보고 **어느 장비(CVD · ALD · PVD · TRACK · SCANNER · CMP · IMPLANT)** 의 화면인지 고르세요. 단서는 **단어와 단위**입니다. 같은 DOSE 라도 단위가 다르면 다른 장비입니다."
+   },
+   {
+    "type": "sim",
+    "which": "tools",
+    "mode": "specs",
+    "intro": "마지막은 **장비별 규격 판정** 실습입니다. 장비마다 다른 단위(Å · nm · mA · µA)와 **지수 표기(E15)** 가 나옵니다. 측정값을 규격과 **같은 단위로 바꾼 뒤** PASS / FAIL 을 고르세요."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "외국인 엔지니어가 배치 검토 결과를 묻는다.",
+      "sit": "처음 배치된 장비에서 외국인 엔지니어에게 라벨 뜻을 묻는다",
       "q": {
-       "en": "Did the M1 layer pass the design rule check?",
-       "ko": "M1 층이 설계 규칙 검사를 통과했나요?"
+       "en": "What does \"pad conditioner sweep rate low\" mean on this screen?",
+       "ko": "이 화면의 \"pad conditioner sweep rate low\" 는 무슨 뜻이에요?"
       },
       "a": {
-       "en": "Not yet. There is one spacing violation at (1.40, 0.80): 0.22 μm, below the 0.30 μm minimum.",
-       "ko": "아직요. (1.40, 0.80) 위치에 간격 위반이 하나 있습니다. 0.22 μm로 최소 0.30 μm보다 작습니다."
+       "en": "It means the conditioner arm is moving too slowly across the pad. If it stays low, the pad gets glazed and the removal rate drops.",
+       "ko": "컨디셔너 암이 패드 위를 너무 느리게 왕복한다는 뜻이에요. 계속 낮으면 패드가 매끈해지고 제거 속도가 떨어집니다."
       }
      },
      {
-      "sit": "엔지니어가 비아 배치를 확인해 달라고 한다.",
+      "sit": "CMP 제거 속도를 보고한다",
       "q": {
-       "en": "Can you confirm the via fully overlaps the metal below?",
-       "ko": "비아가 아래 금속을 완전히 감싸는지 확인해 줄 수 있나요?"
+       "en": "What is the removal rate on the last monitor wafer?",
+       "ko": "마지막 모니터 웨이퍼의 제거 속도가 얼마예요?"
       },
       "a": {
-       "en": "Yes. The enclosure is 0.06 μm on all four sides, which meets the 0.05 μm rule.",
-       "ko": "네. 네 방향 모두 감싸는 여유가 0.06 μm로, 0.05 μm 규칙을 만족합니다."
+       "en": "It was 2,450 angstroms per minute, which is within the spec of 2,000 to 3,000.",
+       "ko": "분당 2,450 옹스트롬으로, 규격 2,000 ~ 3,000 안입니다."
       }
      },
      {
-      "sit": "엔지니어가 위반 항목 처리를 지시한다.",
+      "sit": "이온주입 dose 를 확인한다",
       "q": {
-       "en": "Please fix the off-grid vertex before you release the layer.",
-       "ko": "층을 넘기기 전에 격자를 벗어난 꼭짓점을 수정해 주세요."
+       "en": "Is the dose on target for this lot?",
+       "ko": "이 lot 의 도즈가 목표에 맞나요?"
       },
       "a": {
-       "en": "Understood. I will snap it back to the grid and re-run the rule check.",
-       "ko": "알겠습니다. 격자에 다시 스냅한 뒤 규칙 검사를 다시 돌리겠습니다."
+       "en": "Not quite. We measured 4.8E15 against a target of 5.0E15. That is a 4% error, so I put the lot on hold.",
+       "ko": "아닙니다. 목표 5.0E15 에 4.8E15 가 측정됐습니다. 4% 오차라 lot 을 보류했습니다."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 단어는 바뀌어도 읽는 법은 같다",
     "points": [
-     "패턴 배치는 **layer**, **line width**, **spacing**, **alignment**, **overlap**, **grid** 여섯 축으로 판단한다.",
-     "부등호 해석이 핵심이다: **no less than**(이상), **min/max**, ≥/≤ 를 정확히 읽어야 위반을 잡는다.",
-     "**DRC report**의 영어 항목(Spacing violation, Width violation, Off-grid vertex)을 측정값 vs 최소값으로 대조해 판단한다.",
-     "**Snap to Grid**를 켜고, 모든 꼭짓점을 격자 위에 두며, 이동 후 반드시 규칙 검사를 재실행한다.",
-     "빨간 **violation** 항목이 남으면 층을 넘기지 않으며, 예외는 감독자 승인 하에만 **waived** 처리한다."
+     "낯선 장비는 **뼈대**부터: 무엇이 들어오나 · 어디서 처리하나 · 무엇을 조절하나 · 무엇으로 재나. 상태어와 SP / PV 는 그대로다.",
+     "**명사 덩어리는 오른쪽부터** — 맨 오른쪽이 머리. chamber wall temperature setpoint = 챔버 벽 온도의 **설정값**.",
+     "장비 설명서는 **수동태(is held by)** 와 **목적(is used to · in order to · so that)** 으로 부품의 역할을 말한다.",
+     "장비마다 성적표와 단위가 다르다: 두께 **Å** · 노광 dose **mJ/cm²** · overlay **nm** · CMP **psi · Å/min** · 이온주입 **keV · /cm²**.",
+     "같은 단어(**dose**)도 단위가 장비를 알려 준다. 판정 전에는 **단위를 맞추고**(µA → mA), **지수(E15)** 를 먼저 본다."
     ],
-    "done": "이제 영어 배치 지시문과 화면 규칙을 읽고 **규칙 위반 여부를 스스로 판단**할 수 있습니다. 수고하셨습니다!"
+    "done": "이제 여러분은 처음 보는 장비 화면 앞에서도 **\"무엇의 무엇인가, 단위는 무엇인가\"** 부터 읽어 낼 수 있습니다. **Read right to left, check the unit.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "NEW TOOL CHECKLIST",
+      "items": [
+       [
+        "Find the [head] noun.",
+        "머리 명사"
+       ],
+       [
+        "Read the [unit].",
+        "단위"
+       ],
+       [
+        "Find [by] and [to].",
+        "누가 · 왜"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },
  {
   "id": "w12",
-  "title": "DRC 오류",
+  "title": "트러블슈팅 문서 — 원인을 좁히고, 확신을 밝혀라",
   "slides": [
    {
     "type": "story",
-    "icon": "📐",
-    "title": "빨간 마커가 뜬 화면",
-    "text": "야간 근무 중, 신입 기술자 지훈은 레이아웃 검증 장비의 HMI 화면 앞에 앉아 있다. 방금 돌린 검사 결과 창에 붉은 글씨가 잔뜩 떴다. 화면 상단에는 **DRC RESULTS**, 그 아래로 **SPACING violation: 15 errors**, **WIDTH violation: 3 errors**, 그리고 노란색으로 **2 warnings**라는 줄이 보인다. 각 줄 끝에는 **insufficient spacing (min 0.14um)** 같은 짧은 영어 문장과 좌표가 붙어 있다. 지훈은 이 영어가 '무엇이 잘못되었는지'를 말해준다는 것을 안다. **error**는 반드시 고쳐야 하는 규칙 위반이고, **warning**은 확인이 필요한 경고다. 이 화면을 정확히 읽어내는 것이 오늘 그의 임무다. 선임은 말했다. \"메시지를 못 읽으면 멀쩡한 칩을 버리거나, 불량을 그냥 넘긴다.\" 오늘 우리는 이 붉은 줄들을 하나씩 해독한다.",
-    "art": "drc"
+    "icon": "🔍",
+    "title": "\"확정이야, 추정이야?\"",
+    "text": "밤 11시. 식각 장비 ET-05 에 알람이 뜬다. **BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5)**. 준호는 장비사의 트러블슈팅 가이드를 펼친다. 표 맨 위 줄: **Symptom: Base pressure high. Possible cause: Vacuum leak at the lid O-ring.** 준호는 바로 교대 보고에 적는다. \"O-ring leak. Will replace.\" 30분 뒤, 해외 엔지니어에게서 메시지가 온다. \"**Is the O-ring leak confirmed, or only suspected?** Did you run a helium leak check?\" 준호는 멈칫한다. 검사는 아직 안 했다. 표에 「가능한 원인」으로 적힌 것을 「원인」으로 옮겨 적은 것이다. 선배가 보고를 고쳐 준다. \"**A leak at the lid O-ring is suspected. A helium leak check is in progress.**\" 그리고 덧붙인다. \"트러블슈팅 문서에서 제일 위험한 건 틀린 원인이 아니라, **추정을 확정처럼 쓰는 것**이야. 그 한 줄 때문에 멀쩡한 부품을 갈고, 진짜 원인은 그대로 남거든.\"",
+    "figs": [
+     {
+      "kind": "alarm",
+      "level": "danger",
+      "code": "VAC-112",
+      "en": "BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5).",
+      "ko": "도달 진공도 높음 — 4.2E-5 Torr (한계 1.0E-5)"
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "검증 장비 HMI 앞, 야간 근무.",
-    "tool": "DRC(Design Rule Check) 검사 결과 창.",
-    "situation": "방금 돌린 검사에 붉은 글씨가 잔뜩 떴다. error와 warning을 구분해야 한다.",
+    "where": "야간의 식각 장비 앞 — 장비사 트러블슈팅 가이드와 공정 감시(SPC) 화면.",
+    "tool": "트러블슈팅 표, 헬륨 누설 검사기, 관리도(control chart), 교대 보고서와 원인 분석 보고서.",
+    "situation": "알람의 원인 후보가 넷이다. 하나씩 확인해 지워 나가야 하고, 보고할 때는 어디까지 확인했는지를 영어로 밝혀야 한다.",
     "meet": [
-     "DRC RESULTS 리포트",
-     "violation · error · warning",
-     "레이아웃 마커",
-     "NOT CLEAN"
+     "표 Symptom · Possible Cause · Check · Action",
+     "확신 confirmed · likely · suspected · ruled out",
+     "원인 caused by ↔ results in",
+     "관리도 UCL · LCL · OOC"
     ],
-    "goal": "붉은 리포트를 한 줄씩 해독해 \"고칠 것 / 확인할 것\"을 나누기.",
+    "goal": "원인 후보를 확인으로 좁히고, 보고서에 확신의 정도를 정확히 적기.",
     "bg": "w12"
    },
    {
     "type": "read",
-    "title": "DRC란 무엇인가",
-    "intro": "DRC는 설계된 레이아웃이 공정에서 실제로 만들 수 있는지 규칙과 대조해 검사하는 절차다.",
+    "title": "트러블슈팅 표의 구조 — 증상에서 조치까지",
+    "intro": "장비사 매뉴얼의 트러블슈팅 장(chapter)은 대개 표다. 한 증상(symptom)에 원인 후보가 여러 줄 달린다.",
     "paras": [
-     "**DRC (Design Rule Check)**는 칩 레이아웃의 도형(선, 사각형, 홀)이 공정에서 정한 최소 치수·간격 규칙을 지키는지 자동으로 검사하는 단계다. 위반이 있으면 그 위치를 **violation**으로 표시한다.",
-     "각 공정 노드(예: 28nm, 14nm)는 리소그래피·식각의 한계 때문에 **minimum width**(최소 선폭)와 **minimum spacing**(최소 간격) 같은 물리적 한계를 가진다. DRC는 이 한계를 숫자 규칙으로 바꿔 검사한다.",
-     "검사 기준의 묶음을 **rule deck** 또는 **runset**이라 부르며, 화면에는 보통 `Loaded rule deck: N28_M1.drc` 처럼 어떤 규칙 세트를 썼는지 표시된다.",
-     "DRC를 통과하지 못한 도형은 실제 웨이퍼에서 **short**(붙어야 안 될 것이 붙음)나 **open**(끊어짐), 패턴 불량으로 이어질 수 있다. 그래서 현장에서는 '규칙 위반'을 '잠재 불량'으로 읽는다.",
-     "결과는 사람이 읽는 리포트(텍스트)와, 레이아웃 위에 겹쳐 보이는 그래픽 마커(색깔 도형) 두 형태로 나온다. 기술자는 두 가지를 연결해 판단한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "왜 규칙이 존재하는가 — 물리적 의미",
-    "intro": "DRC 규칙은 자의적인 숫자가 아니라 실제 공정의 한계에서 나온다.",
-    "paras": [
-     "**minimum spacing**이 존재하는 이유: 두 배선이 너무 가까우면 식각·증착 공정에서 사이가 메워져 **short**(단락)가 나거나, 전기적으로 서로 간섭(**bridge**)한다.",
-     "**minimum width**가 존재하는 이유: 선이 너무 얇으면 식각 때 그 부분이 끊어져 **open**(단선)가 되거나, 저항이 커져 발열·신호 지연을 일으킨다.",
-     "즉 숫자 규칙은 '수율(yield)을 지키기 위한 안전 여유'다. 규칙을 어기면 바로 불량이 아니더라도 불량 확률이 크게 오른다.",
-     "그래서 리포트의 **required / min** 값은 협상 대상이 아니라 공정이 보장하는 최소선이다. 기술자가 임의로 낮추지 않는다.",
-     "이 때문에 화면의 **error**는 '보기 싫은 것'이 아니라 '이대로 만들면 칩이 죽을 수 있다'는 물리적 경고로 읽어야 한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "SPACING violation — 간격이 부족하다",
-    "intro": "가장 흔한 오류. 두 도형 사이가 규칙보다 가까울 때 뜬다.",
-    "paras": [
-     "**SPACING violation**은 서로 다른(또는 같은) 도형 사이의 거리가 정해진 **minimum spacing**보다 작을 때 발생한다. 메시지 예: **insufficient spacing between metal lines (measured 0.10um, required 0.14um)**.",
-     "리포트에서 핵심 숫자는 두 개다. **measured**(실제 측정된 값)와 **required / min**(규칙이 요구하는 최소값). measured < required 이면 위반이다.",
-     "화면 문구가 **insufficient spacing**, **spacing < min**, **space violation** 등으로 다양하게 표현되어도 의미는 모두 '간격이 최소 기준에 못 미친다'로 같다.",
-     "같은 layer 안에서 나는 간격 위반은 보통 배선이 너무 촘촘한 것이고, 다른 layer 사이 위반은 정렬·겹침 규칙(enclosure/overlap)과 함께 봐야 한다.",
-     "화면에서 해당 줄을 클릭하면 두 도형 사이의 가장 가까운 지점이 **highlight marker**로 표시되어, 어느 모서리가 문제인지 보인다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "WIDTH violation — 선이 너무 얇다",
-    "intro": "도형 자체의 폭이 최소 기준보다 좁을 때 발생하는 오류다.",
-    "paras": [
-     "**WIDTH violation**은 한 도형(주로 금속 배선)의 폭이 **minimum width**보다 작을 때 뜬다. 메시지 예: **metal width below minimum (measured 0.08um, min 0.10um)**.",
-     "SPACING이 '도형과 도형 사이'를 보는 반면, WIDTH는 '한 도형의 안쪽 폭'을 본다. 이 차이를 구분하는 것이 리포트 해석의 기본이다.",
-     "화면 표현은 **width < min**, **minimum width violation**, **narrow metal** 등으로 나오지만 모두 '폭이 최소 기준 미달'을 뜻한다.",
-     "간혹 **notch**(도형 가장자리가 살짝 파인 부분)나 짧은 돌출부에서 국소적으로 폭이 줄어 WIDTH 위반이 잡히기도 한다. 이때는 좌표를 확대해 어느 지점인지 확인한다.",
-     "선폭이 규칙보다 얇으면 실제 공정에서 그 부분이 끊기거나(**open**) 저항이 급격히 커져 신호가 약해질 수 있다. 즉 '얇음 = 끊길 위험'이다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "error 와 warning — 심각도 읽기",
-    "intro": "모든 위반이 같은 무게는 아니다. 영어 심각도 표시를 정확히 구분해야 한다.",
-    "paras": [
-     "**error**는 반드시 수정해야 하는 규칙 위반이다. error가 남아 있으면 다음 공정(테이프아웃, 마스크 제작)으로 넘길 수 없다. 화면에서 보통 빨간색으로 표시된다.",
-     "**warning**은 규칙을 어긴 것은 아니지만 확인이 필요한 항목이다. 예: 권장 간격 미달, 예외 규칙 적용 구간. 보통 노란색이며 '검토 후 판단'을 뜻한다.",
-     "리포트 요약 줄은 대개 `Errors: 18  Warnings: 2  Info: 5` 형태다. **Info**(정보)는 조치가 아니라 참고용 메시지다.",
-     "현장 판단 원칙: **error = must fix**, **warning = review**, **info = note**. 이 세 단계를 혼동하면 멀쩡한 설계를 붙잡거나 위험한 위반을 방치하게 된다.",
-     "일부 장비는 심각도를 **severity: high / medium / low** 나 **critical / minor**로도 표기한다. 색과 단어를 함께 보고 우선순위를 정한다."
-    ]
-   },
-   {
-    "type": "read",
-    "title": "DRC 리포트와 HMI 화면 읽기",
-    "intro": "텍스트 리포트의 구조와, 그것이 화면 위에 어떻게 그려지는지 연결한다.",
-    "paras": [
-     "리포트 한 줄의 전형적 구조: **[severity] rule_name : description @ (x, y) layer**. 예: `ERROR SP1.2 : insufficient spacing (0.11 < 0.14) @ (12.40, 8.66) METAL1`.",
-     "**rule_name / rule ID** (예: SP1.2, W3.1)는 어떤 규칙을 어겼는지 가리키는 코드다. SP는 spacing, W는 width 계열임을 관례적으로 알 수 있다.",
-     "괄호 안의 좌표 **(x, y)**는 위반이 발생한 정확한 위치다. HMI에서 그 줄을 클릭하면 레이아웃이 해당 좌표로 **zoom to violation** 되어 붉은 마커가 보인다.",
-     "화면에서 위반은 보통 색으로 구분된다: 빨강 = **error**, 노랑 = **warning**, 표시된 도형에는 **highlight marker**가 겹쳐 그려진다. 색과 텍스트를 반드시 함께 읽는다.",
-     "상단 요약 패널의 총계(Total errors/warnings)와 하단 리스트의 개별 줄은 연결되어 있다. 총계가 0이 되어야 **DRC clean**(무결) 상태다.",
-     "리포트를 저장할 때 파일명은 흔히 `top_drc.rpt`, `drc_summary.txt` 형태다. 재검사 후에는 **before/after** 개수를 비교해 조치 효과를 확인한다."
+     "**Symptom(증상)** — 화면이나 측정에서 보이는 것. 예: \"Base pressure high\", \"Particle count increased\". 원인이 아니라 겉으로 드러난 결과다.",
+     "**Possible Cause(가능한 원인)** — 그 증상을 낼 수 있는 후보들. **possible** 이라는 말 그대로 아직 확인된 것이 아니다. 보통 흔한 것부터 위에 적는다.",
+     "**Check(확인 방법)** — 그 후보가 맞는지 가리는 검사. 예: \"Perform a helium leak check at the lid.\"",
+     "**Corrective Action(조치)** — 확인된 원인에 대한 처치. 예: \"Replace the lid O-ring.\" 확인 없이 이 칸부터 하면 멀쩡한 부품을 갈게 된다(**parts swapping**).",
+     "표 옆에는 흐름 문장이 붙기도 한다: \"**If** the leak check passes, **go to** Cause 2.\" — 10강의 조건문 그대로다."
     ],
     "figs": [
      {
-      "kind": "sticker",
-      "level": "danger",
-      "en": "DRC: NOT CLEAN",
-      "ko": "DRC 미통과"
+      "kind": "step",
+      "title": "TROUBLESHOOTING TABLE",
+      "items": [
+       [
+        "[Symptom] — what you see",
+        "증상"
+       ],
+       [
+        "[Possible Cause] — not yet confirmed",
+        "원인 후보"
+       ],
+       [
+        "[Check] — how to confirm",
+        "확인"
+       ],
+       [
+        "[Corrective Action] — only after the check",
+        "조치"
+       ]
+      ]
      }
     ]
    },
    {
     "type": "read",
-    "title": "오류 대응 워크플로우 — 현장 판단",
-    "intro": "리포트를 읽은 뒤 어떤 순서로 판단하고 움직이는지 정리한다.",
+    "title": "원인 좁히기 — 확인해서 지운다",
+    "intro": "트러블슈팅은 원인을 맞히는 일이 아니라 후보를 하나씩 지워 가는 일이다. 지울 때 쓰는 말이 정해져 있다.",
     "paras": [
-     "1단계: 요약 줄의 **Errors / Warnings** 총계를 먼저 본다. Errors가 0이 아니면 절대 다음 공정으로 보내지 않는다.",
-     "2단계: **severity**(심각도)로 정렬해 error를 위로 올리고, 같은 **rule ID**(예: SP1.2)가 반복되는지 본다. 반복 규칙은 보통 한 가지 원인에서 비롯된다.",
-     "3단계: 각 오류의 **(x, y)** 좌표로 확대해 문제 도형을 눈으로 확인하고, **measured**와 **min** 값을 비교해 얼마나 모자람는지 파악한다.",
-     "4단계: warning은 원인을 검토해 면제(**waive**) 가능한지 판단하고, 면제하려면 선임의 승인(**sign-off**)을 받는다.",
-     "5단계: 수정 후 DRC를 다시 돌려 **before/after** 개수를 비교하고, 총계가 0(**DRC clean**)이 되었는지 확인한다."
+     "확인 결과가 그 후보와 맞지 않으면 그 후보를 지운다: \"Gauge error **is ruled out**: the second gauge reads the same value.\"",
+     "확인 결과가 그 후보를 직접 보여 주면 확정이다: \"A leak **was found** at the lid O-ring with the helium detector.\"",
+     "아직 확인하지 않은 후보는 그대로 둔다(**open**). 보고서에는 지운 것과 남은 것을 모두 적는다: \"Turbo and gauge **have been ruled out**. Lid leak check **is in progress**.\"",
+     "순서도 중요하다. 쉽고 빠르고 장비를 열지 않는 확인부터 한다. 게이지 비교 → 터보 상태 → 누설 검사 → 분해 순서가 흔하다.",
+     "모든 후보가 지워졌는데 증상이 남아 있으면, 표에 없는 원인이다. 이때는 추측으로 조치하지 말고 **escalate(상부 · 장비사에 올림)** 한다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "TROUBLESHOOTING LOG — ET-05",
+      "lines": [
+       "23:10  Gauge cross-check — [RULED OUT]",
+       "23:18  Turbo speed 100% — [RULED OUT]",
+       "23:40  He leak check at lid — [IN PROGRESS]"
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "확신의 정도 — confirmed · likely · suspected · ruled out",
+    "intro": "원인 보고 문장은 원인이 무엇인지보다 먼저 얼마나 확실한지를 말해야 한다. 그 정도를 정하는 말이 네 층이다.",
+    "paras": [
+     "**확정(confirmed)** — confirmed · verified · was found · the root cause is. 직접 증거가 있다. 예: \"Root cause **confirmed**: the O-ring was cut during the last PM.\"",
+     "**가능성 높음(likely)** — most likely · probably · is consistent with · points to · suggests. 증거가 그쪽을 가리키지만 직접 확인은 아직이다.",
+     "**가능성 있음(possible)** — may · might · could · possibly · is suspected. 후보일 뿐이다. 예: \"The gauge **may** be drifting.\"",
+     "**배제(ruled out)** — ruled out · eliminated · is not the cause. 확인해서 지웠다.",
+     "9강의 조동사와 헷갈리지 마라. 규정문의 **may** 는 \"해도 된다\"(허용)였지만, 원인 보고의 **may** 는 \"~일 수도 있다\"(가능성)다. 문서의 종류가 뜻을 정한다.",
+     "한 등급 높여 쓰면(suspected → confirmed) 멀쩡한 부품을 갈고, 한 등급 낮춰 쓰면(confirmed → may) 조치가 늦어진다. **증거만큼만** 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "CERTAINTY",
+      "items": [
+       [
+        "[confirmed] / [was found]",
+        "확정"
+       ],
+       [
+        "[most likely] / [is consistent with]",
+        "가능성 높음"
+       ],
+       [
+        "[may] / [is suspected]",
+        "가능성 있음"
+       ],
+       [
+        "[ruled out] / [is not the cause]",
+        "배제"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "원인과 결과의 방향 — caused by ↔ results in",
+    "intro": "원인과 결과를 잇는 말은 화살표의 방향이 정반대인 것끼리 짝을 이룬다. 방향을 거꾸로 읽으면 원인과 증상이 뒤바뀐다.",
+    "paras": [
+     "**결과 ← 원인** 방향: **caused by · due to · because of · results from**. 예: \"The pressure rise is **caused by** a leak.\" → 원인은 leak.",
+     "**원인 → 결과** 방향: **causes · results in · leads to · so · as a result**. 예: \"A leak **results in** a pressure rise.\" → 원인은 여전히 leak.",
+     "두 문장은 같은 내용이다. **results in** 과 **results from** 은 전치사 하나 차이로 방향이 정반대다 — 가장 자주 거꾸로 읽는 짝이다.",
+     "**contribute to** 는 \"원인 중 하나다\"(유일한 원인이 아님). \"Chamber wall deposits **contributed to** the particle increase.\"",
+     "읽는 법: 연결어 앞뒤에서 **원인 쪽에 밑줄**을 긋는다. 원인이 문장 앞에 있든 뒤에 있든, 밑줄 친 쪽이 조치의 대상이다."
+    ],
+    "figs": [
+     {
+      "kind": "note",
+      "title": "DIRECTION",
+      "en": "Effect [is caused by] cause. Cause [results in] effect.",
+      "ko": "caused by 뒤가 원인 · results in 앞이 원인."
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "근본 원인과 세 가지 조치 — 5 Why · 8D",
+    "intro": "부품을 갈아서 알람이 꺼졌다고 끝이 아니다. 원인 분석 보고(8D 등)는 원인을 두 층으로, 조치를 세 층으로 나눈다.",
+    "paras": [
+     "**direct cause(직접 원인)** — 증상을 바로 만든 것. 예: O-ring 이 찢어졌다.",
+     "**root cause(근본 원인)** — 그 직접 원인이 생긴 이유. 예: 지난 PM 때 O-ring 을 끼우는 지그가 없어 손으로 끼우다 찢었다. \"Why?\"를 다섯 번쯤 물어 내려가는 방법을 **5 Why** 라고 한다.",
+     "**containment action(임시 조치)** — 피해를 막는 즉시 조치. 예: 장비 정지, 영향받은 lot 보류(hold). 8D 의 D3.",
+     "**corrective action(시정 조치)** — 직접 원인을 없앤다. 예: O-ring 교체 후 누설 검사 합격. 8D 의 D5.",
+     "**preventive action(재발 방지)** — 근본 원인을 없애 같은 일이 다시 안 생기게 한다. 예: 지그 도입, PM 절차서 수정. 8D 의 D7. 이것이 없으면 다음 PM 에 또 찢어진다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "8D (KEY STEPS)",
+      "items": [
+       [
+        "D3 [containment] — stop the damage",
+        "임시 조치"
+       ],
+       [
+        "D4 [root cause] — why it happened",
+        "근본 원인"
+       ],
+       [
+        "D5 [corrective] — remove the direct cause",
+        "시정 조치"
+       ],
+       [
+        "D7 [preventive] — stop it from recurring",
+        "재발 방지"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "SPC 관리도 읽기 — OOC 는 \"규격 밖\"이 아니다",
+    "intro": "고장 전에 이상을 잡는 것이 공정 감시다. 측정값을 시간순으로 찍은 관리도(control chart)와 그 경고 메시지(OOC)를 읽는다.",
+    "paras": [
+     "**CL(center line)** — 평소 평균. **UCL / LCL(upper / lower control limit)** — 평소의 흔들림 폭(보통 ±3σ). 공정이 \"평소대로\"인지의 경계다.",
+     "**spec limit(규격 한계)** — 제품이 합격인지의 경계. 고객·설계가 정한다. 보통 관리 한계보다 바깥에 있다.",
+     "**OOC(out of control)** — 관리 한계 규칙에 걸렸다 = **평소와 달라졌다**. 아직 규격 안(**in spec**)일 수 있다. **OOS(out of spec)** 는 규격 밖 = 불량이다. 두 말을 섞으면 안 된다.",
+     "대표 규칙(이 교재의 예시 — Western Electric · Nelson 규칙에서): ① **한 점이 UCL 또는 LCL 밖** ② **중심선 한쪽에 8점 연속(run)** ③ **6점 연속 증가 또는 감소(trend)**.",
+     "②와 ③은 한 점도 한계 밖이 아닌데 걸린다. 값이 한쪽으로 쏠리거나 계속 움직이는 것은 무언가 바뀌었다는 신호이기 때문이다 — 예: 부품 마모, 챔버 벽 침착.",
+     "OOC 가 뜨면 보통 장비를 멈추고(**inhibit**) 엔지니어가 원인을 본다. 메시지 예: \"**OOC: Rule 2 — 8 points above CL. Tool inhibited.**\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "SPC · ET-05 ETCH RATE",
+      "status": "OOC",
+      "state": "fault",
+      "rows": [
+       [
+        "CL / UCL / LCL",
+        "100 / 106 / 94 nm/min"
+       ],
+       [
+        "SPEC LIMIT",
+        "90 ~ 110 nm/min"
+       ],
+       [
+        "LAST POINT",
+        "107 nm/min",
+        "warn"
+       ]
+      ],
+      "banner": {
+       "en": "OOC: Rule 1 — 1 point beyond UCL. Tool inhibited.",
+       "ko": "관리 이탈: 규칙 1 — UCL 밖 한 점. 장비 정지.",
+       "level": "danger"
+      }
+     }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "DRC 리포트와 검증 장비 화면에서 반복되는 약어들이다.",
+    "intro": "트러블슈팅 문서와 공정 감시 화면에 나오는 약어입니다.",
     "items": [
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 — 레이아웃이 공정 규칙을 지키는지 검사"
+      "ab": "RCA",
+      "full": "Root Cause Analysis",
+      "ko": "근본 원인 분석"
      },
      {
-      "ab": "DR",
-      "full": "Design Rule",
-      "ko": "설계 규칙 — 최소 폭·간격 등 공정이 정한 규칙"
+      "ab": "8D",
+      "full": "Eight Disciplines",
+      "ko": "8단계 문제 해결 보고 양식 — D3 임시 · D5 시정 · D7 재발 방지"
      },
      {
-      "ab": "SP",
-      "full": "Spacing (rule prefix)",
-      "ko": "간격 규칙 계열을 뜻하는 규칙 ID 접두사"
+      "ab": "CAPA",
+      "full": "Corrective and Preventive Action",
+      "ko": "시정 및 재발 방지 조치"
      },
      {
-      "ab": "W",
-      "full": "Width (rule prefix)",
-      "ko": "선폭 규칙 계열을 뜻하는 규칙 ID 접두사"
+      "ab": "FDC",
+      "full": "Fault Detection and Classification",
+      "ko": "장비 센서 값으로 이상을 잡는 감시 시스템"
      },
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃과 회로도 일치 검사 (DRC와 짝을 이루는 검증)"
+      "ab": "SPC",
+      "full": "Statistical Process Control",
+      "ko": "통계적 공정 관리 — 관리도로 감시"
      },
      {
-      "ab": "GDS",
-      "full": "Graphic Data System",
-      "ko": "레이아웃 도형을 담는 표준 파일 형식 (GDSII)"
+      "ab": "CL",
+      "full": "Center Line",
+      "ko": "관리도의 중심선(평소 평균)"
      },
      {
-      "ab": "HMI",
-      "full": "Human-Machine Interface",
-      "ko": "작업자용 조작 화면"
+      "ab": "UCL / LCL",
+      "full": "Upper / Lower Control Limit",
+      "ko": "관리 상한 / 하한 — 규격 한계와 다르다"
      },
      {
-      "ab": "min",
-      "full": "minimum",
-      "ko": "최소값 — 규칙이 요구하는 하한선"
+      "ab": "OOC",
+      "full": "Out of Control",
+      "ko": "관리 이탈 — 평소와 달라짐(규격 안일 수 있음)"
+     },
+     {
+      "ab": "OOS",
+      "full": "Out of Specification",
+      "ko": "규격 이탈 — 불량"
+     },
+     {
+      "ab": "MTBF",
+      "full": "Mean Time Between Failures",
+      "ko": "평균 고장 간격 — 장비 신뢰성 지표"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) — 검사와 위반",
-    "intro": "DRC 화면에서 가장 먼저 만나는 기본 단어들이다.",
+    "title": "핵심 용어 (1) — 확신의 정도",
+    "intro": "원인 보고 문장의 확신 등급입니다. 예문마다 어느 층인지 가려 보세요.",
     "items": [
      {
-      "en": "Design Rule Check (DRC)",
-      "ko": "설계 규칙 검사",
-      "d": "레이아웃이 공정 규칙을 지키는지 자동 검사하는 단계.",
-      "ex": "Run DRC before sending the layout to the mask shop."
+      "en": "confirmed",
+      "ko": "확정된",
+      "d": "직접 증거로 확인됨",
+      "ex": "Root cause confirmed: the lid O-ring was cut during the last PM."
      },
      {
-      "en": "violation",
-      "ko": "위반(사항)",
-      "d": "규칙을 어긴 지점. 리포트의 각 오류 항목.",
-      "ex": "The report shows 15 spacing violations on METAL1."
+      "en": "was found",
+      "ko": "발견되었다",
+      "d": "검사에서 실제로 봤다 — 확정",
+      "ex": "A leak was found at the lid O-ring with the helium detector."
      },
      {
-      "en": "rule deck",
-      "ko": "규칙 세트 파일",
-      "d": "공정 규칙들을 모아둔 검사 기준 파일(runset).",
-      "ex": "Load the correct rule deck for the 28nm process."
+      "en": "most likely",
+      "ko": "가장 가능성 높은",
+      "d": "증거가 가리키지만 직접 확인 전",
+      "ex": "The leak is most likely at the lid O-ring."
      },
      {
-      "en": "clean",
-      "ko": "무결(위반 없음)",
-      "d": "오류가 하나도 없는 통과 상태.",
-      "ex": "The block is DRC clean, zero errors remaining."
+      "en": "is consistent with",
+      "ko": "~와 들어맞는다",
+      "d": "증거가 그 설명과 모순되지 않음 — 가능성 높음",
+      "ex": "The pressure trend is consistent with outgassing after the wet clean."
      },
      {
-      "en": "flag",
-      "ko": "표시하다/걸리다",
-      "d": "검사기가 위반으로 지적함.",
-      "ex": "The tool flagged three shapes as too narrow."
-     }
-    ],
-    "figs": [
+      "en": "is suspected",
+      "ko": "의심된다",
+      "d": "후보일 뿐 — 가능성 있음",
+      "ex": "The chamber liner is suspected as the particle source."
+     },
      {
-      "kind": "log",
-      "title": "DRC RESULTS",
-      "lines": [
-       "SPACING violation: [15 errors]",
-       "WIDTH violation: [3 errors]",
-       "[2 warnings]",
-       "→ insufficient spacing (min 0.14um)"
-      ],
-      "cap": "검사 결과 창 — 붉은 줄을 하나씩 해독한다."
+      "en": "ruled out",
+      "ko": "배제된",
+      "d": "확인해서 원인이 아님",
+      "ex": "Turbo pump degradation has been ruled out."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — DRC 검사",
-    "app": "DRC Studio",
-    "doc": "chip_top",
-    "run": "Run",
-    "canvas": "drc",
-    "left": {
-     "title": "Violations",
-     "items": [
-      {
-       "name": "SPACING x15",
-       "color": "#e05a4a"
-      },
-      {
-       "name": "WIDTH x3",
-       "color": "#e05a4a"
-      },
-      {
-       "name": "WARN x2",
-       "color": "#e0a83a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 확신의 정도",
+    "intro": "보고 문장의 확신 등급을 판단하세요.",
+    "questions": [
+     {
+      "prompt": "교대 보고: 'The leak is most likely at the lid O-ring.' 다음 사람이 할 일은?",
+      "opts": [
+       "O-ring 을 바로 교체한다 — 확정이다",
+       "누설 검사로 확인한다 — 가능성이 높을 뿐 확정 전이다",
+       "아무것도 안 한다 — 배제되었다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'Turbo pump degradation has been ruled out.' 의 뜻은?",
+      "opts": [
+       "터보 펌프는 확인 결과 원인이 아니다",
+       "터보 펌프가 원인으로 확정되었다",
+       "터보 펌프가 원인일 수도 있다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "원인 보고서의 'The gauge may be drifting.' 에서 may 는?",
+      "opts": [
+       "허용 — 게이지가 움직여도 된다",
+       "의무 — 게이지를 움직여야 한다",
+       "가능성 — 게이지가 틀어졌을 수도 있다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 원인과 결과",
+    "intro": "화살표 방향을 정하는 연결어입니다. 원인 쪽에 밑줄을 그어 보세요.",
+    "items": [
+     {
+      "en": "caused by",
+      "ko": "~에 의해 생긴",
+      "d": "뒤가 원인 (결과 ← 원인)",
+      "ex": "The pressure rise was caused by a cut O-ring."
+     },
+     {
+      "en": "due to",
+      "ko": "~때문에",
+      "d": "뒤가 원인",
+      "ex": "The run was aborted due to an endpoint timeout."
+     },
+     {
+      "en": "results in",
+      "ko": "~을 낳는다",
+      "d": "앞이 원인 (원인 → 결과)",
+      "ex": "A low sweep rate results in pad glazing."
+     },
+     {
+      "en": "results from",
+      "ko": "~에서 생긴다",
+      "d": "뒤가 원인 — results in 과 반대 방향",
+      "ex": "Pad glazing results from a low conditioner sweep rate."
+     },
+     {
+      "en": "leads to",
+      "ko": "~로 이어진다",
+      "d": "앞이 원인",
+      "ex": "Polymer buildup on the wall leads to particle flakes."
+     },
+     {
+      "en": "contribute to",
+      "ko": "~의 한 원인이 되다",
+      "d": "여러 원인 중 하나",
+      "ex": "Chamber wall deposits contributed to the particle increase."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 트러블슈팅 표",
+    "doc": {
+     "name": "ET-05 MAINTENANCE MANUAL — TROUBLESHOOTING",
+     "no": "MM-0505",
+     "rev": "D"
     },
-    "log": [
-     "> run DRC on chip_top",
-     "> DRC finished: 18 errors, 2 warnings",
-     "> result: NOT CLEAN"
+    "heading": "Symptom: BASE PRESSURE HIGH (교재 예시)",
+    "cols": [
+     "#",
+     "POSSIBLE CAUSE",
+     "CHECK",
+     "IF CONFIRMED (CORRECTIVE ACTION)"
     ],
-    "status": "Errors: 18   Warnings: 2   Marker: M1.S.1",
+    "rows": [
+     [
+      "1",
+      "Gauge error or drift",
+      "Compare with the second gauge.",
+      "Calibrate or replace the gauge."
+     ],
+     [
+      "2",
+      "Turbo pump degraded",
+      "Check turbo speed and foreline pressure.",
+      "Replace the turbo pump."
+     ],
+     [
+      "3",
+      "Outgassing after wet clean",
+      "Clean within 12 h and rate of rise decreasing?",
+      "Continue pumping; recheck in 4 h."
+     ],
+     [
+      "4",
+      "Vacuum leak at the lid O-ring",
+      "Perform a helium leak check at the lid.",
+      "Replace the O-ring; retest."
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Check the causes in this order. Do not replace any part until its cause is confirmed."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 표로 좁히기",
+    "intro": "위 트러블슈팅 표 MM-0505 를 근거로 판단하세요.",
+    "questions": [
+     {
+      "prompt": "두 번째 게이지도 같은 값(4.2E-5 Torr)을 읽는다. 1번 원인(gauge error)은?",
+      "opts": [
+       "확정이다",
+       "아직 열려 있다",
+       "배제한다 — 두 게이지가 같으면 게이지 오차가 아니다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "세정(wet clean)은 3일 전이었다. 3번 원인(outgassing)은?",
+      "opts": [
+       "배제한다 — 12시간 기준을 한참 넘었다",
+       "확정이다",
+       "가장 가능성이 높다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "1~3번이 모두 배제되었다. 'Do not replace any part until its cause is confirmed.' 다음 할 일은?",
+      "opts": [
+       "O-ring 을 바로 교체한다",
+       "4번 확인(헬륨 누설 검사)을 한다",
+       "터보 펌프를 교체한다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 원인 분석과 조치",
+    "intro": "원인 분석 보고(8D · CAPA)에서 쓰는 말입니다.",
+    "items": [
+     {
+      "en": "direct cause",
+      "ko": "직접 원인",
+      "d": "증상을 바로 만든 것",
+      "ex": "The direct cause was a cut O-ring at the lid."
+     },
+     {
+      "en": "root cause",
+      "ko": "근본 원인",
+      "d": "직접 원인이 생긴 이유 — 5 Why 로 찾는다",
+      "ex": "The root cause was the lack of an O-ring install jig during PM."
+     },
+     {
+      "en": "containment action",
+      "ko": "임시 조치",
+      "d": "피해를 막는 즉시 조치 (D3)",
+      "ex": "As a containment action, the tool was inhibited and two lots were put on hold."
+     },
+     {
+      "en": "corrective action",
+      "ko": "시정 조치",
+      "d": "직접 원인을 없앤다 (D5)",
+      "ex": "Corrective action: the O-ring was replaced and the leak check passed."
+     },
+     {
+      "en": "preventive action",
+      "ko": "재발 방지 조치",
+      "d": "근본 원인을 없앤다 (D7)",
+      "ex": "Preventive action: an install jig was added to the PM procedure."
+     },
+     {
+      "en": "escalate",
+      "ko": "상부에 올리다",
+      "d": "내 선에서 못 풀 때 엔지니어 · 장비사로",
+      "ex": "If all causes are ruled out, escalate to the vendor."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 원인 분석 요약 메일",
+    "from": "Junho Lee <junho.lee@fab.example>",
+    "to": "Etch Equipment Team <etch-eq@fab.example>",
+    "subject": "ET-05 base pressure high — RCA summary",
+    "lines": [
+     "Hi all,",
+     "Symptom: Base pressure was 4.2E-5 Torr against a limit of 1.0E-5 Torr at 23:05.",
+     "Checks: Gauge error and turbo degradation were [ruled out]. A leak [was found] at the lid O-ring with the helium detector.",
+     "Direct cause: The O-ring was cut. It was [most likely] damaged during the PM on Nov 3, because it was installed by hand.",
+     "Containment: ET-05 was inhibited, and lots 2417 and 2418 are on hold.",
+     "Corrective action: The O-ring was replaced. Base pressure recovered to 6.0E-6 Torr.",
+     "Preventive action (proposed): Add an install jig to the PM procedure. The root cause is not yet [confirmed]."
+    ],
+    "sign": "Thanks, Junho (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 보고서 읽기",
+    "intro": "위 원인 분석 요약 메일을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "메일에서 '확정'으로 쓴 것은?",
+      "opts": [
+       "O-ring 이 PM 때 손상되었다는 것",
+       "근본 원인(지그가 없었다는 것)",
+       "덮개 O-ring 에서 누설이 발견되었다는 것"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'lots 2417 and 2418 are on hold' 는 8D 의 어느 조치인가?",
+      "opts": [
+       "임시 조치(containment)",
+       "시정 조치(corrective)",
+       "재발 방지(preventive)"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "'The root cause is not yet confirmed.' 를 읽은 엔지니어가 할 일은?",
+      "opts": [
+       "보고를 닫는다 — 부품을 갈았으니 끝이다",
+       "근본 원인 확인을 계속하고 재발 방지를 확정한다",
+       "O-ring 을 한 번 더 간다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 공정 감시(SPC · FDC)",
+    "intro": "관리도와 감시 화면의 말입니다. 관리 한계와 규격 한계를 구분하세요.",
+    "items": [
+     {
+      "en": "control limit",
+      "ko": "관리 한계 (UCL · LCL)",
+      "d": "평소의 흔들림 폭 — 공정이 \"평소대로\"인지의 경계",
+      "ex": "The point at 107 nm/min is above the upper control limit of 106."
+     },
+     {
+      "en": "spec limit",
+      "ko": "규격 한계",
+      "d": "제품 합격의 경계 — 보통 관리 한계보다 바깥",
+      "ex": "The same point is still within the spec limit of 110 nm/min."
+     },
+     {
+      "en": "out of control (OOC)",
+      "ko": "관리 이탈",
+      "d": "평소와 달라짐 — 규격 안일 수 있다",
+      "ex": "An OOC point does not always mean the wafer is bad."
+     },
+     {
+      "en": "run",
+      "ko": "연속(한쪽 쏠림)",
+      "d": "중심선 한쪽에 여러 점이 연속",
+      "ex": "Eight points in a run above the center line trigger Rule 2."
+     },
+     {
+      "en": "trend",
+      "ko": "추세",
+      "d": "계속 오르거나 내림",
+      "ex": "Six points steadily increasing indicate a trend, such as wear."
+     },
+     {
+      "en": "inhibit",
+      "ko": "(장비 사용을) 막다",
+      "d": "OOC 뒤 엔지니어 확인 전까지 정지",
+      "ex": "The tool is inhibited until the engineer reviews the chart."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — OOC 대응 절차",
+    "doc": {
+     "name": "SPC Response Procedure",
+     "no": "SOP-QA-044",
+     "sec": "3",
+     "rev": "C",
+     "page": "3-1"
+    },
+    "heading": "3  Responding to an OOC Alarm",
+    "steps": [
+     "When an OOC alarm occurs, the tool is inhibited automatically.",
+     {
+      "t": "Check which rule was triggered: Rule 1 (beyond a control limit), Rule 2 (run of 8), or Rule 3 (trend of 6).",
+      "note": {
+       "kind": "note",
+       "en": "An OOC point may still be within the spec limit."
+      }
+     },
+     {
+      "t": "If the point is also out of spec (OOS), put the affected lots on hold.",
+      "note": {
+       "kind": "caution",
+       "en": "OOC and OOS are different. Do not scrap wafers for OOC alone."
+      }
+     },
+     "Investigate the cause using the troubleshooting guide and the FDC data.",
+     "Release the tool only after the cause is confirmed or the engineer approves."
+    ],
+    "callout": {
+     "kind": "warning",
+     "en": "Do not clear an OOC alarm without recording the cause."
+    },
     "gloss": [
      [
-      "Run",
-      "실행"
+      "triggered",
+      "(규칙에) 걸린"
      ],
      [
-      "Violation",
-      "규칙 위반"
+      "scrap",
+      "폐기하다"
      ],
      [
-      "Marker",
-      "오류 표시"
+      "investigate",
+      "조사하다"
      ],
      [
-      "error / warning",
-      "오류 / 경고"
-     ],
-     [
-      "NOT CLEAN",
-      "미통과"
+      "release",
+      "(정지를) 풀다"
      ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "화면 문구의 의미를 고르시오.",
+    "title": "확인 퀴즈 (4) — OOC 와 OOS",
+    "intro": "관리도와 OOC 대응 절차 SOP-QA-044 를 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "화면에 'DRC clean, 0 errors' 라고 떴다. 무슨 뜻인가?",
+      "prompt": "식각 속도 107 nm/min. UCL 106, 규격 90~110. 이 점은?",
       "opts": [
-       "규칙 위반이 하나도 없어 통과했다",
-       "검사를 아직 시작하지 않았다",
-       "오류가 너무 많아 검사가 멈췄다"
+       "OOC 이면서 OOS — 불량이다",
+       "OOC 지만 규격 안 — 평소와 달라진 신호다",
+       "정상 — 아무 일도 아니다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "'Do not scrap wafers for OOC alone.' 의 뜻은?",
+      "opts": [
+       "관리 이탈만으로 웨이퍼를 폐기하지 마라",
+       "OOC 면 웨이퍼를 폐기하라",
+       "OOC 를 기록하지 마라"
       ],
       "ans": 0
      },
      {
-      "prompt": "'The tool flagged three shapes.' 에서 flagged의 의미는?",
+      "prompt": "8점 연속 중심선 위, 한 점도 UCL 밖은 아니다. 어떻게 읽나?",
       "opts": [
-       "세 도형을 삭제했다",
-       "세 도형을 위반으로 표시했다",
-       "세 도형을 저장했다"
+       "정상 — 한계 밖이 없으니 문제없다",
+       "규격 이탈이다",
+       "Rule 2(run) 에 걸린 OOC — 공정이 한쪽으로 쏠렸다"
       ],
-      "ans": 1
-     },
-     {
-      "prompt": "리포트에 'Loaded rule deck: N28_M1.drc' 가 보인다. 이 줄이 알려주는 것은?",
-      "opts": [
-       "오류의 좌표",
-       "사용된 검사 규칙 세트",
-       "웨이퍼 온도"
-      ],
-      "ans": 1
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) — 간격과 폭",
-    "intro": "SPACING과 WIDTH 위반을 읽는 데 꼭 필요한 단어들이다.",
-    "items": [
-     {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "두 도형 사이의 거리.",
-      "ex": "Increase the spacing between these two metal lines."
-     },
-     {
-      "en": "minimum spacing",
-      "ko": "최소 간격",
-      "d": "규칙이 허용하는 가장 가까운 거리.",
-      "ex": "This gap is below the minimum spacing of 0.14um."
-     },
-     {
-      "en": "insufficient spacing",
-      "ko": "간격 부족",
-      "d": "간격이 최소 기준에 못 미치는 상태.",
-      "ex": "Error: insufficient spacing between contacts."
-     },
-     {
-      "en": "width",
-      "ko": "폭/선폭",
-      "d": "한 도형의 안쪽 폭.",
-      "ex": "The measured width is 0.08um, below the limit."
-     },
-     {
-      "en": "minimum width",
-      "ko": "최소 선폭",
-      "d": "도형이 가질 수 있는 가장 작은 폭.",
-      "ex": "Any line thinner than the minimum width will be flagged."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "다음 영어 오류 메시지의 뜻을 고르시오.",
-    "questions": [
-     {
-      "prompt": "'SPACING violation: insufficient spacing (0.10 < 0.14)' 의 의미는?",
-      "opts": [
-       "선폭이 규칙보다 넓다",
-       "두 도형 사이 간격이 최소 기준보다 좁다",
-       "온도가 너무 낮다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'metal width below minimum (0.08um, min 0.10um)' 은 무엇을 말하는가?",
-      "opts": [
-       "금속 선의 폭이 최소 기준보다 얇다",
-       "금속 선의 간격이 넓다",
-       "금속층이 누락되었다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "리포트 한 줄에 'measured 0.11, required 0.14' 가 있다. 위반인가?",
-      "opts": [
-       "아니다, measured가 더 크다",
-       "그렇다, measured가 required보다 작다",
-       "알 수 없다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "WIDTH violation과 SPACING violation의 차이는?",
-      "opts": [
-       "WIDTH는 한 도형의 폭, SPACING은 도형 사이 거리",
-       "둘은 완전히 같은 말이다",
-       "WIDTH는 온도, SPACING은 압력"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) — 심각도와 리포트",
-    "intro": "리포트의 심각도와 위치 정보를 읽는 단어들이다.",
-    "items": [
-     {
-      "en": "error",
-      "ko": "오류(필수 수정)",
-      "d": "반드시 고쳐야 하는 규칙 위반.",
-      "ex": "You must fix every error before tape-out."
-     },
-     {
-      "en": "warning",
-      "ko": "경고(검토 필요)",
-      "d": "위반은 아니나 확인이 필요한 항목.",
-      "ex": "This warning can be waived after review."
-     },
-     {
-      "en": "severity",
-      "ko": "심각도",
-      "d": "위반의 중요도 등급(high/low 등).",
-      "ex": "Sort the results by severity, highest first."
-     },
-     {
-      "en": "coordinate",
-      "ko": "좌표",
-      "d": "위반이 난 위치를 나타내는 (x, y) 값.",
-      "ex": "Double-click the coordinate to zoom to the violation."
-     },
-     {
-      "en": "layer",
-      "ko": "레이어(층)",
-      "d": "위반이 발생한 마스크 층 이름.",
-      "ex": "The violation is on layer METAL1."
-     },
-     {
-      "en": "highlight marker",
-      "ko": "강조 표시",
-      "d": "레이아웃 위에 위반 위치를 색으로 겹쳐 표시한 것.",
-      "ex": "The red highlight marker shows where the lines are too close."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "MESSAGE",
-      "en": "[error] = must fix.   [warning] = check.",
-      "ko": "error=반드시 수정, warning=확인 필요."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "심각도와 대응을 판단하시오.",
-    "questions": [
-     {
-      "prompt": "요약에 'Errors: 4  Warnings: 2' 가 보인다. 다음 공정으로 넘어가려면?",
-      "opts": [
-       "warning 2개만 지우면 된다",
-       "error 4개를 모두 수정해야 한다",
-       "아무것도 안 해도 된다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'This warning can be waived after review.' 의 뜻은?",
-      "opts": [
-       "이 경고는 무조건 오류다",
-       "검토 후 이 경고는 예외 처리(면제)될 수 있다",
-       "이 경고는 자동 삭제된다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'@ (12.40, 8.66) METAL1' 이 알려주는 것 두 가지는?",
-      "opts": [
-       "위반의 좌표와 레이어",
-       "온도와 압력",
-       "규칙 파일명과 날짜"
-      ],
-      "ans": 0
+      "ans": 2
      }
     ]
    },
    {
     "type": "manual",
-    "mtitle": "DRC RESULTS REPORT (excerpt)",
+    "mtitle": "TROUBLESHOOTING REPORT — WRITE ONLY WHAT YOU KNOW",
     "paras": [
-     "SUMMARY: Errors: 18   Warnings: 2   Info: 5   Status: NOT CLEAN",
-     "요약 줄: 오류 18, 경고 2, 정보 5, 상태는 '무결 아님(NOT CLEAN)'. error가 남아 있으므로 통과가 아니다.",
-     "ERROR  SP1.2 : insufficient spacing (measured 0.11, required 0.14) @ (12.40, 8.66) METAL1",
-     "오류 SP1.2: 간격 부족. 측정 0.11 < 요구 0.14, 위치 (12.40, 8.66), 레이어 METAL1. 반드시 수정.",
-     "ERROR  W3.1 : metal width below minimum (measured 0.08, min 0.10) @ (30.15, 4.02) METAL2",
-     "오류 W3.1: 선폭이 최소 미달. 측정 0.08 < 최소 0.10, 위치 (30.15, 4.02), 레이어 METAL2.",
-     "WARNING  SP2.0 : recommended spacing not met (0.16 < 0.18); may be waived after review",
-     "경고 SP2.0: 권장 간격 미달(0.16 < 0.18). 규칙 위반은 아니며 검토 후 예외 처리 가능."
+     "A leak at the lid O-ring is suspected. A helium leak check is in progress.",
+     "해설: 확인 전 보고 — is suspected(가능성 있음) + in progress(진행 중). \"O-ring leak\" 이라고만 쓰면 확정처럼 읽힌다.",
+     "A leak was found at the lid O-ring. The O-ring was replaced, and the leak check passed.",
+     "해설: 확인 뒤 보고 — was found(확정) + 조치 + 조치의 결과(passed). 조치가 효과가 있었는지까지 쓴다.",
+     "The particle increase is most likely caused by polymer flakes from the chamber wall.",
+     "해설: most likely(가능성 높음) + caused by(뒤가 원인). 원인 = 챔버 벽의 폴리머 조각. 아직 확정은 아니다.",
+     "Gauge error has been ruled out: the second gauge reads the same value.",
+     "해설: ruled out(배제) + 근거(콜론 뒤). 배제한 이유를 함께 적어야 다음 사람이 같은 확인을 반복하지 않는다."
     ]
    },
    {
     "type": "manual",
-    "mtitle": "OPERATING PROCEDURE — REVIEWING DRC ERRORS",
+    "mtitle": "SPC RULES FOR THIS COURSE (교재 예시)",
     "paras": [
-     "1. Open the DRC results and check the SUMMARY line for the total error and warning count.",
-     "1. DRC 결과를 열고 요약 줄에서 오류·경고 총 개수를 먼저 확인한다.",
-     "2. Sort the results by severity so that all ERROR items appear at the top of the list.",
-     "2. 심각도 순으로 정렬해 모든 ERROR 항목이 목록 위쪽에 오도록 한다.",
-     "3. Double-click each error to zoom to its coordinate; the violating shapes are shown with a red highlight marker.",
-     "3. 각 오류를 더블클릭해 좌표로 확대한다. 위반 도형은 빨간 강조 표시로 나타난다.",
-     "NOTE: Do NOT proceed to tape-out while any ERROR remains. Warnings must be reviewed but may be waived with sign-off.",
-     "주의: ERROR가 하나라도 남아 있으면 테이프아웃으로 진행하지 말 것. 경고는 검토 대상이며 승인 시 면제 가능.",
-     "WARNING: Loading the wrong rule deck will report false results. Always confirm the process node before running DRC.",
-     "경고: 잘못된 규칙 세트를 불러오면 결과가 틀린다. DRC 실행 전 반드시 공정 노드를 확인한다."
+     "Rule 1: One point beyond the upper or lower control limit.",
+     "해설: UCL 또는 LCL 밖 한 점. 갑작스러운 변화 — 예: 부품 고장, 잘못된 레시피.",
+     "Rule 2: Eight points in a row on one side of the center line.",
+     "해설: 중심선 한쪽에 8점 연속. 평균이 옮겨 갔다 — 예: 세정 뒤 챔버 조건 변화.",
+     "Rule 3: Six points in a row steadily increasing or decreasing.",
+     "해설: 6점 연속 증가 또는 감소. 천천히 변하는 것 — 예: 부품 마모, 벽 침착.",
+     "An OOC point is a signal to investigate, not proof of a bad wafer.",
+     "해설: OOC 는 조사하라는 신호이지 불량의 증거가 아니다. 불량 판정은 규격(spec)으로 한다."
     ]
    },
    {
     "type": "sim",
-    "which": "layer",
-    "mode": "layerColor",
-    "intro": "먼저 레이어(층)의 개념을 익힙니다. DRC 위반은 항상 'METAL1', 'METAL2' 같은 특정 layer에서 발생합니다. 아래 인터랙티브 화면에서 각 레이어를 켜고 끄며 도형이 어느 층에 있는지, 리포트의 layer 이름과 화면 색이 어떻게 대응되는지 확인하세요."
+    "which": "trouble",
+    "mode": "certainty",
+    "intro": "먼저 **확신 등급** 실습입니다. 교대 보고와 원인 분석 보고서에서 뽑은 문장을 읽고 **확정(confirmed) · 가능성 높음(likely) · 가능성 있음(possible) · 배제(ruled out)** 중 하나를 고르세요. 판단의 근거는 문장 속 **확신 표현** 하나입니다."
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "counts",
-    "intro": "이제 실제 DRC 검사를 실행해 봅니다. 아래 시뮬레이터에서 도형의 간격과 폭을 조정하며 검사를 돌리고, 화면에 뜨는 SPACING violation / WIDTH violation 메시지와 error/warning 개수를 읽어 보세요. measured 값과 min 값을 비교해 왜 위반이 났는지 스스로 판단하는 것이 목표입니다."
+    "which": "trouble",
+    "mode": "narrow",
+    "intro": "다음은 **원인 좁히기** 실습입니다. BASE PRESSURE HIGH 의 트러블슈팅 표(교재 예시)와 지금까지의 확인 결과가 나옵니다. 후보마다 **배제 · 확정 · 미확인** 을 따져, 증거가 가리키는 원인을 고르세요. 증거가 모자라면 **\"확인이 더 필요하다\"** 가 답입니다."
+   },
+   {
+    "type": "sim",
+    "which": "trouble",
+    "mode": "spc",
+    "intro": "마지막은 **관리도 규칙** 실습입니다. 식각 속도 관리도(CL 100 · UCL 106 · LCL 94, 규격 90~110)를 보고, 어느 규칙에 걸렸는지 고르세요: **이상 없음 · Rule 1(한계 밖) · Rule 2(8점 쏠림) · Rule 3(6점 추세)**. 그리고 그 점이 **규격 안인지**도 함께 보세요."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "해외 엔지니어가 방금 나온 DRC 리포트를 함께 보며 상태를 묻는다.",
+      "sit": "해외 엔지니어가 원인이 확정인지 묻는다",
       "q": {
-       "en": "Is the block clean, or do we still have errors?",
-       "ko": "이 블록 무결 상태예요, 아니면 아직 오류가 남았나요?"
+       "en": "Is the O-ring leak confirmed, or only suspected?",
+       "ko": "O-ring 누설이 확정이에요, 아니면 의심만 하는 거예요?"
       },
       "a": {
-       "en": "Not clean yet. There are 18 errors, mostly spacing violations on METAL1.",
-       "ko": "아직 무결 아니에요. 오류가 18개고, 대부분 METAL1의 간격 위반입니다."
+       "en": "It is only suspected for now. We ruled out the gauge and the turbo, and the helium leak check is in progress. I will update you in 20 minutes.",
+       "ko": "지금은 의심 단계입니다. 게이지와 터보는 배제했고, 헬륨 누설 검사를 진행 중입니다. 20분 뒤에 다시 알려 드리겠습니다."
       }
      },
      {
-      "sit": "엔지니어가 특정 오류의 원인을 확인하려 한다.",
+      "sit": "원인과 조치를 한 번에 보고한다",
       "q": {
-       "en": "This one says 'insufficient spacing, 0.11 versus 0.14'. What does that mean here?",
-       "ko": "이건 'insufficient spacing, 0.11 대 0.14'라고 나오는데, 여기서 무슨 뜻이죠?"
+       "en": "What was the cause, and what did you do?",
+       "ko": "원인이 뭐였고, 무엇을 했어요?"
       },
       "a": {
-       "en": "The two metal lines are 0.11 micron apart, but the minimum spacing is 0.14. It is too close.",
-       "ko": "두 금속 배선 간격이 0.11um인데 최소 간격은 0.14예요. 너무 가깝습니다."
+       "en": "A leak was found at the lid O-ring. It was cut, most likely during the last PM. We replaced it, and the base pressure is back to 6.0E-6 Torr. Two lots are on hold until you review them.",
+       "ko": "덮개 O-ring 에서 누설이 발견됐습니다. 찢어져 있었고, 아마 지난 PM 때 손상된 것 같습니다. 교체했고 도달 진공도는 6.0E-6 Torr 로 돌아왔습니다. 두 lot 은 검토하실 때까지 보류해 두었습니다."
       }
      },
      {
-      "sit": "노란색 경고 항목을 어떻게 처리할지 상의한다.",
+      "sit": "OOC 알람을 보고한다",
       "q": {
-       "en": "And the two yellow warnings — do we have to fix them before tape-out?",
-       "ko": "그리고 노란 경고 두 개는요, 테이프아웃 전에 꼭 고쳐야 하나요?"
+       "en": "The SPC chart shows an OOC. Are the wafers bad?",
+       "ko": "SPC 관리도에 OOC 가 떴네요. 웨이퍼가 불량인가요?"
       },
       "a": {
-       "en": "No, those are warnings, not errors. We can waive them after a review and sign-off.",
-       "ko": "아니요, 그건 경고지 오류가 아니에요. 검토와 승인 후 면제할 수 있습니다."
+       "en": "Not necessarily. It is a Rule 2 OOC, eight points above the center line, but all points are within spec. The tool is inhibited, and I am checking the FDC data for a cause.",
+       "ko": "꼭 그렇지는 않습니다. 중심선 위 8점 연속인 Rule 2 OOC 이지만 모든 점이 규격 안입니다. 장비는 정지해 두었고, FDC 데이터에서 원인을 찾고 있습니다."
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 증거만큼만 쓴다",
     "points": [
-     "**DRC (Design Rule Check)**는 레이아웃이 공정 규칙(최소 폭·간격)을 지키는지 검사하고, 위반을 **violation**으로 표시한다.",
-     "**SPACING violation** = 도형 사이 간격이 **minimum spacing**보다 좁음(**insufficient spacing**). **WIDTH violation** = 도형 폭이 **minimum width**보다 얇음.",
-     "리포트 판단은 **measured vs required/min** 비교로 한다: measured가 min보다 작으면 위반.",
-     "심각도: **error = 반드시 수정**, **warning = 검토 후 판단(면제 가능)**, **info = 참고**. **clean**은 오류 0인 통과 상태.",
-     "리포트 한 줄 = [severity] rule_ID : description @ (x, y) layer. 좌표와 layer로 화면의 **highlight marker** 위치를 찾는다."
+     "트러블슈팅 표: **Symptom → Possible Cause → Check → Corrective Action**. 확인 없이 조치하면 **parts swapping**.",
+     "확신 네 층: **confirmed · was found** / **most likely · is consistent with** / **may · is suspected** / **ruled out**. 원인 보고의 may 는 허용이 아니라 **가능성**이다.",
+     "방향: **caused by · due to · results from** 은 뒤가 원인, **results in · leads to** 는 앞이 원인.",
+     "원인 두 층(**direct · root**), 조치 세 층(**containment · corrective · preventive**).",
+     "관리도: **OOC 는 평소와 달라졌다는 신호**, **OOS 는 불량**. 한계 밖이 아니어도 **run · trend** 로 OOC 가 된다."
     ],
-    "done": "이제 붉은 줄이 뜬 DRC 화면을 보고 **무엇이, 어디서, 얼마나 심각하게** 위반됐는지 영어 그대로 읽어낼 수 있습니다. **error는 반드시 고치고, warning은 검토하라** — 이것이 현장 판단의 기본입니다.",
+    "done": "이제 여러분은 트러블슈팅 문서를 읽고 **원인을 확인으로 좁히고**, 보고서에 **어디까지 확인했는지**를 영어로 정확히 적을 수 있습니다. **Write only what you know.**",
     "figs": [
      {
-      "kind": "alarm",
-      "level": "danger",
-      "code": "DRC",
-      "en": "18 ERRORS FOUND",
-      "ko": "DRC 오류 18건"
+      "kind": "step",
+      "title": "REPORT A CAUSE",
+      "items": [
+       [
+        "State the [symptom].",
+        "증상"
+       ],
+       [
+        "Say how [certain] you are.",
+        "확신의 정도"
+       ],
+       [
+        "Give the [evidence].",
+        "근거"
+       ],
+       [
+        "Say what is [next].",
+        "다음 할 일"
+       ]
+      ]
      }
     ]
    }
@@ -7144,465 +8263,726 @@ export const CONTENT_CHAPTERS = [
  },
  {
   "id": "w13",
-  "title": "LVS 검증",
+  "title": "벤더 · 서비스 엔지니어와 소통 — 티켓 · 통화 · 메일",
   "slides": [
    {
     "type": "story",
-    "icon": "🔍",
-    "title": "도면과 실제가 다르면?",
-    "text": "야간 근무 중 후배 기술자가 화면을 보다가 당신을 부릅니다. 검증 리포트 맨 위에 빨간 글씨로 **LVS FAILED** 라고 떠 있습니다. 그 아래에는 **1 mismatch, 2 missing devices, 1 short**. 후배가 묻습니다. \"선배님, 이거 레이아웃을 잘못 그린 건가요, 아니면 회로도가 틀린 건가요?\" 당신은 침착하게 설명합니다. **LVS(Layout Versus Schematic)** 는 설계자가 그린 **schematic**(회로도)과 실제로 그려진 **layout**(레이아웃)이 전기적으로 똑같은지를 자동으로 비교하는 검증입니다. 두 개를 각각 **netlist**(넷리스트)로 뽑아서 소자 하나하나, 연결선 하나하나를 대조합니다. **match** 가 뜨면 통과, **mismatch** 가 뜨면 어딘가 다르다는 뜻이죠. 현장에서 우리가 읽어야 할 것은 바로 이 영문 리포트입니다. 어느 소자가 빠졌는지(**missing**), 어디가 붙어버렸는지(**short**), 어디가 끊어졌는지(**open**) — 영어 한 줄을 정확히 읽어내는 것이 오늘의 목표입니다.",
-    "art": "lvs"
+    "icon": "📞",
+    "title": "\"Did you say fifteen or fifty?\"",
+    "text": "새벽 3시. 지수는 장비사 원격 지원 창구와 통화 중이다. 상대는 미국에 있는 지원 엔지니어. 잡음 섞인 목소리가 들린다. \"**Set the reflected power limit to fifteen watts, then restart the match.**\" 지수는 50 을 입력하려다 손을 멈춘다. fifteen 이었나, fifty 였나? 영어에서 teen 과 ty 는 끝소리만 다르다. 지수가 말한다. \"**Sorry, did you say fifteen or fifty?**\" \"Fifteen — **one-five**.\" 지수가 다시 읽어 준다. \"**Let me read that back: reflected power limit, one-five watts, then restart the match.**\" \"That's correct.\" 통화 끝에 엔지니어가 교체 부품 번호를 불러 준다. \"K X four zero seven one B.\" 지수는 받아 적고 한 번 더 확인한다. \"**Kilo X-ray, four zero seven one, Bravo?**\" B 를 D 로 적었다면 다른 부품이 3주 뒤에 도착했을 것이다. 통화의 영어는 유창함이 아니라 **틀리지 않게 확인하는 기술**이다.",
+    "figs": [
+     {
+      "kind": "note",
+      "title": "READ BACK",
+      "en": "Let me read that back: one-five watts.",
+      "ko": "다시 읽어 드릴게요: 일-오(15) 와트."
+     }
+    ]
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
-    "where": "검증 데스크. 회로도와 레이아웃을 나란히 띄워 둔 화면 앞.",
-    "tool": "LVS(Layout Versus Schematic) 리포트와 넷리스트 비교.",
-    "situation": "도면과 실제가 다르다는 mismatch가 떴다.",
+    "where": "새벽의 장비 앞 — 장비사 지원 포털(티켓 화면), 헤드셋, 메일함.",
+    "tool": "서비스 요청 티켓(service request), 원격 지원 통화, 부품 요청 · 반송(RMA) 메일.",
+    "situation": "장비가 멈췄다. 해외 지원팀에 티켓을 열고, 전화로 지시를 받고, 부품을 받아야 한다. 숫자 하나, 글자 하나가 틀리면 몇 시간 · 몇 주가 날아간다.",
     "meet": [
-     "LVS REPORT",
-     "matched · mismatch",
-     "layout ≠ schematic",
-     "NOT CLEAN"
+     "되묻기 Did you say fifteen or fifty?",
+     "되읽기 Let me read that back.",
+     "음성 기호 Kilo · X-ray · Bravo",
+     "티켓 제목 · 긴급도 S1~S4",
+     "정중한 요청 Could you … by …"
     ],
-    "goal": "두 넷리스트를 비교해 \"일치 / 불일치\"를 읽기.",
+    "goal": "지원팀이 한 번에 알아듣게 쓰고, 들은 것을 틀리지 않게 확인하기.",
     "bg": "w13"
    },
    {
     "type": "read",
-    "title": "LVS란 무엇인가",
-    "intro": "LVS는 '내가 그린 그림'과 '내가 의도한 회로'가 같은지 확인하는 검증입니다.",
+    "title": "벤더와 일하는 세 가지 길 — 티켓 · 통화 · 메일",
+    "intro": "장비사(vendor) 지원은 보통 세 갈래로 온다. 갈래마다 영어의 모양이 다르다.",
     "paras": [
-     "**LVS = Layout Versus Schematic**. 이름 그대로 **layout**(실제 배치된 도형)과 **schematic**(설계자가 의도한 회로도)을 서로(**Versus**) 비교하는 검증입니다. 화면에는 보통 **Compare Layout vs. Schematic** 또는 **LVS Run** 이라는 메뉴로 나타납니다.",
-     "비교의 핵심은 도형을 직접 보는 게 아니라 **netlist**(넷리스트)로 변환해서 대조한다는 점입니다. 넷리스트는 '어떤 소자가, 어떤 핀끼리, 어떤 선(**net**)으로 연결되어 있는가'를 글자로 적어놓은 목록입니다.",
-     "레이아웃에서는 **layout extraction**(레이아웃 추출) 과정을 통해 실제 그려진 도형에서 자동으로 넷리스트를 뽑아냅니다. 화면 로그에 **Extracting devices...**, **Building connectivity...** 같은 영문이 흘러갑니다.",
-     "두 넷리스트가 완전히 같으면 리포트에 **LVS clean** 또는 **Match** 가 표시되고, 하나라도 다르면 **Mismatch** 와 함께 오류 목록이 나옵니다. 우리가 현장에서 읽어야 하는 것이 바로 이 오류 목록입니다.",
-     "LVS가 검증하는 것은 '모양'이 아니라 '**connectivity**(연결 관계)'입니다. 선이 예쁘게 그려졌는지가 아니라, 전기적으로 같은 회로인지를 봅니다. 그래서 오류 메시지도 대부분 '무엇이 무엇에 잘못 연결/미연결되었다'는 문장입니다."
+     "**Ticket / Service Request(SR)** — 지원 포털에 여는 요청서. 번호가 붙는다(예: **SR-20618**). 이후 모든 메일과 통화는 이 번호로 이어진다. 그래서 첫 줄(제목)이 가장 중요하다.",
+     "**Remote support call** — 지원 엔지니어(**TSE**, technical support engineer)와의 통화. 지시를 받고, 값을 불러 주고, 결과를 보고한다. 글이 없으니 **되묻고 되읽는 것**이 안전장치다.",
+     "**Email** — 부품 요청, 반송(**RMA**), 정리 보고. 기록이 남으므로 숫자 · 부품 번호 · 기한을 정확히 쓴다.",
+     "현장 방문이 필요하면 장비사 서비스 엔지니어(**FSE**, field service engineer)가 온다. 이때 쓰는 말: \"**Could you send an FSE on site?**\"",
+     "세 갈래 모두에서 쓰는 것이 12강의 확신 표현이다. 지원팀은 우리 말만 듣고 판단한다 — **suspected** 와 **confirmed** 를 섞으면 엉뚱한 부품이 온다."
     ],
     "figs": [
      {
-      "kind": "log",
-      "title": "LVS REPORT",
-      "lines": [
-       "Nets matched:    1044",
-       "Devices matched: 512",
-       "[MISMATCH]: 1 net",
-       "→ layout ≠ schematic"
+      "kind": "hmi",
+      "tool": "VENDOR SUPPORT PORTAL",
+      "status": "OPEN",
+      "state": "run",
+      "rows": [
+       [
+        "TICKET",
+        "SR-20618"
+       ],
+       [
+        "SEVERITY",
+        "S1 — Tool down",
+        "warn"
+       ],
+       [
+        "ASSIGNED",
+        "TSE · Remote"
+       ]
       ]
-     },
-     {
-      "kind": "sticker",
-      "level": "danger",
-      "en": "LVS: NOT CLEAN",
-      "ko": "LVS 미일치"
      }
     ]
    },
    {
     "type": "read",
-    "title": "검증 흐름 속에서의 LVS",
-    "intro": "LVS는 혼자 돌아가지 않습니다. DRC·LVS·PEX로 이어지는 검증 흐름의 한 단계입니다.",
+    "title": "티켓 제목 한 줄 — 장비 · 증상 · 시각 · 영향",
+    "intro": "지원팀은 하루에 티켓 수백 개를 본다. 제목 한 줄로 무엇이, 언제부터, 얼마나 급한지가 보여야 먼저 잡힌다.",
     "paras": [
-     "먼저 **DRC(Design Rule Check)** 가 돌아갑니다. 이것은 선 간격·폭 같은 '물리적 규칙'을 지켰는지 보는 검사로, '그릴 수 있는 모양인가'를 판단합니다. LVS와는 별개의 검증입니다.",
-     "DRC가 통과해도 **LVS** 는 따로 해야 합니다. DRC는 '잘 그렸다'만 보지, '설계 의도와 같은 회로인가'는 보지 않기 때문입니다. 모양은 규칙을 지켰어도 엉뚱한 net에 연결될 수 있습니다.",
-     "현장 화면에서는 보통 **DRC → LVS → PEX** 순서로 버튼이 배치되어 있고, 각각 **Clean / Errors** 상태를 표시합니다. LVS가 clean이 되어야 다음 단계로 넘어갑니다.",
-     "**PEX(Parasitic Extraction)** 는 LVS가 통과된 뒤 기생 저항·기생 용량을 뽑아내는 후속 단계입니다. LVS가 틀리면 PEX 결과도 믿을 수 없으므로, LVS clean이 전제 조건입니다.",
-     "정리하면 **DRC = 모양 검사, LVS = 연결 검사, PEX = 성능 예측**입니다. 현장에서 \"LVS 못 넘어가서 PEX 못 돌린다\"는 말은 이 순서 때문입니다."
+     "좋은 제목의 공식: **Tool ID | Symptom | Since when | Impact**. 예: \"**ET-05 | Base pressure high since 23:05 | Tool down**\".",
+     "나쁜 제목: \"URGENT!!! HELP\", \"Problem with our tool\". 급하다는 말만 있고 무엇이 문제인지 없다. 느낌표는 순서를 앞당기지 못한다.",
+     "**Severity(긴급도)** — 지원팀이 순서를 정하는 등급. 이 교재의 예시: **S1** 장비 정지 · 대안 없음 / **S2** 장비 정지지만 대안 있음, 또는 웨이퍼 위험 / **S3** 가동 중 · 웨이퍼 위험 없음 / **S4** 질문 · 자료 요청.",
+     "긴급도는 느낌이 아니라 **사실**로 정한다: 장비가 멈췄나? 같은 일을 할 다른 장비가 있나? 웨이퍼가 위험한가? 실제 등급 정의는 장비사와의 계약(**SLA**)이 정한다.",
+     "등급을 부풀리면(S3 를 S1 로) 한두 번은 빨리 오지만, 그 뒤로 우리 티켓을 믿지 않는다. 12강의 원칙 그대로 — **사실만큼만** 쓴다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SEVERITY (교재 예시)",
+      "items": [
+       [
+        "[S1] Tool down, no workaround",
+        "정지 · 대안 없음"
+       ],
+       [
+        "[S2] Down with workaround, or wafer risk",
+        "대안 있음 · 웨이퍼 위험"
+       ],
+       [
+        "[S3] Running, no wafer risk",
+        "가동 · 위험 없음"
+       ],
+       [
+        "[S4] Question or document request",
+        "질문 · 자료"
+       ]
+      ]
+     }
     ]
    },
    {
     "type": "read",
-    "title": "LVS 오류의 종류를 읽는 법",
-    "intro": "영문 리포트에 반복적으로 등장하는 오류 유형은 정해져 있습니다. 유형만 알면 절반은 읽은 것입니다.",
+    "title": "통화의 영어 — 되묻기와 되읽기",
+    "intro": "전화에는 글이 없다. 잡음 · 억양 · 속도 때문에 숫자와 이름이 가장 자주 틀린다. 그래서 통화에는 정해진 확인 문장이 있다.",
     "paras": [
-     "**Missing device**(누락 소자): schematic에는 있는데 layout에는 없는 소자입니다. 리포트에는 **Device in schematic but not in layout** 형태로 나옵니다. 설계자가 의도한 트랜지스터를 레이아웃에서 안 그렸다는 뜻입니다.",
-     "**Extra device**(잉여 소자): 반대로 layout에는 있는데 schematic에는 없는 소자입니다. **Device in layout but not in schematic** — 필요 없는 소자를 실수로 더 그린 경우입니다.",
-     "**Incorrect connection**(잘못된 연결): 소자는 맞는데 연결된 **net**(노드)이 다른 경우입니다. **Net mismatch** 또는 **terminal connected to wrong net** 처럼 표시됩니다. 트랜지스터의 게이트가 엉뚱한 선에 붙은 상황이죠.",
-     "**Short**(단락): 원래 떨어져 있어야 할 두 개의 net이 하나로 붙어버린 것입니다. 리포트의 **Nets shorted together** 또는 **Short between VDD and VSS** 같은 문장은 매우 위험한 신호입니다. 전원-접지 단락은 소자 파손으로 이어집니다.",
-     "**Open**(단선): 원래 하나로 이어져야 할 net이 중간에 끊어진 것입니다. **Open net** 또는 **Net is not fully connected** 로 나타나며, 신호가 목적지까지 도달하지 못합니다.",
-     "정리하면 소자 개수 문제는 **missing/extra device**, 연결 문제는 **incorrect connection/short/open** 입니다. 리포트를 읽을 때 '개수 이야기인가, 연결 이야기인가'부터 구분하면 원인 파악이 빨라집니다."
+     "**못 알아들었을 때** — \"Sorry, could you repeat that?\" \"Could you say that more slowly?\" 모르는 채로 \"Yes\"라고 하지 않는다.",
+     "**둘 중 하나가 헷갈릴 때** — \"**Did you say fifteen or fifty?**\" 고를 것을 같이 말하면 상대가 정확히 짚어 준다.",
+     "**뜻을 확인할 때** — \"Just to confirm, you mean the **upper** match, not the lower one?\" — 내가 이해한 것을 문장으로 돌려준다.",
+     "**지시를 받은 뒤** — \"**Let me read that back:** …\" 받은 값과 순서를 그대로 다시 읽는다. 상대가 \"That's correct\" 또는 \"Negative, …\"로 고쳐 준다.",
+     "**끝낼 때** — \"So the next step is …, and I will call you back by 04:00.\" 다음 할 일과 다음 연락 시각을 확인하고 끊는다."
+    ],
+    "figs": [
+     {
+      "kind": "log",
+      "title": "CALL NOTES — SR-20618",
+      "lines": [
+       "03:12  TSE: set REFL limit [15 W] — read back OK",
+       "03:15  TSE: restart match — done",
+       "03:20  Part: KX-4071-B — read back OK"
+      ]
+     }
     ]
    },
    {
     "type": "read",
-    "title": "화면과 리포트에서 오류가 보이는 방식",
-    "intro": "LVS 결과는 텍스트 리포트와 GUI 하이라이트, 두 가지 형태로 함께 제공됩니다.",
+    "title": "숫자와 글자 읽어 주기 — one-five · Bravo · point",
+    "intro": "값과 번호를 불러 줄 때는 듣는 사람이 헷갈릴 수 없는 방식으로 읽는다.",
     "paras": [
-     "리포트 최상단에는 항상 총평이 한 줄로 뜹니다. **LVS PASSED / LVS FAILED**, 또는 **Layout matches schematic / Layout does NOT match schematic**. 이 한 줄로 통과 여부를 즉시 판단합니다.",
-     "그 아래 **Summary**(요약) 표에는 유형별 개수가 나옵니다. 예: **Unmatched devices: 2**, **Unmatched nets: 1**, **Property errors: 0**. **Unmatched** 는 '짝을 못 찾은' 이라는 뜻으로 mismatch의 구체적 표현입니다.",
-     "GUI에서는 문제 지점을 색으로 강조합니다. **Highlight errors** 버튼을 누르면 short난 net이 빨간색, open난 net이 노란색으로 레이아웃 위에 표시됩니다. 화면 안내문 **Click an error to zoom to location** 을 따라가면 됩니다.",
-     "각 오류에는 위치 정보가 붙습니다. **at (X, Y)** 좌표나 **on net CLK**, **device M12** 처럼 어느 소자·어느 선인지 지목합니다. 이 식별자를 설계자에게 그대로 전달하면 소통이 정확해집니다.",
-     "마지막으로 **Cross-probing**(크로스 프로빙) 기능은 리포트의 오류를 클릭하면 schematic과 layout에서 같은 지점을 동시에 띄워줍니다. 안내문 **Select in schematic and layout** 를 이해하면 원인을 눈으로 대조할 수 있습니다."
+     "**teen 과 ty** — fif**teen**(15) 과 **fif**ty(50), thir**teen**(13) 과 **thir**ty(30)는 끝소리 · 강세만 다르다. 중요한 값은 **한 자리씩** 다시 읽는다: 15 → \"**one-five**\", 50 → \"**five-zero**\".",
+     "**0 은 zero** — \"oh\"라고 읽으면 글자 O 와 헷갈린다. 부품 번호 4071 → \"four zero seven one\".",
+     "**소수점과 지수** — 4.2 → \"four **point** two\", 1.0E-5 → \"one point zero **E minus** five\". E 와 minus 를 빼먹으면 값이 10만 배 달라진다.",
+     "**글자는 음성 기호 알파벳으로** — B · D · P · V · E · G, M · N, F · S 는 전화로 거의 구분이 안 된다. 국제 표준(ICAO) 단어로 읽는다: **Bravo · Delta · Papa · Victor · Echo · Golf**, **Mike · November**, **Foxtrot · Sierra**.",
+     "부품 번호 KX-4071-B → \"**Kilo X-ray, four zero seven one, Bravo**\". 하이픈은 보통 읽지 않고 잠깐 끊는다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "SAY IT CLEARLY",
+      "items": [
+       [
+        "15 → [one-five]",
+        "한 자리씩"
+       ],
+       [
+        "4071 → four [zero] seven one",
+        "zero"
+       ],
+       [
+        "1.0E-5 → one [point] zero [E minus] five",
+        "점 · 지수"
+       ],
+       [
+        "B → [Bravo]",
+        "음성 기호"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "부품 요청과 반송 — P/N · lead time · RMA",
+    "intro": "부품을 받고 돌려보내는 메일은 칸이 정해진 문서에 가깝다. 빠진 칸이 있으면 메일이 한 번 더 오간다 — 그만큼 장비가 더 멈춘다.",
+    "paras": [
+     "**부품 요청에 꼭 들어갈 것** — part number(**P/N**), 수량(**Qty**), 장비 ID, 받을 곳(**ship to**), 필요한 날짜. 예: \"P/N KX-4071-B, Qty 1, for ET-05, ship to Fab 2 receiving, needed by Nov 10.\"",
+     "**lead time(납기)** — 주문에서 도착까지 걸리는 시간. \"**in stock**\"이면 바로 보내고, \"lead time 3 weeks\"면 3주다. 급하면 \"Is there a local stock or a loaner?\"(근처 재고나 대여품이 있나요?)라고 묻는다.",
+     "**RMA(Return Material Authorization)** — 고장 난 부품을 장비사로 돌려보내기 위한 승인 번호. 번호 없이 보내면 받지 않는다. 상자에 RMA 번호를 적는다.",
+     "**FA(Failure Analysis) request** — 장비사에 고장 원인 분석을 요청하는 것. 12강의 근본 원인을 찾는 데 쓴다. \"Please include an FA report with the RMA.\"",
+     "**warranty(보증)** — 보증 기간 안이면 무상이다. \"Is this part still under warranty?\""
+    ],
+    "figs": [
+     {
+      "kind": "hmi",
+      "tool": "PARTS REQUEST",
+      "status": "PENDING",
+      "state": "idle",
+      "rows": [
+       [
+        "P/N",
+        "KX-4071-B"
+       ],
+       [
+        "QTY",
+        "1"
+       ],
+       [
+        "LEAD TIME",
+        "In stock (Singapore)"
+       ],
+       [
+        "RMA",
+        "RMA-77314"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "type": "read",
+    "title": "정중하게 재촉하기 — 요청의 사다리와 에스컬레이션",
+    "intro": "지원이 늦을 때 화를 내면 더 늦어진다. 영어에는 같은 요청을 정중함 · 강도에 따라 고르는 사다리가 있다.",
+    "paras": [
+     "**가볍게** — \"**Could you** check the status of SR-20618?\" \"**Would it be possible to** get an update today?\"",
+     "**기한을 붙여서** — \"**We need** the part **by** Nov 10 **because** the tool is down.\" 기한과 그 이유(영향)를 같이 쓴다. 이유 없는 기한은 무시되기 쉽다.",
+     "**에스컬레이션** — 정해진 시간 안에 진전이 없을 때 윗단계 지원으로 올려 달라고 요청한다: \"This is now impacting production: two lots are on hold. **Could we escalate this to Level 2 support?**\"",
+     "**하지 않을 것** — \"ASAP!!!\", \"This is your fault.\", \"Reply immediately.\" 감정은 정보가 아니다. 영향(멈춘 시간 · 대기 lot 수 · 기한)을 숫자로 쓰는 것이 가장 강한 재촉이다.",
+     "고마움도 정해진 말이 있다: \"Thank you for the quick support.\" \"I appreciate your help on this.\" 다음 티켓의 속도를 바꾼다."
+    ],
+    "figs": [
+     {
+      "kind": "step",
+      "title": "REQUEST LADDER",
+      "items": [
+       [
+        "[Could you] …?",
+        "가볍게"
+       ],
+       [
+        "[Would it be possible to] …?",
+        "더 정중하게"
+       ],
+       [
+        "[We need] … [by] … [because] …",
+        "기한 + 이유"
+       ],
+       [
+        "[Could we escalate] this?",
+        "에스컬레이션"
+       ]
+      ]
+     }
     ]
    },
    {
     "type": "acr",
     "title": "약어",
-    "intro": "LVS 검증 화면과 리포트에서 반복되는 핵심 약어입니다.",
+    "intro": "장비사 지원 창구와 메일에서 반복해서 나오는 약어입니다.",
     "items": [
      {
-      "ab": "LVS",
-      "full": "Layout Versus Schematic",
-      "ko": "레이아웃과 회로도 비교 검증"
+      "ab": "SR",
+      "full": "Service Request",
+      "ko": "서비스 요청 — 지원 티켓, 번호가 붙는다"
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사 (LVS와 함께 도는 검증)"
+      "ab": "TSE",
+      "full": "Technical Support Engineer",
+      "ko": "원격 기술 지원 엔지니어"
      },
      {
-      "ab": "ERC",
-      "full": "Electrical Rule Check",
-      "ko": "전기 규칙 검사 (short/open 등 전기 오류 점검)"
+      "ab": "FSE",
+      "full": "Field Service Engineer",
+      "ko": "현장 방문 서비스 엔지니어"
      },
      {
-      "ab": "PEX",
-      "full": "Parasitic Extraction",
-      "ko": "기생 성분 추출 (LVS 후속 단계)"
+      "ab": "SLA",
+      "full": "Service Level Agreement",
+      "ko": "지원 수준 계약 — 긴급도별 응답 시간"
      },
      {
-      "ab": "VDD",
-      "full": "Voltage Drain-Drain",
-      "ko": "양(+) 전원 전압 노드"
+      "ab": "P/N",
+      "full": "Part Number",
+      "ko": "부품 번호"
      },
      {
-      "ab": "VSS",
-      "full": "Voltage Source-Source",
-      "ko": "접지(0V) 노드"
+      "ab": "Qty",
+      "full": "Quantity",
+      "ko": "수량"
+     },
+     {
+      "ab": "RMA",
+      "full": "Return Material Authorization",
+      "ko": "반송 승인 번호 — 없으면 받지 않는다"
+     },
+     {
+      "ab": "FA",
+      "full": "Failure Analysis",
+      "ko": "고장 원인 분석"
+     },
+     {
+      "ab": "ETA",
+      "full": "Estimated Time of Arrival",
+      "ko": "도착 예정 시각"
+     },
+     {
+      "ab": "KST",
+      "full": "Korea Standard Time",
+      "ko": "한국 시간 — 해외 상대에겐 시간대를 꼭 붙인다"
      }
     ]
    },
    {
     "type": "glossary",
-    "title": "핵심 용어 (1) — 비교의 대상",
-    "intro": "무엇과 무엇을 비교하는지, 그 재료가 되는 용어들입니다.",
+    "title": "핵심 용어 (1) — 통화에서 확인하기",
+    "intro": "통화에서 숫자와 지시를 틀리지 않게 확인하는 문장입니다.",
     "items": [
      {
-      "en": "netlist",
-      "ko": "넷리스트",
-      "d": "소자와 연결 관계를 글자로 적은 목록",
-      "ex": "The tool converts the layout into a netlist before comparison."
+      "en": "Could you repeat that?",
+      "ko": "다시 말씀해 주시겠어요?",
+      "d": "못 알아들었을 때 — 모르는 채로 Yes 하지 않는다",
+      "ex": "Sorry, the line is noisy. Could you repeat that?"
      },
      {
-      "en": "schematic",
-      "ko": "회로도",
-      "d": "설계자가 의도한 회로의 원본 도면",
-      "ex": "This device exists in the schematic but not in the layout."
+      "en": "Did you say … or …?",
+      "ko": "…라고 하셨나요, …라고 하셨나요?",
+      "d": "둘 중 헷갈릴 때 선택지를 함께 말한다",
+      "ex": "Did you say fifteen or fifty?"
      },
      {
-      "en": "layout",
-      "ko": "레이아웃",
-      "d": "실제 마스크로 그려진 물리적 배치",
-      "ex": "LVS extracts a netlist from the layout automatically."
+      "en": "Just to confirm",
+      "ko": "확인하자면",
+      "d": "내가 이해한 내용을 문장으로 돌려준다",
+      "ex": "Just to confirm, you mean the upper match, not the lower one?"
      },
      {
-      "en": "device",
-      "ko": "소자",
-      "d": "트랜지스터·저항 등 회로의 개별 부품",
-      "ex": "Two devices could not be matched between the two netlists."
+      "en": "Let me read that back",
+      "ko": "다시 읽어 드릴게요",
+      "d": "받은 값 · 순서를 그대로 다시 읽는다",
+      "ex": "Let me read that back: reflected power limit, one-five watts."
      },
      {
-      "en": "net",
-      "ko": "노드/배선",
-      "d": "전기적으로 같은 하나의 연결선",
-      "ex": "The signal net CLK is not fully connected."
+      "en": "That's correct / Negative",
+      "ko": "맞습니다 / 아닙니다",
+      "d": "되읽기에 대한 대답",
+      "ex": "Negative, the limit is one-five, not five-zero."
      },
      {
-      "en": "connectivity",
-      "ko": "연결 관계",
-      "d": "소자들이 어떤 선으로 이어져 있는가",
-      "ex": "LVS checks connectivity, not the shape of the wires."
+      "en": "call you back",
+      "ko": "다시 전화하다",
+      "d": "다음 연락 시각을 정하고 끊는다",
+      "ex": "I will run the check and call you back by 04:00 KST."
      }
     ]
    },
    {
-    "type": "eda",
-    "title": "설계 프로그램 화면 — LVS 비교",
-    "app": "LVS Studio",
-    "doc": "chip_top",
-    "run": "Run",
-    "canvas": "lvs",
-    "left": {
-     "title": "Nets",
-     "items": [
-      {
-       "name": "matched 1044",
-       "color": "#2f7d5b"
-      },
-      {
-       "name": "MISMATCH 1",
-       "color": "#e05a4a"
-      }
-     ]
+    "type": "quiz",
+    "title": "확인 퀴즈 (1) — 통화에서 확인하기",
+    "intro": "통화 상황에서 가장 알맞은 말을 고르세요.",
+    "questions": [
+     {
+      "prompt": "지원 엔지니어가 'Set the limit to fif…' 하는데 잡음에 묻혔다. 가장 알맞은 말은?",
+      "opts": [
+       "Yes, okay.",
+       "Did you say fifteen or fifty?",
+       "I will set it to fifty."
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "지시를 다 받았다. 실행하기 전에 할 말은?",
+      "opts": [
+       "Let me read that back: …",
+       "Thank you, bye.",
+       "Why?"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "내가 'Fifty watts'라고 되읽었더니 'Negative, one-five.' 라는 답이 왔다. 뜻은?",
+      "opts": [
+       "50 이 맞다",
+       "설정하지 마라",
+       "아니다, 15 다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (2) — 숫자와 글자 읽기",
+    "intro": "전화로 값과 번호를 불러 줄 때의 규칙입니다.",
+    "items": [
+     {
+      "en": "one-five",
+      "ko": "일-오 (15 를 한 자리씩)",
+      "d": "teen / ty 혼동을 막는다",
+      "ex": "The limit is fifteen — one-five — watts."
+     },
+     {
+      "en": "zero",
+      "ko": "영 (oh 아님)",
+      "d": "글자 O 와 헷갈리지 않게",
+      "ex": "The part number is four zero seven one."
+     },
+     {
+      "en": "point",
+      "ko": "점 (소수점)",
+      "d": "4.2 → four point two",
+      "ex": "The pressure is four point two E minus five Torr."
+     },
+     {
+      "en": "E minus",
+      "ko": "지수 (×10의 마이너스)",
+      "d": "1.0E-5 → one point zero E minus five",
+      "ex": "Base pressure must be below one point zero E minus five."
+     },
+     {
+      "en": "Bravo / Delta",
+      "ko": "B / D 의 음성 기호",
+      "d": "전화로 거의 같게 들리는 글자를 단어로",
+      "ex": "That is Bravo, not Delta."
+     },
+     {
+      "en": "Mike / November",
+      "ko": "M / N 의 음성 기호",
+      "d": "비음 둘을 구분",
+      "ex": "The tool ID is Mike Echo, one two."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "parts",
+    "title": "매뉴얼 표본 — 헷갈리는 글자와 음성 기호",
+    "doc": {
+     "name": "PHONETIC ALPHABET — QUICK CARD",
+     "no": "QC-ICAO",
+     "rev": "—"
     },
-    "log": [
-     "> run LVS: layout vs schematic",
-     "> nets matched: 1044",
-     "> MISMATCH: 1 net",
-     "> result: NOT equivalent"
+    "heading": "Letters that sound alike on the phone (ICAO spelling alphabet)",
+    "cols": [
+     "GROUP",
+     "LETTERS",
+     "SAY",
+     "EXAMPLE"
     ],
-    "status": "Devices: 512   Nets: 1045   Mismatch: 1",
+    "rows": [
+     [
+      "B-D-P-V",
+      "B · D · P · V",
+      "Bravo · Delta · Papa · Victor",
+      "KX-4071-B → … Bravo"
+     ],
+     [
+      "E-G",
+      "E · G",
+      "Echo · Golf",
+      "E-chuck → Echo chuck"
+     ],
+     [
+      "M-N",
+      "M · N",
+      "Mike · November",
+      "ME-12 → Mike Echo, one two"
+     ],
+     [
+      "F-S",
+      "F · S",
+      "Foxtrot · Sierra",
+      "SR-20618 → Sierra Romeo …"
+     ],
+     [
+      "digits",
+      "0 · 13 · 15",
+      "zero · one-three · one-five",
+      "4071 → four zero seven one"
+     ]
+    ],
+    "callout": {
+     "kind": "note",
+     "en": "Read part numbers and ticket numbers letter by letter and digit by digit. Then ask the other person to read them back."
+    }
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (2) — 번호 불러 주기",
+    "intro": "위 빠른 참조 카드를 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "부품 번호 'KX-4071-B' 를 전화로 불러 줄 때 가장 안전한 것은?",
+      "opts": [
+       "Kay ex four oh seven one bee",
+       "Kilo X-ray, four zero seven one, Bravo",
+       "KX four thousand seventy-one B"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "티켓 번호 'SR-20618' 을 불러 줄 때 S 를 무엇으로 읽나?",
+      "opts": [
+       "Foxtrot",
+       "Echo",
+       "Sierra"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'one point zero E minus five' 에서 'E minus' 를 빼먹고 'one point zero five'라고 들으면?",
+      "opts": [
+       "값이 완전히 달라진다 — 1.0E-5 가 1.05 로",
+       "같은 값이다",
+       "단위만 달라진다"
+      ],
+      "ans": 0
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (3) — 티켓과 메일",
+    "intro": "지원 티켓과 메일의 칸 이름, 그리고 정중한 요청 표현입니다.",
+    "items": [
+     {
+      "en": "severity",
+      "ko": "긴급도",
+      "d": "지원팀이 순서를 정하는 등급 (S1~S4, 계약마다 정의)",
+      "ex": "We opened the ticket as Severity 1 because the tool is down."
+     },
+     {
+      "en": "workaround",
+      "ko": "임시 우회 방법",
+      "d": "정식 해결 전에 일을 계속할 길",
+      "ex": "ET-06 can run the same recipe, so we have a workaround."
+     },
+     {
+      "en": "impact",
+      "ko": "영향",
+      "d": "멈춘 시간 · 대기 lot 수 등 — 숫자로",
+      "ex": "Impact: two lots on hold, about 50 wafers."
+     },
+     {
+      "en": "Could you …?",
+      "ko": "…해 주시겠어요?",
+      "d": "가장 기본의 정중한 요청",
+      "ex": "Could you send an FSE on site tomorrow morning?"
+     },
+     {
+      "en": "We need … by …",
+      "ko": "…까지 …이 필요합니다",
+      "d": "기한 — 이유(영향)와 함께",
+      "ex": "We need the part by Nov 10 because the tool is down."
+     },
+     {
+      "en": "escalate",
+      "ko": "상위 단계로 올리다",
+      "d": "진전이 없을 때 정중하게",
+      "ex": "Could we escalate this to Level 2 support?"
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "variant": "email",
+    "title": "매뉴얼 표본 — 서비스 요청 메일",
+    "from": "Jisu Park <jisu.park@fab.example>",
+    "to": "Vendor Support <support@vendor.example>",
+    "subject": "SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)",
+    "lines": [
+     "Hi Support team,",
+     "This is Jisu Park from the etch night shift at Fab 2.",
+     "What happened: Base pressure on ET-05 has been 4.2E-5 Torr since 23:05 KST (limit 1.0E-5). The tool is down.",
+     "What we checked: We [ruled out] the gauge and the turbo pump. A leak at the lid O-ring is [suspected].",
+     "Request: [Could you] send an FSE to inspect the lid seal, or advise on the next check?",
+     "Impact: No other tool can run this recipe, and two lots are on hold. We would appreciate a reply [by] 06:00 KST.",
+     "Attached: alarm log and pressure trend (last 12 h)."
+    ],
+    "sign": "Thank you for your support. Jisu Park (Etch, night shift)"
+   },
+   {
+    "type": "quiz",
+    "title": "확인 퀴즈 (3) — 메일 읽기",
+    "intro": "위 서비스 요청 메일을 근거로 답하세요.",
+    "questions": [
+     {
+      "prompt": "제목 'SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)' 에 들어 있지 않은 것은?",
+      "opts": [
+       "장비 ID",
+       "증상이 시작된 시각",
+       "교체할 부품 번호"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'A leak at the lid O-ring is suspected.' 를 읽은 지원팀이 이해할 것은?",
+      "opts": [
+       "누설은 아직 의심 단계 — 확정이 아니다",
+       "누설이 확정되었다",
+       "누설은 배제되었다"
+      ],
+      "ans": 0
+     },
+     {
+      "prompt": "이 메일이 S1 인 근거로 쓴 사실은?",
+      "opts": [
+       "보낸 사람이 야간 근무라서",
+       "장비가 멈췄고 이 레시피를 돌릴 다른 장비가 없어서",
+       "메일에 첨부가 있어서"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "glossary",
+    "title": "핵심 용어 (4) — 부품과 반송",
+    "intro": "부품 요청 · 반송 메일에 들어가는 말입니다.",
+    "items": [
+     {
+      "en": "part number (P/N)",
+      "ko": "부품 번호",
+      "d": "한 글자만 틀려도 다른 부품이 온다",
+      "ex": "Please confirm P/N KX-4071-B before shipping."
+     },
+     {
+      "en": "lead time",
+      "ko": "납기",
+      "d": "주문에서 도착까지 걸리는 시간",
+      "ex": "The lead time is three weeks, but there is one in stock in Singapore."
+     },
+     {
+      "en": "in stock",
+      "ko": "재고 있음",
+      "d": "바로 보낼 수 있음",
+      "ex": "The O-ring kit is in stock and can ship today."
+     },
+     {
+      "en": "loaner",
+      "ko": "대여품",
+      "d": "수리 기간 동안 빌려 쓰는 부품",
+      "ex": "Is a loaner available while our unit is repaired?"
+     },
+     {
+      "en": "RMA number",
+      "ko": "반송 승인 번호",
+      "d": "없으면 장비사가 받지 않는다",
+      "ex": "Write the RMA number on the outside of the box."
+     },
+     {
+      "en": "under warranty",
+      "ko": "보증 기간 안",
+      "d": "무상 수리 · 교체 대상",
+      "ex": "The match unit is still under warranty until March."
+     }
+    ]
+   },
+   {
+    "type": "mansample",
+    "title": "매뉴얼 표본 — 부품 반송(RMA) 절차",
+    "doc": {
+     "name": "Vendor Parts Return Guide",
+     "no": "VPG-0102",
+     "sec": "2",
+     "rev": "E",
+     "page": "2-1"
+    },
+    "heading": "2  Returning a Failed Part",
+    "steps": [
+     "Request an RMA number through the support portal before shipping.",
+     {
+      "t": "Include the SR number, P/N, serial number, and a short failure description.",
+      "note": {
+       "kind": "note",
+       "en": "Parts returned without an RMA number will be refused."
+      }
+     },
+     {
+      "t": "Purge and clean the part if it was exposed to process gases.",
+      "note": {
+       "kind": "warning",
+       "en": "Attach a decontamination certificate. Contaminated parts shall not be shipped without it."
+      }
+     },
+     "Pack the part in the original packaging, and write the RMA number on the outside of the box.",
+     "If you need a failure analysis, check \"FA requested\" on the RMA form."
+    ],
+    "callout": {
+     "kind": "caution",
+     "en": "Return the failed part within 30 days, or you may be charged for the replacement."
+    },
     "gloss": [
      [
-      "LVS",
-      "레이아웃-회로도 비교"
+      "serial number",
+      "일련번호"
      ],
      [
-      "Netlist",
-      "넷리스트(연결표)"
+      "decontamination certificate",
+      "오염 제거 확인서"
      ],
      [
-      "matched",
-      "일치"
+      "be refused",
+      "거절되다"
      ],
      [
-      "mismatch",
-      "불일치"
-     ],
-     [
-      "equivalent",
-      "동등(일치)"
+      "be charged",
+      "비용이 청구되다"
      ]
     ]
    },
    {
     "type": "quiz",
-    "title": "확인 퀴즈 (1)",
-    "intro": "리포트 문장의 의미를 해석해 보세요.",
+    "title": "확인 퀴즈 (4) — 반송 절차",
+    "intro": "위 부품 반송 절차 VPG-0102 를 근거로 판단하세요.",
     "questions": [
      {
-      "prompt": "리포트에 'Device in schematic but not in layout' 이 뜨면 무슨 뜻인가?",
+      "prompt": "RMA 번호를 받기 전에 고장 부품을 먼저 보냈다. 어떻게 되나?",
       "opts": [
-       "회로도에는 있으나 레이아웃에 그려지지 않은 누락 소자(missing device)",
-       "레이아웃에 잘못 추가된 잉여 소자(extra device)",
-       "두 배선이 붙어버린 단락(short)"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'LVS checks connectivity' 에서 connectivity가 의미하는 것은?",
-      "opts": [
-       "도형의 모양과 크기",
-       "소자들이 어떤 선으로 연결되어 있는가",
-       "칩의 소비 전력"
+       "장비사가 알아서 번호를 붙인다",
+       "거절된다 — 번호 없이 보낸 부품은 받지 않는다",
+       "보증이 늘어난다"
       ],
       "ans": 1
      },
      {
-      "prompt": "화면에 'Extracting devices...' 로그가 흐른다. 지금 진행 중인 작업은?",
+      "prompt": "공정 가스에 노출된 부품이다. 상자에 무엇을 붙여야 하나?",
       "opts": [
-       "레이아웃에서 소자를 뽑아 넷리스트를 만드는 중",
-       "회로도를 인쇄하는 중",
-       "전원을 차단하는 중"
+       "영수증",
+       "사진",
+       "오염 제거 확인서(decontamination certificate)"
       ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (2) — 결과와 판정",
-    "intro": "비교 결과가 어떻게 표현되는지에 관한 용어들입니다.",
-    "items": [
-     {
-      "en": "match",
-      "ko": "일치",
-      "d": "두 넷리스트가 전기적으로 동일함",
-      "ex": "The layout matches the schematic. LVS passed."
+      "ans": 2
      },
      {
-      "en": "mismatch",
-      "ko": "불일치",
-      "d": "두 넷리스트가 어딘가 다름",
-      "ex": "A net mismatch was found on the output node."
-     },
-     {
-      "en": "unmatched",
-      "ko": "짝을 못 찾음",
-      "d": "대응되는 상대를 찾지 못한 소자/노드",
-      "ex": "There are 2 unmatched devices in the summary."
-     },
-     {
-      "en": "missing device",
-      "ko": "누락 소자",
-      "d": "회로도엔 있으나 레이아웃엔 없는 소자",
-      "ex": "A missing device means it was not drawn in the layout."
-     },
-     {
-      "en": "extra device",
-      "ko": "잉여 소자",
-      "d": "레이아웃엔 있으나 회로도엔 없는 소자",
-      "ex": "Please delete the extra device that is not in the schematic."
-     }
-    ],
-    "figs": [
-     {
-      "kind": "note",
-      "title": "TERM",
-      "en": "The [layout] must match the [schematic].",
-      "ko": "레이아웃과 회로도가 일치해야 한다."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (2)",
-    "intro": "판정 관련 영어 표현을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "Summary에 'Unmatched nets: 1' 이라고 적혀 있다. 무슨 의미인가?",
+      "prompt": "'Return the failed part within 30 days, or you may be charged.' 40일 뒤에 보내면?",
       "opts": [
-       "모든 배선이 정상 연결되었다",
-       "대응되는 짝을 찾지 못한 배선이 1개 있다",
-       "배선을 1개 새로 추가해야 한다"
-      ],
-      "ans": 1
-     },
-     {
-      "prompt": "'The layout matches the schematic' 을 현장 판정으로 옮기면?",
-      "opts": [
-       "LVS 통과 — 레이아웃과 회로도가 동일함",
-       "LVS 실패 — 재작업 필요",
-       "검증이 아직 시작되지 않음"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (3) — 연결 오류",
-    "intro": "가장 자주 마주치고, 가장 위험한 연결 관련 오류 용어입니다.",
-    "items": [
-     {
-      "en": "short",
-      "ko": "단락",
-      "d": "떨어져야 할 두 net이 하나로 붙음",
-      "ex": "Warning: a short between VDD and VSS was detected."
-     },
-     {
-      "en": "open",
-      "ko": "단선",
-      "d": "이어져야 할 net이 중간에 끊김",
-      "ex": "This net is open; the signal cannot reach the input."
-     },
-     {
-      "en": "incorrect connection",
-      "ko": "잘못된 연결",
-      "d": "소자가 엉뚱한 net에 연결됨",
-      "ex": "The gate is connected to the wrong net."
-     },
-     {
-      "en": "terminal",
-      "ko": "단자/핀",
-      "d": "소자에서 배선이 붙는 접점",
-      "ex": "This terminal is connected to the wrong net."
-     },
-     {
-      "en": "highlight",
-      "ko": "강조 표시",
-      "d": "오류 지점을 색으로 표시함",
-      "ex": "Click Highlight errors to see the short in red."
-     },
-     {
-      "en": "re-run",
-      "ko": "재실행",
-      "d": "수정 후 검증을 다시 돌림",
-      "ex": "Fix the error and re-run LVS until it is clean."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (3)",
-    "intro": "연결 오류 문장을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "'A short between VDD and VSS was detected' 가 위험한 이유는?",
-      "opts": [
-       "전원과 접지가 붙어 과전류·소자 파손으로 이어질 수 있어서",
-       "단순히 색이 예쁘지 않아서",
-       "검증 시간이 길어져서"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'This net is open' 이 뜻하는 상태는?",
-      "opts": [
-       "배선이 끊겨 신호가 목적지에 도달하지 못함",
-       "배선이 정상적으로 연결됨",
-       "배선이 두 개로 붙어버림"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'The gate is connected to the wrong net' 은 어떤 오류 유형인가?",
-      "opts": [
-       "incorrect connection (잘못된 연결)",
-       "missing device (누락 소자)",
-       "extra device (잉여 소자)"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "glossary",
-    "title": "핵심 용어 (4) — 진행과 마무리",
-    "intro": "검증을 돌리고 마무리하는 단계에서 쓰는 용어들입니다.",
-    "items": [
-     {
-      "en": "run",
-      "ko": "실행",
-      "d": "검증을 한 번 돌리는 동작",
-      "ex": "Click Run to start the LVS comparison."
-     },
-     {
-      "en": "clean",
-      "ko": "오류 없음",
-      "d": "오류가 하나도 없는 상태",
-      "ex": "Re-run until the report is LVS clean."
-     },
-     {
-      "en": "summary",
-      "ko": "요약",
-      "d": "오류를 유형별로 몰아 보여주는 칸",
-      "ex": "Read the summary section of the report first."
-     },
-     {
-      "en": "cross-probing",
-      "ko": "크로스 프로빙",
-      "d": "리포트-도면을 연동해 같은 지점 표시",
-      "ex": "Use cross-probing to find the net in both views."
-     },
-     {
-      "en": "tape out",
-      "ko": "최종 제출",
-      "d": "설계를 제조 단계로 넘기는 것",
-      "ex": "Do not tape out until LVS is clean."
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "확인 퀴즈 (4)",
-    "intro": "진행·마무리 표현을 해석해 보세요.",
-    "questions": [
-     {
-      "prompt": "'Re-run until the report is LVS clean' 이 지시하는 행동은?",
-      "opts": [
-       "오류가 0이 될 때까지 수정 후 검증을 반복한다",
-       "한 번만 돌리고 끝낸다",
-       "리포트를 삭제한다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'Do not tape out until LVS is clean' 의 의미는?",
-      "opts": [
-       "LVS 오류가 남은 채로 제조 단계로 넘기지 말라",
-       "LVS를 건너뛰고 바로 제조하라",
-       "clean이면 검증을 멈춰라"
+       "교체품 비용이 청구될 수 있다",
+       "아무 일도 없다",
+       "RMA 번호가 바뀐다"
       ],
       "ans": 0
      }
@@ -7610,100 +8990,119 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "manual",
-    "mtitle": "LVS VERIFICATION PROCEDURE",
+    "mtitle": "REMOTE SUPPORT CALL — A SAFE SCRIPT",
     "paras": [
-     "1. Load both the schematic netlist and the layout view before starting the run.",
-     "1. 실행 전에 회로도 넷리스트와 레이아웃 뷰를 모두 불러옵니다.",
-     "2. Select Verify > LVS and click Run to begin the comparison.",
-     "2. Verify > LVS 메뉴를 선택하고 Run을 눌러 비교를 시작합니다.",
-     "3. Wait until the status bar shows LVS PASSED or LVS FAILED.",
-     "3. 상태 표시줄에 LVS PASSED 또는 LVS FAILED가 나올 때까지 기다립니다.",
-     "4. If the run fails, open the report and read the Summary section first.",
-     "4. 실패하면 리포트를 열고 Summary(요약) 항목부터 읽습니다.",
-     "NOTE: A device shown 'in schematic but not in layout' is a missing device.",
-     "참고: '회로도엔 있으나 레이아웃엔 없음'으로 표시된 소자는 누락 소자입니다.",
-     "WARNING: Do NOT tape out the design while any short or open remains unresolved.",
-     "경고: short(단락)나 open(단선)이 해결되지 않은 상태로 절대 최종 제출(tape out)하지 마십시오."
+     "Hi, this is Jisu from Fab 2. I am calling about SR-20618, ET-05.",
+     "해설: 시작 — 이름 · 소속 · 티켓 번호 · 장비 ID. 상대가 티켓을 여는 동안 기다린다.",
+     "Sorry, did you say fifteen or fifty?",
+     "해설: 헷갈리는 숫자는 두 후보를 같이 말해 고르게 한다.",
+     "Let me read that back: reflected power limit, one-five watts, then restart the match.",
+     "해설: 지시를 받으면 값과 순서를 그대로 되읽는다. 상대의 \"That's correct\" 를 들은 뒤에 실행한다.",
+     "So the next step is a leak check at the lid, and I will call you back by 04:00 KST.",
+     "해설: 끝낼 때 다음 할 일과 다음 연락 시각(시간대 포함)을 정한다."
     ]
    },
    {
     "type": "manual",
-    "mtitle": "READING THE LVS ERROR REPORT",
+    "mtitle": "TICKET SEVERITY — HOW TO CHOOSE (교재 예시)",
     "paras": [
-     "Summary: Unmatched devices = 2, Unmatched nets = 1, Property errors = 0.",
-     "요약: 짝을 못 찾은 소자 2개, 짝을 못 찾은 배선 1개, 속성 오류 0개.",
-     "Error 1: Device M12 exists in layout but not in schematic (extra device).",
-     "오류 1: 소자 M12가 레이아웃엔 있으나 회로도엔 없음 (잉여 소자).",
-     "Error 2: Terminal 'gate' of M7 is connected to net N4; expected net CLK.",
-     "오류 2: M7의 게이트 단자가 N4에 연결됨; 원래는 CLK에 연결되어야 함 (잘못된 연결).",
-     "Error 3: Net VOUT is open; two segments are not joined.",
-     "오류 3: 배선 VOUT가 끊겨 있음; 두 구간이 이어지지 않음 (단선).",
-     "Action: Fix each error, then re-run LVS until the report shows LVS clean.",
-     "조치: 각 오류를 수정한 뒤, 리포트가 LVS clean으로 나올 때까지 LVS를 다시 실행합니다."
+     "S1: The tool is down, and there is no workaround.",
+     "해설: 장비 정지 + 같은 일을 할 대안 없음. 생산이 멈춘다.",
+     "S2: The tool is down but a workaround exists, or wafers are at risk.",
+     "해설: 정지했지만 다른 장비로 돌릴 수 있거나, 가동 중이어도 웨이퍼가 위험하다(예: 파티클 증가).",
+     "S3: The tool is running, and there is no risk to wafers.",
+     "해설: 가동 중 + 웨이퍼 위험 없음. 예: 화면 표시 오류, 저절로 풀리는 경고.",
+     "S4: A question or a request for documents.",
+     "해설: 질문 · 매뉴얼 · 교육 자료 요청. 실제 정의는 장비사와의 계약(SLA)을 따른다."
     ]
    },
    {
     "type": "sim",
-    "which": "lvs",
-    "mode": "netlist",
-    "intro": "아래 시뮬레이터에서 schematic 넷리스트와 layout 넷리스트를 나란히 비교해 보세요. 각 소자와 net을 짝지어 가며 어디서 mismatch가 발생하는지 직접 찾아보고, 화면의 영문 판정(LVS PASSED / FAILED)을 소리 내어 읽어 봅니다."
+    "which": "vendor",
+    "mode": "severity",
+    "intro": "먼저 **티켓 긴급도** 실습입니다. 상황 카드를 읽고 **S1 · S2 · S3 · S4** 중 하나를 고르세요(교재 예시 기준). 판단은 느낌이 아니라 세 가지 **사실**로 합니다: 장비가 멈췄나 · 대안이 있나 · 웨이퍼가 위험한가."
    },
    {
     "type": "sim",
-    "which": "lvs",
-    "mode": "lvsFix",
-    "intro": "이번에는 오류가 포함된 케이스입니다. missing device, short, open 중 어떤 유형인지 영문 오류 메시지를 읽고 분류해 보세요. 오류를 수정한 뒤 다시 실행하여 리포트가 LVS clean으로 바뀌는지 확인합니다."
+    "which": "vendor",
+    "mode": "readback",
+    "intro": "다음은 **되읽기** 실습입니다. 지원 엔지니어가 전화로 불러 준 값이나 번호가 나옵니다. 가장 안전한 **되읽기(read back)** 를 고르세요 — 숫자는 **한 자리씩**, 0 은 **zero**, 글자는 **음성 기호**로."
+   },
+   {
+    "type": "sim",
+    "which": "vendor",
+    "mode": "email",
+    "intro": "마지막은 **서비스 요청 메일** 실습입니다. 메일을 칸(제목 · 인사 · 사실 · 확인한 것 · 요청 · 영향과 기한 · 맺음)으로 나눴습니다. 칸마다 **지원팀이 한 번에 알아듣는** 문장을 고르세요. 다 고르면 완성된 메일이 나옵니다."
    },
    {
     "type": "comm",
     "items": [
      {
-      "sit": "해외 설계 엔지니어가 LVS 리포트를 함께 검토하며 상황을 확인한다.",
+      "sit": "지원 엔지니어가 값을 불러 준다",
       "q": {
-       "en": "The report says two devices are unmatched. Can you tell which side they are on?",
-       "ko": "리포트에 소자 2개가 짝을 못 찾았다고 나오네요. 어느 쪽에 있는 건지 알려줄 수 있나요?"
+       "en": "Set the reflected power limit to fifteen watts, then restart the match.",
+       "ko": "반사 전력 한계를 15 와트로 설정하고 매치를 재시작하세요."
       },
       "a": {
-       "en": "One is a missing device in the layout, and the other is an extra device not in the schematic.",
-       "ko": "하나는 레이아웃에서 누락된 소자이고, 다른 하나는 회로도에 없는 잉여 소자입니다."
+       "en": "Let me read that back: reflected power limit, one-five watts, then restart the match. Is that correct?",
+       "ko": "다시 읽어 드릴게요: 반사 전력 한계 일-오 와트, 그다음 매치 재시작. 맞습니까?"
       }
      },
      {
-      "sit": "엔지니어가 가장 위험한 오류부터 확인하려 한다.",
+      "sit": "부품 번호를 확인한다",
       "q": {
-       "en": "Is there any short or open in the power nets? That's my top priority.",
-       "ko": "전원 배선에 단락이나 단선이 있나요? 그게 제일 급합니다."
+       "en": "The replacement part is K X four zero seven one B.",
+       "ko": "교체 부품은 K X 4 0 7 1 B 입니다."
       },
       "a": {
-       "en": "Yes, there is a short between VDD and VSS. I highlighted it in red on the layout.",
-       "ko": "네, VDD와 VSS 사이에 단락이 있습니다. 레이아웃에서 빨간색으로 강조해 두었습니다."
+       "en": "Copy. Kilo X-ray, four zero seven one, Bravo. Is it in stock, and what is the lead time to Korea?",
+       "ko": "알겠습니다. 킬로 엑스레이, 4 0 7 1, 브라보. 재고가 있나요, 한국까지 납기는 얼마인가요?"
       }
      },
      {
-      "sit": "수정 후 재검증 계획을 공유한다.",
+      "sit": "진전이 없어 에스컬레이션을 요청한다",
       "q": {
-       "en": "Okay, please fix the wrong connection first, then re-run and send me the result.",
-       "ko": "좋아요, 잘못된 연결부터 고치고 다시 돌린 뒤 결과를 보내주세요."
+       "en": "We are still analyzing the logs. We will get back to you.",
+       "ko": "아직 로그를 분석 중입니다. 다시 연락드리겠습니다."
       },
       "a": {
-       "en": "Understood. I will re-run LVS and let you know when the report is clean.",
-       "ko": "알겠습니다. LVS를 다시 실행하고 리포트가 clean으로 나오면 알려드리겠습니다."
+       "en": "Thank you. This is now impacting production: the tool has been down for six hours and two lots are on hold. Could we escalate this to Level 2 support?",
+       "ko": "감사합니다. 이제 생산에 영향이 있습니다 — 장비가 6시간째 멈췄고 두 lot 이 보류 중입니다. Level 2 지원으로 올려 주실 수 있을까요?"
       }
      }
     ]
    },
    {
     "type": "wrap",
-    "title": "정리",
+    "title": "정리 — 한 번에 알아듣게, 틀리지 않게",
     "points": [
-     "**LVS(Layout Versus Schematic)** 는 layout과 schematic을 각각 **netlist**로 뽑아 전기적 동일성을 비교하는 검증이다.",
-     "판정은 한 줄로 나온다: **LVS PASSED / Match** 는 통과, **LVS FAILED / Mismatch** 는 재작업.",
-     "소자 개수 문제는 **missing device / extra device**, 연결 문제는 **incorrect connection / short / open** 으로 구분해 읽는다.",
-     "**short**(VDD-VSS 단락)와 **open**(배선 단선)은 가장 위험하며 해결 전 tape out 금지.",
-     "검증 흐름은 **DRC(모양) → LVS(연결) → PEX(성능)** 이며, LVS clean이어야 다음 단계로 간다.",
-     "리포트는 **Summary → Error 목록 → 위치(net/device 식별자)** 순으로 읽고, GUI의 **Highlight errors** 로 위치를 확인한다."
+     "지원은 세 갈래: **ticket(SR) · call · email**. 모든 연락을 **티켓 번호**로 잇는다.",
+     "티켓 제목 공식: **Tool ID | Symptom | Since when | Impact**. 긴급도는 느낌이 아니라 **사실**(정지 · 대안 · 웨이퍼 위험)로.",
+     "통화: 못 들으면 **Could you repeat that?**, 헷갈리면 **Did you say … or …?**, 받으면 **Let me read that back.**",
+     "숫자는 **한 자리씩**(one-five), 0 은 **zero**, 소수 · 지수는 **point · E minus**, 글자는 **Bravo · Delta · Mike · November**.",
+     "부품: **P/N · Qty · lead time · RMA**. 재촉은 감정이 아니라 **영향을 숫자로** — 그리고 **Could we escalate this?**"
     ],
-    "done": "이제 영문 LVS 리포트에서 **어떤 오류가 어디서** 났는지 스스로 읽어낼 수 있습니다. **한 줄의 영어를 정확히 읽는 힘**이 현장의 판단력입니다."
+    "done": "이제 여러분은 해외 지원팀과 **티켓 · 통화 · 메일**로 일할 때, 상대가 한 번에 알아듣게 쓰고 들은 것을 틀리지 않게 확인할 수 있습니다. **Say it once, read it back.**",
+    "figs": [
+     {
+      "kind": "step",
+      "title": "BEFORE YOU HANG UP",
+      "items": [
+       [
+        "[Read back] the values.",
+        "되읽기"
+       ],
+       [
+        "Confirm the [next step].",
+        "다음 할 일"
+       ],
+       [
+        "Agree on the [next call time].",
+        "다음 연락 시각"
+       ]
+      ]
+     }
+    ]
    }
   ]
  },
@@ -7715,7 +9114,7 @@ export const CONTENT_CHAPTERS = [
     "type": "story",
     "icon": "📋",
     "title": "야간 근무 인계, 영어 리포트 한 장",
-    "text": "새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 **shift report** 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. **Problem:** Chamber A pressure spiked to 12 mTorr during etch step 3. **Cause:** APC throttle valve stuck at 40%. **Action:** Aborted lot, switched to Chamber B, notified equipment engineer. **Result:** Lot recovered, chamber A placed **DOWN** pending PM. 당신이 할 일은 영작이 아니다. 이 **problem–cause–action–result** 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 장비부터 디자인 검증까지 현장 전체를 아우르는 영어 보고문을 읽고, 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.",
+    "text": "새벽 6시, 야간조가 끝나고 인계 시간이다. 선임이 태블릿에 뜬 영어 **shift report** 한 장을 건네며 말한다. \"이거 3분 안에 읽고, 라인 상태 요약해서 주간조 반장한테 구두로 보고해줘.\" 화면에는 이런 문장이 있다. **Problem:** Chamber A pressure spiked to 12 mTorr during etch step 3. **Cause:** APC throttle valve stuck at 40%. **Action:** Aborted lot, switched to Chamber B, notified equipment engineer. **Result:** Lot recovered, chamber A placed **DOWN** pending PM. 당신이 할 일은 영작이 아니다. 이 **problem–cause–action–result** 4단 구조를 정확히 읽어내고, '지금 A 챔버는 정지 상태, B로 우회, 로트는 살렸다'를 한 문장으로 요약·판단하는 것이다. 오늘은 1부의 장비 보고에 2부에서 배운 것 — 안전 경보, 레시피 변경, 트러블슈팅의 확신 표현, 벤더 티켓 — 을 더해, 현장 전체를 아우르는 영어 보고문을 읽고 무슨 일이 일어났고 지금 무엇을 해야 하는지 판단하는 훈련을 한다.",
     "art": "passdown"
    },
    {
@@ -7730,7 +9129,7 @@ export const CONTENT_CHAPTERS = [
      "인계 문장 hand over",
      "SIGN OFF"
     ],
-    "goal": "장비 이상→식각→DRC→보고까지 한 흐름을 영어로 정리·인계하기.",
+    "goal": "장비 이상 → 원인 확인 → 벤더 요청 → 인계까지 한 흐름을 영어로 정리하기.",
     "bg": "w14"
    },
    {
@@ -7760,14 +9159,15 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "read",
-    "title": "장비·공정·디자인을 아우르는 종합 보고",
-    "intro": "종합 현장 보고는 장비 고장 하나만 다루지 않는다. 공정 이상, 검사 결과, 심지어 디자인 규칙 위반까지 같은 틀로 묶인다.",
+    "title": "장비·공정·벤더를 아우르는 종합 보고",
+    "intro": "종합 현장 보고는 장비 고장 하나만 다루지 않는다. 안전 경보, 공정 이상, 레시피 변경, 벤더 지원까지 같은 틀로 묶인다.",
     "paras": [
      "장비 측(equipment): 알람, 인터록, 밸브·로봇 고장 등이 **Problem**이 되고, 부품 교체·챔버 전환이 **Action**이 된다. HMI 로그가 1차 근거다.",
      "공정 측(process): SPC 관리도 이탈, 두께 드리프트, 파티클 급증(**particle excursion**) 등이 Problem으로 잡히며, 보통 **yield loss**(수율 손실)와 연결된다.",
-     "검사·디자인 측(design/inspection): **DRC**(Design Rule Check) 위반, 레이아웃 간격 오류, 마스크 결함 등이 보고된다. 이때도 '위반 내용–원인–수정–재검증 결과'로 서술된다.",
-     "세 측 모두 결국 같은 **P–C–A–R** 구조이므로, 분야가 바뀜어도 읽는 방법은 동일하다. 단어만 분야별로 다를 뿐이다.",
-     "또한 각 보고에는 **impact**(영향 범위: 몇 로트, 몇 장)와 **follow-up owner**(후속 담당: 장비/공정/설계 엔지니어)가 명시된다. 구두 보고 시 이 둘을 빼면 반드시 되묻는다."
+     "안전·변경·지원 측(safety/change/vendor): 가스 경보와 LOTO(9강), 레시피 변경 요청과 ECN 승인 대기(10강), 벤더 티켓(**SR**)과 부품 대기(13강)도 보고에 들어간다. 이때도 '무엇이–왜–무엇을 했고–지금 어떤가'로 서술된다.",
+     "세 측 모두 결국 같은 **P–C–A–R** 구조이므로, 분야가 바뀌어도 읽는 방법은 동일하다. 단어만 분야별로 다를 뿐이다.",
+     "**Cause** 칸에는 12강의 확신 표현을 그대로 쓴다: **confirmed / was found**(확정) · **most likely**(가능성 높음) · **suspected**(의심) · **ruled out**(배제). 확인하지 않은 원인을 확정처럼 쓰면 다음 조가 엉뚱한 부품을 간다.",
+     "또한 각 보고에는 **impact**(영향 범위: 몇 로트, 몇 장)와 **follow-up owner**(후속 담당: 장비·공정 엔지니어 또는 벤더)가 명시된다. 구두 보고 시 이 둘을 빼면 반드시 되묻는다."
     ]
    },
    {
@@ -7813,12 +9213,12 @@ export const CONTENT_CHAPTERS = [
      {
       "ab": "ECN",
       "full": "Engineering Change Notice",
-      "ko": "설계·공정 변경 통지."
+      "ko": "승인된 변경 통지 — 레시피·공정 변경에 붙는 번호(10강)."
      },
      {
-      "ab": "DRC",
-      "full": "Design Rule Check",
-      "ko": "설계 규칙 검사. 레이아웃이 제조 규칙을 지키는지 자동 검증."
+      "ab": "SR",
+      "full": "Service Request",
+      "ko": "서비스 요청 — 벤더 지원 티켓, 번호로 연락을 잇는다(13강)."
      },
      {
       "ab": "SPC",
@@ -8145,76 +9545,76 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "glossary",
-    "title": "설계·검증(DRC) 관련 어휘 (4)",
-    "intro": "디자인 룰 체크와 검증 화면에서 나오는 영어. 장비가 아닌 '설계' 상황 보고도 같은 구조로 읽는다.",
+    "title": "2부를 묶는 보고 어휘 (4) — 확신 · 잠금 · 변경 · 벤더",
+    "intro": "9~13강에서 배운 말이 인계 보고에서 어떻게 쓰이는지 모았습니다. 보고문에서 이 말을 보면 \"지금 무엇이 남아 있는가\"를 읽어 내세요.",
     "items": [
      {
-      "en": "violation",
-      "ko": "규칙 위반",
-      "d": "레이아웃이 제조 규칙(design rule)을 어긴 지점.",
-      "ex": "The DRC report shows 8 spacing violations in the layout."
+      "en": "suspected / confirmed",
+      "ko": "의심 / 확정",
+      "d": "원인의 확신 정도(12강) — 확정 전에는 조치하지 않는다",
+      "ex": "A leak at the lid O-ring is suspected; the helium leak check is in progress."
      },
      {
-      "en": "spacing",
-      "ko": "간격",
-      "d": "패턴 사이의 최소 거리 규칙.",
-      "ex": "Minimum metal spacing must be at least 0.10 um."
+      "en": "ruled out",
+      "ko": "배제된",
+      "d": "확인해서 원인이 아님 — 다음 조가 같은 확인을 반복하지 않게",
+      "ex": "Gauge error was ruled out: the second gauge reads the same value."
      },
      {
-      "en": "clean (DRC clean)",
-      "ko": "위반 없음",
-      "d": "검사 결과 오류가 하나도 없는 상태.",
-      "ex": "After the fix, the layout came back DRC clean."
+      "en": "locked out",
+      "ko": "잠금 걸린",
+      "d": "LOTO 중(9강) — 단 사람만 자물쇠를 푼다",
+      "ex": "Chamber A is locked out by J. Lee; do not remove the tag."
      },
      {
-      "en": "waive",
-      "ko": "예외 처리하다",
-      "d": "검토 후 특정 위반을 의도된 것으로 인정해 넘김.",
-      "ex": "The two known violations were waived with reviewer approval."
+      "en": "ECN pending",
+      "ko": "변경 승인 대기",
+      "d": "레시피 변경이 아직 승인 전(10강) — 현재 판 그대로",
+      "ex": "ECN-0412 is still pending, so Rev C stays in production."
      },
      {
-      "en": "layer",
-      "ko": "레이어(층)",
-      "d": "마스크/공정 단계별 설계 층.",
-      "ex": "The violation is on the metal-1 layer, not poly."
+      "en": "OOC, in spec",
+      "ko": "관리 이탈, 규격 안",
+      "d": "평소와 달라졌지만 불량은 아님(12강)",
+      "ex": "Etch rate went OOC on Rule 2, but all points are within spec."
      },
      {
-      "en": "re-run",
-      "ko": "재실행",
-      "d": "수정 후 검사를 다시 돌림.",
-      "ex": "Please re-run the DRC after applying the spacing fix."
+      "en": "SR open",
+      "ko": "벤더 티켓 진행 중",
+      "d": "벤더 지원을 기다리는 중(13강) — 번호와 다음 연락 시각을 넘긴다",
+      "ex": "SR-20618 is open as S1; the vendor will call back at 07:00 KST."
      }
     ]
    },
    {
     "type": "quiz",
     "title": "읽고 판단하기 (4)",
-    "intro": "DRC·검증 화면의 영어 메시지를 올바르게 해석하세요.",
+    "intro": "2부 표현이 들어간 인계 문장을 해석하세요.",
     "questions": [
      {
-      "prompt": "'The layout came back DRC clean.'의 뜻은?",
+      "prompt": "인계 로그: 'A leak at the lid O-ring is suspected; the helium leak check is in progress.' 다음 조가 할 일은?",
       "opts": [
-       "검사 결과 위반이 하나도 없다",
-       "검사에서 위반이 8개 나왔다",
-       "레이아웃을 지워야 한다"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "'The two known violations were waived with reviewer approval.' 어떻게 읽나?",
-      "opts": [
-       "두 위반이 심각해서 작업이 중단됐다",
-       "알려진 두 위반은 검토자 승인으로 예외 처리됐다",
-       "두 위반이 자동으로 수정됐다"
+       "O-ring 을 바로 교체한다",
+       "누설 검사 결과를 확인한 뒤 조치한다",
+       "장비를 정상 가동한다"
       ],
       "ans": 1
      },
      {
-      "prompt": "검증 보고서에 'Please re-run the DRC after applying the spacing fix'라고 있다. 다음 할 일은?",
+      "prompt": "'Chamber A is locked out by J. Lee; do not remove the tag.' 이 자물쇠는 누가 풀 수 있나?",
       "opts": [
-       "간격 수정을 적용한 뒤 DRC를 다시 돌린다",
-       "수정 없이 그대로 출하한다",
-       "간격을 더 줄인다"
+       "다음 조 작업자 누구나",
+       "반장이 대신",
+       "자물쇠를 건 J. Lee 본인"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'Etch rate went OOC on Rule 2, but all points are within spec.' 웨이퍼는?",
+      "opts": [
+       "불량이 아니다 — 평소와 달라진 신호일 뿐",
+       "모두 불량이라 폐기한다",
+       "규격 밖이다"
       ],
       "ans": 0
      }
@@ -8331,9 +9731,9 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "sim",
-    "which": "drc",
-    "mode": "triage",
-    "intro": "아래 DRC(Design Rule Check) 결과 화면을 살펴보세요. 디자인 검증 단계에서 나오는 영어 위반 메시지(violation)를 읽고, 어떤 것이 Critical이고 어떤 것이 Minor인지, 그리고 보고문의 Problem 항목으로 무엇을 써 넣을지 판단하는 연습입니다. 장비뿐 아니라 설계 검증 상황도 같은 P–C–A–R 구조로 보고됩니다."
+    "which": "report",
+    "mode": "handover",
+    "intro": "이번에는 **인계 항목 분류** 실습입니다. 야간조 인계 로그의 항목을 하나씩 읽고 **Critical**(안전 위험 · 생산 정지 · 규격 이탈 웨이퍼)인지 **Minor**(모니터링 · 대기만 필요)인지 고른 뒤, 보고문 **Problem** 줄로 가장 알맞은 문장을 고르세요. 2부에서 배운 경보 · 레시피 · OOC · 벤더 티켓 표현이 섞여 있습니다."
    },
    {
     "type": "sim",
@@ -8387,7 +9787,8 @@ export const CONTENT_CHAPTERS = [
      "상태어 **UP / DOWN / IDLE**, 심각도 **Critical / Major / Minor**, 확실성 **confirmed / suspected**를 정확히 구분한다.",
      "**temporary workaround**와 **pending PM**은 '문제가 남아 있다'는 강한 신호로 읽는다.",
      "구두 보고는 **Result(현재 상태)**를 가장 먼저 말하고, 이어서 원인·조치·후속을 붙인다.",
-     "장비 HMI, DRC 검증, 종합 보고서 모두 같은 P–C–A–R 구조를 공유한다 — 영작이 아니라 정확한 읽기·판단이 핵심이다."
+     "2부의 말이 보고에 그대로 들어온다: **suspected / ruled out**(확신), **locked out**(잠금), **ECN pending**(변경 대기), **OOC, in spec**(관리 이탈), **SR open**(벤더 대기).",
+     "장비 HMI, 인수인계 로그, 벤더 티켓, 종합 보고서 모두 같은 P–C–A–R 구조를 공유한다 — 영작이 아니라 정확한 읽기·판단이 핵심이다."
     ],
     "done": "이제 낯선 영어 보고문 한 장을 받아도 **무슨 일이 있었고, 지금 라인이 어떤 상태인지**를 3분 안에 읽고 판단해 구두로 보고할 수 있다. 수고했다!"
    }
@@ -8402,21 +9803,22 @@ export const CONTENT_CHAPTERS = [
     "type": "story",
     "icon": "🎓",
     "title": "종합 점검 안내",
-    "text": "장비·공정·디자인 전체를 종합합니다. **로그 · 매뉴얼 · Design Rule · DRC/LVS 오류**를 읽고 답하세요.",
+    "text": "1부(장비 화면 · 운전 · 로그 · 알람 · PM)와 2부(안전 규정 · 레시피 · 다른 장비 · 트러블슈팅 · 벤더 소통 · 종합 보고)를 한 번에 점검합니다. **조동사 · 경계어 · 명사 덩어리 · 확신 표현 · 되읽기** — 문장 하나에서 판단을 바꾸는 말을 찾아 답하세요.",
     "art": "finalcheck"
    },
    {
     "type": "scene",
     "title": "오늘의 현장 · 상황 설정",
     "where": "전 과정을 마친 종합 점검.",
-    "tool": "장비 + 설계 전 영역의 화면·리포트.",
-    "situation": "마지막으로 읽고·판단하고·영어로 보고한다.",
+    "tool": "장비 화면 · 규정 · 레시피 표 · 트러블슈팅 문서 · 벤더 티켓 · 인계 보고서.",
+    "situation": "마지막으로 읽고 · 판단하고 · 영어로 보고한다.",
     "meet": [
-     "장비 + 설계 종합",
-     "최종 체크리스트",
-     "DRC / LVS CLEAN"
+     "1부 장비 · 운전 · 알람",
+     "2부 규정 · 레시피 · 장비 계열",
+     "확신 · 되읽기 · 보고",
+     "최종 체크리스트"
     ],
-    "goal": "배운 모든 현장 영어를 실제 흐름에서 통합 적용하기.",
+    "goal": "배운 현장 영어를 실제 흐름에서 통합 적용하기.",
     "bg": "w15"
    },
    {
@@ -8426,19 +9828,19 @@ export const CONTENT_CHAPTERS = [
      "name": "Field Report Template",
      "no": "FRT-15",
      "sec": "1.0",
-     "rev": "A",
+     "rev": "B",
      "page": "1-1"
     },
     "heading": "1.0  Writing an English Field Report",
     "steps": [
-     "Describe the equipment [issue] (what the HMI/alarm showed).",
-     "State the process result (e.g., etch abnormal, out of spec).",
-     "Report the design check (DRC / LVS clean or not).",
-     "Give the [action taken] and the current status."
+     "Describe the equipment [issue] (what the HMI or alarm showed).",
+     "State the process result (for example, out of spec or OOC).",
+     "State how certain the cause is (confirmed, suspected, or ruled out).",
+     "Give the [action taken], any vendor ticket (SR), and the current status."
     ],
     "callout": {
      "kind": "note",
-     "en": "Read → judge → report: the whole loop in English."
+     "en": "Read, judge, and report: the whole loop in English."
     },
     "gloss": [
      [
@@ -8446,8 +9848,8 @@ export const CONTENT_CHAPTERS = [
       "문제"
      ],
      [
-      "abnormal",
-      "비정상"
+      "OOC",
+      "관리 이탈"
      ],
      [
       "action taken",
@@ -8461,33 +9863,33 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "quiz",
-    "title": "① 장비·운전·알람 종합",
-    "intro": "전반부 내용을 확인합니다.",
+    "title": "① 장비 · 운전 · 알람 종합",
+    "intro": "1부(1~7강) 내용을 확인합니다.",
     "questions": [
      {
       "prompt": "“Ignite the plasma.” 의 뜻은?",
       "opts": [
-       "플라즈마를 점화하라",
        "가스를 잠가라",
+       "플라즈마를 점화하라",
        "챔버를 열어라"
       ],
-      "ans": 0
+      "ans": 1
      },
      {
       "prompt": "“reflected power” 는 무엇인가?",
       "opts": [
-       "매칭 불량으로 되돌아오는 RF 전력",
        "공급되는 전력",
-       "챔버 온도"
+       "챔버 온도",
+       "매칭 불량으로 되돌아오는 RF 전력"
       ],
-      "ans": 0
+      "ans": 2
      },
      {
       "prompt": "“Replace the pump oil.” 는 어떤 활동인가?",
       "opts": [
        "유지보수(PM)",
        "운전",
-       "설계"
+       "보고"
       ],
       "ans": 0
      }
@@ -8495,35 +9897,103 @@ export const CONTENT_CHAPTERS = [
    },
    {
     "type": "quiz",
-    "title": "② Layer · Design Rule",
-    "intro": "디자인 기본 용어를 확인합니다.",
+    "title": "② 안전 · 레시피",
+    "intro": "9강(규정문의 조동사)과 10강(조건 · 경계)을 확인합니다.",
     "questions": [
      {
-      "prompt": "Layer “Metal” 은 무엇인가?",
+      "prompt": "'The tool need not be vented for a software-only update.' 의 뜻은?",
       "opts": [
-       "금속 배선",
-       "게이트",
-       "기판"
+       "벤트하지 않아도 된다",
+       "벤트하면 안 된다",
+       "반드시 벤트해야 한다"
       ],
       "ans": 0
      },
      {
-      "prompt": "Design Rule 의 “spacing” 은?",
+      "prompt": "'Reflected power must be below 20 W.' 측정값 20 W 는?",
       "opts": [
-       "패턴 사이 간격",
-       "패턴의 폭",
-       "겹침"
+       "합격 — 경계와 같다",
+       "판정할 수 없다",
+       "불합격 — below 는 경계를 포함하지 않는다"
+      ],
+      "ans": 2
+     },
+     {
+      "prompt": "'The recipe shall not be edited unless an ECN has been approved.' ECN 이 PENDING 이면?",
+      "opts": [
+       "고쳐도 된다",
+       "고칠 수 없다 — 승인이 먼저다",
+       "고친 뒤 승인받으면 된다"
+      ],
+      "ans": 1
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "③ 장비 계열 · 트러블슈팅",
+    "intro": "11강(명사 덩어리 · 단위)과 12강(확신 · 관리도)을 확인합니다.",
+    "questions": [
+     {
+      "prompt": "화면 라벨 'SLURRY FLOW ALARM LIMIT 150 mL/min' 은?",
+      "opts": [
+       "슬러리 유량 알람이 지금 울린다",
+       "슬러리 유량 알람의 한계값이 150 이다",
+       "슬러리 유량이 지금 150 이다"
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "보고: 'The leak is most likely at the lid O-ring.' 원인은?",
+      "opts": [
+       "가능성이 높지만 아직 확정 전이다",
+       "확정되었다",
+       "배제되었다"
       ],
       "ans": 0
      },
      {
-      "prompt": "“enclosure” 의 뜻은?",
+      "prompt": "식각 속도가 UCL(106)을 넘은 107, 규격은 90~110. 이 점은?",
       "opts": [
-       "한 레이어가 다른 레이어를 감싸는 양",
-       "최소 폭",
-       "누설"
+       "OOS — 불량이다",
+       "정상이다",
+       "OOC 지만 규격 안 — 조사할 신호다"
+      ],
+      "ans": 2
+     }
+    ]
+   },
+   {
+    "type": "quiz",
+    "title": "④ 벤더 소통 · 보고",
+    "intro": "13강(티켓 · 통화)과 14강(종합 보고)을 확인합니다.",
+    "questions": [
+     {
+      "prompt": "지원 엔지니어: 'Set the limit to fifteen watts.' 가장 안전한 되읽기는?",
+      "opts": [
+       "Let me read that back: five-zero watts.",
+       "Let me read that back: one-five watts.",
+       "Okay, fifty."
+      ],
+      "ans": 1
+     },
+     {
+      "prompt": "장비가 멈췄고 같은 레시피를 돌릴 다른 장비가 없다. 티켓 긴급도는(교재 예시)?",
+      "opts": [
+       "S1",
+       "S3",
+       "S4"
       ],
       "ans": 0
+     },
+     {
+      "prompt": "구두 인계에서 가장 먼저 말할 것은?",
+      "opts": [
+       "원인 분석의 자세한 과정",
+       "내가 한 일의 순서",
+       "Result — 지금 장비 · 로트의 상태"
+      ],
+      "ans": 2
      }
     ],
     "figs": [
@@ -8538,8 +10008,13 @@ export const CONTENT_CHAPTERS = [
         "OK"
        ],
        [
-        "Design",
-        "DRC/LVS CLEAN",
+        "Safety · Recipe",
+        "NO OPEN ITEMS",
+        "ok"
+       ],
+       [
+        "Vendor",
+        "SR-20618 CLOSED",
         "ok"
        ]
       ]
@@ -8547,79 +10022,12 @@ export const CONTENT_CHAPTERS = [
     ]
    },
    {
-    "type": "quiz",
-    "title": "③ DRC 오류",
-    "intro": "영문 DRC 오류를 해석합니다.",
-    "questions": [
-     {
-      "prompt": "DRC = ?",
-      "opts": [
-       "Design Rule Check",
-       "Data Read Check",
-       "Device Run Control"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“METAL1.SPACING violation” 의 뜻은?",
-      "opts": [
-       "Metal1 간격 규칙 위반",
-       "선폭 정상",
-       "소자 누락"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“insufficient spacing” 은?",
-      "opts": [
-       "간격이 부족하다",
-       "간격이 넓다",
-       "폭이 크다"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
-    "type": "quiz",
-    "title": "④ LVS 검증",
-    "intro": "영문 LVS 오류를 해석합니다.",
-    "questions": [
-     {
-      "prompt": "LVS = ?",
-      "opts": [
-       "Layout Versus Schematic",
-       "Low Voltage System",
-       "Layer Verify Step"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“Missing device in the layout.” 는 어떤 오류?",
-      "opts": [
-       "레이아웃에 소자가 빠짐",
-       "간격 위반",
-       "진공 이상"
-      ],
-      "ans": 0
-     },
-     {
-      "prompt": "“incorrect connection” 의 뜻은?",
-      "opts": [
-       "배선이 회로도와 다름",
-       "소자가 중복됨",
-       "색이 틀림"
-      ],
-      "ans": 0
-     }
-    ]
-   },
-   {
     "type": "wrap",
     "title": "수료 — 이 과정을 마치며",
     "points": [
-     "장비 운전·로그·알람 → 디자인 규칙·DRC·LVS → 종합 보고까지 마쳤다.",
-     "이제 현장 영어를 읽고 → 판단하고 → 보고할 수 있다."
+     "1부: 장비 화면 · 운전 절차 · 로그 · 알람 · PM 의 영어를 **읽고 판단**했다.",
+     "2부: 규정의 **조동사**, 레시피의 **조건과 경계**, 낯선 장비의 **명사 덩어리와 단위**, 원인의 **확신 표현**, 벤더와의 **되읽기**를 익혔다.",
+     "그리고 모든 것을 **Problem – Cause – Action – Result** 로 묶어 영어로 보고할 수 있다."
     ],
     "done": "🎓 **종합 점검 완료 · 전 과정 수료!**",
     "figs": [
@@ -8627,15 +10035,15 @@ export const CONTENT_CHAPTERS = [
       "kind": "sticker",
       "level": "info",
       "en": "FINAL CHECK — READ · JUDGE · REPORT",
-      "ko": "최종 점검 — 읽고·판단하고·보고"
+      "ko": "최종 점검 — 읽고 · 판단하고 · 보고"
      },
      {
       "kind": "log",
       "title": "FINAL CHECKLIST",
       "lines": [
-       "Equipment English   ✓",
-       "Design English      ✓",
-       "Report in English   ✓"
+       "Equipment English      ✓",
+       "Safety · Recipe English ✓",
+       "Vendor · Report English ✓"
       ]
      }
     ]

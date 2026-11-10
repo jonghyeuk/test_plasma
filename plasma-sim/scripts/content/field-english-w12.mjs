@@ -1,0 +1,353 @@
+/* ═══ 현장 실무영어 12강 「트러블슈팅 문서 — 원인을 좁히고, 확신을 밝혀라」 원고 ═══
+   2부 넷째 강. 고장이 났을 때 읽고 쓰는 문서: 트러블슈팅 표(Symptom · Possible Cause · Check · Corrective Action),
+   원인 분석 보고(근본 원인 · 5 Why · 8D), 공정 감시(FDC · SPC) 의 OOC 메시지.
+   영어 축: ① 확신의 정도(confirmed · was found / most likely · is consistent with / may · suspected / ruled out)
+            ② 원인과 결과의 방향(caused by · due to ↔ results in · leads to)
+            ③ 관리 한계(UCL · LCL)와 규격 한계(spec limit)는 다르다 — OOC 는 '규격 밖'이 아니다
+   이 파일이 12강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w12
+   근거: 관리도 규칙 — Western Electric 규칙 1(3σ 한계 밖 한 점) · 규칙 4(중심선 한쪽 8점 연속), Nelson 규칙 3(6점 연속 증가/감소).
+         8D — D3 임시 조치(containment) · D4 근본 원인 · D5 시정 조치(corrective) · D7 재발 방지(preventive).
+   트러블슈팅 표·관리도 수치·'세정 뒤 12시간' 기준은 이 교재의 예시다(화면에 '교재 예시'라고 밝힌다). 엔진(fieldEnglishLabs.js 12강 절)과 같은 숫자. */
+export default {
+  id: 'w12',
+  title: '트러블슈팅 문서 — 원인을 좁히고, 확신을 밝혀라',
+  slides: [
+    {
+      type: 'story',
+      icon: '🔍',
+      title: '"확정이야, 추정이야?"',
+      text: '밤 11시. 식각 장비 ET-05 에 알람이 뜬다. **BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5)**. 준호는 장비사의 트러블슈팅 가이드를 펼친다. 표 맨 위 줄: **Symptom: Base pressure high. Possible cause: Vacuum leak at the lid O-ring.** 준호는 바로 교대 보고에 적는다. "O-ring leak. Will replace." 30분 뒤, 해외 엔지니어에게서 메시지가 온다. "**Is the O-ring leak confirmed, or only suspected?** Did you run a helium leak check?" 준호는 멈칫한다. 검사는 아직 안 했다. 표에 「가능한 원인」으로 적힌 것을 「원인」으로 옮겨 적은 것이다. 선배가 보고를 고쳐 준다. "**A leak at the lid O-ring is suspected. A helium leak check is in progress.**" 그리고 덧붙인다. "트러블슈팅 문서에서 제일 위험한 건 틀린 원인이 아니라, **추정을 확정처럼 쓰는 것**이야. 그 한 줄 때문에 멀쩡한 부품을 갈고, 진짜 원인은 그대로 남거든."',
+      figs: [
+        { kind: 'alarm', level: 'danger', code: 'VAC-112', en: 'BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5).', ko: '도달 진공도 높음 — 4.2E-5 Torr (한계 1.0E-5)' },
+      ],
+    },
+    {
+      type: 'scene',
+      title: '오늘의 현장 · 상황 설정',
+      where: '야간의 식각 장비 앞 — 장비사 트러블슈팅 가이드와 공정 감시(SPC) 화면.',
+      tool: '트러블슈팅 표, 헬륨 누설 검사기, 관리도(control chart), 교대 보고서와 원인 분석 보고서.',
+      situation: '알람의 원인 후보가 넷이다. 하나씩 확인해 지워 나가야 하고, 보고할 때는 어디까지 확인했는지를 영어로 밝혀야 한다.',
+      meet: ['표 Symptom · Possible Cause · Check · Action', '확신 confirmed · likely · suspected · ruled out', '원인 caused by ↔ results in', '관리도 UCL · LCL · OOC'],
+      goal: '원인 후보를 확인으로 좁히고, 보고서에 확신의 정도를 정확히 적기.',
+      bg: 'w12',
+    },
+    {
+      type: 'read',
+      title: '트러블슈팅 표의 구조 — 증상에서 조치까지',
+      intro: '장비사 매뉴얼의 트러블슈팅 장(chapter)은 대개 표다. 한 증상(symptom)에 원인 후보가 여러 줄 달린다.',
+      paras: [
+        '**Symptom(증상)** — 화면이나 측정에서 보이는 것. 예: "Base pressure high", "Particle count increased". 원인이 아니라 겉으로 드러난 결과다.',
+        '**Possible Cause(가능한 원인)** — 그 증상을 낼 수 있는 후보들. **possible** 이라는 말 그대로 아직 확인된 것이 아니다. 보통 흔한 것부터 위에 적는다.',
+        '**Check(확인 방법)** — 그 후보가 맞는지 가리는 검사. 예: "Perform a helium leak check at the lid."',
+        '**Corrective Action(조치)** — 확인된 원인에 대한 처치. 예: "Replace the lid O-ring." 확인 없이 이 칸부터 하면 멀쩡한 부품을 갈게 된다(**parts swapping**).',
+        '표 옆에는 흐름 문장이 붙기도 한다: "**If** the leak check passes, **go to** Cause 2." — 10강의 조건문 그대로다.',
+      ],
+      figs: [
+        { kind: 'step', title: 'TROUBLESHOOTING TABLE', items: [['[Symptom] — what you see', '증상'], ['[Possible Cause] — not yet confirmed', '원인 후보'], ['[Check] — how to confirm', '확인'], ['[Corrective Action] — only after the check', '조치']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '원인 좁히기 — 확인해서 지운다',
+      intro: '트러블슈팅은 원인을 맞히는 일이 아니라 후보를 하나씩 지워 가는 일이다. 지울 때 쓰는 말이 정해져 있다.',
+      paras: [
+        '확인 결과가 그 후보와 맞지 않으면 그 후보를 지운다: "Gauge error **is ruled out**: the second gauge reads the same value."',
+        '확인 결과가 그 후보를 직접 보여 주면 확정이다: "A leak **was found** at the lid O-ring with the helium detector."',
+        '아직 확인하지 않은 후보는 그대로 둔다(**open**). 보고서에는 지운 것과 남은 것을 모두 적는다: "Turbo and gauge **have been ruled out**. Lid leak check **is in progress**."',
+        '순서도 중요하다. 쉽고 빠르고 장비를 열지 않는 확인부터 한다. 게이지 비교 → 터보 상태 → 누설 검사 → 분해 순서가 흔하다.',
+        '모든 후보가 지워졌는데 증상이 남아 있으면, 표에 없는 원인이다. 이때는 추측으로 조치하지 말고 **escalate(상부 · 장비사에 올림)** 한다.',
+      ],
+      figs: [
+        { kind: 'log', title: 'TROUBLESHOOTING LOG — ET-05', lines: ['23:10  Gauge cross-check — [RULED OUT]', '23:18  Turbo speed 100% — [RULED OUT]', '23:40  He leak check at lid — [IN PROGRESS]'] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '확신의 정도 — confirmed · likely · suspected · ruled out',
+      intro: '원인 보고 문장은 원인이 무엇인지보다 먼저 얼마나 확실한지를 말해야 한다. 그 정도를 정하는 말이 네 층이다.',
+      paras: [
+        '**확정(confirmed)** — confirmed · verified · was found · the root cause is. 직접 증거가 있다. 예: "Root cause **confirmed**: the O-ring was cut during the last PM."',
+        '**가능성 높음(likely)** — most likely · probably · is consistent with · points to · suggests. 증거가 그쪽을 가리키지만 직접 확인은 아직이다.',
+        '**가능성 있음(possible)** — may · might · could · possibly · is suspected. 후보일 뿐이다. 예: "The gauge **may** be drifting."',
+        '**배제(ruled out)** — ruled out · eliminated · is not the cause. 확인해서 지웠다.',
+        '9강의 조동사와 헷갈리지 마라. 규정문의 **may** 는 "해도 된다"(허용)였지만, 원인 보고의 **may** 는 "~일 수도 있다"(가능성)다. 문서의 종류가 뜻을 정한다.',
+        '한 등급 높여 쓰면(suspected → confirmed) 멀쩡한 부품을 갈고, 한 등급 낮춰 쓰면(confirmed → may) 조치가 늦어진다. **증거만큼만** 쓴다.',
+      ],
+      figs: [
+        { kind: 'step', title: 'CERTAINTY', items: [['[confirmed] / [was found]', '확정'], ['[most likely] / [is consistent with]', '가능성 높음'], ['[may] / [is suspected]', '가능성 있음'], ['[ruled out] / [is not the cause]', '배제']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: '원인과 결과의 방향 — caused by ↔ results in',
+      intro: '원인과 결과를 잇는 말은 화살표의 방향이 정반대인 것끼리 짝을 이룬다. 방향을 거꾸로 읽으면 원인과 증상이 뒤바뀐다.',
+      paras: [
+        '**결과 ← 원인** 방향: **caused by · due to · because of · results from**. 예: "The pressure rise is **caused by** a leak." → 원인은 leak.',
+        '**원인 → 결과** 방향: **causes · results in · leads to · so · as a result**. 예: "A leak **results in** a pressure rise." → 원인은 여전히 leak.',
+        '두 문장은 같은 내용이다. **results in** 과 **results from** 은 전치사 하나 차이로 방향이 정반대다 — 가장 자주 거꾸로 읽는 짝이다.',
+        '**contribute to** 는 "원인 중 하나다"(유일한 원인이 아님). "Chamber wall deposits **contributed to** the particle increase."',
+        '읽는 법: 연결어 앞뒤에서 **원인 쪽에 밑줄**을 긋는다. 원인이 문장 앞에 있든 뒤에 있든, 밑줄 친 쪽이 조치의 대상이다.',
+      ],
+      figs: [
+        { kind: 'note', title: 'DIRECTION', en: 'Effect [is caused by] cause. Cause [results in] effect.', ko: 'caused by 뒤가 원인 · results in 앞이 원인.' },
+      ],
+    },
+    {
+      type: 'read',
+      title: '근본 원인과 세 가지 조치 — 5 Why · 8D',
+      intro: '부품을 갈아서 알람이 꺼졌다고 끝이 아니다. 원인 분석 보고(8D 등)는 원인을 두 층으로, 조치를 세 층으로 나눈다.',
+      paras: [
+        '**direct cause(직접 원인)** — 증상을 바로 만든 것. 예: O-ring 이 찢어졌다.',
+        '**root cause(근본 원인)** — 그 직접 원인이 생긴 이유. 예: 지난 PM 때 O-ring 을 끼우는 지그가 없어 손으로 끼우다 찢었다. "Why?"를 다섯 번쯤 물어 내려가는 방법을 **5 Why** 라고 한다.',
+        '**containment action(임시 조치)** — 피해를 막는 즉시 조치. 예: 장비 정지, 영향받은 lot 보류(hold). 8D 의 D3.',
+        '**corrective action(시정 조치)** — 직접 원인을 없앤다. 예: O-ring 교체 후 누설 검사 합격. 8D 의 D5.',
+        '**preventive action(재발 방지)** — 근본 원인을 없애 같은 일이 다시 안 생기게 한다. 예: 지그 도입, PM 절차서 수정. 8D 의 D7. 이것이 없으면 다음 PM 에 또 찢어진다.',
+      ],
+      figs: [
+        { kind: 'step', title: '8D (KEY STEPS)', items: [['D3 [containment] — stop the damage', '임시 조치'], ['D4 [root cause] — why it happened', '근본 원인'], ['D5 [corrective] — remove the direct cause', '시정 조치'], ['D7 [preventive] — stop it from recurring', '재발 방지']] },
+      ],
+    },
+    {
+      type: 'read',
+      title: 'SPC 관리도 읽기 — OOC 는 "규격 밖"이 아니다',
+      intro: '고장 전에 이상을 잡는 것이 공정 감시다. 측정값을 시간순으로 찍은 관리도(control chart)와 그 경고 메시지(OOC)를 읽는다.',
+      paras: [
+        '**CL(center line)** — 평소 평균. **UCL / LCL(upper / lower control limit)** — 평소의 흔들림 폭(보통 ±3σ). 공정이 "평소대로"인지의 경계다.',
+        '**spec limit(규격 한계)** — 제품이 합격인지의 경계. 고객·설계가 정한다. 보통 관리 한계보다 바깥에 있다.',
+        '**OOC(out of control)** — 관리 한계 규칙에 걸렸다 = **평소와 달라졌다**. 아직 규격 안(**in spec**)일 수 있다. **OOS(out of spec)** 는 규격 밖 = 불량이다. 두 말을 섞으면 안 된다.',
+        '대표 규칙(이 교재의 예시 — Western Electric · Nelson 규칙에서): ① **한 점이 UCL 또는 LCL 밖** ② **중심선 한쪽에 8점 연속(run)** ③ **6점 연속 증가 또는 감소(trend)**.',
+        '②와 ③은 한 점도 한계 밖이 아닌데 걸린다. 값이 한쪽으로 쏠리거나 계속 움직이는 것은 무언가 바뀌었다는 신호이기 때문이다 — 예: 부품 마모, 챔버 벽 침착.',
+        'OOC 가 뜨면 보통 장비를 멈추고(**inhibit**) 엔지니어가 원인을 본다. 메시지 예: "**OOC: Rule 2 — 8 points above CL. Tool inhibited.**"',
+      ],
+      figs: [
+        { kind: 'hmi', tool: 'SPC · ET-05 ETCH RATE', status: 'OOC', state: 'fault', rows: [['CL / UCL / LCL', '100 / 106 / 94 nm/min'], ['SPEC LIMIT', '90 ~ 110 nm/min'], ['LAST POINT', '107 nm/min', 'warn']], banner: { en: 'OOC: Rule 1 — 1 point beyond UCL. Tool inhibited.', ko: '관리 이탈: 규칙 1 — UCL 밖 한 점. 장비 정지.', level: 'danger' } },
+      ],
+    },
+    {
+      type: 'acr',
+      title: '약어',
+      intro: '트러블슈팅 문서와 공정 감시 화면에 나오는 약어입니다.',
+      items: [
+        { ab: 'RCA', full: 'Root Cause Analysis', ko: '근본 원인 분석' },
+        { ab: '8D', full: 'Eight Disciplines', ko: '8단계 문제 해결 보고 양식 — D3 임시 · D5 시정 · D7 재발 방지' },
+        { ab: 'CAPA', full: 'Corrective and Preventive Action', ko: '시정 및 재발 방지 조치' },
+        { ab: 'FDC', full: 'Fault Detection and Classification', ko: '장비 센서 값으로 이상을 잡는 감시 시스템' },
+        { ab: 'SPC', full: 'Statistical Process Control', ko: '통계적 공정 관리 — 관리도로 감시' },
+        { ab: 'CL', full: 'Center Line', ko: '관리도의 중심선(평소 평균)' },
+        { ab: 'UCL / LCL', full: 'Upper / Lower Control Limit', ko: '관리 상한 / 하한 — 규격 한계와 다르다' },
+        { ab: 'OOC', full: 'Out of Control', ko: '관리 이탈 — 평소와 달라짐(규격 안일 수 있음)' },
+        { ab: 'OOS', full: 'Out of Specification', ko: '규격 이탈 — 불량' },
+        { ab: 'MTBF', full: 'Mean Time Between Failures', ko: '평균 고장 간격 — 장비 신뢰성 지표' },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (1) — 확신의 정도',
+      intro: '원인 보고 문장의 확신 등급입니다. 예문마다 어느 층인지 가려 보세요.',
+      items: [
+        { en: 'confirmed', ko: '확정된', d: '직접 증거로 확인됨', ex: 'Root cause confirmed: the lid O-ring was cut during the last PM.' },
+        { en: 'was found', ko: '발견되었다', d: '검사에서 실제로 봤다 — 확정', ex: 'A leak was found at the lid O-ring with the helium detector.' },
+        { en: 'most likely', ko: '가장 가능성 높은', d: '증거가 가리키지만 직접 확인 전', ex: 'The leak is most likely at the lid O-ring.' },
+        { en: 'is consistent with', ko: '~와 들어맞는다', d: '증거가 그 설명과 모순되지 않음 — 가능성 높음', ex: 'The pressure trend is consistent with outgassing after the wet clean.' },
+        { en: 'is suspected', ko: '의심된다', d: '후보일 뿐 — 가능성 있음', ex: 'The chamber liner is suspected as the particle source.' },
+        { en: 'ruled out', ko: '배제된', d: '확인해서 원인이 아님', ex: 'Turbo pump degradation has been ruled out.' },
+      ],
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (1) — 확신의 정도',
+      intro: '보고 문장의 확신 등급을 판단하세요.',
+      questions: [
+        { prompt: "교대 보고: 'The leak is most likely at the lid O-ring.' 다음 사람이 할 일은?", opts: ['O-ring 을 바로 교체한다 — 확정이다', '누설 검사로 확인한다 — 가능성이 높을 뿐 확정 전이다', '아무것도 안 한다 — 배제되었다'], ans: 1 },
+        { prompt: "'Turbo pump degradation has been ruled out.' 의 뜻은?", opts: ['터보 펌프는 확인 결과 원인이 아니다', '터보 펌프가 원인으로 확정되었다', '터보 펌프가 원인일 수도 있다'], ans: 0 },
+        { prompt: "원인 보고서의 'The gauge may be drifting.' 에서 may 는?", opts: ['허용 — 게이지가 움직여도 된다', '의무 — 게이지를 움직여야 한다', '가능성 — 게이지가 틀어졌을 수도 있다'], ans: 2 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (2) — 원인과 결과',
+      intro: '화살표 방향을 정하는 연결어입니다. 원인 쪽에 밑줄을 그어 보세요.',
+      items: [
+        { en: 'caused by', ko: '~에 의해 생긴', d: '뒤가 원인 (결과 ← 원인)', ex: 'The pressure rise was caused by a cut O-ring.' },
+        { en: 'due to', ko: '~때문에', d: '뒤가 원인', ex: 'The run was aborted due to an endpoint timeout.' },
+        { en: 'results in', ko: '~을 낳는다', d: '앞이 원인 (원인 → 결과)', ex: 'A low sweep rate results in pad glazing.' },
+        { en: 'results from', ko: '~에서 생긴다', d: '뒤가 원인 — results in 과 반대 방향', ex: 'Pad glazing results from a low conditioner sweep rate.' },
+        { en: 'leads to', ko: '~로 이어진다', d: '앞이 원인', ex: 'Polymer buildup on the wall leads to particle flakes.' },
+        { en: 'contribute to', ko: '~의 한 원인이 되다', d: '여러 원인 중 하나', ex: 'Chamber wall deposits contributed to the particle increase.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      variant: 'parts',
+      title: '매뉴얼 표본 — 트러블슈팅 표',
+      doc: { name: 'ET-05 MAINTENANCE MANUAL — TROUBLESHOOTING', no: 'MM-0505', rev: 'D' },
+      heading: 'Symptom: BASE PRESSURE HIGH (교재 예시)',
+      cols: ['#', 'POSSIBLE CAUSE', 'CHECK', 'IF CONFIRMED (CORRECTIVE ACTION)'],
+      rows: [
+        ['1', 'Gauge error or drift', 'Compare with the second gauge.', 'Calibrate or replace the gauge.'],
+        ['2', 'Turbo pump degraded', 'Check turbo speed and foreline pressure.', 'Replace the turbo pump.'],
+        ['3', 'Outgassing after wet clean', 'Clean within 12 h and rate of rise decreasing?', 'Continue pumping; recheck in 4 h.'],
+        ['4', 'Vacuum leak at the lid O-ring', 'Perform a helium leak check at the lid.', 'Replace the O-ring; retest.'],
+      ],
+      callout: { kind: 'note', en: 'Check the causes in this order. Do not replace any part until its cause is confirmed.' },
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (2) — 표로 좁히기',
+      intro: '위 트러블슈팅 표 MM-0505 를 근거로 판단하세요.',
+      questions: [
+        { prompt: "두 번째 게이지도 같은 값(4.2E-5 Torr)을 읽는다. 1번 원인(gauge error)은?", opts: ['확정이다', '아직 열려 있다', '배제한다 — 두 게이지가 같으면 게이지 오차가 아니다'], ans: 2 },
+        { prompt: "세정(wet clean)은 3일 전이었다. 3번 원인(outgassing)은?", opts: ['배제한다 — 12시간 기준을 한참 넘었다', '확정이다', '가장 가능성이 높다'], ans: 0 },
+        { prompt: "1~3번이 모두 배제되었다. 'Do not replace any part until its cause is confirmed.' 다음 할 일은?", opts: ['O-ring 을 바로 교체한다', '4번 확인(헬륨 누설 검사)을 한다', '터보 펌프를 교체한다'], ans: 1 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (3) — 원인 분석과 조치',
+      intro: '원인 분석 보고(8D · CAPA)에서 쓰는 말입니다.',
+      items: [
+        { en: 'direct cause', ko: '직접 원인', d: '증상을 바로 만든 것', ex: 'The direct cause was a cut O-ring at the lid.' },
+        { en: 'root cause', ko: '근본 원인', d: '직접 원인이 생긴 이유 — 5 Why 로 찾는다', ex: 'The root cause was the lack of an O-ring install jig during PM.' },
+        { en: 'containment action', ko: '임시 조치', d: '피해를 막는 즉시 조치 (D3)', ex: 'As a containment action, the tool was inhibited and two lots were put on hold.' },
+        { en: 'corrective action', ko: '시정 조치', d: '직접 원인을 없앤다 (D5)', ex: 'Corrective action: the O-ring was replaced and the leak check passed.' },
+        { en: 'preventive action', ko: '재발 방지 조치', d: '근본 원인을 없앤다 (D7)', ex: 'Preventive action: an install jig was added to the PM procedure.' },
+        { en: 'escalate', ko: '상부에 올리다', d: '내 선에서 못 풀 때 엔지니어 · 장비사로', ex: 'If all causes are ruled out, escalate to the vendor.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      variant: 'email',
+      title: '매뉴얼 표본 — 원인 분석 요약 메일',
+      from: 'Junho Lee <junho.lee@fab.example>',
+      to: 'Etch Equipment Team <etch-eq@fab.example>',
+      subject: 'ET-05 base pressure high — RCA summary',
+      lines: [
+        'Hi all,',
+        'Symptom: Base pressure was 4.2E-5 Torr against a limit of 1.0E-5 Torr at 23:05.',
+        'Checks: Gauge error and turbo degradation were [ruled out]. A leak [was found] at the lid O-ring with the helium detector.',
+        'Direct cause: The O-ring was cut. It was [most likely] damaged during the PM on Nov 3, because it was installed by hand.',
+        'Containment: ET-05 was inhibited, and lots 2417 and 2418 are on hold.',
+        'Corrective action: The O-ring was replaced. Base pressure recovered to 6.0E-6 Torr.',
+        'Preventive action (proposed): Add an install jig to the PM procedure. The root cause is not yet [confirmed].',
+      ],
+      sign: 'Thanks, Junho (Etch, night shift)',
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (3) — 보고서 읽기',
+      intro: '위 원인 분석 요약 메일을 근거로 답하세요.',
+      questions: [
+        { prompt: "메일에서 '확정'으로 쓴 것은?", opts: ['O-ring 이 PM 때 손상되었다는 것', '근본 원인(지그가 없었다는 것)', '덮개 O-ring 에서 누설이 발견되었다는 것'], ans: 2 },
+        { prompt: "'lots 2417 and 2418 are on hold' 는 8D 의 어느 조치인가?", opts: ['임시 조치(containment)', '시정 조치(corrective)', '재발 방지(preventive)'], ans: 0 },
+        { prompt: "'The root cause is not yet confirmed.' 를 읽은 엔지니어가 할 일은?", opts: ['보고를 닫는다 — 부품을 갈았으니 끝이다', '근본 원인 확인을 계속하고 재발 방지를 확정한다', 'O-ring 을 한 번 더 간다'], ans: 1 },
+      ],
+    },
+    {
+      type: 'glossary',
+      title: '핵심 용어 (4) — 공정 감시(SPC · FDC)',
+      intro: '관리도와 감시 화면의 말입니다. 관리 한계와 규격 한계를 구분하세요.',
+      items: [
+        { en: 'control limit', ko: '관리 한계 (UCL · LCL)', d: '평소의 흔들림 폭 — 공정이 "평소대로"인지의 경계', ex: 'The point at 107 nm/min is above the upper control limit of 106.' },
+        { en: 'spec limit', ko: '규격 한계', d: '제품 합격의 경계 — 보통 관리 한계보다 바깥', ex: 'The same point is still within the spec limit of 110 nm/min.' },
+        { en: 'out of control (OOC)', ko: '관리 이탈', d: '평소와 달라짐 — 규격 안일 수 있다', ex: 'An OOC point does not always mean the wafer is bad.' },
+        { en: 'run', ko: '연속(한쪽 쏠림)', d: '중심선 한쪽에 여러 점이 연속', ex: 'Eight points in a run above the center line trigger Rule 2.' },
+        { en: 'trend', ko: '추세', d: '계속 오르거나 내림', ex: 'Six points steadily increasing indicate a trend, such as wear.' },
+        { en: 'inhibit', ko: '(장비 사용을) 막다', d: 'OOC 뒤 엔지니어 확인 전까지 정지', ex: 'The tool is inhibited until the engineer reviews the chart.' },
+      ],
+    },
+    {
+      type: 'mansample',
+      title: '매뉴얼 표본 — OOC 대응 절차',
+      doc: { name: 'SPC Response Procedure', no: 'SOP-QA-044', sec: '3', rev: 'C', page: '3-1' },
+      heading: '3  Responding to an OOC Alarm',
+      steps: [
+        'When an OOC alarm occurs, the tool is inhibited automatically.',
+        { t: 'Check which rule was triggered: Rule 1 (beyond a control limit), Rule 2 (run of 8), or Rule 3 (trend of 6).', note: { kind: 'note', en: 'An OOC point may still be within the spec limit.' } },
+        { t: 'If the point is also out of spec (OOS), put the affected lots on hold.', note: { kind: 'caution', en: 'OOC and OOS are different. Do not scrap wafers for OOC alone.' } },
+        'Investigate the cause using the troubleshooting guide and the FDC data.',
+        'Release the tool only after the cause is confirmed or the engineer approves.',
+      ],
+      callout: { kind: 'warning', en: 'Do not clear an OOC alarm without recording the cause.' },
+      gloss: [['triggered', '(규칙에) 걸린'], ['scrap', '폐기하다'], ['investigate', '조사하다'], ['release', '(정지를) 풀다']],
+    },
+    {
+      type: 'quiz',
+      title: '확인 퀴즈 (4) — OOC 와 OOS',
+      intro: '관리도와 OOC 대응 절차 SOP-QA-044 를 근거로 판단하세요.',
+      questions: [
+        { prompt: "식각 속도 107 nm/min. UCL 106, 규격 90~110. 이 점은?", opts: ['OOC 이면서 OOS — 불량이다', 'OOC 지만 규격 안 — 평소와 달라진 신호다', '정상 — 아무 일도 아니다'], ans: 1 },
+        { prompt: "'Do not scrap wafers for OOC alone.' 의 뜻은?", opts: ['관리 이탈만으로 웨이퍼를 폐기하지 마라', 'OOC 면 웨이퍼를 폐기하라', 'OOC 를 기록하지 마라'], ans: 0 },
+        { prompt: "8점 연속 중심선 위, 한 점도 UCL 밖은 아니다. 어떻게 읽나?", opts: ['정상 — 한계 밖이 없으니 문제없다', '규격 이탈이다', 'Rule 2(run) 에 걸린 OOC — 공정이 한쪽으로 쏠렸다'], ans: 2 },
+      ],
+    },
+    {
+      type: 'manual',
+      mtitle: 'TROUBLESHOOTING REPORT — WRITE ONLY WHAT YOU KNOW',
+      paras: [
+        'A leak at the lid O-ring is suspected. A helium leak check is in progress.',
+        '해설: 확인 전 보고 — is suspected(가능성 있음) + in progress(진행 중). "O-ring leak" 이라고만 쓰면 확정처럼 읽힌다.',
+        'A leak was found at the lid O-ring. The O-ring was replaced, and the leak check passed.',
+        '해설: 확인 뒤 보고 — was found(확정) + 조치 + 조치의 결과(passed). 조치가 효과가 있었는지까지 쓴다.',
+        'The particle increase is most likely caused by polymer flakes from the chamber wall.',
+        '해설: most likely(가능성 높음) + caused by(뒤가 원인). 원인 = 챔버 벽의 폴리머 조각. 아직 확정은 아니다.',
+        'Gauge error has been ruled out: the second gauge reads the same value.',
+        '해설: ruled out(배제) + 근거(콜론 뒤). 배제한 이유를 함께 적어야 다음 사람이 같은 확인을 반복하지 않는다.',
+      ],
+    },
+    {
+      type: 'manual',
+      mtitle: 'SPC RULES FOR THIS COURSE (교재 예시)',
+      paras: [
+        'Rule 1: One point beyond the upper or lower control limit.',
+        '해설: UCL 또는 LCL 밖 한 점. 갑작스러운 변화 — 예: 부품 고장, 잘못된 레시피.',
+        'Rule 2: Eight points in a row on one side of the center line.',
+        '해설: 중심선 한쪽에 8점 연속. 평균이 옮겨 갔다 — 예: 세정 뒤 챔버 조건 변화.',
+        'Rule 3: Six points in a row steadily increasing or decreasing.',
+        '해설: 6점 연속 증가 또는 감소. 천천히 변하는 것 — 예: 부품 마모, 벽 침착.',
+        'An OOC point is a signal to investigate, not proof of a bad wafer.',
+        '해설: OOC 는 조사하라는 신호이지 불량의 증거가 아니다. 불량 판정은 규격(spec)으로 한다.',
+      ],
+    },
+    {
+      type: 'sim',
+      which: 'trouble',
+      mode: 'certainty',
+      intro: '먼저 **확신 등급** 실습입니다. 교대 보고와 원인 분석 보고서에서 뽑은 문장을 읽고 **확정(confirmed) · 가능성 높음(likely) · 가능성 있음(possible) · 배제(ruled out)** 중 하나를 고르세요. 판단의 근거는 문장 속 **확신 표현** 하나입니다.',
+    },
+    {
+      type: 'sim',
+      which: 'trouble',
+      mode: 'narrow',
+      intro: '다음은 **원인 좁히기** 실습입니다. BASE PRESSURE HIGH 의 트러블슈팅 표(교재 예시)와 지금까지의 확인 결과가 나옵니다. 후보마다 **배제 · 확정 · 미확인** 을 따져, 증거가 가리키는 원인을 고르세요. 증거가 모자라면 **"확인이 더 필요하다"** 가 답입니다.',
+    },
+    {
+      type: 'sim',
+      which: 'trouble',
+      mode: 'spc',
+      intro: '마지막은 **관리도 규칙** 실습입니다. 식각 속도 관리도(CL 100 · UCL 106 · LCL 94, 규격 90~110)를 보고, 어느 규칙에 걸렸는지 고르세요: **이상 없음 · Rule 1(한계 밖) · Rule 2(8점 쏠림) · Rule 3(6점 추세)**. 그리고 그 점이 **규격 안인지**도 함께 보세요.',
+    },
+    {
+      type: 'comm',
+      items: [
+        { sit: '해외 엔지니어가 원인이 확정인지 묻는다', q: { en: 'Is the O-ring leak confirmed, or only suspected?', ko: 'O-ring 누설이 확정이에요, 아니면 의심만 하는 거예요?' }, a: { en: 'It is only suspected for now. We ruled out the gauge and the turbo, and the helium leak check is in progress. I will update you in 20 minutes.', ko: '지금은 의심 단계입니다. 게이지와 터보는 배제했고, 헬륨 누설 검사를 진행 중입니다. 20분 뒤에 다시 알려 드리겠습니다.' } },
+        { sit: '원인과 조치를 한 번에 보고한다', q: { en: 'What was the cause, and what did you do?', ko: '원인이 뭐였고, 무엇을 했어요?' }, a: { en: 'A leak was found at the lid O-ring. It was cut, most likely during the last PM. We replaced it, and the base pressure is back to 6.0E-6 Torr. Two lots are on hold until you review them.', ko: '덮개 O-ring 에서 누설이 발견됐습니다. 찢어져 있었고, 아마 지난 PM 때 손상된 것 같습니다. 교체했고 도달 진공도는 6.0E-6 Torr 로 돌아왔습니다. 두 lot 은 검토하실 때까지 보류해 두었습니다.' } },
+        { sit: 'OOC 알람을 보고한다', q: { en: 'The SPC chart shows an OOC. Are the wafers bad?', ko: 'SPC 관리도에 OOC 가 떴네요. 웨이퍼가 불량인가요?' }, a: { en: 'Not necessarily. It is a Rule 2 OOC, eight points above the center line, but all points are within spec. The tool is inhibited, and I am checking the FDC data for a cause.', ko: '꼭 그렇지는 않습니다. 중심선 위 8점 연속인 Rule 2 OOC 이지만 모든 점이 규격 안입니다. 장비는 정지해 두었고, FDC 데이터에서 원인을 찾고 있습니다.' } },
+      ],
+    },
+    {
+      type: 'wrap',
+      title: '정리 — 증거만큼만 쓴다',
+      points: [
+        '트러블슈팅 표: **Symptom → Possible Cause → Check → Corrective Action**. 확인 없이 조치하면 **parts swapping**.',
+        '확신 네 층: **confirmed · was found** / **most likely · is consistent with** / **may · is suspected** / **ruled out**. 원인 보고의 may 는 허용이 아니라 **가능성**이다.',
+        '방향: **caused by · due to · results from** 은 뒤가 원인, **results in · leads to** 는 앞이 원인.',
+        '원인 두 층(**direct · root**), 조치 세 층(**containment · corrective · preventive**).',
+        '관리도: **OOC 는 평소와 달라졌다는 신호**, **OOS 는 불량**. 한계 밖이 아니어도 **run · trend** 로 OOC 가 된다.',
+      ],
+      done: '이제 여러분은 트러블슈팅 문서를 읽고 **원인을 확인으로 좁히고**, 보고서에 **어디까지 확인했는지**를 영어로 정확히 적을 수 있습니다. **Write only what you know.**',
+      figs: [
+        { kind: 'step', title: 'REPORT A CAUSE', items: [['State the [symptom].', '증상'], ['Say how [certain] you are.', '확신의 정도'], ['Give the [evidence].', '근거'], ['Say what is [next].', '다음 할 일']] },
+      ],
+    },
+  ],
+};

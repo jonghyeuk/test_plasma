@@ -1323,3 +1323,600 @@ export const GAS_LOG_Q = [
   { line: '03:14  FORELINE  0.35 Torr', ans: 'pump',
     why: '포어라인 압력 — 진공 펌프 쪽 값. 높으면 펌프 성능 저하를 의심.' },
 ];
+
+/* =========================================================================
+ * 9강 안전 작업 — 규정 문장 판정 · LOTO 순서 · 가스 경보 판독
+ *   교재: 조동사 강도(ISO/IEC Directives Part 2 — shall 요구 · should 권고 · may 허용, need not = 의무 아님,
+ *         must = 현장 매뉴얼에서 '반드시'), LOTO 6단계(OSHA 29 CFR 1910.147(d)),
+ *         TLV-TWA(ACGIH) Cl2 0.1 · SiH4 5 · AsH3 0.005 · PH3 0.05 · NF3 10 ppm.
+ *   이 실습을 위해 정한 것 — 경보 단계(1차 = TLV 50%, 2차 = TLV 100%). 실제 값은 사업장 절차서가 정한다.
+ * ====================================================================== */
+
+/** 규정 문장의 무게 — 화면 버튼 순서이기도 하다 */
+export const MODAL_CLASSES = [
+  { id: 'required', en: 'Required', ko: '반드시 (의무)' },
+  { id: 'prohibited', en: 'Prohibited', ko: '하지 마라 (금지)' },
+  { id: 'recommended', en: 'Recommended', ko: '하는 게 좋다 (권장)' },
+  { id: 'permitted', en: 'Permitted', ko: '해도 된다 (허용)' },
+  { id: 'notRequired', en: 'Not required', ko: '안 해도 된다 (의무 아님)' },
+];
+
+/**
+ * 문장 → 무게. 첫 조동사 하나로 정한다(교재 규칙 그대로). 조동사가 없으면 null.
+ * 'may not' 은 금지·가능성 두 뜻이라 판정하지 않는다(교재: 애매하면 묻는다) → 'ambiguous'.
+ */
+export function modalClass(sentence) {
+  const s = ` ${String(sentence || '').toLowerCase().replace(/[’']/g, "'")} `;
+  const m = s.match(/\b(shall not|shan't|must not|mustn't|should not|shouldn't|need not|needn't|may not|shall|must|should|may)\b/);
+  if (!m) return null;
+  const w = m[1];
+  if (w === 'may not') return 'ambiguous';
+  if (/^(shall not|shan't|must not|mustn't)$/.test(w)) return 'prohibited';
+  if (/^(need not|needn't)$/.test(w)) return 'notRequired';
+  if (/^(should not|shouldn't)$/.test(w)) return 'recommended'; // '하지 않는 게 좋다' — 권고의 부정. 이 실습 문장에는 쓰지 않는다
+  if (w === 'should') return 'recommended';
+  if (w === 'may') return 'permitted';
+  return 'required'; // shall · must
+}
+
+/** 실습 문장 — ans 는 손으로 적은 정답(테스트가 modalClass 와 대조한다), modal 은 근거 단어 */
+export const MODAL_ITEMS = [
+  { id: 'm1', en: 'Personnel shall complete gas safety training before entering the gas area.', ans: 'required', modal: 'shall',
+    why: 'shall = 요구사항. 교육을 안 마치고 들어가면 규정 위반이다.' },
+  { id: 'm2', en: 'Personnel must not work alone on any toxic gas line.', ans: 'prohibited', modal: 'must not',
+    why: 'must not = 금지. 혼자 작업하는 것 자체가 안 된다.' },
+  { id: 'm3', en: 'A portable gas detector should be carried during any line break.', ans: 'recommended', modal: 'should',
+    why: 'should = 권고. 하는 게 좋지만, 정당한 이유가 있으면 달리 할 수 있다.' },
+  { id: 'm4', en: 'The technician may use a digital torque wrench instead of a click type.', ans: 'permitted', modal: 'may',
+    why: 'may = 허용. 디지털 렌치를 써도 되고, 원래 렌치를 써도 위반이 아니다.' },
+  { id: 'm5', en: 'A face shield need not be worn inside the control room.', ans: 'notRequired', modal: 'need not',
+    why: 'need not = 의무가 아님. "쓰지 마라"가 아니다 — 써도 된다.' },
+  { id: 'm6', en: 'The RF generator shall not be energized while any panel is open.', ans: 'prohibited', modal: 'shall not',
+    why: 'shall not = 금지. 패널이 하나라도 열려 있으면 RF 를 켜면 안 된다.' },
+  { id: 'm7', en: 'All isolation points must be locked and tagged before work begins.', ans: 'required', modal: 'must',
+    why: '현장 매뉴얼의 must = 반드시. 작업 전에 모든 차단 지점에 잠금·표찰.' },
+  { id: 'm8', en: 'Leak checks should be performed at the start of each shift.', ans: 'recommended', modal: 'should',
+    why: 'should = 권고. 교대마다 누설 검사를 하는 것이 좋다.' },
+  { id: 'm9', en: 'The tool need not be vented for a software-only update.', ans: 'notRequired', modal: 'need not',
+    why: 'need not = 안 해도 된다. 벤트를 해도 위반은 아니다(필요가 없을 뿐).' },
+  { id: 'm10', en: 'Visitors may enter the gas area only when escorted.', ans: 'permitted', modal: 'may … only when',
+    why: 'may = 허용이지만 only when 이 조건을 단다 — 안내자와 함께일 때만 허용.' },
+];
+export function modalJudge(id, pick) {
+  const it = MODAL_ITEMS.find((x) => x.id === id);
+  if (!it) return null;
+  return { ok: pick === it.ans, ans: it.ans, why: it.why, modal: it.modal };
+}
+
+/* ── LOTO 순서 ──
+   카드마다 먼저 끝나 있어야 할 카드(needs)와, 너무 일찍 눌렀을 때의 이유(early)를 둔다.
+   trap 카드는 절차서에 없는 지름길 — 언제 눌러도 거절된다. */
+export const LOTO_CARDS = [
+  { id: 'notify', en: 'Notify affected personnel that the tool will be shut down.', ko: '영향받는 사람에게 정지를 알린다', step: 1, needs: [] },
+  { id: 'shutdown', en: 'Shut down the tool using the normal stop sequence.', ko: '정상 정지 순서로 멈춘다', step: 2, needs: ['notify'],
+    early: '알리기 전에 멈추면 그 장비를 쓰던 사람이 영문도 모른 채 공정을 잃는다.' },
+  { id: 'isoMain', en: 'Open the AC main breaker.', ko: '주전원 차단기를 내린다', step: 3, needs: ['shutdown'],
+    early: '운전 중에 전원부터 끊으면 공정·장비가 비정상으로 멈춘다 — 정상 정지가 먼저.' },
+  { id: 'isoRf', en: 'Switch off the RF generator at its own breaker.', ko: 'RF 발생기를 자체 차단기에서 끈다', step: 3, needs: ['shutdown'],
+    early: '정상 정지 전에 RF 를 끊으면 플라즈마가 비정상으로 꺼진다 — 정상 정지가 먼저.' },
+  { id: 'isoCda', en: 'Close the CDA supply valve.', ko: '압축공기(CDA) 공급 밸브를 닫는다', step: 3, needs: ['shutdown'],
+    early: '운전 중 공압을 끊으면 밸브가 제멋대로 움직인다 — 정상 정지가 먼저.' },
+  { id: 'isoGas', en: 'Close the process gas valve at the VMB.', ko: 'VMB 에서 공정 가스 밸브를 닫는다', step: 3, needs: ['shutdown'],
+    early: '공정 중 가스를 끊으면 압력이 흔들리고 알람이 연쇄로 뜬다 — 정상 정지가 먼저.' },
+  { id: 'lock', en: 'Apply your personal lock and tag to every isolation point.', ko: '모든 차단 지점에 내 자물쇠·표찰', step: 4, needs: ['isoMain', 'isoRf', 'isoCda', 'isoGas'],
+    early: '아직 끊지 않은 에너지원이 있다 — every isolation point 는 네 곳 모두다(RF 는 자체 차단기).' },
+  { id: 'bleed', en: 'Bleed the residual pressure from the CDA line.', ko: 'CDA 라인 잔압을 뺀다', step: 5, needs: ['lock'],
+    early: '잠그기 전에 잔압을 빼면, 그 사이 누가 밸브를 다시 열 수 있다 — 잠금이 먼저.' },
+  { id: 'purge', en: 'Cycle-purge the process gas line with N2.', ko: '가스 라인을 N2 로 반복 퍼지한다', step: 5, needs: ['lock'],
+    early: '잠그기 전에 퍼지하면, 그 사이 가스가 다시 들어올 수 있다 — 잠금이 먼저.' },
+  { id: 'verify', en: 'Verify zero energy: press START (no response) and measure 0 V.', ko: '무에너지 확인 — START 무반응, 0 V', step: 6, needs: ['bleed', 'purge'],
+    early: '남은 에너지(잔압·가스)를 빼기 전이라 확인해도 무에너지가 아니다.' },
+  { id: 'work', en: 'Open the chamber panel and begin the maintenance work.', ko: '패널을 열고 정비를 시작한다', step: 7, needs: ['verify'],
+    early: '잠갔다고 에너지가 없는 게 아니다 — 확인(try-out) 전에는 손대지 않는다.' },
+  { id: 'trapBuddy', en: 'Ask a coworker to hold the breaker OFF instead of locking it.', ko: '자물쇠 대신 동료가 차단기를 붙잡고 있게 한다', trap: true,
+    early: '사람은 자물쇠가 아니다 — 자리를 비우거나 다른 사람이 올리면 끝이다. one person, one lock, one key.' },
+  { id: 'trapTag', en: 'Hang a tag only, without a lock, to save time.', ko: '시간을 아끼려 표찰만 단다', trap: true,
+    early: '이 장비는 자물쇠를 걸 수 있다 — 표찰은 경고일 뿐 물리적으로 막지 못한다.' },
+];
+export function lotoInit() { return { done: [], mistakes: 0, finished: false }; }
+/** 카드 하나를 누른다. 반환 { s, ok, log:[{t,m}] } — s 는 새 객체 */
+export function lotoAct(s, id) {
+  const card = LOTO_CARDS.find((c) => c.id === id);
+  if (!card || s.finished || s.done.includes(id)) return { s, ok: false, log: [] };
+  const miss = card.trap ? [] : card.needs.filter((n) => !s.done.includes(n));
+  if (card.trap || miss.length) {
+    return { s: { ...s, mistakes: s.mistakes + 1 }, ok: false,
+      log: [{ t: 'ALARM', m: `REJECTED — ${card.en}` }, { t: 'INFO', m: card.early }] };
+  }
+  const done = [...s.done, id];
+  const finished = id === 'work';
+  return { s: { ...s, done, finished }, ok: true,
+    log: [{ t: 'CMD', m: `STEP ${card.step} DONE — ${card.en}` }, ...(finished ? [{ t: 'CMD', m: `Zero energy verified. Work may begin. (mistakes: ${s.mistakes})` }] : [])] };
+}
+/** 지금 눌러도 되는 카드 id (힌트·테스트용) */
+export function lotoAvailable(s) {
+  return LOTO_CARDS.filter((c) => !c.trap && !s.done.includes(c.id) && c.needs.every((n) => s.done.includes(n))).map((c) => c.id);
+}
+
+/* ── 가스 경보 ── */
+export const GAS_TLV = { Cl2: 0.1, SiH4: 5, AsH3: 0.005, PH3: 0.05, NF3: 10 }; // ppm, ACGIH TLV-TWA
+export const GAS_L1_FRAC = 0.5; // 이 실습의 설정: 1차 경보 = TLV 50%
+export const GAS_L2_FRAC = 1.0; // 2차 경보 = TLV 100%
+export const GAS_ACTIONS = [
+  { id: 'continue', en: 'Continue work and keep monitoring.', ko: '작업 계속, 감시 유지' },
+  { id: 'stop', en: 'Stop work, secure the area, and report to the supervisor.', ko: '작업 중지 · 현장 정리 · 보고' },
+  { id: 'evacuate', en: 'Evacuate immediately via the nearest exit. Do not re-enter until the all-clear.', ko: '즉시 대피 · 해제 전 재진입 금지' },
+];
+export function toPpm(value, unit) { return unit === 'ppb' ? value / 1000 : value; }
+/** 농도 → 단계. 경계값은 '이상'으로 본다(≥) */
+export function gasLevel(gas, value, unit = 'ppm') {
+  const tlv = GAS_TLV[gas];
+  if (tlv == null) throw new Error(`unknown gas ${gas}`);
+  const ppm = toPpm(value, unit);
+  const eps = 1e-12;
+  if (ppm + eps >= tlv * GAS_L2_FRAC) return 'ALARM';
+  if (ppm + eps >= tlv * GAS_L1_FRAC) return 'WARNING';
+  return 'NORMAL';
+}
+export function gasAction(level) { return level === 'ALARM' ? 'evacuate' : level === 'WARNING' ? 'stop' : 'continue'; }
+export const GAS_CASES = [
+  { id: 'g1', point: 'TGM-03 (VMB-3)', gas: 'Cl2', value: 0.03, unit: 'ppm', note: '라인 개방 작업 중' },
+  { id: 'g2', point: 'TGM-03 (VMB-3)', gas: 'Cl2', value: 0.06, unit: 'ppm', note: '라인 개방 작업 중' },
+  { id: 'g3', point: 'TGM-11 (GC-07 exhaust)', gas: 'SiH4', value: 6, unit: 'ppm', note: '가스 캐비닛 자동 차단 작동(auto shut-off)' },
+  { id: 'g4', point: 'TGM-21 (implant gas box)', gas: 'AsH3', value: 3, unit: 'ppb', note: '단위가 ppb 인 것에 주의' },
+  { id: 'g5', point: 'TGM-14 (chamber clean line)', gas: 'NF3', value: 4, unit: 'ppm', note: '세정 가스 라인 근처' },
+  { id: 'g6', point: 'TGM-22 (implant gas box)', gas: 'PH3', value: 50, unit: 'ppb', note: '단위가 ppb 인 것에 주의' },
+];
+/** 사례 판정 설명 — 화면과 테스트가 같은 문장을 쓴다 */
+export function gasExplain(c) {
+  const tlv = GAS_TLV[c.gas], ppm = toPpm(c.value, c.unit), lv = gasLevel(c.gas, c.value, c.unit);
+  const fmt = (x) => String(+x.toPrecision(3));
+  const conv = c.unit === 'ppb' ? `${c.value} ppb = ${fmt(ppm)} ppm. ` : '';
+  return `${conv}TLV ${fmt(tlv)} ppm → 1차 ${fmt(tlv * GAS_L1_FRAC)} · 2차 ${fmt(tlv * GAS_L2_FRAC)} ppm. ${fmt(ppm)} ppm 은 ${lv === 'ALARM' ? '2차 이상 — 즉시 대피' : lv === 'WARNING' ? '1차 이상 2차 미만 — 작업 중지·보고' : '1차 미만 — 정상'}.`;
+}
+
+/* =========================================================================
+ * 10강 레시피 · 변경 관리 — 경계 판정 · 레시피 실행 기록 판정 · 변경 관리 결정
+ *   교재: 경계어(not to exceed ≤ · below < · at least ≥ · within ± 양 끝 포함 · between 양 끝 포함),
+ *         조건어(unless = if not · only if = 필요조건 · provided that = 예외 조건).
+ *   이 교재의 가상 예시 — 레시피 ETCH-POLY-01 Rev C 의 ME 설정값, 허용 범위(압력 ±5% · 유량 ±2 sccm · RF 3%),
+ *   끝점 정상 범위 30~60 s, OE = 실제 ME 시간의 30%, 변경 규정 R1~R4. 교재 원고(scripts/content/field-english-w10.mjs)와 같은 숫자.
+ * ====================================================================== */
+
+/**
+ * 경계 문장 → 구간. 반환 { lo, hi, loInc, hiInc } (없는 쪽은 null). 읽지 못하면 null.
+ * 교재 규칙: not to exceed / no more than / max / up to → ≤ · below / less than / under → <
+ *           at least / a minimum of / no less than → ≥ · above / greater than / more than / over → >
+ *           greater than or equal to → ≥ · less than or equal to → ≤
+ *           within ±d (of s) → [s-d, s+d] · between a and b → [a, b] (exclusive 라고 적혀 있으면 (a, b))
+ *           기준값 s 는 문장 속 '(setpoint|target|nominal) (값' 에서 읽고, 없으면 인자 setpoint 를 쓴다
+ */
+export function parseLimit(phrase, setpoint) {
+  const p = ` ${String(phrase || '').toLowerCase()} `;
+  const num = (re) => { const m = p.match(re); return m ? parseFloat(m[1]) : null; };
+  const N = '([0-9]+(?:\\.[0-9]+)?(?:e-?[0-9]+)?)';
+  let m;
+  if ((m = p.match(new RegExp(`between ${N}\\D*? and ${N}`)))) {
+    const ex = /exclusive/.test(p);
+    return { lo: parseFloat(m[1]), hi: parseFloat(m[2]), loInc: !ex, hiInc: !ex };
+  }
+  if ((m = p.match(new RegExp(`within ±\\s*${N}`)))) {
+    const d = parseFloat(m[1]);
+    const pct = new RegExp(`within ±\\s*${N}\\s*%`).test(p);
+    const s = num(new RegExp(`(?:setpoint|target|nominal) \\(?${N}`)) ?? setpoint; // 기준값 — '(the setpoint|target|nominal) (10 mTorr)' (11강: target)
+    if (s == null) return null;
+    const w = pct ? (s * d) / 100 : d;
+    return { lo: s - w, hi: s + w, loInc: true, hiInc: true };
+  }
+  const rules = [
+    [/greater than or equal to|no less than|at least|a minimum of|minimum/, 'lo', true],
+    [/less than or equal to|not to exceed|no more than|up to|maximum|\bmax\b/, 'hi', true],
+    [/below|less than|under/, 'hi', false],
+    [/above|greater than|more than|over/, 'lo', false],
+  ];
+  for (const [re, side, inc] of rules) {
+    const k = p.match(re);
+    if (!k) continue;
+    const after = p.slice(k.index + k[0].length);
+    const v = after.match(new RegExp(N));
+    if (!v) return null;
+    const x = parseFloat(v[1]);
+    return side === 'lo' ? { lo: x, hi: null, loInc: inc, hiInc: false } : { lo: null, hi: x, loInc: false, hiInc: inc };
+  }
+  return null;
+}
+export function inLimit(lim, v) {
+  if (!lim) return null;
+  const eps = 1e-9;
+  if (lim.lo != null && (lim.loInc ? v < lim.lo - eps : v <= lim.lo + eps)) return false;
+  if (lim.hi != null && (lim.hiInc ? v > lim.hi + eps : v >= lim.hi - eps)) return false;
+  return true;
+}
+/** 경계 판정 실습 — pass 는 손으로 적은 정답(테스트가 parseLimit·inLimit 과 대조) */
+export const LIMIT_ITEMS = [
+  { id: 'l1', spec: 'Reflected power is not to exceed 20 W.', value: 20, unit: 'W', pass: true, why: 'not to exceed = ≤ 20. 경계값 20 W 는 합격.' },
+  { id: 'l2', spec: 'Reflected power must be below 20 W.', value: 20, unit: 'W', pass: false, why: 'below = < 20. 경계값 20 W 는 불합격 — 위 문장과 숫자는 같고 말만 다르다.' },
+  { id: 'l3', spec: 'Purge the chamber for at least 5 minutes.', value: 5, unit: 'min', pass: true, why: 'at least = ≥ 5. 정확히 5분은 합격.' },
+  { id: 'l4', spec: 'Gas flow must stay within ±2 sccm of the setpoint (50 sccm).', value: 52.4, unit: 'sccm', pass: false, why: 'within ±2 of 50 = 48 ~ 52. 52.4 는 위로 벗어났다.' },
+  { id: 'l5', spec: 'Pressure within ±5% of the setpoint (10 mTorr).', value: 10.5, unit: 'mTorr', pass: true, why: '±5% of 10 = ±0.5 → 9.5 ~ 10.5. 10.5 는 경계 — 포함이 보통이라 합격.' },
+  { id: 'l6', spec: 'The endpoint should be detected between 30 and 60 seconds.', value: 28, unit: 's', pass: false, why: 'between 30 and 60 → 30 ~ 60. 28 s 는 너무 이르다(비정상 끝점).' },
+  { id: 'l7', spec: 'RF power deviation shall be no more than 3%.', value: 2.6, unit: '%', pass: true, why: 'no more than = ≤ 3. 2.6% 는 합격.' },
+  { id: 'l8', spec: 'Edge etch depth shall be greater than 95% of the center depth.', value: 95, unit: '%', pass: false, why: 'greater than = > 95. 같으면 불합격 — "greater than or equal to" 였다면 합격이다.' },
+];
+
+/* ── 레시피 실행 기록 판정 (ETCH-POLY-01 Rev C · 3단계 ME + 4단계 OE) ── */
+export const RCP_ME = { press: 10, src: 600, bias: 120, hbr: 150, cl2: 50, o2: 5 };
+export const RCP_TOL = { pressPct: 5, flowSccm: 2, rfPct: 3, epdMin: 30, epdMax: 60, oeFrac: 0.3, oeTolS: 0.5 };
+export const RCP_FIELDS = [
+  { id: 'press', label: 'ME PRESSURE', unit: 'mTorr', rule: 'within ±5% of the setpoint' },
+  { id: 'src', label: 'ME SOURCE RF', unit: 'W', rule: 'no more than 3% deviation' },
+  { id: 'bias', label: 'ME BIAS RF', unit: 'W', rule: 'no more than 3% deviation' },
+  { id: 'hbr', label: 'ME HBr FLOW', unit: 'sccm', rule: 'within ±2 sccm' },
+  { id: 'cl2', label: 'ME Cl2 FLOW', unit: 'sccm', rule: 'within ±2 sccm' },
+  { id: 'epd', label: 'ENDPOINT TIME', unit: 's', rule: 'between 30 and 60 s' },
+  { id: 'oe', label: 'OE TIME', unit: 's', rule: '30% of the actual ME time (±0.5 s)' },
+];
+/** 한 항목 판정 — run 은 실제값, 반환 { ok, expect } */
+export function rcpCheck(run, id) {
+  const T = RCP_TOL, v = run[id];
+  const dev = (sp) => Math.abs(v - sp) / sp * 100;
+  switch (id) {
+    case 'press': return { ok: dev(RCP_ME.press) <= T.pressPct + 1e-9, expect: `${RCP_ME.press * 0.95} ~ ${RCP_ME.press * 1.05}` };
+    case 'src': case 'bias': return { ok: dev(RCP_ME[id]) <= T.rfPct + 1e-9, expect: `${RCP_ME[id]} ±3%` };
+    case 'hbr': case 'cl2': return { ok: Math.abs(v - RCP_ME[id]) <= T.flowSccm + 1e-9, expect: `${RCP_ME[id] - 2} ~ ${RCP_ME[id] + 2}` };
+    case 'epd': return { ok: v >= T.epdMin && v <= T.epdMax, expect: `${T.epdMin} ~ ${T.epdMax}` };
+    case 'oe': { const e = Math.round(run.epd * T.oeFrac * 10) / 10; return { ok: Math.abs(v - e) <= T.oeTolS + 1e-9, expect: `${e} (= ${run.epd} × 0.3)` }; }
+    default: return null;
+  }
+}
+export const RCP_RUNS = [
+  { id: 'W03', note: '정상 웨이퍼', press: 10.2, src: 603, bias: 119, hbr: 150.8, cl2: 49.5, epd: 42.0, oe: 12.6 },
+  { id: 'W07', note: '압력이 떠 있다', press: 10.7, src: 598, bias: 121, hbr: 149.6, cl2: 50.3, epd: 44.5, oe: 13.4 },
+  { id: 'W12', note: 'OE 를 최대 시간 기준으로 잡았다', press: 9.9, src: 601, bias: 120, hbr: 150.1, cl2: 50.0, epd: 41.0, oe: 18.0 },
+  { id: 'W15', note: '끝점이 너무 이르다', press: 10.1, src: 606, bias: 118, hbr: 147.5, cl2: 50.2, epd: 24.0, oe: 7.2 },
+];
+
+/* ── 변경 관리 결정 (규정 R1~R4) ── */
+export const CC_RULES = [
+  { id: 'R1', en: 'A production recipe shall not be edited unless an ECN has been approved.' },
+  { id: 'R2', en: 'An approved change may be released only if at least two qual wafers pass.' },
+  { id: 'R3', en: 'If any qual wafer fails, the change shall be rolled back to the previous revision.' },
+  { id: 'R4', en: 'A step time change need not be re-qualified, provided that the change is within ±10% of the original value.' },
+];
+export const CC_ACTIONS = [
+  { id: 'blocked', ko: '지금 고칠 수 없음', en: 'Cannot edit yet' },
+  { id: 'hold', ko: '보류 — 시험 더 필요', en: 'Hold for qual' },
+  { id: 'release', ko: '적용 (release)', en: 'Release' },
+  { id: 'rollback', ko: '되돌림 (roll back)', en: 'Roll back' },
+];
+/** 사실 → { action, rule } — 규정을 위에서부터 그대로 적용한다 */
+export function ccDecide(c) {
+  if (c.ecn !== 'APPROVED') return { action: 'blocked', rule: 'R1' };
+  if (c.fail > 0) return { action: 'rollback', rule: 'R3' };
+  if (c.kind === 'time' && Math.abs(c.deltaPct) <= 10 + 1e-9) return { action: 'release', rule: 'R4' };
+  if (c.pass >= 2) return { action: 'release', rule: 'R2' };
+  return { action: 'hold', rule: 'R2' };
+}
+export const CC_CASES = [
+  { id: 'c1', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'PENDING', pass: 0, fail: 0 },
+  { id: 'c2', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'APPROVED', pass: 1, fail: 0 },
+  { id: 'c3', what: 'ME pressure 10 → 12 mTorr', kind: 'pressure', deltaPct: 20, ecn: 'APPROVED', pass: 2, fail: 0 },
+  { id: 'c4', what: 'OE O2 5 → 8 sccm', kind: 'gas', deltaPct: 60, ecn: 'APPROVED', pass: 1, fail: 1 },
+  { id: 'c5', what: 'STAB time 15 → 16 s', kind: 'time', deltaPct: 6.7, ecn: 'APPROVED', pass: 0, fail: 0 },
+  { id: 'c6', what: 'STAB time 15 → 18 s', kind: 'time', deltaPct: 20, ecn: 'APPROVED', pass: 0, fail: 0 },
+  { id: 'c7', what: 'STAB time 15 → 16 s', kind: 'time', deltaPct: 6.7, ecn: 'PENDING', pass: 0, fail: 0 },
+];
+export const CC_WHY = {
+  R1: 'R1 — unless an ECN has been approved: ECN 이 승인되지 않았으면 고칠 수 없다(시간 변경이어도 마찬가지).',
+  R2: 'R2 — only if at least two qual wafers pass: 합격 두 장 이상이 반드시 있어야 적용한다.',
+  R3: 'R3 — if any qual wafer fails: 한 장이라도 불합격이면 옛 판으로 되돌린다.',
+  R4: 'R4 — need not be re-qualified, provided that … within ±10%: 10% 안의 시간 변경은 시험 없이 적용할 수 있다.',
+};
+
+/* =========================================================================
+ * 11강 다른 장비 계열 읽기 — 명사 덩어리 · 장비 계열 맞히기 · 장비별 규격 판정
+ *   교재: 명사 덩어리는 맨 오른쪽이 머리, 오른쪽부터 '~의'(of)로 읽는다. 단어보다 단위가 장비를 알려 준다
+ *         (노광 dose mJ/cm² · 이온주입 dose /cm²). 판정 전에 단위를 맞추고(µA → mA) 지수(E15)를 먼저 본다.
+ *   화면 값·규격은 교재 예시(전형적인 크기). 경계 판정은 10강의 parseLimit · inLimit 을 그대로 쓴다.
+ * ====================================================================== */
+
+/** 명사 덩어리 — groups 는 한 덩어리로 읽는 이름 단위(예: 'pad conditioner'). 머리 = 마지막 덩어리 */
+export function nounHead(groups) { return groups[groups.length - 1]; }
+/** of 로 풀어 쓰기 — 오른쪽부터: rate of the sweep of the pad conditioner */
+export function ofChain(groups) { return groups.slice().reverse().map((g) => `the ${g}`).join(' of '); } // 기계적으로 풀어 쓴 것 — 머리가 맨 앞에 온다
+export const NOUN_ITEMS = [
+  { id: 'n1', groups: ['pad conditioner', 'sweep', 'rate'], opts: ['속도를 왕복시키는 패드 컨디셔너', '패드 컨디셔너의 왕복 속도', '패드를 컨디셔너로 왕복하는 비율'], ans: 1 },
+  { id: 'n2', groups: ['chamber wall', 'temperature', 'setpoint'], opts: ['챔버 벽 온도의 설정값', '챔버 벽의 지금 온도', '설정된 챔버 벽'], ans: 0 },
+  { id: 'n3', groups: ['wafer edge', 'exclusion', 'zone'], opts: ['웨이퍼 가장자리를 제외한 전체', '구역에서 제외된 웨이퍼', '웨이퍼 가장자리의 (측정) 제외 구역'], ans: 2 },
+  { id: 'n4', groups: ['slurry', 'flow', 'alarm', 'limit'], opts: ['슬러리 유량 알람이 울림', '슬러리 유량 알람의 한계값', '알람 때문에 제한된 슬러리 유량'], ans: 1 },
+  { id: 'n5', groups: ['beam current', 'stability', 'check'], opts: ['빔 전류 안정성 점검', '안정된 빔 전류', '점검으로 안정된 빔'], ans: 0 },
+  { id: 'n6', groups: ['precursor line', 'heater', 'failure'], opts: ['고장 난 전구체', '전구체 배관을 데우는 실패한 작업', '전구체 배관 히터의 고장'], ans: 2 },
+  { id: 'n7', groups: ['focus', 'offset', 'correction'], opts: ['초점 오프셋 보정', '보정된 초점', '오프셋이 생긴 초점'], ans: 0 },
+];
+
+/* ── 장비 계열 맞히기 — 단서 규칙(위에서부터). 같은 DOSE 라도 단위로 가른다 ── */
+export const TOOL_FAMILIES = ['CVD', 'ALD', 'PVD', 'TRACK', 'SCANNER', 'CMP', 'IMPLANT'];
+const TOOL_RULES = [
+  ['IMPLANT', /\bkeV\b|BEAM CURRENT|TILT|E1\d\s*\/cm²|FARADAY/i],
+  ['SCANNER', /mJ\/cm²|FOCUS|OVERLAY|RETICLE/i],
+  ['TRACK', /SPIN|BAKE|DEVELOP|RESIST/i],
+  ['CMP', /PLATEN|SLURRY|DOWN FORCE|PAD\b|REMOVAL RATE/i],
+  ['PVD', /TARGET LIFE|DC POWER|SPUTTER/i],
+  ['ALD', /\bALD\b|\bGPC\b|PULSE/i],
+  ['CVD', /TEOS|DEP RATE|PRECURSOR|SiH4/i],
+];
+export function toolOf(line) { const r = TOOL_RULES.find(([, re]) => re.test(line)); return r ? r[0] : null; }
+export const TOOL_LINES = [
+  { id: 't1', line: 'DOWN FORCE  3.0 psi    PLATEN SPEED  93 rpm', tool: 'CMP', why: 'down force(psi) · platen — 웨이퍼를 패드에 누르는 CMP.' },
+  { id: 't2', line: 'DOSE  25.0 mJ/cm²    FOCUS  -20 nm', tool: 'SCANNER', why: 'dose 단위가 mJ/cm²(빛의 양) + focus — 노광 스캐너.' },
+  { id: 't3', line: 'ENERGY  40 keV    DOSE  5.0E15 /cm²', tool: 'IMPLANT', why: 'keV · dose 단위 /cm²(이온 개수) — 이온주입. 위 줄과 같은 DOSE 지만 단위가 다르다.' },
+  { id: 't4', line: 'SPIN SPEED  1500 rpm    SOFT BAKE  100 °C / 60 s', tool: 'TRACK', why: 'spin · bake — 감광액을 바르고 굽는 트랙. rpm 만 보면 CMP 와 헷갈린다.' },
+  { id: 't5', line: 'TEOS FLOW  1.2 g/min    DEP RATE  1500 Å/min', tool: 'CVD', why: 'TEOS(전구체) · dep rate — CVD 산화막.' },
+  { id: 't6', line: 'ALD CYCLES  120    GPC  1.0 Å/cycle', tool: 'ALD', why: 'cycle · GPC(사이클당 두께) — ALD.' },
+  { id: 't7', line: 'DC POWER  12 kW    TARGET LIFE  820 kWh', tool: 'PVD', why: 'DC power · target life — 타깃을 때리는 PVD(스퍼터).' },
+  { id: 't8', line: 'BEAM CURRENT  2.4 mA    TILT / TWIST  7° / 22°', tool: 'IMPLANT', why: 'beam current · tilt 7° — 채널링을 막는 이온주입.' },
+  { id: 't9', line: 'SLURRY FLOW  200 mL/min    PAD LIFE  62 %', tool: 'CMP', why: 'slurry · pad — CMP.' },
+  { id: 't10', line: 'OVERLAY X / Y  2.1 / 2.8 nm    RETICLE  R-4471', tool: 'SCANNER', why: 'overlay · reticle — 노광 스캐너.' },
+];
+
+/* ── 장비별 규격 판정 — num 은 규격과 같은 단위로 바꾼 값, shown 은 화면에 보이는 그대로 ── */
+export function parseSci(s) { return parseFloat(String(s).replace(/,/g, '').replace(/×\s*10\^?/, 'e')); }
+export const SPEC_ITEMS = [
+  { id: 's1', tool: 'IMPLANT', spec: 'Dose: within ±2% of the target (5.0E15 /cm²).', shown: '4.8E15 /cm²', num: parseSci('4.8E15'), pass: false,
+    why: '±2% of 5.0E15 → 4.9E15 ~ 5.1E15. 4.8E15 는 4% 낮다 — E15 가 같아도 앞 숫자를 비교한다.' },
+  { id: 's2', tool: 'IMPLANT', spec: 'Beam current must be at least 2.0 mA.', shown: '1800 µA', num: 1.8, pass: false,
+    why: '1800 µA = 1.8 mA. 2.0 mA 보다 작다 — 단위를 맞추면 1800 > 2.0 이 아니다.' },
+  { id: 's3', tool: 'CVD', spec: 'Film thickness: within ±3% of the target (1000 Å).', shown: '1,028 Å', num: 1028, pass: true,
+    why: '±3% of 1000 → 970 ~ 1030 Å. 1028 Å 은 안.' },
+  { id: 's4', tool: 'SCANNER', spec: 'Overlay shall be no more than 3.0 nm.', shown: 'X 2.1 nm / Y 3.2 nm', num: 3.2, pass: false,
+    why: 'X 와 Y 둘 다 3.0 이하여야 한다. Y 3.2 nm 가 넘는다 — 큰 쪽으로 판정.' },
+  { id: 's5', tool: 'CMP', spec: 'Removal rate: between 2000 and 3000 Å/min.', shown: '2,450 Å/min', num: 2450, pass: true,
+    why: '2000 ~ 3000 Å/min 안. 쉼표(2,450)는 천 단위 구분이다.' },
+  { id: 's6', tool: 'ALD', spec: 'Growth per cycle must be below 1.2 Å/cycle.', shown: '1.2 Å/cycle', num: 1.2, pass: false,
+    why: 'below = 미만. 경계값 1.2 는 불합격 — 10강의 경계 읽기.' },
+  { id: 's7', tool: 'TRACK', spec: 'Soft bake temperature: within ±1 °C of the setpoint (100 °C).', shown: '100.6 °C', num: 100.6, pass: true,
+    why: '99 ~ 101 °C 안.' },
+  { id: 's8', tool: 'CVD', spec: 'Film thickness: within ±3% of the target (1000 Å).', shown: '97 nm', num: 970, pass: true,
+    why: '97 nm = 970 Å (1 nm = 10 Å). 경계값 970 Å 은 within 이라 포함 — 합격.' },
+];
+
+/* =========================================================================
+ * 12강 트러블슈팅 문서 — 확신 등급 · 원인 좁히기 · 관리도 규칙
+ *   교재: 확신 네 층(confirmed · was found / most likely · is consistent with / may · suspected / ruled out),
+ *         관리도 규칙 — Rule 1 한계 밖 한 점(Western Electric 1) · Rule 2 중심선 한쪽 8점 연속(WE 4) ·
+ *         Rule 3 6점 연속 증가/감소(Nelson 3). OOC 는 규격 이탈(OOS)이 아니다.
+ *   교재 예시: 트러블슈팅 표 MM-0505(원인 4개 · '세정 뒤 12시간'), 관리도 CL 100 · UCL 106 · LCL 94 · 규격 90~110 nm/min.
+ * ====================================================================== */
+
+export const CERTAINTY_LEVELS = [
+  { id: 'confirmed', ko: '확정', en: 'Confirmed' },
+  { id: 'likely', ko: '가능성 높음', en: 'Likely' },
+  { id: 'possible', ko: '가능성 있음', en: 'Possible' },
+  { id: 'ruledOut', ko: '배제', en: 'Ruled out' },
+];
+/** 문장 → 확신 등급. 배제 → 확정 → 가능성 높음 → 가능성 있음 순으로 본다(교재 표). 표현이 없으면 null */
+export function certaintyOf(sentence) {
+  const s = ` ${String(sentence || '').toLowerCase()} `;
+  if (/ruled out|is not the cause|was not the cause|eliminated|excluded/.test(s)) return 'ruledOut';
+  if (/confirmed|verified|was found|were found|the root cause (?:is|was)/.test(s)) return 'confirmed';
+  if (/most likely|\blikely\b|probably|is consistent with|points to|suggests/.test(s)) return 'likely';
+  if (/\bmay\b|\bmight\b|\bcould\b|possibly|suspected|potential/.test(s)) return 'possible';
+  return null;
+}
+export const CERTAINTY_ITEMS = [
+  { id: 'k1', en: 'Root cause confirmed: the lid O-ring was cut during the last PM.', ans: 'confirmed', cue: 'confirmed' },
+  { id: 'k2', en: 'The leak is most likely at the lid O-ring.', ans: 'likely', cue: 'most likely' },
+  { id: 'k3', en: 'The gauge may be drifting.', ans: 'possible', cue: 'may' },
+  { id: 'k4', en: 'Turbo pump degradation has been ruled out.', ans: 'ruledOut', cue: 'ruled out' },
+  { id: 'k5', en: 'The chamber liner is suspected as the particle source.', ans: 'possible', cue: 'is suspected' },
+  { id: 'k6', en: 'The pressure trend is consistent with outgassing after the wet clean.', ans: 'likely', cue: 'is consistent with' },
+  { id: 'k7', en: 'A cracked viewport window was found during the inspection.', ans: 'confirmed', cue: 'was found' },
+  { id: 'k8', en: 'The MFC is not the cause; its flow matched the reference meter.', ans: 'ruledOut', cue: 'is not the cause' },
+];
+
+/* ── 원인 좁히기: BASE PRESSURE HIGH (트러블슈팅 표 MM-0505, 교재 예시) ──
+   관측(obs): gaugeAgree(두 게이지 일치?) · turboOk(터보 정상?) · hoursSinceClean · rorTrend('decreasing'|'steady') · heLeak('found'|'none')
+   값이 null 이면 아직 확인하지 않은 것. */
+export const OUTGAS_HOURS = 12; // 교재 예시: 세정 뒤 12시간이 지났으면 탈기(outgassing)는 배제
+export const TS_CAUSES = [
+  { id: 'gauge', en: 'Gauge error or drift', ko: '게이지 오차', check: 'Compare with the second gauge.',
+    status: (o) => (o.gaugeAgree == null ? 'open' : o.gaugeAgree ? 'ruledOut' : 'confirmed') },
+  { id: 'turbo', en: 'Turbo pump degraded', ko: '터보 펌프 저하', check: 'Check turbo speed and foreline pressure.',
+    status: (o) => (o.turboOk == null ? 'open' : o.turboOk ? 'ruledOut' : 'confirmed') },
+  { id: 'outgas', en: 'Outgassing after wet clean', ko: '세정 뒤 탈기', check: `Clean within ${OUTGAS_HOURS} h and rate of rise decreasing?`,
+    status: (o) => (o.hoursSinceClean == null ? 'open' : o.hoursSinceClean > OUTGAS_HOURS ? 'ruledOut'
+      : o.rorTrend === 'decreasing' ? 'confirmed' : o.rorTrend === 'steady' ? 'ruledOut' : 'open') },
+  { id: 'leak', en: 'Vacuum leak at the lid O-ring', ko: '덮개 O-ring 누설', check: 'Perform a helium leak check at the lid.',
+    status: (o) => (o.heLeak == null ? 'open' : o.heLeak === 'found' ? 'confirmed' : 'ruledOut') },
+];
+/** 관측 → 후보별 상태와 결론('gauge'|'turbo'|'outgas'|'leak'|'more'|'escalate') */
+export function tsNarrow(obs) {
+  const st = Object.fromEntries(TS_CAUSES.map((c) => [c.id, c.status(obs)]));
+  const conf = TS_CAUSES.filter((c) => st[c.id] === 'confirmed');
+  const open = TS_CAUSES.filter((c) => st[c.id] === 'open');
+  const verdict = conf.length === 1 ? conf[0].id : conf.length > 1 ? 'more' : open.length ? 'more' : 'escalate';
+  return { st, verdict };
+}
+export const TS_VERDICTS = [
+  ...TS_CAUSES.map((c) => ({ id: c.id, ko: c.ko })),
+  { id: 'more', ko: '확인이 더 필요하다' },
+  { id: 'escalate', ko: '표에 없는 원인 — 상부에 올린다' },
+];
+export const TS_CASES = [
+  { id: 'A', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 72, rorTrend: null, heLeak: 'found' },
+    lines: ['Second gauge reads 4.1E-5 Torr (same).', 'Turbo speed 100%, foreline 45 mTorr (normal).', 'Last wet clean: 72 h ago.', 'He leak check at lid: leak detected (2E-8 mbar·L/s).'] },
+  { id: 'B', obs: { gaugeAgree: false, turboOk: true, hoursSinceClean: null, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads 6.0E-6 Torr (main gauge: 4.2E-5).', 'Turbo speed 100%, foreline 45 mTorr (normal).'] },
+  { id: 'C', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 3, rorTrend: 'decreasing', heLeak: 'none' },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 100% (normal).', 'Last wet clean: 3 h ago. Rate of rise is decreasing every hour.', 'He leak check at lid: no leak.'] },
+  { id: 'D', obs: { gaugeAgree: true, turboOk: null, hoursSinceClean: 2, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads the same value.', 'Last wet clean: 2 h ago.', 'Turbo, rate-of-rise trend, and leak check: not checked yet.'] },
+  { id: 'E', obs: { gaugeAgree: true, turboOk: false, hoursSinceClean: 96, rorTrend: null, heLeak: null },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 62%, foreline 0.4 Torr (high).', 'Last wet clean: 96 h ago.'] },
+  { id: 'F', obs: { gaugeAgree: true, turboOk: true, hoursSinceClean: 48, rorTrend: null, heLeak: 'none' },
+    lines: ['Second gauge reads the same value.', 'Turbo speed 100% (normal).', 'Last wet clean: 48 h ago.', 'He leak check at lid: no leak. Base pressure is still high.'] },
+];
+
+/* ── 관리도 규칙 (교재 예시 차트: CL 100 · UCL 106 · LCL 94 · 규격 90~110 nm/min) ── */
+export const SPC_CHART = { cl: 100, ucl: 106, lcl: 94, lsl: 90, usl: 110, unit: 'nm/min' };
+export const SPC_RUN_N = 8;   // Rule 2 — 한쪽 8점 연속 (Western Electric 규칙 4)
+export const SPC_TREND_N = 6; // Rule 3 — 6점 연속 증가/감소 (Nelson 규칙 3)
+/** 점들 → 걸린 규칙 목록(['rule1','rule2','rule3'] 의 부분집합, 순서대로). 중심선과 같은 점은 쏠림을 끊는다 */
+export function spcCheck(pts, ch = SPC_CHART) {
+  const out = [];
+  if (pts.some((v) => v > ch.ucl || v < ch.lcl)) out.push('rule1');
+  let run = 0, side = 0;
+  for (const v of pts) {
+    const s = v > ch.cl ? 1 : v < ch.cl ? -1 : 0;
+    run = s !== 0 && s === side ? run + 1 : s !== 0 ? 1 : 0; side = s;
+    if (run >= SPC_RUN_N) { out.push('rule2'); break; }
+  }
+  let up = 1, down = 1;
+  for (let i = 1; i < pts.length; i += 1) {
+    up = pts[i] > pts[i - 1] ? up + 1 : 1; down = pts[i] < pts[i - 1] ? down + 1 : 1;
+    if (up >= SPC_TREND_N || down >= SPC_TREND_N) { out.push('rule3'); break; }
+  }
+  return out;
+}
+export function spcInSpec(pts, ch = SPC_CHART) { return pts.every((v) => v >= ch.lsl && v <= ch.usl); }
+export const SPC_ANSWERS = [
+  { id: 'none', ko: '이상 없음 (in control)' },
+  { id: 'rule1', ko: 'Rule 1 — 한계 밖 한 점' },
+  { id: 'rule2', ko: 'Rule 2 — 한쪽 8점 연속' },
+  { id: 'rule3', ko: 'Rule 3 — 6점 연속 추세' },
+];
+export const SPC_CASES = [
+  { id: 'S1', pts: [99, 101.5, 102, 98, 100.5, 103, 97.5, 101, 99, 100.5] },
+  { id: 'S2', pts: [100, 101, 99, 102, 98, 100.5, 101, 99.5, 107, 101] },
+  { id: 'S3', pts: [99, 98.5, 101, 102, 101.5, 103, 102, 101, 104, 102] },
+  { id: 'S4', pts: [100, 99, 97.5, 98, 99.5, 100.5, 102, 103.5, 104.5, 105] },
+  { id: 'S5', pts: [100, 98, 97, 99, 101, 96, 93, 95, 98, 99] },
+  { id: 'S6', pts: [101, 99, 100, 102, 98, 101, 111, 100, 99, 101] }, // 한계 밖이면서 규격(110)도 밖 — OOC 이자 OOS
+];
+/** 사례의 정답 — 걸린 규칙 중 첫째(교재: Rule 1 이 가장 급하다), 없으면 none */
+export function spcAnswer(c) { const r = spcCheck(c.pts); return r.length ? r[0] : 'none'; }
+
+/* =========================================================================
+ * 13강 벤더 · 서비스 엔지니어와 소통 — 티켓 긴급도 · 되읽기 · 서비스 요청 메일
+ *   교재: 긴급도(교재 예시 — 실제는 장비사 SLA) S1 정지 · 대안 없음 / S2 정지 · 대안 있음 또는 웨이퍼 위험 /
+ *         S3 가동 · 위험 없음 / S4 질문 · 자료. 되읽기 — 숫자는 한 자리씩(one-five), 0 은 zero, 소수 point,
+ *         지수 E minus, 글자는 ICAO 음성 기호 알파벳(교재 철자 Alpha · Juliet).
+ * ====================================================================== */
+
+/** 사실 → 긴급도. question 이 가장 먼저(장애가 아니다), 그다음 정지 여부 · 대안 · 웨이퍼 위험 */
+export function severityOf(f) {
+  if (f.question) return 'S4';
+  if (f.down) return f.workaround ? 'S2' : 'S1';
+  return f.waferRisk ? 'S2' : 'S3';
+}
+export const SEVERITY_LEVELS = [
+  { id: 'S1', ko: 'S1 — 정지 · 대안 없음' },
+  { id: 'S2', ko: 'S2 — 대안 있음 · 웨이퍼 위험' },
+  { id: 'S3', ko: 'S3 — 가동 · 위험 없음' },
+  { id: 'S4', ko: 'S4 — 질문 · 자료' },
+];
+export const SEVERITY_CASES = [
+  { id: 'v1', text: 'ET-05 is down with BASE PRESSURE HIGH. No other tool is qualified for this recipe.', f: { down: true, workaround: false } },
+  { id: 'v2', text: 'ET-05 is down, but ET-06 is qualified for the same recipe and has free capacity.', f: { down: true, workaround: true } },
+  { id: 'v3', text: 'ET-05 is running, but particle counts on monitor wafers doubled in the last 12 hours.', f: { down: false, waferRisk: true } },
+  { id: 'v4', text: 'ET-05 is running normally. The HMI shows the chamber temperature with the wrong unit (°F instead of °C).', f: { down: false, waferRisk: false } },
+  { id: 'v5', text: 'We would like the latest revision of the maintenance manual for the match unit.', f: { question: true } },
+  { id: 'v6', text: 'ET-05 is running. A warning "FAN SPEED LOW" appears twice a day and clears by itself. Wafer results are normal.', f: { down: false, waferRisk: false } },
+];
+export const SEVERITY_WHY = {
+  S1: '정지 + 대안 없음 → 생산이 멈춘다.',
+  S2: '정지했지만 대안이 있거나, 가동 중이어도 웨이퍼가 위험하다.',
+  S3: '가동 중이고 웨이퍼 위험이 없다 — 급하지 않은 장애.',
+  S4: '장애가 아니라 질문 · 자료 요청.',
+};
+
+/* ── 되읽기 ── */
+export const NATO = {
+  A: 'Alpha', B: 'Bravo', C: 'Charlie', D: 'Delta', E: 'Echo', F: 'Foxtrot', G: 'Golf', H: 'Hotel', I: 'India', J: 'Juliet',
+  K: 'Kilo', L: 'Lima', M: 'Mike', N: 'November', O: 'Oscar', P: 'Papa', Q: 'Quebec', R: 'Romeo', S: 'Sierra', T: 'Tango',
+  U: 'Uniform', V: 'Victor', W: 'Whiskey', X: 'X-ray', Y: 'Yankee', Z: 'Zulu',
+};
+export const DIGIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+/** 값 → 되읽기. '15' → 'one-five', '4.2' → 'four point two', '1.0E-5' → 'one point zero E minus five' */
+export function readBackValue(v) {
+  const s = String(v).toUpperCase();
+  const m = s.match(/^(\d+)(?:\.(\d+))?(?:E(-?)(\d+))?$/);
+  if (!m) throw new Error(`not a value: ${v}`);
+  const digits = (str, sep) => str.split('').map((d) => DIGIT_WORDS[+d]).join(sep);
+  let out = digits(m[1], '-');
+  if (m[2] != null) out += ` point ${digits(m[2], ' ')}`;
+  if (m[4] != null) out += ` E ${m[3] ? 'minus ' : ''}${digits(m[4], ' ')}`;
+  return out;
+}
+/** 부품 · 티켓 번호 → 되읽기. 하이픈으로 나뉜 덩어리마다: 글자는 음성 기호, 숫자는 한 자리씩. 덩어리 사이는 ', ' */
+export function readBackCode(code) {
+  return String(code).toUpperCase().split('-').map((g) => g.split('').map((ch) => (/\d/.test(ch) ? DIGIT_WORDS[+ch] : NATO[ch])).join(' ')).join(', ');
+}
+/** 실습 문항 — kind 'value' 는 readBackValue(value) + ' ' + unit, 'code' 는 readBackCode(value). ans 는 손으로 적은 정답 위치 */
+export const READBACK_ITEMS = [
+  { id: 'r1', said: 'Set the reflected power limit to fifteen watts.', kind: 'value', value: '15', unit: 'watts',
+    opts: ['five-zero watts', 'one-five watts', 'one point five watts'], ans: 1, why: 'fifteen(15) — teen 은 끝소리만 다르다. 한 자리씩: one-five.' },
+  { id: 'r2', said: 'The part number is K X four zero seven one B.', kind: 'code', value: 'KX-4071-B',
+    opts: ['Kilo X-ray, four zero seven one, Bravo', 'Kilo X-ray, four zero seven one, Delta', 'Kilo Echo, four zero seven one, Bravo'], ans: 0, why: 'B 는 Bravo — D(Delta)와 전화로 거의 같게 들린다.' },
+  { id: 'r3', said: 'Base pressure should be below one point zero E minus five Torr.', kind: 'value', value: '1.0E-5', unit: 'Torr',
+    opts: ['one point zero E five Torr', 'ten E minus five Torr', 'one point zero E minus five Torr'], ans: 2, why: 'E minus 를 빼먹으면 값이 10의 10제곱 배 달라진다.' },
+  { id: 'r4', said: 'Torque the lid bolts to thirteen newton-meters.', kind: 'value', value: '13', unit: 'newton-meters',
+    opts: ['one-three newton-meters', 'three-zero newton-meters', 'three-one newton-meters'], ans: 0, why: 'thirteen(13) 과 thirty(30) — 한 자리씩 one-three.' },
+  { id: 'r5', said: 'Your ticket number is S R two zero six one eight.', kind: 'code', value: 'SR-20618',
+    opts: ['Foxtrot Romeo, two zero six one eight', 'Sierra Romeo, two zero six one eight', 'Sierra Romeo, two zero six eight one'], ans: 1, why: 'S 는 Sierra(F 는 Foxtrot). 숫자 순서도 그대로.' },
+  { id: 'r6', said: 'Set the match load to forty-five percent.', kind: 'value', value: '45', unit: 'percent',
+    opts: ['five-four percent', 'four percent', 'four-five percent'], ans: 2, why: 'forty-five(45) → four-five.' },
+  { id: 'r7', said: 'The tool ID is M E one two.', kind: 'code', value: 'ME-12',
+    opts: ['Mike Echo, one two', 'November Echo, one two', 'Mike Golf, one two'], ans: 0, why: 'M 은 Mike(N 은 November), E 는 Echo(G 는 Golf).' },
+];
+export function readBackOf(it) { return it.kind === 'code' ? readBackCode(it.value) : `${readBackValue(it.value)} ${it.unit}`; }
+
+/* ── 서비스 요청 메일 — 칸마다 문장 고르기 ── */
+export const EMAIL_SLOTS = [
+  { id: 'subject', ko: '제목', opts: ['URGENT!!! HELP', 'SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)', 'Problem with our tool'], ans: 1,
+    why: '장비 · 증상 · 시각 · 영향이 한 줄에. 느낌표는 정보가 아니다.' },
+  { id: 'opening', ko: '인사 · 소개', opts: ['Hi Support team, this is Jisu Park from the etch night shift at Fab 2.', 'You must answer quickly.', 'Hello.'], ans: 0,
+    why: '누구인지 · 어디인지를 한 줄로.' },
+  { id: 'facts', ko: '사실', opts: ['Something happened last night.', 'The pressure is bad and nothing works.', 'Base pressure has been 4.2E-5 Torr since 23:05 KST (limit 1.0E-5). The tool is down.'], ans: 2,
+    why: '값 · 한계 · 시각(시간대 포함) · 상태를 숫자로.' },
+  { id: 'checked', ko: '확인한 것', opts: ['We ruled out the gauge and the turbo pump. A leak at the lid O-ring is suspected.', 'The O-ring is broken.', 'We checked everything.'], ans: 0,
+    why: '12강 — 배제한 것과 의심하는 것을 확신의 정도대로. 확인 안 한 것을 확정처럼 쓰지 않는다.' },
+  { id: 'request', ko: '요청', opts: ['Fix it.', 'Could you send an FSE to inspect the lid seal, or advise on the next check?', 'Please do something ASAP.'], ans: 1,
+    why: '무엇을 해 달라는지 구체적으로, 정중하게.' },
+  { id: 'impact', ko: '영향과 기한', opts: ['Reply immediately.', 'Whenever you have time.', 'No other tool can run this recipe, and two lots are on hold. We would appreciate a reply by 06:00 KST.'], ans: 2,
+    why: '기한에는 이유(영향)를 숫자로 붙인다.' },
+  { id: 'closing', ko: '첨부 · 맺음', opts: ['Alarm log and pressure trend are attached. Thank you for your support.', 'This is your fault.', 'Thanks.'], ans: 0,
+    why: '첨부를 밝히고 감사로 맺는다.' },
+];
+
+/* =========================================================================
+ * 14강 ② 인계 항목 분류 — Critical / Minor, 보고문 Problem 줄 (옛 DRC 분류 실습 자리)
+ *   교재: severity — Critical 은 라인 정지 · 안전 위험, Minor 는 모니터링 수준.
+ *   이 실습의 기준: 안전 위험 · 생산 정지(대안 없음) · 규격 이탈(OOS) 웨이퍼 = Critical, 모니터링 · 대기만 필요한 것 = Minor.
+ *   항목은 2부(9~13강)의 상황 — 가스 경보, 벤더 티켓, OOC, ECN 대기, 도즈 이탈, CMP 경고.
+ * ====================================================================== */
+export function handoverSeverity(f) { return f.safety || f.lineStop || f.oos ? 'Critical' : 'Minor'; }
+export const HANDOVER_ROWS = [
+  { id: 'h1', line: 'VMB-3: TGM-03 LEVEL 1 (Cl2 0.06 ppm) at 02:40. Line break stopped, area secured, ERT checking.', f: { safety: true },
+    why: '가스 경보 — 안전 위험(9강). 원인이 확인되고 해제(all-clear)될 때까지 Critical.' },
+  { id: 'h2', line: 'ET-05: down since 23:05, SR-20618 open as S1, part KX-4071-B ETA 09:00. No backup tool for this recipe.', f: { lineStop: true },
+    why: '정지 + 대안 없음 = 생산 정지(13강의 S1). Critical.' },
+  { id: 'h3', line: 'ET-06: etch rate OOC on Rule 2 (8 points above CL), all points within spec. Released after engineer review; monitoring.', f: {},
+    why: 'OOC 지만 규격 안(12강), 엔지니어 검토 후 가동 — 모니터링 수준. Minor.' },
+  { id: 'h4', line: 'ECN-0412 (ME pressure 10 → 12 mTorr) still pending. Rev C stays in production; no change made.', f: {},
+    why: '승인 대기 — 바뀐 것이 없다(10강). 기다리기만 하면 된다. Minor.' },
+  { id: 'h5', line: 'IMP-2: lot 2417 dose 4.8E15 against 5.0E15 target (-4%, spec ±2%). Lot on hold.', f: { oos: true },
+    why: '규격(±2%) 밖 — OOS 웨이퍼(11강). Critical.' },
+  { id: 'h6', line: 'CMP-2: pad conditioner sweep rate warning cleared after re-tune. NTF. Watch removal rate.', f: {},
+    why: '경고가 풀렸고 재현 안 됨(NTF) — 지켜보기만. Minor.' },
+];
+export const HANDOVER_PROBLEM = {
+  prompt: '보고문의 Problem 줄로 가장 알맞은 문장은?',
+  opts: [
+    'CMP-2 sweep rate warning cleared after re-tune.',
+    'Three critical items: gas alarm LEVEL 1 at VMB-3 (ERT checking), ET-05 down with no backup (SR-20618, part ETA 09:00), and lot 2417 on hold for dose -4%.',
+    'We opened SR-20618, secured the area, and put lot 2417 on hold.',
+  ],
+  ans: 1,
+  why: 'Problem 은 "무엇이 잘못됐고 얼마나 심각한가" — Critical 항목과 그 상태를 쓴다. 첫째는 Minor 만 적어 핵심을 놓쳤고, 셋째는 Action 문장이다.',
+};

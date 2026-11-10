@@ -1,0 +1,1550 @@
+{
+ "w9": [
+  {
+   "i": 0,
+   "sig": "story|새벽 2시, 작업 허가서 한 장",
+   "h": "19c233309a",
+   "sec": 49.9,
+   "cues": [
+    {
+     "t": 11.761,
+     "k": "u",
+     "x": "The line shall be cycle-purged and verified before the line break.",
+     "n": 1
+    },
+    {
+     "t": 21.014,
+     "k": "o",
+     "x": "shall",
+     "n": 1
+    },
+    {
+     "t": 31.718,
+     "k": "h",
+     "x": "LEVEL 1 WARNING",
+     "n": 1
+    },
+    {
+     "t": 35.004,
+     "k": "u",
+     "x": "If any gas alarm activates, work shall stop immediately.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "9f072ddf17",
+   "sec": 34.1,
+   "cues": [
+    {
+     "t": 3.088,
+     "k": "u",
+     "x": "가스 밸브 박스(VMB)",
+     "n": 1
+    },
+    {
+     "t": 7.082,
+     "k": "u",
+     "x": "작업 허가서(Permit to Work)",
+     "n": 1
+    },
+    {
+     "t": 16.266,
+     "k": "o",
+     "x": "조동사 shall · must · should · may",
+     "n": 1
+    },
+    {
+     "t": 27.167,
+     "k": "h",
+     "x": "\"반드시 / 권장 / 해도 됨 / 안 해도 됨\"",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|2부의 시작 — 단어에서 규정문으로",
+   "h": "14de6ddbd1",
+   "sec": 52.7,
+   "cues": [
+    {
+     "t": 4.656,
+     "k": "u",
+     "x": "label(라벨)",
+     "n": 1
+    },
+    {
+     "t": 17.439,
+     "k": "o",
+     "x": "조동사(modal verb)",
+     "n": 1
+    },
+    {
+     "t": 21.897,
+     "k": "o",
+     "x": "shall",
+     "n": 1
+    },
+    {
+     "t": 27.702,
+     "k": "o",
+     "x": "should",
+     "n": 1
+    },
+    {
+     "t": 37.918,
+     "k": "u",
+     "x": "사업장(fab)과 표준(SEMI·OSHA·ISO)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|shall · must · should · may — 조동사의 강도",
+   "h": "328cd35063",
+   "sec": 59.6,
+   "cues": [
+    {
+     "t": 5.352,
+     "k": "o",
+     "x": "shall",
+     "n": 1
+    },
+    {
+     "t": 13.897,
+     "k": "o",
+     "x": "must",
+     "n": 1
+    },
+    {
+     "t": 20.48,
+     "k": "o",
+     "x": "should",
+     "n": 1
+    },
+    {
+     "t": 26.506,
+     "k": "o",
+     "x": "may",
+     "n": 1
+    },
+    {
+     "t": 32.833,
+     "k": "h",
+     "x": "need not",
+     "n": 1
+    },
+    {
+     "t": 33.797,
+     "k": "h",
+     "x": "must not",
+     "n": 2
+    },
+    {
+     "t": 45.175,
+     "k": "u",
+     "x": "may not",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|LOTO 다시 보기 — 잠그기 전과 잠근 후",
+   "h": "c4b25be579",
+   "sec": 60.4,
+   "cues": [
+    {
+     "t": 18.936,
+     "k": "o",
+     "x": "Isolate",
+     "n": 1
+    },
+    {
+     "t": 25.379,
+     "k": "u",
+     "x": "AC main breaker(주전원)",
+     "n": 1
+    },
+    {
+     "t": 26.239,
+     "k": "u",
+     "x": "RF generator",
+     "n": 1
+    },
+    {
+     "t": 27.156,
+     "k": "u",
+     "x": "CDA(압축공기, 공압)",
+     "n": 1
+    },
+    {
+     "t": 36.49,
+     "k": "h",
+     "x": "one person, one lock, one key",
+     "n": 1
+    },
+    {
+     "t": 50.445,
+     "k": "o",
+     "x": "Verify (try-out)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|가스 이름보다 성질을 읽어라 — toxic · pyrophoric · corrosive · oxidizer",
+   "h": "30360c66c8",
+   "sec": 55.8,
+   "cues": [
+    {
+     "t": 6.258,
+     "k": "o",
+     "x": "toxic(독성)",
+     "n": 1
+    },
+    {
+     "t": 11.378,
+     "k": "o",
+     "x": "pyrophoric(자연발화성)",
+     "n": 1
+    },
+    {
+     "t": 23.336,
+     "k": "o",
+     "x": "corrosive(부식성)",
+     "n": 1
+    },
+    {
+     "t": 27.585,
+     "k": "o",
+     "x": "oxidizer(산화성)",
+     "n": 1
+    },
+    {
+     "t": 35.178,
+     "k": "h",
+     "x": "1 ppm = 1,000 ppb",
+     "n": 1
+    },
+    {
+     "t": 45.023,
+     "k": "u",
+     "x": "TLV(Threshold Limit Value, 노출 기준)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "read|경보 화면 읽기 — LEVEL 1 과 LEVEL 2 는 행동이 다르다",
+   "h": "1dd3a53ad0",
+   "sec": 44.3,
+   "cues": [
+    {
+     "t": 5.817,
+     "k": "o",
+     "x": "LEVEL 1 / WARNING",
+     "n": 1
+    },
+    {
+     "t": 9.288,
+     "k": "u",
+     "x": "Stop work, secure the area, and report to the supervisor.",
+     "n": 1
+    },
+    {
+     "t": 12.365,
+     "k": "o",
+     "x": "LEVEL 2 / ALARM",
+     "n": 1
+    },
+    {
+     "t": 15.209,
+     "k": "h",
+     "x": "Evacuate immediately via the nearest exit.",
+     "n": 1
+    },
+    {
+     "t": 24.672,
+     "k": "u",
+     "x": "Do not re-enter until the ERT gives the all-clear.",
+     "n": 1
+    },
+    {
+     "t": 41.831,
+     "k": "o",
+     "x": "\"단계 → 행동\"",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "read|작업 허가서(Permit to Work) — 누가, 무엇을, 언제까지",
+   "h": "504ed7376f",
+   "sec": 42.9,
+   "cues": [
+    {
+     "t": 11.505,
+     "k": "o",
+     "x": "Scope of work",
+     "n": 1
+    },
+    {
+     "t": 17.391,
+     "k": "o",
+     "x": "Precautions",
+     "n": 1
+    },
+    {
+     "t": 22.883,
+     "k": "o",
+     "x": "Authorized by / Issued to",
+     "n": 1
+    },
+    {
+     "t": 27.991,
+     "k": "h",
+     "x": "Valid until",
+     "n": 1
+    },
+    {
+     "t": 33.471,
+     "k": "u",
+     "x": "Cycle purge",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "acr|약어",
+   "h": "81b3542478",
+   "sec": 18.8,
+   "cues": [
+    {
+     "t": 4.748,
+     "k": "o",
+     "x": "PTW",
+     "n": 1
+    },
+    {
+     "t": 7.024,
+     "k": "o",
+     "x": "TGM",
+     "n": 1
+    },
+    {
+     "t": 9.485,
+     "k": "o",
+     "x": "ERT",
+     "n": 1
+    },
+    {
+     "t": 15.267,
+     "k": "h",
+     "x": "1 ppm = 1,000 ppb",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "glossary|핵심 용어 (1) — 조동사 · 규정어",
+   "h": "7a0a4f1d3f",
+   "sec": 36.6,
+   "cues": [
+    {
+     "t": 8.928,
+     "k": "o",
+     "x": "shall",
+     "n": 3
+    },
+    {
+     "t": 12.318,
+     "k": "o",
+     "x": "must not",
+     "n": 2
+    },
+    {
+     "t": 17.182,
+     "k": "o",
+     "x": "should",
+     "n": 2
+    },
+    {
+     "t": 20.387,
+     "k": "o",
+     "x": "may",
+     "n": 2
+    },
+    {
+     "t": 27.469,
+     "k": "h",
+     "x": "need not be vented",
+     "n": 1
+    },
+    {
+     "t": 32.972,
+     "k": "u",
+     "x": "prior to",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "quiz|확인 퀴즈 (1) — 조동사의 강도",
+   "h": "705c68dd34",
+   "sec": 18.3,
+   "cues": [
+    {
+     "t": 6.664,
+     "k": "o",
+     "x": "shall",
+     "n": 1
+    },
+    {
+     "t": 7.988,
+     "k": "o",
+     "x": "need not",
+     "n": 1
+    },
+    {
+     "t": 9.439,
+     "k": "o",
+     "x": "should",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "glossary|핵심 용어 (2) — LOTO 동작어",
+   "h": "2d2729d691",
+   "sec": 42.2,
+   "cues": [
+    {
+     "t": 2.914,
+     "k": "o",
+     "x": "isolate",
+     "n": 1
+    },
+    {
+     "t": 6.165,
+     "k": "u",
+     "x": "including CDA and process gas",
+     "n": 1
+    },
+    {
+     "t": 15.882,
+     "k": "o",
+     "x": "de-energize",
+     "n": 1
+    },
+    {
+     "t": 18.994,
+     "k": "h",
+     "x": "wait five minutes",
+     "n": 1
+    },
+    {
+     "t": 24.415,
+     "k": "o",
+     "x": "bleed",
+     "n": 1
+    },
+    {
+     "t": 26.656,
+     "k": "o",
+     "x": "try-out",
+     "n": 1
+    },
+    {
+     "t": 33.831,
+     "k": "u",
+     "x": "Only the person who applied the lock may remove it.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "mansample|매뉴얼 표본 — LOTO 절차서",
+   "h": "0edbb06f92",
+   "sec": 34.3,
+   "cues": [
+    {
+     "t": 7.372,
+     "k": "u",
+     "x": "The RF generator has its own breaker. It shall be isolated separately.",
+     "n": 1
+    },
+    {
+     "t": 18.042,
+     "k": "u",
+     "x": "The heater may remain hot for 30 minutes after power-off.",
+     "n": 1
+    },
+    {
+     "t": 27.156,
+     "k": "h",
+     "x": "Do not begin work until the try-out has been completed.",
+     "n": 1
+    },
+    {
+     "t": 31.95,
+     "k": "u",
+     "x": "Only the person who applied a lock shall remove it.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|확인 퀴즈 (2) — LOTO 절차",
+   "h": "3043dd7940",
+   "sec": 21.6,
+   "cues": [
+    {
+     "t": 1.927,
+     "k": "u",
+     "x": "It shall be isolated separately.",
+     "n": 1
+    },
+    {
+     "t": 14.582,
+     "k": "h",
+     "x": "동료가 퇴근했다",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|핵심 용어 (3) — 가스 · 경보",
+   "h": "bfa863b184",
+   "sec": 32.6,
+   "cues": [
+    {
+     "t": 6.664,
+     "k": "u",
+     "x": "Silane is pyrophoric, so the line must be purged before it is opened.",
+     "n": 1
+    },
+    {
+     "t": 15.43,
+     "k": "o",
+     "x": "all-clear",
+     "n": 1
+    },
+    {
+     "t": 24.997,
+     "k": "h",
+     "x": "PV is above the LEVEL 1 set point.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "mansample|매뉴얼 표본 — 가스 경보 대응",
+   "h": "eda053c939",
+   "sec": 35.4,
+   "cues": [
+    {
+     "t": 5.433,
+     "k": "u",
+     "x": "Do not open any gas line while a LEVEL 1 warning is active.",
+     "n": 1
+    },
+    {
+     "t": 14.849,
+     "k": "h",
+     "x": "Do not stop to shut down tools or investigate the source.",
+     "n": 1
+    },
+    {
+     "t": 24.161,
+     "k": "o",
+     "x": "may enter",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "sig": "quiz|확인 퀴즈 (3) — 경보 문장 판단",
+   "h": "00f7e86dfa",
+   "sec": 17.9,
+   "cues": [
+    {
+     "t": 8.603,
+     "k": "h",
+     "x": "경보음이 멈췄다",
+     "n": 1
+    },
+    {
+     "t": 12.167,
+     "k": "o",
+     "x": "may",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "glossary|핵심 용어 (4) — 작업 허가서",
+   "h": "48261a6ec7",
+   "sec": 30.7,
+   "cues": [
+    {
+     "t": 2.218,
+     "k": "o",
+     "x": "line break",
+     "n": 2
+    },
+    {
+     "t": 10.043,
+     "k": "u",
+     "x": "The line break shall not begin until the line has been cycle-purged.",
+     "n": 1
+    },
+    {
+     "t": 19.459,
+     "k": "o",
+     "x": "scope of work",
+     "n": 1
+    },
+    {
+     "t": 25.612,
+     "k": "o",
+     "x": "expire",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "mansample|매뉴얼 표본 — 작업 허가서",
+   "h": "68c13f271e",
+   "sec": 26.3,
+   "cues": [
+    {
+     "t": 6.118,
+     "k": "o",
+     "x": "shall be cycle-purged",
+     "n": 1
+    },
+    {
+     "t": 8.127,
+     "k": "o",
+     "x": "shall be present",
+     "n": 1
+    },
+    {
+     "t": 10.298,
+     "k": "o",
+     "x": "should be staged",
+     "n": 1
+    },
+    {
+     "t": 15.07,
+     "k": "o",
+     "x": "shall stop",
+     "n": 1
+    },
+    {
+     "t": 16.881,
+     "k": "o",
+     "x": "may extend",
+     "n": 1
+    },
+    {
+     "t": 19.296,
+     "k": "u",
+     "x": "with the supervisor's approval",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|확인 퀴즈 (4) — 허가서 읽기",
+   "h": "b951bc46b8",
+   "sec": 17.8,
+   "cues": [
+    {
+     "t": 6.548,
+     "k": "u",
+     "x": "Replace the VCR fitting downstream of valve V2.",
+     "n": 1
+    },
+    {
+     "t": 11.981,
+     "k": "o",
+     "x": "may extend",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "manual|SAFETY DATA SHEET — CHLORINE (Cl2), EXCERPT",
+   "h": "4cb5ad2a5f",
+   "sec": 36.4,
+   "cues": [
+    {
+     "t": 11.146,
+     "k": "o",
+     "x": "Signal word: DANGER",
+     "n": 1
+    },
+    {
+     "t": 16.95,
+     "k": "h",
+     "x": "H330 Fatal if inhaled.",
+     "n": 1
+    },
+    {
+     "t": 30.928,
+     "k": "u",
+     "x": "TLV-TWA 0.1 ppm.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "manual|GENERAL SAFETY REQUIREMENTS — GAS AREA",
+   "h": "4984730575",
+   "sec": 24.4,
+   "cues": [
+    {
+     "t": 6.56,
+     "k": "o",
+     "x": "shall complete",
+     "n": 1
+    },
+    {
+     "t": 8.208,
+     "k": "o",
+     "x": "must not work alone",
+     "n": 1
+    },
+    {
+     "t": 10.461,
+     "k": "o",
+     "x": "should be carried",
+     "n": 1
+    },
+    {
+     "t": 12.376,
+     "k": "o",
+     "x": "may enter",
+     "n": 1
+    },
+    {
+     "t": 13.688,
+     "k": "u",
+     "x": "only when escorted",
+     "n": 1
+    },
+    {
+     "t": 16.498,
+     "k": "h",
+     "x": "need not be worn",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "5fa182c05f",
+   "sec": 18.8,
+   "cues": [
+    {
+     "t": 5.921,
+     "k": "u",
+     "x": "반드시(required)",
+     "n": 1
+    },
+    {
+     "t": 6.548,
+     "k": "u",
+     "x": "금지(prohibited)",
+     "n": 1
+    },
+    {
+     "t": 7.059,
+     "k": "u",
+     "x": "권장(recommended)",
+     "n": 1
+    },
+    {
+     "t": 7.918,
+     "k": "u",
+     "x": "해도 됨(permitted)",
+     "n": 1
+    },
+    {
+     "t": 8.777,
+     "k": "u",
+     "x": "안 해도 됨(not required)",
+     "n": 1
+    },
+    {
+     "t": 14.048,
+     "k": "h",
+     "x": "동사 앞의 조동사 하나",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "sim|",
+   "h": "c789f78858",
+   "sec": 22.6,
+   "cues": [
+    {
+     "t": 9.149,
+     "k": "u",
+     "x": "왜 안 되는지 로그가 알려 줍니다",
+     "n": 1
+    },
+    {
+     "t": 14.223,
+     "k": "h",
+     "x": "절차서에 없는 지름길",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "sim|",
+   "h": "ed28747211",
+   "sec": 19.3,
+   "cues": [
+    {
+     "t": 5.817,
+     "k": "o",
+     "x": "단위(ppm / ppb)",
+     "n": 1
+    },
+    {
+     "t": 8.591,
+     "k": "u",
+     "x": "1차 = TLV 50%, 2차 = TLV 100%",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 25,
+   "sig": "comm|",
+   "h": "13d131e307",
+   "sec": 37.9,
+   "cues": [
+    {
+     "t": 7.546,
+     "k": "u",
+     "x": "The permit says it shall be verified before the break.",
+     "n": 1
+    },
+    {
+     "t": 18.785,
+     "k": "h",
+     "x": "I heard the gas monitor went off.",
+     "n": 1
+    },
+    {
+     "t": 29.175,
+     "k": "o",
+     "x": "Can I start on the chamber?",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "sig": "wrap|정리 — 조동사가 행동을 정한다",
+   "h": "0d5ccdf35a",
+   "sec": 33.8,
+   "cues": [
+    {
+     "t": 3.901,
+     "k": "o",
+     "x": "조동사",
+     "n": 1
+    },
+    {
+     "t": 8.499,
+     "k": "h",
+     "x": "need not",
+     "n": 1
+    },
+    {
+     "t": 15.604,
+     "k": "u",
+     "x": "Verify(try-out)",
+     "n": 1
+    },
+    {
+     "t": 28.735,
+     "k": "o",
+     "x": "Read the modal, then act.",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w10": [
+  {
+   "i": 0,
+   "sig": "story|\"압력만 살짝 올려\"",
+   "h": "528e6cc677",
+   "sec": 48.8,
+   "cues": [
+    {
+     "t": 18.681,
+     "k": "h",
+     "x": "RECIPE LOCKED — Changes require an approved ECN.",
+     "n": 1
+    },
+    {
+     "t": 24.996,
+     "k": "u",
+     "x": "A production recipe shall not be edited unless an ECN has been approved.",
+     "n": 1
+    },
+    {
+     "t": 25.379,
+     "k": "o",
+     "x": "unless",
+     "n": 1
+    },
+    {
+     "t": 33.124,
+     "k": "u",
+     "x": "An approved change may be released only if at least two qual wafers pass.",
+     "n": 1
+    },
+    {
+     "t": 46.301,
+     "k": "o",
+     "x": "unless · only if · at least",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "fe0a8749c9",
+   "sec": 33.9,
+   "cues": [
+    {
+     "t": 3.762,
+     "k": "u",
+     "x": "레시피 편집 화면(Recipe Editor)",
+     "n": 1
+    },
+    {
+     "t": 23.139,
+     "k": "o",
+     "x": "조건어 unless · only if · provided that",
+     "n": 1
+    },
+    {
+     "t": 25.148,
+     "k": "o",
+     "x": "경계 not to exceed · at least · within ±",
+     "n": 1
+    },
+    {
+     "t": 29.861,
+     "k": "h",
+     "x": "조건이 맞는지, 값이 경계 안인지",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|레시피는 왜 잠겨 있나 — production recipe 와 revision",
+   "h": "06f084cd5b",
+   "sec": 47.3,
+   "cues": [
+    {
+     "t": 12.225,
+     "k": "o",
+     "x": "locked(잠금)",
+     "n": 1
+    },
+    {
+     "t": 19.122,
+     "k": "u",
+     "x": "Rev C 는 세 번째 판",
+     "n": 1
+    },
+    {
+     "t": 29.431,
+     "k": "h",
+     "x": "변경 요청(ECR)",
+     "n": 1
+    },
+    {
+     "t": 37.024,
+     "k": "u",
+     "x": "unauthorized change(무단 변경)",
+     "n": 1
+    },
+    {
+     "t": 46.231,
+     "k": "o",
+     "x": "조건문",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|레시피 표 읽기 — STEP · END · TIME",
+   "h": "5ac7e33559",
+   "sec": 44.6,
+   "cues": [
+    {
+     "t": 6.978,
+     "k": "u",
+     "x": "ME(main etch, 본 식각)",
+     "n": 1
+    },
+    {
+     "t": 19.923,
+     "k": "u",
+     "x": "끝점 검출(endpoint detection)",
+     "n": 1
+    },
+    {
+     "t": 23.476,
+     "k": "o",
+     "x": "MAX 60",
+     "n": 1
+    },
+    {
+     "t": 31.138,
+     "k": "h",
+     "x": "step timeout",
+     "n": 1
+    },
+    {
+     "t": 36.061,
+     "k": "o",
+     "x": "허용 범위(tolerance)",
+     "n": 1
+    },
+    {
+     "t": 38.116,
+     "k": "u",
+     "x": "Pressure within ±5% of the setpoint.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|끝점(EPD)과 over-etch — \"언제 멈추나\"를 읽기",
+   "h": "6942fd60b1",
+   "sec": 46.4,
+   "cues": [
+    {
+     "t": 7.86,
+     "k": "o",
+     "x": "OES(optical emission spectroscopy)",
+     "n": 1
+    },
+    {
+     "t": 10.321,
+     "k": "h",
+     "x": "endpoint detected",
+     "n": 1
+    },
+    {
+     "t": 21.861,
+     "k": "u",
+     "x": "over etch(OE)",
+     "n": 1
+    },
+    {
+     "t": 25.449,
+     "k": "u",
+     "x": "30% of the main etch time",
+     "n": 1
+    },
+    {
+     "t": 30.349,
+     "k": "o",
+     "x": "12 s",
+     "n": 1
+    },
+    {
+     "t": 36.688,
+     "k": "h",
+     "x": "between 30 and 60 s",
+     "n": 1
+    },
+    {
+     "t": 42.516,
+     "k": "u",
+     "x": "STEP 4 OE — 12.6 s (30% of ME)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|경계가 포함되는가 — not to exceed · below · at least · within ±",
+   "h": "251897a53c",
+   "sec": 45.7,
+   "cues": [
+    {
+     "t": 9.88,
+     "k": "o",
+     "x": "not to exceed 20 W",
+     "n": 1
+    },
+    {
+     "t": 15.012,
+     "k": "o",
+     "x": "below 20 W",
+     "n": 1
+    },
+    {
+     "t": 19.61,
+     "k": "o",
+     "x": "at least 5 min",
+     "n": 1
+    },
+    {
+     "t": 26.587,
+     "k": "u",
+     "x": "greater than or equal to",
+     "n": 1
+    },
+    {
+     "t": 29.954,
+     "k": "o",
+     "x": "within ±2 sccm of the setpoint",
+     "n": 1
+    },
+    {
+     "t": 36.7,
+     "k": "h",
+     "x": "inclusive(포함)",
+     "n": 1
+    },
+    {
+     "t": 41.216,
+     "k": "u",
+     "x": "경계어",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "read|조건 연결어 — if · unless · provided that · only if",
+   "h": "dcadcd94ee",
+   "sec": 49.3,
+   "cues": [
+    {
+     "t": 4.214,
+     "k": "o",
+     "x": "~이 아니면(= if not)",
+     "n": 1
+    },
+    {
+     "t": 10.925,
+     "k": "u",
+     "x": "The recipe shall not be edited unless an ECN has been approved.",
+     "n": 1
+    },
+    {
+     "t": 23.894,
+     "k": "h",
+     "x": "반드시 있어야 하는 조건",
+     "n": 1
+    },
+    {
+     "t": 26.668,
+     "k": "o",
+     "x": "provided that / as long as",
+     "n": 1
+    },
+    {
+     "t": 34.087,
+     "k": "o",
+     "x": "otherwise",
+     "n": 1
+    },
+    {
+     "t": 40.182,
+     "k": "u",
+     "x": "연결어를 찾는다",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "read|변경 관리 흐름 — ECR → ECN → qual → release",
+   "h": "c3913bdd2c",
+   "sec": 35,
+   "cues": [
+    {
+     "t": 4.899,
+     "k": "o",
+     "x": "ECR (Engineering Change Request)",
+     "n": 1
+    },
+    {
+     "t": 13.189,
+     "k": "u",
+     "x": "PENDING → APPROVED",
+     "n": 1
+    },
+    {
+     "t": 19.098,
+     "k": "o",
+     "x": "PASS / FAIL",
+     "n": 1
+    },
+    {
+     "t": 24.056,
+     "k": "u",
+     "x": "Rev D effective from 2026-11-10.",
+     "n": 1
+    },
+    {
+     "t": 27.817,
+     "k": "h",
+     "x": "Roll back to Rev C and hold the lot.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "acr|약어",
+   "h": "93df1d8956",
+   "sec": 20.4,
+   "cues": [
+    {
+     "t": 3.204,
+     "k": "o",
+     "x": "EPD",
+     "n": 1
+    },
+    {
+     "t": 5.48,
+     "k": "o",
+     "x": "ECR",
+     "n": 1
+    },
+    {
+     "t": 8.371,
+     "k": "o",
+     "x": "ECN",
+     "n": 1
+    },
+    {
+     "t": 16.695,
+     "k": "u",
+     "x": "적격 시험 — 시험 웨이퍼로 확인",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "glossary|핵심 용어 (1) — 조건 연결어",
+   "h": "087ce124f8",
+   "sec": 24.8,
+   "cues": [
+    {
+     "t": 2.206,
+     "k": "o",
+     "x": "unless",
+     "n": 1
+    },
+    {
+     "t": 3.82,
+     "k": "u",
+     "x": "Do not start the run unless the chamber has passed the leak check.",
+     "n": 1
+    },
+    {
+     "t": 9.358,
+     "k": "o",
+     "x": "only if",
+     "n": 1
+    },
+    {
+     "t": 12.295,
+     "k": "o",
+     "x": "provided that",
+     "n": 1
+    },
+    {
+     "t": 15.557,
+     "k": "o",
+     "x": "until",
+     "n": 1
+    },
+    {
+     "t": 19.656,
+     "k": "h",
+     "x": "In case of an endpoint timeout",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "quiz|확인 퀴즈 (1) — 조건 연결어",
+   "h": "c32dbe86b2",
+   "sec": 18,
+   "cues": [
+    {
+     "t": 7.407,
+     "k": "o",
+     "x": "unless",
+     "n": 1
+    },
+    {
+     "t": 8.847,
+     "k": "o",
+     "x": "only if all qual wafers pass",
+     "n": 1
+    },
+    {
+     "t": 14.187,
+     "k": "o",
+     "x": "provided that",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "glossary|핵심 용어 (2) — 레시피 표",
+   "h": "bf69b0182d",
+   "sec": 20,
+   "cues": [
+    {
+     "t": 1.846,
+     "k": "o",
+     "x": "setpoint",
+     "n": 1
+    },
+    {
+     "t": 3.831,
+     "k": "o",
+     "x": "endpoint",
+     "n": 2
+    },
+    {
+     "t": 9.195,
+     "k": "u",
+     "x": "The endpoint was detected at 42 seconds into the main etch.",
+     "n": 1
+    },
+    {
+     "t": 12.62,
+     "k": "o",
+     "x": "over-etch",
+     "n": 1
+    },
+    {
+     "t": 14.292,
+     "k": "h",
+     "x": "30% of the main etch time",
+     "n": 1
+    },
+    {
+     "t": 16.591,
+     "k": "o",
+     "x": "tolerance",
+     "n": 1
+    },
+    {
+     "t": 18.46,
+     "k": "o",
+     "x": "abort",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "mansample|매뉴얼 표본 — 레시피 표 ETCH-POLY-01",
+   "h": "e2a456234e",
+   "sec": 38.2,
+   "cues": [
+    {
+     "t": 8.847,
+     "k": "o",
+     "x": "EPD",
+     "n": 1
+    },
+    {
+     "t": 10.797,
+     "k": "o",
+     "x": "MAX 60",
+     "n": 1
+    },
+    {
+     "t": 17.949,
+     "k": "h",
+     "x": "30% of ME",
+     "n": 1
+    },
+    {
+     "t": 24.16,
+     "k": "u",
+     "x": "within ±5% of the setpoint",
+     "n": 1
+    },
+    {
+     "t": 33.378,
+     "k": "u",
+     "x": "between 30 and 60 s",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|확인 퀴즈 (2) — 레시피 표 읽기",
+   "h": "61163bd0cd",
+   "sec": 15.6,
+   "cues": [
+    {
+     "t": 2.09,
+     "k": "o",
+     "x": "EPD",
+     "n": 1
+    },
+    {
+     "t": 5.921,
+     "k": "o",
+     "x": "30% of ME",
+     "n": 1
+    },
+    {
+     "t": 9.752,
+     "k": "u",
+     "x": "PV 가 10.6 mTorr",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|핵심 용어 (3) — 경계 표현",
+   "h": "06ff7089a1",
+   "sec": 28,
+   "cues": [
+    {
+     "t": 6.107,
+     "k": "o",
+     "x": "not to exceed",
+     "n": 1
+    },
+    {
+     "t": 8.139,
+     "k": "o",
+     "x": "below / less than",
+     "n": 1
+    },
+    {
+     "t": 10.774,
+     "k": "o",
+     "x": "at least",
+     "n": 1
+    },
+    {
+     "t": 12.771,
+     "k": "o",
+     "x": "within ±",
+     "n": 1
+    },
+    {
+     "t": 18.518,
+     "k": "o",
+     "x": "inclusive / exclusive",
+     "n": 1
+    },
+    {
+     "t": 22.547,
+     "k": "h",
+     "x": "Accept values from 48 to 52 sccm, inclusive.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "mansample|매뉴얼 표본 — 변경 요청 메일 (ECR)",
+   "h": "a8669b746c",
+   "sec": 29.8,
+   "cues": [
+    {
+     "t": 6.037,
+     "k": "u",
+     "x": "Problem:",
+     "n": 1
+    },
+    {
+     "t": 7.558,
+     "k": "o",
+     "x": "below",
+     "n": 1
+    },
+    {
+     "t": 11.111,
+     "k": "u",
+     "x": "Proposed change:",
+     "n": 1
+    },
+    {
+     "t": 12.922,
+     "k": "u",
+     "x": "Qualification plan:",
+     "n": 1
+    },
+    {
+     "t": 15.348,
+     "k": "o",
+     "x": "only if",
+     "n": 1
+    },
+    {
+     "t": 22.744,
+     "k": "h",
+     "x": "we will roll back to Rev C and keep the lot on hold.",
+     "n": 1
+    }
+   ]
+  }
+ ]
+}

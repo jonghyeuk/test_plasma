@@ -8,6 +8,9 @@ import { SCENEBG } from '../data/fieldEnglishSceneBg.data';
 import FE_AUDIO from '../data/fieldEnglishAudio.manifest.json'; // { "문장": "해시" } — scripts/narration/field-english-build.js 가 만든다
 import { AUDIO_DIR, SLIDE_AUDIO_DIR, speechKey, findSpeechSpans, slideNarration } from '../data/fieldEnglishAudio';
 import FE_SLIDE_AUDIO from '../data/fieldEnglishSlideAudio.manifest.json'; // { "읽어 줄 글": { h, sec } } — scripts/narration/field-english-slides-build.js 가 만든다
+import FE_LECTURE from '../data/fieldEnglishLecture.manifest.json'; // { w9: [{ i, sig, h, sec, cues }] } — scripts/narration/field-english-lecture-build.mjs 가 만든다
+import { LECTURE_AUDIO_DIR, slideSig } from '../data/fieldEnglishLecture';
+import { findTextRects, underlinePath, circlePath, highlightSegs, PEN_DUR } from './fieldEnglishPen';
 import {
   procInit, procCheck, procPress, procTick, procLamps, PROC_BUTTONS,
   judgeLine, SPPV_LINES, SPPV_CASES,
@@ -31,6 +34,15 @@ import {
   crInit, crCheck, crApply, CR_FIXES, LC_LAYERS, CNT_RULE, cntInit, cntCheck,
   LVS_SCH, LVS_LAY, LVS_PAIR, lvsCompare, LVS_WHICH_Q, LVS_TYPES, LVS_ERRORS, lvsRerun,
   GAS_PARTS, GAS_LOG_Q,
+  MODAL_CLASSES, MODAL_ITEMS, modalJudge,
+  LOTO_CARDS, lotoInit, lotoAct,
+  GAS_TLV, GAS_ACTIONS, GAS_CASES, gasLevel, gasAction, gasExplain,
+  LIMIT_ITEMS, RCP_FIELDS, RCP_RUNS, rcpCheck, CC_RULES, CC_ACTIONS, CC_CASES, CC_WHY, ccDecide,
+  NOUN_ITEMS, nounHead, ofChain, TOOL_FAMILIES, TOOL_LINES, toolOf, SPEC_ITEMS,
+  CERTAINTY_LEVELS, CERTAINTY_ITEMS, certaintyOf, TS_CAUSES, TS_CASES, TS_VERDICTS, tsNarrow,
+  SPC_CHART, SPC_ANSWERS, SPC_CASES, spcCheck, spcInSpec, spcAnswer,
+  severityOf, SEVERITY_LEVELS, SEVERITY_CASES, SEVERITY_WHY, READBACK_ITEMS, readBackOf, EMAIL_SLOTS,
+  HANDOVER_ROWS, HANDOVER_PROBLEM, handoverSeverity,
 } from './fieldEnglishLabs';
 import { SLIDE_ART } from '../data/fieldEnglishSlideArt.data';
 
@@ -139,7 +151,7 @@ export const CH_ART = {
 /**
  * FieldEnglishSimulator — 반도체 현장 실무영어 시뮬레이터 (서고 drop-in)
  * ---------------------------------------------------------------------------
- * 목적: 디자인 툴 사용법이 아니라, 가상 장비/디자인 시뮬레이션을 통해
+ * 목적: 장비 조작법이 아니라, 가상 장비·문서 시뮬레이션을 통해
  *       "현장 영어를 읽고 판단하는" 훈련. 매주 4단계 루프를 반복한다.
  *          가상 매뉴얼 읽기 → 시뮬레이션 조작 → 로그·오류 해석 → 영문 보고
  *
@@ -1086,7 +1098,7 @@ function WriteBlock({ prompt, hint, model }) {
 const W1_ROLES = [
   { icon: '🛠️', role: 'Equipment Engineer', duty: 'Operates and maintains process equipment; reads English alarms and manuals.', ko: '장비 엔지니어 — 장비 운전·정비, 영문 알람·매뉴얼 해석' },
   { icon: '🧪', role: 'Process Engineer', duty: 'Sets recipes and analyzes process logs and English data sheets.', ko: '공정 엔지니어 — 레시피 설정, 영문 로그·데이터 분석' },
-  { icon: '📐', role: 'Design Engineer', duty: 'Draws layouts and fixes DRC / LVS errors written in English.', ko: '설계 엔지니어 — 레이아웃 작성, 영문 DRC/LVS 오류 수정' },
+  { icon: '🧰', role: 'Field Service Engineer', duty: 'Works with vendors through English tickets, calls, and parts requests.', ko: '서비스 엔지니어 — 영문 티켓·통화·부품 요청으로 장비사와 협업' },
 ];
 const W1_GLOSSARY = [
   { en: 'Wafer', ko: '웨이퍼', d: '반도체를 만드는 얇은 원판.', ex: 'Load the wafer onto the chuck.' },
@@ -1114,8 +1126,8 @@ const W1_SENT = [
 const W1_TOUR = [
   { ic: '🖥️', area: 'Equipment · 장비', en: '“Load the wafer and pump down.”', ko: '영어 지시로 장비를 운전' },
   { ic: '🚨', area: 'Alarm · 알람', en: '“Stopped by the interlock.”', ko: '영문 알람을 해석' },
-  { ic: '📐', area: 'DRC · 디자인 규칙 검사', en: '“METAL1.SPACING violation.”', ko: 'DRC = Design Rule Check · 디자인 오류 읽기' },
-  { ic: '🔗', area: 'LVS · 레이아웃 검증', en: '“Missing device in the layout.”', ko: 'LVS = Layout Versus Schematic · 레이아웃 vs 회로도' },
+  { ic: '⚠️', area: 'Safety · 안전 규정', en: '“The line shall be purged before the break.”', ko: 'shall · must · should — 규정문의 조동사' },
+  { ic: '📞', area: 'Vendor · 벤더 소통', en: '“Let me read that back.”', ko: '티켓 · 통화 · 메일 — 되읽기와 에스컬레이션' },
   { ic: '📝', area: 'Report · 보고', en: '“Problem / Cause / Action…”', ko: '영문 현장 보고서' },
 ];
 // 현장 영어가 나오는 3곳 — 매뉴얼 · 지시문 · HMI 화면
@@ -1270,6 +1282,7 @@ function LessonDeck({ steps, chapterId, chapterNo, chapterTitle, onReachEnd }) {
   const [i, setI] = useState(0);
   // 챕터 PDF — 화면에서는 한 장씩 넘기지만, 저장할 때는 전 단계를 한 번에 펼쳐 인쇄한다.
   const [printing, setPrinting] = useState(false);
+  const bodyRef = useRef(null); // 강의 듣기 펜 층이 이 본문(스크롤 영역) 안에 깔린다
   const step = steps[i];
   const last = i === steps.length - 1;
   const artName = CH_ART[chapterId] && !(step.art && MANGA[step.art]) ? CH_ART[chapterId][step.title] : undefined;
@@ -1299,9 +1312,10 @@ function LessonDeck({ steps, chapterId, chapterNo, chapterTitle, onReachEnd }) {
         <div className="fes-ld-head">
           <span className="fes-ld-step">CH{chapterNo} · {chapterTitle}<span className="fes-ld-step-sep">/</span>STEP {i + 1} / {steps.length}{stepLabel ? ' · ' + stepLabel : ''}</span>
           <div className="fes-ld-title">{step.title}</div>
-          <SlideAudioBtn slide={step} />
+          <SlideAudioBtn slide={step} chapterId={chapterId} index={i} />
         </div>
-        <div className="fes-ld-body">
+        <div className="fes-ld-body" ref={bodyRef}>
+          <PenLayer key={`pen-${i}`} bodyRef={bodyRef} entry={lectureFor(chapterId, i, step)} />
           {step.body || <SlideRenderer key={i} slide={step} />}
           {artName && <SlideArt name={artName} />}
         </div>
@@ -2340,6 +2354,591 @@ function PmPartsLab() {
   );
 }
 
+/* ── 9강 · 규정 문장 판정 (조동사의 강도) ── */
+function SafetyModalLab() {
+  const [ans, setAns] = useState({});
+  const right = MODAL_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  const answered = Object.keys(ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        안전 규정집 <b>GENERAL SAFETY REQUIREMENTS</b> 의 문장입니다. 동사 앞의 <b>조동사</b>를 찾아, 그 줄이 무엇을 요구하는지 고르세요.
+      </p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {MODAL_ITEMS.map((it, n) => {
+          const r = ans[it.id] != null ? modalJudge(it.id, ans[it.id]) : null;
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {it.en} <SpeakBtn text={it.en} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {MODAL_CLASSES.map((m) => {
+                  const picked = ans[it.id] === m.id, isAns = r && m.id === it.ans;
+                  return (
+                    <button key={m.id} className={`fes-chip ${picked ? 'on' : ''}`} disabled={r != null}
+                      style={isAns ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : picked ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: m.id }))}>{m.ko}</button>
+                  );
+                })}
+              </div>
+              {r && <div style={{ marginTop: 6, fontSize: 12.5, color: r.ok ? C.emerald : C.amber }}>{r.ok ? '✔' : '✘'} 근거: <b>{r.modal}</b> — {r.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{answered} / {MODAL_ITEMS.length} 판정 · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 9강 · LOTO 순서 ──
+   카드는 고정된 순서로 섞어 둔다(렌더마다 바뀌면 학생이 위치로 외울 수도, 화면이 흔들릴 수도 있다). */
+const LOTO_ORDER = ['isoCda', 'verify', 'notify', 'trapBuddy', 'lock', 'isoGas', 'work', 'bleed', 'isoMain', 'trapTag', 'shutdown', 'purge', 'isoRf'];
+function LotoLab() {
+  const START = [{ t: 'INFO', m: 'WO-24203 — Etch tool ET-05 chamber service. Energy sources: AC main, RF generator, CDA, process gas.' }];
+  const [box, setBox] = useState(() => ({ s: lotoInit(), log: START }));
+  const { s } = box;
+  const press = (id) => setBox((b) => { const r = lotoAct(b.s, id); return { s: r.s, log: [...b.log, ...r.log].slice(-30) }; });
+  const cards = LOTO_ORDER.map((id) => LOTO_CARDS.find((c) => c.id === id));
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        식각 장비 <b>ET-05</b> 정비 전 LOTO 입니다. 지금 해도 되는 카드를 골라 순서대로 누르세요. 에너지원은 <b>네 곳</b>(AC main · RF generator · CDA · process gas)입니다.
+      </p>
+      <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+        {cards.map((c) => {
+          const done = s.done.includes(c.id);
+          return (
+            <button key={c.id} className="fes-dev-status" disabled={done || s.finished} onClick={() => press(c.id)}
+              style={{ textAlign: 'left', cursor: done || s.finished ? 'default' : 'pointer', borderColor: done ? C.emerald : undefined, opacity: done ? 0.75 : 1 }}>
+              <div style={{ fontFamily: C.mono, fontSize: 12, color: done ? C.emerald : C.text }}>{done ? `✔ ${LOTO_CARDS.find((x) => x.id === c.id).step}. ` : ''}{c.en}</div>
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 3 }}>{c.ko}</div>
+            </button>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>완료 {s.done.length} / {LOTO_CARDS.filter((c) => !c.trap).length} · 잘못 누름 {s.mistakes}</span>
+        <button className="fes-btn ghost" onClick={() => setBox({ s: lotoInit(), log: START })}>Reset</button>
+      </div>
+      {s.finished && <div className="fes-ok" style={{ marginTop: 10 }}>✔ Zero energy verified — 정비를 시작할 수 있습니다. 지름길 카드 두 장은 끝까지 쓰지 않는 것이 정답입니다.</div>}
+      <LabLog log={box.log} title="LOTO LOG" />
+    </div>
+  );
+}
+
+/* ── 9강 · 가스 경보 판독 ── */
+function GasAlarmLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = GAS_CASES[ci];
+  const lv = gasLevel(c.gas, c.value, c.unit);
+  const right = gasAction(lv);
+  const a = ans[c.id];
+  const col = lv === 'ALARM' ? C.red : lv === 'WARNING' ? C.amber : C.emerald;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        감지기 화면의 <b>가스 · 농도 · 단위</b>를 읽고 행동을 고르세요. 이 실습의 설정: <b>1차 경보 = TLV 50%</b>, <b>2차 경보 = TLV 100%</b> (실제 값은 사업장 절차서가 정한다).
+      </p>
+      <CaseChips cases={GAS_CASES} idx={ci} setIdx={setCi} label={(x) => x.point.split(' ')[0]}
+        mark={(x) => (ans[x.id] == null ? null : ans[x.id] === gasAction(gasLevel(x.gas, x.value, x.unit)))} />
+      <div className="fes-dev-grid">
+        <div className="fes-dev-led"><div className="fes-dev-led-label">MONITOR POINT</div><div className="fes-dev-led-val" style={{ fontSize: 15, textShadow: 'none' }}>{c.point}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">GAS (TLV-TWA)</div><div className="fes-dev-led-val" style={{ fontSize: 17, textShadow: 'none' }}>{c.gas}<span className="fes-dev-led-unit">{GAS_TLV[c.gas]} ppm</span></div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">READING</div><div className="fes-dev-led-val" style={{ fontSize: 17, textShadow: 'none', color: a != null ? col : C.cyan }}>{c.value}<span className="fes-dev-led-unit">{c.unit}</span></div></div>
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>현장 메모: {c.note}</div>
+      <PickRow prompt="이 화면을 보고 지금 할 일은?" options={GAS_ACTIONS.map((x) => ({ id: x.id, label: x.en }))}
+        picked={a} answer={right} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === right ? C.emerald : C.amber }}>
+          {a === right ? '✔' : '✘'} <b style={{ color: col }}>{lv === 'ALARM' ? 'LEVEL 2 ALARM' : lv === 'WARNING' ? 'LEVEL 1 WARNING' : 'NORMAL'}</b> — {gasExplain(c)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 10강 · 경계 판정 (not to exceed · below · at least · within ± · between) ── */
+function RecipeLimitLab() {
+  const [ans, setAns] = useState({});
+  const right = LIMIT_ITEMS.filter((it) => ans[it.id] === (it.pass ? 'PASS' : 'FAIL')).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">규격 문장의 <b>경계어</b>를 먼저 읽고, 측정값이 <b>PASS</b> 인지 <b>FAIL</b> 인지 고르세요. 경계값에 딱 걸린 값이 섞여 있습니다.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {LIMIT_ITEMS.map((it, n) => {
+          const a = ans[it.id], truth = it.pass ? 'PASS' : 'FAIL';
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. SPEC: {it.spec} <SpeakBtn text={it.spec} /></div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                <span style={{ fontSize: 12, color: C.dim }}>MEASURED: <b style={{ color: C.cyan, fontFamily: C.mono }}>{it.value} {it.unit}</b></span>
+                <div className="fes-btnrow">
+                  {['PASS', 'FAIL'].map((v) => (
+                    <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                      style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: v }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {LIMIT_ITEMS.length} 판정 · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 10강 · 레시피 실행 기록 판정 (ETCH-POLY-01 Rev C · ME + OE) ── */
+function RecipeRunLab() {
+  const [ri, setRi] = useState(0);
+  const [ans, setAns] = useState({}); // `${run}:${field}` → 'IN' | 'OUT'
+  const run = RCP_RUNS[ri];
+  const doneRun = (r) => RCP_FIELDS.every((f) => ans[`${r.id}:${f.id}`] != null);
+  const allRight = (r) => RCP_FIELDS.every((f) => ans[`${r.id}:${f.id}`] === (rcpCheck(r, f.id).ok ? 'IN' : 'OUT'));
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        웨이퍼마다 본 식각(ME) 실제값과 끝점 시각, 추가 식각(OE) 시간이 기록되어 있습니다. 오른쪽 <b>허용 범위</b> 문장으로 항목마다 <b>IN / OUT</b> 을 고르세요(교재 예시 규격).
+      </p>
+      <CaseChips cases={RCP_RUNS} idx={ri} setIdx={setRi} label={(x) => `WAFER ${x.id}`} mark={(x) => (doneRun(x) ? allRight(x) : null)} />
+      <div style={{ fontSize: 12, color: C.dim, margin: '6px 0 8px' }}>메모: {run.note}</div>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {RCP_FIELDS.map((f) => {
+          const k = `${run.id}:${f.id}`, a = ans[k], r = rcpCheck(run, f.id), truth = r.ok ? 'IN' : 'OUT';
+          return (
+            <div key={f.id} className="fes-dev-status" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px,1fr) 110px minmax(180px,1.4fr) auto', gap: 10, alignItems: 'center' }}>
+              <span style={{ fontFamily: C.mono, fontSize: 12, color: C.text }}>{f.label}</span>
+              <b style={{ fontFamily: C.mono, color: a != null ? (r.ok ? C.emerald : C.red) : C.cyan }}>{run[f.id]} {f.unit}</b>
+              <span style={{ fontSize: 12, color: C.dim }}>{f.rule}{a != null ? ` → ${r.expect}` : ''}</span>
+              <div className="fes-btnrow">
+                {['IN', 'OUT'].map((v) => (
+                  <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [k]: v }))}>{v}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {doneRun(run) && (
+        <div className={allRight(run) ? 'fes-ok' : ''} style={{ marginTop: 8, fontSize: 12.5, color: allRight(run) ? undefined : C.amber }}>
+          {allRight(run) ? '✔ 모두 맞게 판정했습니다.' : '✘ 틀린 항목은 오른쪽의 계산(→)을 확인하세요.'}
+          {' '}이 웨이퍼: {RCP_FIELDS.filter((f) => !rcpCheck(run, f.id).ok).map((f) => f.label).join(', ') || '모든 항목 범위 안'}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 10강 · 변경 관리 결정 (규정 R1~R4) ── */
+function ChangeControlLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = CC_CASES[ci];
+  const d = ccDecide(c);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">변경 규정(교재 예시)과 상황을 읽고 지금 할 일을 고르세요.</p>
+      <div className="fes-dev-status" style={{ marginBottom: 8 }}>
+        <div className="fes-dev-sub">RECIPE CHANGE CONTROL POLICY</div>
+        {CC_RULES.map((r) => (
+          <div key={r.id} style={{ fontFamily: C.mono, fontSize: 12, color: a != null && d.rule === r.id ? C.amber : C.text, marginTop: 3 }}>{r.id}. {r.en} <SpeakBtn text={r.en} /></div>
+        ))}
+      </div>
+      <CaseChips cases={CC_CASES} idx={ci} setIdx={setCi} label={(x) => x.id.toUpperCase()} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === ccDecide(x).action)} />
+      <div className="fes-dev-grid">
+        <div className="fes-dev-led"><div className="fes-dev-led-label">CHANGE</div><div className="fes-dev-led-val" style={{ fontSize: 14, textShadow: 'none' }}>{c.what}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">ECN STATUS</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none', color: c.ecn === 'APPROVED' ? C.emerald : C.amber }}>{c.ecn}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">QUAL WAFERS PASS / FAIL</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none' }}>{c.pass} / {c.fail}</div></div>
+        <div className="fes-dev-led"><div className="fes-dev-led-label">CHANGE SIZE</div><div className="fes-dev-led-val" style={{ fontSize: 16, textShadow: 'none' }}>{c.deltaPct}%</div></div>
+      </div>
+      <PickRow prompt="지금 할 일은?" options={CC_ACTIONS.map((x) => ({ id: x.id, label: `${x.ko} · ${x.en}` }))}
+        picked={a} answer={d.action} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && <div style={{ marginTop: 8, fontSize: 12.5, color: a === d.action ? C.emerald : C.amber }}>{a === d.action ? '✔' : '✘'} {CC_WHY[d.rule]}</div>}
+    </div>
+  );
+}
+
+/* ── 11강 · 명사 덩어리 (맨 오른쪽이 머리) ── */
+function NounChainLab() {
+  const [ans, setAns] = useState({});
+  const right = NOUN_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">장비 화면 라벨입니다. <b>맨 오른쪽 명사(머리)</b>를 먼저 찾고, 오른쪽부터 "~의"로 읽은 뜻을 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {NOUN_ITEMS.map((it, n) => {
+          const a = ans[it.id], head = nounHead(it.groups);
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 13.5, color: C.text, letterSpacing: 0.5 }}>
+                {n + 1}. {it.groups.map((g, k) => (
+                  <span key={k} style={a != null && g === head ? { color: C.amber, fontWeight: 800 } : undefined}>{g.toUpperCase()}{k < it.groups.length - 1 ? ' ' : ''}</span>
+                ))}
+              </div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {it.opts.map((o, j) => (
+                  <button key={j} className={`fes-chip ${a === j ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && j === it.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: j }))}>{o}</button>
+                ))}
+              </div>
+              {a != null && (
+                <div style={{ marginTop: 6, fontSize: 12.5, color: a === it.ans ? C.emerald : C.amber }}>
+                  {a === it.ans ? '✔' : '✘'} 머리: <b>{head}</b> — <span style={{ fontFamily: C.mono }}>{ofChain(it.groups)}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {NOUN_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 11강 · 장비 계열 맞히기 (단어와 단위가 단서) ── */
+function ToolFamilyLab() {
+  const [ans, setAns] = useState({});
+  const right = TOOL_LINES.filter((t) => ans[t.id] === toolOf(t.line)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">처음 보는 화면 한 줄입니다. <b>단어와 단위</b>를 단서로 어느 장비의 화면인지 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {TOOL_LINES.map((t) => {
+          const a = ans[t.id], truth = toolOf(t.line);
+          return (
+            <div key={t.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 13, color: C.cyan, whiteSpace: 'pre-wrap' }}>{t.line}</div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {TOOL_FAMILIES.map((f) => (
+                  <button key={f} className={`fes-chip ${a === f ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && f === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === f ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [t.id]: f }))}>{f}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {t.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {TOOL_LINES.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 11강 · 장비별 규격 판정 (단위 맞추기 · 지수 표기) ── */
+function ToolSpecLab() {
+  const [ans, setAns] = useState({});
+  const right = SPEC_ITEMS.filter((it) => ans[it.id] === (it.pass ? 'PASS' : 'FAIL')).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">장비마다 다른 단위와 지수 표기입니다. 측정값을 <b>규격과 같은 단위로 바꾼 뒤</b> PASS / FAIL 을 고르세요(교재 예시 규격).</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {SPEC_ITEMS.map((it) => {
+          const a = ans[it.id], truth = it.pass ? 'PASS' : 'FAIL';
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontSize: 11, color: C.dim, fontFamily: C.mono, letterSpacing: 1 }}>{it.tool}</div>
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text, marginTop: 2 }}>SPEC: {it.spec} <SpeakBtn text={it.spec} /></div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                <span style={{ fontSize: 12, color: C.dim }}>SCREEN: <b style={{ color: C.cyan, fontFamily: C.mono }}>{it.shown}</b></span>
+                <div className="fes-btnrow">
+                  {['PASS', 'FAIL'].map((v) => (
+                    <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                      style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                      onClick={() => setAns((p) => ({ ...p, [it.id]: v }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {SPEC_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 12강 · 확신 등급 ── */
+function CertaintyLab() {
+  const [ans, setAns] = useState({});
+  const right = CERTAINTY_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">교대 보고 · 원인 분석 보고서의 문장입니다. 문장 속 <b>확신 표현</b>을 찾아 등급을 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {CERTAINTY_ITEMS.map((it, n) => {
+          const a = ans[it.id], truth = certaintyOf(it.en);
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {it.en} <SpeakBtn text={it.en} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {CERTAINTY_LEVELS.map((l) => (
+                  <button key={l.id} className={`fes-chip ${a === l.id ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && l.id === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === l.id ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: l.id }))}>{l.ko} · {l.en}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} 근거: <b>{it.cue}</b> → {CERTAINTY_LEVELS.find((l) => l.id === truth).ko}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {CERTAINTY_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 12강 · 원인 좁히기 (트러블슈팅 표 MM-0505, 교재 예시) ── */
+const TS_STATUS_KO = { confirmed: '확정', ruledOut: '배제', open: '미확인' };
+function NarrowCauseLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = TS_CASES[ci];
+  const r = tsNarrow(c.obs);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro"><b>Symptom: BASE PRESSURE HIGH.</b> 확인 결과를 읽고, 증거가 가리키는 원인을 고르세요. 증거가 모자라면 "확인이 더 필요하다", 모두 배제되면 "상부에 올린다"입니다.</p>
+      <CaseChips cases={TS_CASES} idx={ci} setIdx={setCi} label={(x) => `CASE ${x.id}`} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === tsNarrow(x.obs).verdict)} />
+      <div className="fes-dev-status" style={{ marginTop: 8 }}>
+        <div className="fes-dev-sub">CHECK RESULTS</div>
+        {c.lines.map((l) => <div key={l} style={{ fontFamily: C.mono, fontSize: 12.5, color: C.cyan, marginTop: 3 }}>• {l}</div>)}
+      </div>
+      <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
+        {TS_CAUSES.map((k, n) => (
+          <div key={k.id} className="fes-dev-status" style={{ display: 'grid', gridTemplateColumns: '24px minmax(180px,1.2fr) minmax(200px,1.6fr) 80px', gap: 10, alignItems: 'center' }}>
+            <span style={{ color: C.dim, fontFamily: C.mono }}>{n + 1}</span>
+            <span style={{ fontSize: 12.5, color: C.text }}>{k.en}<span style={{ color: C.dim }}> · {k.ko}</span></span>
+            <span style={{ fontSize: 12, color: C.dim }}>{k.check}</span>
+            <b style={{ fontSize: 12, color: a == null ? C.dim : r.st[k.id] === 'confirmed' ? C.emerald : r.st[k.id] === 'ruledOut' ? C.red : C.amber }}>{a == null ? '?' : TS_STATUS_KO[r.st[k.id]]}</b>
+          </div>
+        ))}
+      </div>
+      <PickRow prompt="증거가 가리키는 결론은?" options={TS_VERDICTS.map((v) => ({ id: v.id, label: v.ko }))}
+        picked={a} answer={r.verdict} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === r.verdict ? C.emerald : C.amber }}>
+          {a === r.verdict ? '✔' : '✘'} {r.verdict === 'more' ? '확정된 원인이 없고 미확인 후보가 남았다 — 다음 확인을 한다(부품부터 갈지 않는다).'
+            : r.verdict === 'escalate' ? '네 후보가 모두 배제됐는데 증상이 남았다 — 표에 없는 원인이다. 추측으로 조치하지 말고 상부·장비사에 올린다.'
+              : `확정: ${TS_CAUSES.find((k) => k.id === r.verdict).en} — 이 원인에 대한 조치만 한다.`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 12강 · 관리도 규칙 (교재 예시 차트) ── */
+function SpcChart({ pts }) {
+  const ch = SPC_CHART, W = 560, H = 190, x0 = 46, x1 = W - 14, lo = 88, hi = 112;
+  const y = (v) => 10 + (hi - v) / (hi - lo) * (H - 30);
+  const x = (i) => x0 + (i / (pts.length - 1)) * (x1 - x0);
+  const line = (v, col, dash, label) => (
+    <g key={label}><path d={`M${x0} ${y(v)} L${x1} ${y(v)}`} stroke={col} strokeWidth="1.2" strokeDasharray={dash} />
+      <text x={x0 - 6} y={y(v) + 3.5} textAnchor="end" fontSize="9.5" fill={col} fontFamily={C.mono}>{label}</text></g>
+  );
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 640, display: 'block', background: '#04070d', borderRadius: 8, border: `1px solid ${C.line2}` }} role="img" aria-label="control chart">
+      {line(ch.usl, C.red, '2 3', `USL ${ch.usl}`)}{line(ch.ucl, C.amber, '6 4', `UCL ${ch.ucl}`)}{line(ch.cl, C.dim, '', `CL ${ch.cl}`)}
+      {line(ch.lcl, C.amber, '6 4', `LCL ${ch.lcl}`)}{line(ch.lsl, C.red, '2 3', `LSL ${ch.lsl}`)}
+      <path d={pts.map((v, i) => `${i ? 'L' : 'M'}${x(i)} ${y(v)}`).join(' ')} fill="none" stroke={C.cyan} strokeWidth="1.6" />
+      {pts.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r="3.6" fill={v > ch.ucl || v < ch.lcl ? C.red : C.cyan} />)}
+      {pts.map((v, i) => <text key={`t${i}`} x={x(i)} y={H - 6} textAnchor="middle" fontSize="8.5" fill={C.dim} fontFamily={C.mono}>{v}</text>)}
+    </svg>
+  );
+}
+function SpcRuleLab() {
+  const [ci, setCi] = useState(0);
+  const [ans, setAns] = useState({});
+  const c = SPC_CASES[ci];
+  const truth = spcAnswer(c), rules = spcCheck(c.pts), inSpec = spcInSpec(c.pts);
+  const a = ans[c.id];
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">식각 속도 관리도(교재 예시: CL {SPC_CHART.cl} · UCL {SPC_CHART.ucl} · LCL {SPC_CHART.lcl}, 규격 {SPC_CHART.lsl}~{SPC_CHART.usl} {SPC_CHART.unit})입니다. 걸린 규칙을 고르세요.</p>
+      <CaseChips cases={SPC_CASES} idx={ci} setIdx={setCi} label={(x) => `CHART ${x.id}`} mark={(x) => (ans[x.id] == null ? null : ans[x.id] === spcAnswer(x))} />
+      <div style={{ marginTop: 8 }}><SpcChart pts={c.pts} /></div>
+      <PickRow prompt="어느 규칙에 걸렸나?" options={SPC_ANSWERS.map((o) => ({ id: o.id, label: o.ko }))}
+        picked={a} answer={truth} onPick={(id) => setAns((p) => ({ ...p, [c.id]: id }))} />
+      {a != null && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>
+          {a === truth ? '✔' : '✘'} {rules.length ? `OOC — ${rules.map((x) => SPC_ANSWERS.find((o) => o.id === x).ko).join(', ')}.` : '관리 한계 안, 쏠림·추세 없음 — in control.'}
+          {' '}<b style={{ color: inSpec ? C.emerald : C.red }}>{inSpec ? '모든 점이 규격 안(in spec) — 불량이 아니라 조사 신호.' : '규격 밖 점이 있다(OOS) — 영향받은 lot 을 보류한다.'}</b>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 13강 · 티켓 긴급도 (교재 예시 기준) ── */
+function SeverityLab() {
+  const [ans, setAns] = useState({});
+  const right = SEVERITY_CASES.filter((c) => ans[c.id] === severityOf(c.f)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">상황 카드를 읽고 긴급도를 고르세요(교재 예시 — 실제 정의는 장비사 계약 SLA). 근거는 세 가지 사실: <b>멈췄나 · 대안이 있나 · 웨이퍼가 위험한가</b>.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {SEVERITY_CASES.map((c, n) => {
+          const a = ans[c.id], truth = severityOf(c.f);
+          return (
+            <div key={c.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{n + 1}. {c.text} <SpeakBtn text={c.text} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {SEVERITY_LEVELS.map((l) => (
+                  <button key={l.id} className={`fes-chip ${a === l.id ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && l.id === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === l.id ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [c.id]: l.id }))}>{l.ko}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {truth} — {SEVERITY_WHY[truth]}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {SEVERITY_CASES.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 13강 · 되읽기 (한 자리씩 · zero · point · E minus · 음성 기호) ── */
+function ReadbackLab() {
+  const [ans, setAns] = useState({});
+  const right = READBACK_ITEMS.filter((it) => ans[it.id] === it.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">지원 엔지니어가 전화로 불러 준 말입니다. 가장 안전한 <b>되읽기(read back)</b>를 고르세요.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {READBACK_ITEMS.map((it, n) => {
+          const a = ans[it.id];
+          return (
+            <div key={it.id} className="fes-dev-status">
+              <div style={{ fontSize: 11, color: C.dim, fontFamily: C.mono, letterSpacing: 1 }}>TSE SAYS</div>
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.cyan, marginTop: 2 }}>{n + 1}. “{it.said}” <SpeakBtn text={it.said} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {it.opts.map((o, j) => (
+                  <button key={j} className={`fes-chip ${a === j ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && j === it.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setAns((p) => ({ ...p, [it.id]: j }))}>Let me read that back: {o}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === it.ans ? C.emerald : C.amber }}>{a === it.ans ? '✔' : '✘'} <b style={{ fontFamily: C.mono }}>{readBackOf(it)}</b> — {it.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {READBACK_ITEMS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 13강 · 서비스 요청 메일 (칸마다 문장 고르기 → 완성 메일) ── */
+function VendorEmailLab() {
+  const [ans, setAns] = useState({});
+  const done = EMAIL_SLOTS.every((sl) => ans[sl.id] != null);
+  const right = EMAIL_SLOTS.filter((sl) => ans[sl.id] === sl.ans).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">칸마다 지원팀이 <b>한 번에 알아듣는</b> 문장을 고르세요. 다 고르면 완성된 메일이 나옵니다.</p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {EMAIL_SLOTS.map((sl) => {
+          const a = ans[sl.id];
+          return (
+            <div key={sl.id} className="fes-dev-status">
+              <div className="fes-dev-sub">{sl.ko.toUpperCase()} · {sl.id.toUpperCase()}</div>
+              <div style={{ display: 'grid', gap: 5 }}>
+                {sl.opts.map((o, j) => (
+                  <button key={j} className="fes-btn" disabled={a != null} onClick={() => setAns((p) => ({ ...p, [sl.id]: j }))}
+                    style={{ textAlign: 'left', justifyContent: 'flex-start', ...(a != null && j === sl.ans ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === j ? { borderColor: C.red, color: C.red, opacity: 1 } : {}) }}>{o}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === sl.ans ? C.emerald : C.amber }}>{a === sl.ans ? '✔' : '✘'} {sl.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12.5, color: C.dim }}>{Object.keys(ans).length} / {EMAIL_SLOTS.length} · 맞힘 {right}</span>
+        <button className="fes-btn ghost" onClick={() => setAns({})}>Reset</button>
+      </div>
+      {done && (
+        <div className="fes-doc fes-doc-email" style={{ marginTop: 12 }}>
+          <div className="fes-mail-hd"><div><span>To</span> Vendor Support</div><div><span>Subject</span> <b>{EMAIL_SLOTS[0].opts[EMAIL_SLOTS[0].ans]}</b></div></div>
+          <div className="fes-mail-body">{EMAIL_SLOTS.slice(1).map((sl) => <p key={sl.id}>{sl.opts[sl.ans]}</p>)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── 14강 · 인계 항목 분류 (Critical / Minor + Problem 줄) ── */
+function HandoverTriageLab() {
+  const [sev, setSev] = useState({});
+  const [prob, setProb] = useState(null);
+  const right = HANDOVER_ROWS.filter((r) => sev[r.id] === handoverSeverity(r.f)).length;
+  return (
+    <div>
+      <p className="fes-wk-quiz-intro">
+        야간조 인계 로그입니다. 항목마다 <b>Critical</b>(안전 위험 · 생산 정지 · 규격 이탈 웨이퍼)인지 <b>Minor</b>(모니터링 · 대기만 필요)인지 고른 뒤, 보고문 <b>Problem</b> 줄을 고르세요. (교재의 Critical / Minor 정의를 인계 항목에 옮긴 이 실습의 기준)
+      </p>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {HANDOVER_ROWS.map((r) => {
+          const a = sev[r.id], truth = handoverSeverity(r.f);
+          return (
+            <div key={r.id} className="fes-dev-status">
+              <div style={{ fontFamily: C.mono, fontSize: 12.5, color: C.text }}>{r.line} <SpeakBtn text={r.line} /></div>
+              <div className="fes-btnrow" style={{ marginTop: 8 }}>
+                {['Critical', 'Minor'].map((v) => (
+                  <button key={v} className={`fes-chip ${a === v ? 'on' : ''}`} disabled={a != null}
+                    style={a != null && v === truth ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : a === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
+                    onClick={() => setSev((p) => ({ ...p, [r.id]: v }))}>{v}</button>
+                ))}
+              </div>
+              {a != null && <div style={{ marginTop: 6, fontSize: 12.5, color: a === truth ? C.emerald : C.amber }}>{a === truth ? '✔' : '✘'} {r.why}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 12.5, color: C.dim, margin: '8px 0' }}>{Object.keys(sev).length} / {HANDOVER_ROWS.length} 분류 · 맞힘 {right}</div>
+      <PickRow prompt={HANDOVER_PROBLEM.prompt} options={HANDOVER_PROBLEM.opts.map((o, j) => ({ id: j, label: o }))}
+        picked={prob} answer={HANDOVER_PROBLEM.ans} onPick={setProb} />
+      {prob != null && <div style={{ marginTop: 8, fontSize: 12.5, color: prob === HANDOVER_PROBLEM.ans ? C.emerald : C.amber }}>{prob === HANDOVER_PROBLEM.ans ? '✔' : '✘'} {HANDOVER_PROBLEM.why}</div>}
+      <div className="fes-btnrow" style={{ marginTop: 10 }}><button className="fes-btn ghost" onClick={() => { setSev({}); setProb(null); }}>Reset</button></div>
+    </div>
+  );
+}
+
 /* ── 7강 · PM 작업 (work order) ── */
 function PmWorkOrder() {
   const [box, setBox] = useState(() => ({ s: pmwInit(), log: [{ t: 'INFO', m: 'Work order WO-24117 OPEN — Chamber A quarterly PM. Tool status: DOWN (tagged).' }] }));
@@ -3349,21 +3948,23 @@ function speakEN(text, onEnd) {
     synth.speak(u);
   } catch (e) { if (onEnd) onEnd(); /* 미지원 브라우저는 무시 */ }
 }
-const SPEECH = { audio: null, key: null, paused: false, listeners: new Set() }; // 지금 울리는 것 하나 (모듈 전역)
-function speechNotify() { const st = { key: SPEECH.key, paused: SPEECH.paused }; SPEECH.listeners.forEach((fn) => fn(st)); }
+const SPEECH = { audio: null, key: null, paused: false, ended: null, listeners: new Set() }; // 지금 울리는 것 하나 (모듈 전역)
+/* ended — 끝까지 들은 것의 key. 강의 듣기의 펜 자국을 끝난 뒤에도 남겨 두려고 둔다(정지 ■ 를 누르면 지운다). */
+function speechNotify() { const st = { key: SPEECH.key, paused: SPEECH.paused, ended: SPEECH.ended }; SPEECH.listeners.forEach((fn) => fn(st)); }
 /* 일시정지 / 이어 듣기 — 전체 듣기(긴 글)용. 위치를 잃지 않는다. 담당자 2026-10-07 "재생·잠깐 멈춤" */
 function pauseSpeech() { if (SPEECH.audio && !SPEECH.audio.paused) { SPEECH.audio.pause(); SPEECH.paused = true; speechNotify(); } }
 function resumeSpeech() { if (SPEECH.audio && SPEECH.paused) { SPEECH.paused = false; const p = SPEECH.audio.play(); if (p && p.catch) p.catch(() => {}); speechNotify(); } }
 function stopSpeech() {
   if (SPEECH.audio) { try { SPEECH.audio.pause(); SPEECH.audio.src = ''; } catch (e) { /* ignore */ } SPEECH.audio = null; }
   try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
-  SPEECH.key = null; SPEECH.paused = false; speechNotify();
+  SPEECH.key = null; SPEECH.paused = false; SPEECH.ended = null; speechNotify();
 }
-function playSpeech(key, text, src) {
+/* rate — 슬라이드 전체 읽기(src)는 기본 0.9배. 강의 듣기는 말하듯 쓴 대본이라 1배로 부른다. */
+function playSpeech(key, text, src, rate) {
   if (SPEECH.key === key) { stopSpeech(); return; } // 재생 중인 것을 다시 누르면 정지
   stopSpeech();
   SPEECH.key = key; SPEECH.paused = false; speechNotify();
-  const endIfMine = (k) => () => { if (SPEECH.key === k) { SPEECH.audio = null; SPEECH.key = null; SPEECH.paused = false; speechNotify(); } };
+  const endIfMine = (k) => () => { if (SPEECH.key === k) { SPEECH.audio = null; SPEECH.key = null; SPEECH.paused = false; SPEECH.ended = k; speechNotify(); } };
   /* 폴백: 문장(text)이 있으면 Web Speech. 슬라이드 전체 읽기(src 지정)는 글이 길고 한·영 혼합이라 폴백 없이 멈춘다. */
   const fallback = () => { if (SPEECH.key !== key) return; SPEECH.audio = null; if (text) speakEN(text, endIfMine(key)); else { SPEECH.key = null; speechNotify(); } };
   const hash = FE_AUDIO[key];
@@ -3371,7 +3972,7 @@ function playSpeech(key, text, src) {
   try {
     const a = new Audio(src || `${AUDIO_DIR}/${hash}.mp3`);
     a.preload = 'auto';
-    if (src) a.playbackRate = 0.9; // 슬라이드 전체 읽기(한·영 혼합)는 살짝 천천히. 문장 발음은 원어민 속도 그대로
+    if (src) a.playbackRate = rate || 0.9; // 슬라이드 전체 읽기(한·영 혼합)는 살짝 천천히. 문장 발음은 원어민 속도 그대로
     a.onended = endIfMine(key);
     a.onerror = fallback; // 파일이 없거나 못 읽으면 Web Speech 로
     SPEECH.audio = a;
@@ -3380,27 +3981,109 @@ function playSpeech(key, text, src) {
   } catch (e) { fallback(); }
 }
 function useSpeechState() {
-  const [st, setSt] = useState({ key: SPEECH.key, paused: SPEECH.paused });
+  const [st, setSt] = useState({ key: SPEECH.key, paused: SPEECH.paused, ended: SPEECH.ended });
   useEffect(() => { SPEECH.listeners.add(setSt); return () => SPEECH.listeners.delete(setSt); }, []);
   return st;
 }
 function useSpeechKey() { return useSpeechState().key; }
 /* ▶ 전체 듣기 — story · read · manual 슬라이드를 한 화자(Chris, 한·영 혼합)가 처음부터 끝까지 읽는다.
    매니페스트(FE_SLIDE_AUDIO)에 그 슬라이드 글이 있을 때만 그린다. 문장 ▶ 와 같은 SPEECH 를 쓰므로 서로 끼어들면 앞 것이 멈춘다. */
-function SlideAudioBtn({ slide }) {
-  const narr = slideNarration(slide);
+/* 펜 층 — 강의 듣기가 이 슬라이드를 읽는 동안, 음성의 현재 시각에 맞춰 밑줄·동그라미·형광펜을 긋는다.
+   - 시각은 오디오의 currentTime 하나만 본다 → 일시정지하면 펜도 멈추고, 이어 들으면 이어 긋는다.
+   - 끝까지 들으면 자국을 남겨 둔다(정지 ■ 나 다른 슬라이드로 가면 지운다).
+   - 그을 차례가 된 글이 본문 스크롤 밖이면 그쪽으로 부드럽게 내려 준다.
+   - 최근 다섯 개만 진하게, 그 전 것은 흐리게 — 화면이 빨간 줄로 덮이지 않게. */
+const PEN_RED = '#ff5468', PEN_HL = '#ffd23f';
+function PenLayer({ bodyRef, entry }) {
+  const { key: cur, ended } = useSpeechState();
+  const key = entry ? `lecture:${entry.h}` : null;
+  const playing = key != null && cur === key;
+  const finished = key != null && !playing && ended === key;
+  const [now, setNow] = useState(0);
+  const [geo, setGeo] = useState({ w: 0, h: 0, boxes: [] });
+  const scrolledTo = useRef(-1);
+  const measure = useCallback(() => {
+    const body = bodyRef.current;
+    if (!body || !entry) return;
+    const boxes = entry.cues.map((c) => findTextRects(body, c.x, c.n));
+    if (import.meta.env && import.meta.env.DEV) boxes.forEach((b, j) => { if (!b.length) console.warn('[pen] 화면에서 못 찾음:', entry.cues[j].x); });
+    setGeo({ w: body.scrollWidth, h: body.scrollHeight, boxes });
+  }, [bodyRef, entry]);
+  // 재생 중에는 매 프레임 시각을 읽는다
+  useEffect(() => {
+    if (!playing) return undefined;
+    let raf = 0;
+    const tick = () => { if (SPEECH.audio) setNow(SPEECH.audio.currentTime); raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+  // 위치는 재생이 시작될 때 · 본문 크기가 바뀔 때(글꼴 로딩·창 크기·실습 화면 변화) 다시 잰다
+  useEffect(() => {
+    if (!playing && !finished) return undefined;
+    measure();
+    const body = bodyRef.current;
+    if (!body || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(body);
+    if (body.firstElementChild) Array.from(body.children).forEach((c) => ro.observe(c));
+    return () => ro.disconnect();
+  }, [playing, finished, measure, bodyRef]);
+  useEffect(() => { if (!playing && !finished) { setNow(0); scrolledTo.current = -1; } }, [playing, finished]);
+  const t = finished ? Infinity : now;
+  const active = entry && (playing || finished) ? entry.cues.map((c, j) => ({ c, j })).filter(({ c }) => c.t <= t) : [];
+  // 새로 그을 글이 보이는 곳 밖이면 그쪽으로
+  const newest = active.length ? active[active.length - 1].j : -1;
+  useEffect(() => {
+    if (!playing || newest < 0 || scrolledTo.current === newest) return;
+    scrolledTo.current = newest;
+    const body = bodyRef.current, b = geo.boxes[newest];
+    if (!body || !b || !b.length) return;
+    const top = b[0].y, bot = b[b.length - 1].y + b[b.length - 1].h;
+    if (top < body.scrollTop + 8 || bot > body.scrollTop + body.clientHeight - 8) {
+      body.scrollTo({ top: Math.max(0, top - body.clientHeight * 0.3), behavior: 'smooth' });
+    }
+  }, [playing, newest, geo, bodyRef]);
+  if (!entry || !active.length) return null;
+  return (
+    <svg className="fes-pen" width={geo.w} height={geo.h} aria-hidden="true">
+      {active.map(({ c, j }, order) => {
+        const boxes = geo.boxes[j];
+        if (!boxes || !boxes.length) return null;
+        const p = Math.max(0, Math.min(1, (t - c.t) / (PEN_DUR[c.k] || 0.6)));
+        const faded = active.length - order > 5;
+        const common = { pathLength: 1, strokeDasharray: '1 1', strokeDashoffset: 1 - p, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+        if (c.k === 'h') {
+          return <g key={j} className="fes-pen-hl" opacity={faded ? 0.22 : 0.42}>{highlightSegs(boxes).map((sg, q) => <path key={q} d={sg.d} stroke={PEN_HL} strokeWidth={sg.w} {...common} strokeLinecap="butt" />)}</g>;
+        }
+        // 두 줄 이상에 걸친 글은 동그라미가 화면 폭만 한 타원이 되므로 밑줄로 짚는다
+        const ring = c.k === 'o' && boxes.length === 1;
+        return <path key={j} d={ring ? circlePath(boxes, j + 1) : underlinePath(boxes, j + 1)} stroke={PEN_RED} strokeWidth={ring ? 2.6 : 2.4} opacity={faded ? 0.35 : 0.95} {...common} />;
+      })}
+    </svg>
+  );
+}
+/* 강의 듣기 — 대본(say)을 설명하듯 읽고 화면에 펜으로 짚는다. 이 슬라이드의 강의가 있으면 전체 듣기 대신 이것을 단다.
+   매니페스트의 서명(slideSig)이 지금 슬라이드와 다르면(교재가 바뀌고 빌드를 안 돌림) 옛 음성을 붙이지 않는다. */
+function lectureFor(chapterId, index, slide) {
+  const list = chapterId ? FE_LECTURE[chapterId] : null;
+  const e = list ? list.find((x) => x.i === index) : null;
+  return e && e.sig === slideSig(slide) ? e : null;
+}
+function SlideAudioBtn({ slide, chapterId, index }) {
+  const lec = lectureFor(chapterId, index, slide);
+  const narr = lec ? null : slideNarration(slide);
   const { key: cur, paused } = useSpeechState();
-  const ent = narr ? FE_SLIDE_AUDIO[narr] : null;
+  const ent = lec || (narr ? FE_SLIDE_AUDIO[narr] : null);
   if (!ent) return null;
-  const key = `slide:${ent.h}`, on = cur === key;
-  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  const src = `${SLIDE_AUDIO_DIR}/${ent.h}.mp3`;
+  const key = lec ? `lecture:${ent.h}` : `slide:${ent.h}`, on = cur === key;
+  const mmss = (v) => { const s = Math.round(v); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  const src = lec ? `${LECTURE_AUDIO_DIR}/${ent.h}.mp3` : `${SLIDE_AUDIO_DIR}/${ent.h}.mp3`;
   if (!on) {
     return (
       <div className="fes-slide-audio-wrap">
-        <button type="button" className="fes-slide-audio" title="이 화면 전체를 읽어 줍니다 (한국어 설명 + 영어 문장, 한 화자)"
-          onClick={(e) => { e.stopPropagation(); playSpeech(key, null, src); }}>
-          <span aria-hidden="true">▶</span> 전체 듣기<small>{mmss(ent.sec || 0)}</small>
+        <button type="button" className="fes-slide-audio" title={lec ? '강의 듣기 — 설명하듯 읽으며 화면에 펜으로 짚어 줍니다' : '이 화면 전체를 읽어 줍니다 (한국어 설명 + 영어 문장, 한 화자)'}
+          onClick={(e) => { e.stopPropagation(); playSpeech(key, null, src, lec ? 1 : undefined); }}>
+          <span aria-hidden="true">▶</span> {lec ? '강의 듣기' : '전체 듣기'}<small>{mmss(ent.sec || 0)}</small>
         </button>
       </div>
     );
@@ -3596,6 +4279,16 @@ const SIM_REGISTRY = {
       : sl.mode === 'priority' ? <PriorityHMI />
         : sl.mode === 'shiftLog' ? <ShiftLogLab />
       : <EquipmentHMI variant={sl.mode === 'sequence' ? 'sequence' : 'etch'} />),
+  // 9강 안전 작업 — 규정 문장 판정 · LOTO 순서 · 가스 경보 판독
+  safety: (sl) => (sl.mode === 'loto' ? <LotoLab /> : sl.mode === 'gas' ? <GasAlarmLab /> : <SafetyModalLab />),
+  // 10강 레시피·변경 관리 — 경계 판정 · 실행 기록 판정 · 변경 관리 결정
+  recipe: (sl) => (sl.mode === 'run' ? <RecipeRunLab /> : sl.mode === 'change' ? <ChangeControlLab /> : <RecipeLimitLab />),
+  // 11강 다른 장비 계열 읽기 — 명사 덩어리 · 장비 계열 맞히기 · 장비별 규격 판정
+  tools: (sl) => (sl.mode === 'family' ? <ToolFamilyLab /> : sl.mode === 'specs' ? <ToolSpecLab /> : <NounChainLab />),
+  // 12강 트러블슈팅 — 확신 등급 · 원인 좁히기 · 관리도 규칙
+  trouble: (sl) => (sl.mode === 'narrow' ? <NarrowCauseLab /> : sl.mode === 'spc' ? <SpcRuleLab /> : <CertaintyLab />),
+  // 13강 벤더 소통 — 티켓 긴급도 · 되읽기 · 서비스 요청 메일
+  vendor: (sl) => (sl.mode === 'readback' ? <ReadbackLab /> : sl.mode === 'email' ? <VendorEmailLab /> : <SeverityLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
   drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
@@ -3603,7 +4296,7 @@ const SIM_REGISTRY = {
       : sl.mode === 'checkRules' ? <CheckRulesLab />
         : sl.mode === 'counts' ? <DrcCountLab /> : <><ArtImage which="drc" cap="Design Rule Check — 레이아웃 상면도(top view). 통과(PASS)와 위반(VIOLATION) 예시. 아래에서 직접 판정 연습." /><DrcLab /></>),
   lvs: (sl) => (sl.mode === 'netlist' ? <NetlistLab /> : sl.mode === 'lvsFix' ? <LvsFixLab /> : <><ArtImage which="lvs" cap="Layout Versus Schematic — 회로도(reference)와 레이아웃(extracted) 넷리스트 비교. 아래에서 직접 판정 연습." /><LvsLab /></>),
-  report: (sl) => (sl.mode === 'pcar' ? <PcarReportLab /> : sl.mode === 'drcReport' ? <DrcReportLab /> : <ReportLab />),
+  report: (sl) => (sl.mode === 'pcar' ? <PcarReportLab /> : sl.mode === 'handover' ? <HandoverTriageLab /> : sl.mode === 'drcReport' ? <DrcReportLab /> : <ReportLab />),
   partDiagram: (sl) => (sl.mode === 'tool' ? <ToolLayoutLab /> : sl.mode === 'gasLog' ? <GasLineLab /> : <PartDiagram parts={W2_PARTS} />),
   devicePanel: (sl) => (sl.mode === 'procedure' ? <ProcedurePanel />
     : sl.mode === 'spPv' ? <SpPvPanel />
@@ -3989,13 +4682,15 @@ const CM_PART_EQUIP = [
   { ch: 'CH 6', t: '알람과 조치', d: 'alarm·interlock·timeout·failure' },
   { ch: 'CH 7', t: '유지보수(PM)', d: 'inspect·clean·replace·calibrate' },
 ];
-const CM_PART_DESIGN = [
-  { ch: 'CH 9', t: 'Layer 용어', d: 'well·active·poly·contact·metal' },
-  { ch: 'CH 10', t: 'Design Rule', d: 'width·spacing·overlap·enclosure' },
-  { ch: 'CH 11', t: '패턴 배치', d: 'layer 배치 · 선폭 · 간격' },
-  { ch: 'CH 12', t: 'DRC 오류', d: 'DRC (Design Rule Check) 오류 해석' },
-  { ch: 'CH 13', t: 'LVS 검증', d: 'LVS (Layout Versus Schematic) 비교' },
+// 2부(9~15강)는 장비 문서와 소통으로 바뀌는 중이다 — 바뀐 강은 CM_PART_DOCS 로 옮기고, 남은 설계 강은 아래 표에 둔다.
+const CM_PART_DOCS = [
+  { ch: 'CH 9', t: '안전 작업 — LOTO · 가스 · 작업 허가', d: 'shall · must · should · may · need not (규정문의 조동사)' },
+  { ch: 'CH 10', t: '레시피 · 변경 관리', d: 'unless · only if · not to exceed · at least · within ± (조건과 경계)' },
+  { ch: 'CH 11', t: '다른 장비 계열 읽기', d: '증착 · 노광 · CMP · 이온주입 — 명사 덩어리 · 수동태 · 단위' },
+  { ch: 'CH 12', t: '트러블슈팅 문서', d: 'confirmed · likely · suspected · ruled out · caused by ↔ results in · OOC' },
+  { ch: 'CH 13', t: '벤더 · 서비스 엔지니어와 소통', d: '티켓 · 통화 · 메일 — read back · one-five · Bravo · Could we escalate?' },
 ];
+const CM_PART_DESIGN = [];
 
 function CourseMap() {
   return (
@@ -4017,7 +4712,7 @@ function CourseMap() {
         <span className="fes-cm-loop-tag">매 챕터 반복</span>
       </div>
 
-      {/* 구성: Day1 + 장비 파트 / 디자인 파트 / 종합 */}
+      {/* 구성: Day1 + 장비 파트 / 2부(문서와 소통 · 개편 중인 설계 강) / 종합 */}
       <div className="fes-cm-day1">CH 1 · Day 1 — 오리엔테이션 (두루두루 훑기)</div>
       <div className="fes-cm-parts">
         <div className="fes-cm-part">
@@ -4027,7 +4722,11 @@ function CourseMap() {
           ))}
         </div>
         <div className="fes-cm-part">
-          <div className="fes-cm-part-h fes-b">디자인 파트 · Design</div>
+          <div className="fes-cm-part-h fes-b">2부 · 장비 문서와 소통</div>
+          {CM_PART_DOCS.map((c) => (
+            <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
+          ))}
+          {CM_PART_DESIGN.length > 0 && <div className="fes-cm-part-h fes-b" style={{ marginTop: 10, opacity: 0.75 }}>설계 영어 · 장비 강으로 개편 중</div>}
           {CM_PART_DESIGN.map((c) => (
             <div key={c.ch} className="fes-cm-part-row"><span className="fes-cm-part-ch">{c.ch}</span><div><b>{c.t}</b><span>{c.d}</span></div></div>
           ))}
@@ -4035,8 +4734,8 @@ function CourseMap() {
       </div>
       <div className="fes-cm-part fes-cm-part-full">
         <div className="fes-cm-part-h fes-c">종합 · 평가</div>
-        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 14</span><div><b>종합 현장 보고</b><span>장비 이상 → 식각 비정상 → DRC 오류 → 영문 보고서까지 한 흐름</span></div></div>
-        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 8·15</span><div><b>중간 점검 · 종합 점검</b><span>CH 8: 장비·운전·로그·알람 / CH 15: + Layer·DRC·LVS 종합</span></div></div>
+        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 14</span><div><b>종합 현장 보고</b><span>장비 이상 → 원인 확인 → 벤더 요청 → 영문 인계 보고서까지 한 흐름</span></div></div>
+        <div className="fes-cm-part-row"><span className="fes-cm-part-ch">CH 8·15</span><div><b>중간 점검 · 종합 점검</b><span>CH 8: 장비·운전·로그·알람 / CH 15: + 안전·레시피·장비 계열·트러블슈팅·벤더 종합</span></div></div>
       </div>
     </div>
   );
@@ -4344,6 +5043,11 @@ function FesStyles() {
 .fes-ld-head:after{content:'';position:absolute;right:20px;top:14px;width:30px;height:30px;border-radius:9px;background:radial-gradient(circle at 30% 30%,${C.neon}55,${C.elec}22);opacity:.5}
 .fes-ld-step{font-family:${C.mono};font-size:11px;letter-spacing:1.2px;color:${C.neon};font-weight:700}
 .fes-slide-audio-wrap{position:absolute;right:62px;top:12px;display:flex;gap:6px}
+/* 강의 듣기 펜 층 — 본문(스크롤 영역) 안쪽 내용 좌표에 깔린다. 클릭을 막지 않는다. 형광펜은 어두운 판에서 글자를 덮지 않게 screen 으로 섞는다 */
+.fes-ld-body{position:relative}
+.fes-pen{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:3}
+.fes-pen-hl{mix-blend-mode:screen}
+@media print{.fes-pen{display:none}}
 .fes-slide-audio{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid ${C.cyan}88;background:${C.cyan}14;color:${C.cyan};font-family:${C.mono};font-size:12px;font-weight:700;cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent}
 .fes-slide-audio:hover{background:${C.cyan}2a}
 .fes-slide-audio.on{background:${C.cyan};color:#061018;border-color:${C.cyan}}
