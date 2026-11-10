@@ -8,7 +8,7 @@
    이 파일이 13강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w13
    긴급도 등급(S1~S4)의 정의는 이 교재의 예시다 — 장비사마다 계약(SLA)이 다르다(화면에 '교재 예시'라고 밝힌다).
    음성 기호 알파벳은 ICAO 표준(교재는 흔한 철자 Alpha · Juliet 를 쓴다). 엔진(fieldEnglishLabs.js 13강 절)과 같은 규칙. */
-export default {
+const CHAPTER = {
   id: 'w13',
   title: '벤더 · 서비스 엔지니어와 소통 — 티켓 · 통화 · 메일',
   slides: [
@@ -350,3 +350,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;
