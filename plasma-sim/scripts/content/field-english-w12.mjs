@@ -8,7 +8,7 @@
    근거: 관리도 규칙 — Western Electric 규칙 1(3σ 한계 밖 한 점) · 규칙 4(중심선 한쪽 8점 연속), Nelson 규칙 3(6점 연속 증가/감소).
          8D — D3 임시 조치(containment) · D4 근본 원인 · D5 시정 조치(corrective) · D7 재발 방지(preventive).
    트러블슈팅 표·관리도 수치·'세정 뒤 12시간' 기준은 이 교재의 예시다(화면에 '교재 예시'라고 밝힌다). 엔진(fieldEnglishLabs.js 12강 절)과 같은 숫자. */
-export default {
+const CHAPTER = {
   id: 'w12',
   title: '트러블슈팅 문서 — 원인을 좁히고, 확신을 밝혀라',
   slides: [
@@ -351,3 +351,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;

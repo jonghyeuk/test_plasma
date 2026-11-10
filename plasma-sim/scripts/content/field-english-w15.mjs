@@ -3,7 +3,7 @@
    ① 1부 장비 · 운전 · 알람 ② 안전 · 레시피(9 · 10강) ③ 장비 계열 · 트러블슈팅(11 · 12강) ④ 벤더 소통 · 보고(13 · 14강).
    각 문항의 근거는 그 강의 교재 본문과 같은 규칙(엔진 fieldEnglishLabs.js — modalClass · parseLimit · nounHead · certaintyOf ·
    readBackValue)이며 테스트가 대조한다. 이 파일이 15강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w15 */
-export default {
+const CHAPTER = {
   id: 'w15',
   title: '종합 점검',
   kind: '평가',
@@ -98,3 +98,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;
