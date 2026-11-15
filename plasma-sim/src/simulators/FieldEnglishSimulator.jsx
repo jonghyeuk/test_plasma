@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ResponsiveContainer, ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceArea, ReferenceLine } from 'recharts';
 import { CONTENT_CHAPTERS } from '../data/fieldEnglishChapters.data';
@@ -28,11 +28,7 @@ import {
   PMW_ITEMS, pmwInit, pmwAct, pmwReading,
   PMS_CASES, pmsJudge, OOR_FRAC,
   TOOL_PARTS, TOOL_FIND, CHM_TEMP_SP, chmInit, chmCheck, chmAct, chmPressure,
-  PCAR, SHIFT_TOOLS, TRIAGE_ROWS, TRIAGE_PROBLEM, PCAR_SENTENCES, PCAR_SUMMARY,
-  STACK, stackPress, READ_DRC, READ_DRC_LAYERS, MASK_LAYERS, RULE_TABLE, RULE_CODE_Q,
-  REPORT_ACTIONS, DRC_REPORT_ROWS, DRC_CLEAN_Q, ENC_MIN, ENC_VIAS, encJudge,
-  crInit, crCheck, crApply, CR_FIXES, LC_LAYERS, CNT_RULE, cntInit, cntCheck,
-  LVS_SCH, LVS_LAY, LVS_PAIR, lvsCompare, LVS_WHICH_Q, LVS_TYPES, LVS_ERRORS, lvsRerun,
+  PCAR, SHIFT_TOOLS, PCAR_SENTENCES, PCAR_SUMMARY,
   GAS_PARTS, GAS_LOG_Q,
   MODAL_CLASSES, MODAL_ITEMS, modalJudge,
   LOTO_CARDS, lotoInit, lotoAct,
@@ -105,46 +101,11 @@ export const CH_ART = {
     "핵심 용어 (2) — PM 대상 부품·소모품": 'g_w7_9',
     "핵심 용어 (3) — 측정·규격·판정": 'g_w7_11',
   },
-  w9: {
-    "층으로 읽는 반도체": 'layer',
-    "핵심 용어 (1) 바닥층": 'g_w9_7',
-    "핵심 용어 (2) 게이트층": 'g_w9_9',
-    "핵심 용어 (3) 배선층": 'g_w9_11',
-    "핵심 용어 (4) 도면·판독": 'g_w9_13',
-  },
-  w10: {
-    "현장 이야기: 0.02um이 만든 재작업": 'drctable',
-    "핵심 용어 (1) 규칙 유형": 'g_w10_6',
-    "핵심 용어 (2) 판단·단위": 'g_w10_8',
-    "핵심 용어 (3) 층·표 항목": 'g_w10_10',
-    "핵심 용어 (4) 리포트·상태": 'g_w10_12',
-  },
-  w11: {
-    "도면대로 놓였는가?": 'placement',
-    "핵심 용어 (1) 층과 패턴": 'g_w11_7',
-    "핵심 용어 (2) 치수": 'g_w11_9',
-    "핵심 용어 (3) 정렬과 겹침": 'g_w11_11',
-    "핵심 용어 (4) 격자와 규칙": 'g_w11_13',
-  },
-  w12: {
-    "빨간 마커가 뜬 화면": 'drcview',
-    "핵심 용어 (1) — 검사와 위반": 'g_w12_9',
-    "핵심 용어 (2) — 간격과 폭": 'g_w12_11',
-    "핵심 용어 (3) — 심각도와 리포트": 'g_w12_13',
-  },
-  w13: {
-    "도면과 실제가 다르면?": 'lvsview',
-    "핵심 용어 (1) — 비교의 대상": 'g_w13_6',
-    "핵심 용어 (2) — 결과와 판정": 'g_w13_8',
-    "핵심 용어 (3) — 연결 오류": 'g_w13_10',
-    "핵심 용어 (4) — 진행과 마무리": 'g_w13_12',
-  },
   w14: {
     "야간 근무 인계, 영어 리포트 한 장": 'report',
     "보고 동사·상태 어휘 (1)": 'g_w14_6',
     "보고 동사·상태 어휘 (2)": 'g_w14_8',
     "보고서 구조·화면 어휘 (3)": 'g_w14_10',
-    "설계·검증(DRC) 관련 어휘 (4)": 'g_w14_12',
   },
 };
 
@@ -159,7 +120,7 @@ export const CH_ART = {
  *   - hideTabBar   : 상단 탭바 숨김 (자료실에서 true 로 들어옴) — 이 컴포넌트는 항상 자기 UI만 그림
  *   - controlledTab: 상위(SimPane) 탭. 이 컴포넌트는 전부 'simulation'이므로 수신만 하고 무시
  *   - onTabChange  : 있으면 개념 변경 시 호출
- *   - initialTheme : 특정 개념으로 초기 진입 ('equipment'|'alarm'|'drc'|'lvs'|'report')
+ *   - initialTheme : 특정 개념으로 초기 진입 ('overview'|'chapters')
  *   - hideOtherTabs: 그 개념만 남기고 개념 선택 UI 숨김 (목차 개별항목 분리용)
  *
  * 스타일: 호스트 CSS(Tailwind 유무)에 의존하지 않도록 inline style + 스코프 <style>.
@@ -212,15 +173,7 @@ const GLOSSARY = {
   matching: '매칭 — RF 전력을 플라즈마에 효율적으로 전달하도록 임피던스를 맞추는 것',
   ignition: '점화 — 플라즈마가 처음 발생하는 것',
   leakage: '누설 — 밀봉 불량으로 외부 공기가 새어드는 것',
-  enclosure: '엔클로저 — 한 레이어가 다른 레이어를 감싸야 하는 최소 겹침',
-  spacing: '간격 — 같은 레이어 두 패턴 사이의 최소 거리',
-  overlap: '오버랩 — 두 레이어가 겹쳐야 하는 최소량',
-  violation: '위반 — 디자인 규칙(DRC)을 만족하지 못한 상태',
-  mismatch: '불일치 — 레이아웃과 회로도(schematic)가 다른 상태',
-  netlist: '넷리스트 — 소자와 연결 관계를 나열한 회로 정보',
   // 약어(acronym) — 단독으로 쓰일 때 풀어서 설명
-  drc: 'DRC (Design Rule Check) — 레이아웃이 디자인 규칙을 지켰는지 자동 검사',
-  lvs: 'LVS (Layout Versus Schematic) — 레이아웃이 회로도(설계)와 같은지 비교',
   mfc: 'MFC (Mass Flow Controller) — 가스 유량을 조절·제어하는 장치',
   rf: 'RF (Radio Frequency) — 플라즈마를 만드는 고주파 전력',
   hmi: 'HMI (Human-Machine Interface) — 장비를 조작·감시하는 화면',
@@ -737,285 +690,6 @@ function AlarmLab() {
 
       <TaskCard title="STUDENT TASK">
         <p style={{ margin: 0 }}>영문 알람과 로그를 읽고 <b>① 이상 장치 ② 예상 원인 ③ 조치</b>를 고르세요. 3케이스 모두 3/3을 목표로.</p>
-      </TaskCard>
-    </div>
-  );
-}
-
-/* =========================================================================
- * 3. 개념 ③  DRC — Layer 배치 + Width/Spacing 조절 → 영문 violation 로그
- * ====================================================================== */
-
-const DRC_RULES = { minWidth: 0.30, minSpacing: 0.30 }; // μm
-
-function DrcLab() {
-  const [width, setWidth] = useState(0.20);   // 각 metal bar 폭 (μm)
-  const [spacing, setSpacing] = useState(0.18); // 두 bar 사이 간격 (μm)
-  const [ran, setRan] = useState(false);
-
-  const violations = [];
-  if (ran) {
-    if (width < DRC_RULES.minWidth) violations.push({ rule: 'METAL1.WIDTH', req: DRC_RULES.minWidth, meas: width, msg: 'Minimum width violation' });
-    if (spacing < DRC_RULES.minSpacing) violations.push({ rule: 'METAL1.SPACING', req: DRC_RULES.minSpacing, meas: spacing, msg: 'Insufficient spacing' });
-  }
-  const clean = ran && violations.length === 0;
-
-  // SVG 좌표 (1μm = 260px 스케일)
-  const S = 260, x0 = 60;
-  const wpx = width * S, spx = spacing * S;
-  const bar2x = x0 + wpx + spx;
-
-  return (
-    <div>
-      <div className="fes-cad">
-        <svg viewBox="0 0 640 240" className="fes-cad-svg">
-          <defs>
-            <pattern id="fesgrid" width="26" height="26" patternUnits="userSpaceOnUse">
-              <path d="M26 0H0V26" fill="none" stroke="#16233b" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="640" height="240" fill="#0a0f1a" />
-          <rect width="640" height="240" fill="url(#fesgrid)" />
-          {/* Metal1 bars */}
-          <rect x={x0} y={50} width={wpx} height={140} fill="#3b82f6" opacity="0.85" stroke="#93c5fd" />
-          <rect x={bar2x} y={50} width={wpx} height={140} fill="#3b82f6" opacity="0.85" stroke="#93c5fd" />
-          {/* spacing dimension */}
-          <line x1={x0 + wpx} y1={120} x2={bar2x} y2={120} stroke={spacing < DRC_RULES.minSpacing && ran ? C.red : C.emerald} strokeWidth="2" markerEnd="url(#fa)" markerStart="url(#fa)" />
-          <text x={(x0 + wpx + bar2x) / 2} y={112} fill={C.text} fontSize="13" textAnchor="middle" fontFamily={C.mono}>{spacing.toFixed(2)}µm</text>
-          {/* width dimension */}
-          <text x={x0 + wpx / 2} y={210} fill={C.dim} fontSize="12" textAnchor="middle" fontFamily={C.mono}>W {width.toFixed(2)}µm</text>
-          <defs><marker id="fa" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 4L8 4M4 1L1 4L4 7" stroke={C.emerald} fill="none" /></marker></defs>
-          {ran && violations.map((v, i) => (
-            <rect key={i} x={v.rule.includes('SPACING') ? x0 + wpx : x0} y={44} width={v.rule.includes('SPACING') ? spx + 12 : wpx + 12} height={152} fill="none" stroke={C.red} strokeWidth="2.5" strokeDasharray="6 4" />
-          ))}
-          <text x={16} y={28} fill={C.dim} fontSize="12" fontFamily={C.mono}>LAYER: METAL1</text>
-        </svg>
-      </div>
-
-      <div className="fes-sliders">
-        <SliderRow label={<>Width <Term k="spacing">(bar)</Term></>} value={width} set={(v) => { setWidth(v); setRan(false); }} min={0.10} max={0.50} req={DRC_RULES.minWidth} />
-        <SliderRow label={<><Term k="spacing">Spacing</Term> (gap)</>} value={spacing} set={(v) => { setSpacing(v); setRan(false); }} min={0.10} max={0.50} req={DRC_RULES.minSpacing} />
-        <button className="fes-btn" onClick={() => setRan(true)}>▶ Run DRC</button>
-      </div>
-
-      <div className="fes-drc-out">
-        <div className="fes-scr-title">DRC REPORT</div>
-        {!ran && <div className="fes-dim">Adjust the layout, then run DRC.</div>}
-        {clean && <div className="fes-ok">✓ DRC clean. 0 violations. Layout meets all design rules.</div>}
-        {ran && violations.map((v, i) => (
-          <div key={i} className="fes-viol">
-            <div className="fes-viol-head">✕ {v.rule} <Term k="violation">violation</Term></div>
-            <div className="fes-viol-body">
-              {v.msg}. Required: {v.req.toFixed(2)} µm — Measured: {v.meas.toFixed(2)} µm.
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <TaskCard title="STUDENT TASK — interpret & fix">
-        <p style={{ margin: '0 0 6px' }}>DRC 로그를 영어로 읽고, 무엇이 위반됐는지 한국어로 한 문장 요약한 뒤 규칙을 만족하도록 슬라이더를 고치세요.</p>
-        <p style={{ margin: 0, color: C.dim, fontFamily: C.mono, fontSize: 12 }}>
-          예: "Metal 1 사이의 실제 간격이 {spacing.toFixed(2)}µm로, 최소 요구 간격 {DRC_RULES.minSpacing.toFixed(2)}µm보다 작다 → 간격을 넓혀야 한다."
-        </p>
-      </TaskCard>
-    </div>
-  );
-}
-
-function SliderRow({ label, value, set, min, max, req }) {
-  const bad = value < req;
-  return (
-    <div className="fes-slider">
-      <div className="fes-slider-top">
-        <span>{label}</span>
-        <span style={{ color: bad ? C.amber : C.emerald, fontFamily: C.mono }}>{value.toFixed(2)} µm</span>
-      </div>
-      <input type="range" min={min} max={max} step={0.01} value={value} onChange={(e) => set(parseFloat(e.target.value))} className="fes-range" />
-      <div className="fes-slider-req">min {req.toFixed(2)} µm</div>
-    </div>
-  );
-}
-
-/* =========================================================================
- * 4. 개념 ④  LVS — Schematic vs Layout 비교 (영문 mismatch 해석)
- * ====================================================================== */
-
-const LVS_CASES = [
-  {
-    name: 'CMOS Inverter',
-    report: ['LVS: comparing layout vs schematic...', 'Device count  schematic=2  layout=1', 'ERROR: Missing device — NMOS (MN) not found in layout'],
-    prompt: 'What does the LVS report say?',
-    opts: ['Layout has an extra device', 'The NMOS transistor is missing in the layout', 'The power net is shorted'],
-    ans: 1,
-    fix: 'Place the missing NMOS device in the layout, then re-run LVS.',
-  },
-  {
-    name: 'CMOS Inverter',
-    report: ['LVS: comparing nets...', 'Net OUT: schematic connects MP.drain & MN.drain', 'ERROR: Incorrect connection — MN.drain tied to VSS instead of OUT'],
-    prompt: 'What does the LVS report say?',
-    opts: ['A transistor is duplicated', 'NMOS drain is wired to the wrong net (VSS, not OUT)', 'Layer color is wrong'],
-    ans: 1,
-    fix: 'Reconnect the NMOS drain to the OUT net, then re-run LVS.',
-  },
-];
-
-function LvsLab() {
-  const [idx, setIdx] = useState(0);
-  const [sel, setSel] = useState(null);
-  const [checked, setChecked] = useState(false);
-  const cse = LVS_CASES[idx];
-  const missing = idx === 0;
-  const miswire = idx === 1;
-
-  const go = (n) => { setIdx(n); setSel(null); setChecked(false); };
-
-  return (
-    <div>
-      <div className="fes-casebar">
-        {LVS_CASES.map((c, i) => <button key={i} onClick={() => go(i)} className={`fes-chip ${i === idx ? 'on' : ''}`}>Case {i + 1}</button>)}
-      </div>
-
-      <div className="fes-lvs">
-        {/* Schematic */}
-        <div className="fes-lvs-col">
-          <div className="fes-lvs-title">SCHEMATIC (golden)</div>
-          <svg viewBox="0 0 220 220" className="fes-lvs-svg">
-            <InverterSVG missing={false} miswire={false} />
-          </svg>
-        </div>
-        <div className="fes-lvs-vs">≠</div>
-        {/* Layout */}
-        <div className="fes-lvs-col">
-          <div className="fes-lvs-title">LAYOUT (extracted)</div>
-          <svg viewBox="0 0 220 220" className="fes-lvs-svg">
-            <InverterSVG missing={missing} miswire={miswire} />
-          </svg>
-        </div>
-      </div>
-
-      <div className="fes-drc-out">
-        <div className="fes-scr-title">LVS REPORT</div>
-        {cse.report.map((r, i) => (
-          <div key={i} className={`fes-logrow ${r.startsWith('ERROR') ? 'err' : ''}`}>
-            <span className={`fes-tag ${r.startsWith('ERROR') ? 'fes-tag-alarm' : 'fes-tag-info'}`}>{r.startsWith('ERROR') ? 'ERR' : 'LVS'}</span>
-            <span>{r}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="fes-q" style={{ marginTop: 12 }}>
-        <div className="fes-q-prompt">{cse.prompt}</div>
-        <div className="fes-q-opts">
-          {cse.opts.map((o, i) => {
-            const chosen = sel === i, right = checked && i === cse.ans, wrong = checked && chosen && i !== cse.ans;
-            return <button key={i} disabled={checked} onClick={() => setSel(i)} className={`fes-opt ${chosen ? 'sel' : ''} ${right ? 'right' : ''} ${wrong ? 'wrong' : ''}`}>{o}{right ? '  ✓' : wrong ? '  ✕' : ''}</button>;
-          })}
-        </div>
-      </div>
-
-      <div className="fes-check-row">
-        {!checked ? <button className="fes-btn" disabled={sel === null} onClick={() => setChecked(true)}>Check</button>
-          : <>
-            <span className={`fes-score ${sel === cse.ans ? 'ok' : 'bad'}`}>{sel === cse.ans ? 'Correct' : 'Try again'}</span>
-            {sel === cse.ans && <span className="fes-fix">Fix: {cse.fix}</span>}
-            <button className="fes-btn ghost" onClick={() => { setSel(null); setChecked(false); }}>Reset</button>
-          </>}
-      </div>
-
-      <TaskCard title="STUDENT TASK">
-        <p style={{ margin: 0 }}><Term k="netlist">Netlist</Term> 비교 결과의 영문 <Term k="mismatch">mismatch</Term> 메시지를 읽고, 무엇이 다른지(missing device / incorrect connection) 판단하세요.</p>
-      </TaskCard>
-    </div>
-  );
-}
-
-function InverterSVG({ missing, miswire }) {
-  return (
-    <g fontFamily={C.mono} fontSize="11" fill={C.text}>
-      <line x1="110" y1="12" x2="110" y2="40" stroke={C.dim} />
-      <text x="114" y="20" fill={C.dim}>VDD</text>
-      {/* PMOS */}
-      <rect x="86" y="40" width="48" height="34" fill="none" stroke={C.violet} strokeWidth="2" rx="3" />
-      <text x="96" y="61" fill={C.violet}>MP</text>
-      {/* NMOS */}
-      {!missing ? (
-        <>
-          <rect x="86" y="120" width="48" height="34" fill="none" stroke={C.emerald} strokeWidth="2" rx="3" />
-          <text x="96" y="141" fill={C.emerald}>MN</text>
-          <line x1="110" y1="74" x2="110" y2="120" stroke={miswire ? C.red : C.dim} strokeDasharray={miswire ? '4 3' : ''} />
-          {/* OUT tap */}
-          <line x1="110" y1="97" x2="170" y2="97" stroke={miswire ? C.red : C.cyan} />
-          <text x="174" y="101" fill={miswire ? C.red : C.cyan}>OUT</text>
-          {/* NMOS source to VSS (miswire: drain->VSS) */}
-          <line x1="110" y1="154" x2="110" y2="185" stroke={C.dim} />
-          {miswire && <line x1="110" y1="120" x2="150" y2="120" stroke={C.red} strokeWidth="2" />}
-          {miswire && <text x="150" y="118" fill={C.red}>→VSS?</text>}
-        </>
-      ) : (
-        <>
-          <rect x="86" y="120" width="48" height="34" fill="none" stroke={C.red} strokeWidth="2" strokeDasharray="5 4" rx="3" />
-          <text x="92" y="141" fill={C.red} fontSize="10">MISSING</text>
-          <line x1="110" y1="74" x2="110" y2="97" stroke={C.dim} />
-          <line x1="110" y1="97" x2="170" y2="97" stroke={C.cyan} />
-          <text x="174" y="101" fill={C.cyan}>OUT</text>
-        </>
-      )}
-      <line x1="110" y1="185" x2="110" y2="205" stroke={C.dim} />
-      <text x="114" y="200" fill={C.dim}>VSS</text>
-    </g>
-  );
-}
-
-/* =========================================================================
- * 5. 개념 ⑤  Field Report — 영문 보고서 작성 (루브릭)
- * ====================================================================== */
-
-const REPORT_SCENARIO = {
-  title: 'Scenario — Etch result abnormal',
-  brief: 'During ETCH-01, pressure and RF power drifted out of range. The etched pattern width came out too narrow, and DRC then reported a METAL1.WIDTH violation. Write a short field report in English.',
-  fields: [
-    { k: 'Problem', hint: 'What went wrong? (one sentence)', model: 'The etched line width was smaller than the target, causing a DRC width violation.' },
-    { k: 'Observed log', hint: 'Copy the key English log/alarm', model: 'RF reflected power high; chamber pressure above set point; METAL1.WIDTH violation (req 0.30 / meas 0.22 µm).' },
-    { k: 'Possible cause', hint: 'Why did it happen?', model: 'Unstable pressure and poor RF matching changed the etch rate, so the line was over-etched.' },
-    { k: 'Corrective action', hint: 'What did you do?', model: 'Re-stabilized the pressure, re-tuned the matching network, and re-ran the recipe with the correct width.' },
-    { k: 'Result', hint: 'Final outcome', model: 'Line width returned to target; DRC came back clean (0 violations).' },
-  ],
-};
-
-function ReportLab() {
-  const [vals, setVals] = useState({});
-  const [reveal, setReveal] = useState(false);
-  const filled = REPORT_SCENARIO.fields.filter((f) => (vals[f.k] || '').trim().length >= 6).length;
-
-  return (
-    <div>
-      <div className="fes-scn">
-        <div className="fes-scr-title">{REPORT_SCENARIO.title}</div>
-        <p style={{ margin: '6px 0 0', lineHeight: 1.6 }}>{REPORT_SCENARIO.brief}</p>
-      </div>
-
-      <div className="fes-report">
-        {REPORT_SCENARIO.fields.map((f) => (
-          <div key={f.k} className="fes-report-field">
-            <label className="fes-report-label">{f.k}:</label>
-            <textarea className="fes-ta" rows={2} placeholder={f.hint}
-              value={vals[f.k] || ''} onChange={(e) => setVals((v) => ({ ...v, [f.k]: e.target.value }))} />
-            {reveal && <div className="fes-model"><b>Model:</b> {f.model}</div>}
-          </div>
-        ))}
-      </div>
-
-      <div className="fes-check-row">
-        <div className="fes-rubric">
-          <span>Rubric</span>
-          <div className="fes-rubric-bar"><div style={{ width: `${filled / 5 * 100}%` }} /></div>
-          <span className="fes-mono">{filled}/5 sections</span>
-        </div>
-        <button className="fes-btn ghost" onClick={() => setReveal((r) => !r)}>{reveal ? 'Hide' : 'Show'} model answer</button>
-      </div>
-
-      <TaskCard title="STUDENT TASK — write in English">
-        <p style={{ margin: 0 }}>5개 항목(Problem / Observed log / Possible cause / Corrective action / Result)을 <b>영어로</b> 작성한 뒤, 모범답안과 비교해 스스로 점검하세요.</p>
       </TaskCard>
     </div>
   );
@@ -3027,7 +2701,7 @@ function PmStatusPanel() {
  *   1강 tool       : 장비 전체 평면도 — 부품 확인 + 영어 문장이 가리키는 위치 찾기
  *   1강 chamberHmi : 챔버 HMI — 상태·압력·온도·알람을 바꾸며 OPEN DOOR / START 판단
  *   14강 shiftLog  : 인수인계 로그 — 가동 가능 판정 + 로그 줄 P/C/A/R 분류
- *   14강 triage    : DRC 결과 Critical / Minor 분류 + Problem 문장
+ *   14강 handover  : 인계 항목 Critical / Minor 분류 + Problem 문장
  *   14강 pcar      : P/C/A/R 보고서 — 문장 분류 + 한 문장 요약
  * ====================================================================== */
 
@@ -3237,44 +2911,6 @@ function ShiftLogLab() {
   );
 }
 
-/* ── 14강 · DRC 결과 분류 ── */
-function DrcTriageLab() {
-  const [sev, setSev] = useState({});
-  const [prob, setProb] = useState(null);
-  const done = Object.keys(sev).length;
-  const right = TRIAGE_ROWS.filter((r, i) => sev[i] === r.sev).length;
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">
-        DRC 결과 화면입니다. 각 위반(violation)을 읽고 <b>Critical</b>(tape-out 전 반드시 수정 — 단락·단선 위험) 인지
-        <b> Minor</b>(권고·DFM 지침, 모니터링 수준) 인지 고른 뒤, 보고문 <b>Problem</b> 줄을 고르세요.
-        (교재의 Critical / Minor 정의를 설계 검증에 옮긴 이 실습의 기준)
-      </p>
-      <div className="fes-drc-out">
-        <div className="fes-scr-title">DRC REPORT — TOP_CELL · 5 results</div>
-        {TRIAGE_ROWS.map((r, i) => (
-          <div key={r.rule} className="fes-viol" style={{ borderColor: sev[i] == null ? undefined : sev[i] === r.sev ? `${C.emerald}88` : `${C.red}88` }}>
-            <div className="fes-viol-head">✕ {r.rule} <span style={{ color: C.dim, fontWeight: 400 }}>· layer {r.layer}</span></div>
-            <div className="fes-viol-body">Measured {r.meas} — Required {r.req} ({r.note})</div>
-            <div className="fes-btnrow" style={{ marginTop: 6 }}>
-              {['Critical', 'Minor'].map((v) => (
-                <button key={v} className={`fes-chip ${sev[i] === v ? 'on' : ''}`} disabled={sev[i] != null}
-                  style={sev[i] == null ? undefined : v === r.sev ? { borderColor: C.emerald, color: C.emerald, opacity: 1 } : sev[i] === v ? { borderColor: C.red, color: C.red, opacity: 1 } : undefined}
-                  onClick={() => setSev((p) => ({ ...p, [i]: v }))}>{v}</button>
-              ))}
-            </div>
-            {sev[i] != null && <div style={{ fontSize: 12, marginTop: 4, color: sev[i] === r.sev ? C.dim : C.amber }}>→ {r.why}</div>}
-          </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>분류 {done} / {TRIAGE_ROWS.length} · 정답 {right}</div>
-      <PickRow prompt={TRIAGE_PROBLEM.prompt} options={TRIAGE_PROBLEM.opts.map((o, i) => ({ id: i, label: o }))}
-        picked={prob} answer={TRIAGE_PROBLEM.ans} onPick={setProb} />
-      {prob != null && <div style={{ marginTop: 8, fontSize: 12.5, color: prob === TRIAGE_PROBLEM.ans ? C.emerald : C.amber }}>{TRIAGE_PROBLEM.why}</div>}
-    </div>
-  );
-}
-
 /* ── 14강 · P/C/A/R 보고서 ── */
 function PcarReportLab() {
   const [tags, setTags] = useState({});
@@ -3315,475 +2951,6 @@ function PcarReportLab() {
       <PickRow prompt={PCAR_SUMMARY.prompt} options={PCAR_SUMMARY.opts.map((o, i) => ({ id: i, label: o }))}
         picked={sum} answer={PCAR_SUMMARY.ans} onPick={setSum} />
       {sum != null && <div style={{ marginTop: 8, fontSize: 12.5, color: sum === PCAR_SUMMARY.ans ? C.emerald : C.amber }}>{PCAR_SUMMARY.why}</div>}
-    </div>
-  );
-}
-
-/* =========================================================================
- * 강별 조작 실습 (9~13강 — 설계)
- *   9강 stack / readDrc · 10강 masks / drcReport · 11강 enclosure / checkRules
- *   12강 layerColor / counts · 13강 netlist / lvsFix
- * ====================================================================== */
-
-const LAYER_FILL = { sub: '#3a2f1e', well: '#6b4f1e', active: '#2f7d4f', gox: '#e5e7eb', poly: '#f87171', contact: '#94a3b8', metal: '#3b82f6' };
-const Feedback = ({ ok, children }) => <div style={{ marginTop: 6, fontSize: 12.5, color: ok ? C.emerald : C.amber }}>{ok ? '✔ ' : '✘ '}{children}</div>;
-const ChipPick = ({ opts, picked, answer, onPick, labelOf = (x) => x }) => (
-  <div className="fes-btnrow" style={{ marginTop: 5 }}>
-    {opts.map((o) => {
-      const done = picked != null;
-      const col = !done ? undefined : o === answer ? C.emerald : o === picked ? C.red : undefined;
-      return <button key={String(o)} className={`fes-chip ${picked === o ? 'on' : ''}`} disabled={done}
-        style={col ? { borderColor: col, color: col, opacity: 1 } : undefined} onClick={() => onPick(o)}>{labelOf(o)}</button>;
-    })}
-  </div>
-);
-
-/* ── 9강 · 단면 쌓기 ── */
-function StackLab() {
-  const [built, setBuilt] = useState([]);
-  const [msg, setMsg] = useState({ ok: true, m: 'Start from the bottom. Which layer comes first?' });
-  const [miss, setMiss] = useState(0);
-  const order = useMemo(() => [...STACK].sort((a, b) => a.en.localeCompare(b.en)), []);
-  const press = (id) => {
-    const r = stackPress(built, id);
-    setBuilt(r.built); setMsg({ ok: r.ok, m: r.msg }); if (!r.ok) setMiss((n) => n + 1);
-  };
-  const has = (id) => built.includes(id);
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">아래 버튼(알파벳순)에서 층을 <b>아래부터 위로</b> 하나씩 눌러 MOSFET 단면을 쌓으세요. 순서를 어기면 무엇을 먼저 놓아야 하는지 영어로 알려 줍니다.</p>
-      <svg viewBox="0 0 600 230" style={{ width: '100%', maxWidth: 680, height: 'auto', display: 'block', background: '#04070d', borderRadius: 8 }}>
-        {has('sub') && <rect x="20" y="170" width="380" height="50" fill={LAYER_FILL.sub} />}
-        {has('well') && <rect x="40" y="140" width="340" height="42" rx="8" fill={LAYER_FILL.well} />}
-        {has('active') && <>{[70, 270].map((x) => <rect key={x} x={x} y="140" width="80" height="18" fill={LAYER_FILL.active} />)}</>}
-        {has('gox') && <rect x="160" y="134" width="100" height="6" fill={LAYER_FILL.gox} />}
-        {has('poly') && <rect x="165" y="104" width="90" height="30" fill={LAYER_FILL.poly} />}
-        {has('contact') && <>{[100, 300, 200].map((x, i) => <rect key={x} x={x} y={i === 2 ? 70 : 70} width="20" height={i === 2 ? 34 : 70} fill={LAYER_FILL.contact} />)}</>}
-        {has('metal') && <>{[80, 280, 180].map((x) => <rect key={x} x={x} y="48" width="60" height="22" fill={LAYER_FILL.metal} />)}</>}
-        {STACK.map((l, i) => has(l.id) && (
-          <text key={l.id} x="418" y={205 - i * 26} fill={C.text} fontSize="11" fontFamily={C.mono}>{i + 1}. {l.en} ({l.abbr})</text>
-        ))}
-      </svg>
-      <div className="fes-btnrow" style={{ marginTop: 10 }}>
-        {order.map((l) => <button key={l.id} className="fes-btn" disabled={has(l.id)} onClick={() => press(l.id)}>{l.en}</button>)}
-        <button className="fes-btn ghost" onClick={() => { setBuilt([]); setMiss(0); setMsg({ ok: true, m: 'Start from the bottom. Which layer comes first?' }); }}>Reset</button>
-      </div>
-      <div style={{ marginTop: 8, fontFamily: C.mono, fontSize: 12.5, color: msg.ok ? C.emerald : C.amber }}>{msg.m}</div>
-      {built.length === STACK.length && (
-        <div className="fes-ok" style={{ marginTop: 8 }}>
-          ✔ 완성 · 순서 실수 {miss}회 — substrate → well → active → gate oxide → poly → contact → metal
-          <div style={{ color: C.dim, marginTop: 4 }}>{STACK.map((l) => `${l.abbr} = ${l.ko}`).join(' · ')}</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── 9강 · DRC 결과 읽기 ── */
-function ReadDrcLab() {
-  const [ans, setAns] = useState({});
-  const set = (i, k, v) => setAns((p) => ({ ...p, [`${i}${k}`]: v }));
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">DRC 결과 줄마다 <b>위반 종류</b>(spacing / width)와 <b>어느 layer</b> 인지 고르세요. 형식: <code>[severity] rule : description @ (x, y) LAYER</code> (값은 이 실습의 예시)</p>
-      <div className="fes-drc-out">
-        <div className="fes-scr-title">DRC RESULTS — 4 errors</div>
-        {READ_DRC.map((x, i) => {
-          const t = ans[`${i}t`]; const l = ans[`${i}l`];
-          return (
-            <div key={i} className="fes-viol">
-              <div className="fes-viol-body" style={{ fontFamily: C.mono }}>{x.line}</div>
-              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>위반 종류</div>
-              <ChipPick opts={['Spacing', 'Width']} picked={t} answer={x.type} onPick={(v) => set(i, 't', v)} />
-              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>layer</div>
-              <ChipPick opts={READ_DRC_LAYERS} picked={l} answer={x.layer} onPick={(v) => set(i, 'l', v)} />
-              {t != null && l != null && <Feedback ok={t === x.type && l === x.layer}>{x.why}</Feedback>}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ── 10강 · 마스크 층과 규칙표 ── */
-const MASK_COL = { AA: '#2f7d4f', PO: '#f87171', CO: '#e5e7eb', M1: '#3b82f6', V1: '#fbbf24', M2: '#c084fc' };
-function MaskLab() {
-  const [vis, setVis] = useState(() => Object.fromEntries(MASK_LAYERS.map((l) => [l.id, true])));
-  const [sel, setSel] = useState('M1');
-  const [qa, setQa] = useState({});
-  const op = (id) => (vis[id] ? (sel === id ? 0.95 : 0.55) : 0);
-  const st = (id) => (sel === id ? { stroke: '#fff', strokeWidth: 1.5 } : {});
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">층 이름을 눌러 <b>선택</b>하면 그 층의 규칙이 표에서 강조되고, 체크박스로 층을 <b>켜고 끌</b> 수 있습니다. (표의 '예시' 값은 이 실습에서 정한 값)</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,1fr)', gap: 10 }} className="fes-mask-grid">
-        <svg viewBox="0 0 300 220" style={{ width: '100%', height: 'auto', background: '#04070d', borderRadius: 8 }}>
-          <rect x="40" y="60" width="220" height="50" fill={MASK_COL.AA} opacity={op('AA')} {...st('AA')} />
-          <rect x="40" y="140" width="220" height="50" fill={MASK_COL.AA} opacity={op('AA')} {...st('AA')} />
-          <rect x="140" y="40" width="20" height="170" fill={MASK_COL.PO} opacity={op('PO')} {...st('PO')} />
-          {[[70, 78], [220, 78], [70, 158], [220, 158], [140, 20]].map(([x, y]) => <rect key={`${x}${y}`} x={x} y={y} width="14" height="14" fill={MASK_COL.CO} opacity={op('CO')} {...st('CO')} />)}
-          <rect x="60" y="70" width="34" height="130" fill={MASK_COL.M1} opacity={op('M1')} {...st('M1')} />
-          <rect x="210" y="70" width="34" height="130" fill={MASK_COL.M1} opacity={op('M1')} {...st('M1')} />
-          <rect x="120" y="10" width="60" height="30" fill={MASK_COL.M1} opacity={op('M1')} {...st('M1')} />
-          <rect x="220" y="120" width="14" height="14" fill={MASK_COL.V1} opacity={op('V1')} {...st('V1')} />
-          <rect x="200" y="114" width="90" height="26" fill={MASK_COL.M2} opacity={op('M2') * 0.8} {...st('M2')} />
-        </svg>
-        <div>
-          {MASK_LAYERS.map((l) => (
-            <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <input type="checkbox" checked={vis[l.id]} onChange={(e) => setVis((v) => ({ ...v, [l.id]: e.target.checked }))} />
-              <span style={{ width: 12, height: 12, background: MASK_COL[l.id], borderRadius: 2 }} />
-              <button className={`fes-chip ${sel === l.id ? 'on' : ''}`} onClick={() => setSel(l.id)}>{l.name}</button>
-              <span style={{ fontFamily: C.mono, fontSize: 11, color: C.dim }}>{l.abbr}{vis[l.id] ? '' : ' · hidden'}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <table className="fes-tbl" style={{ marginTop: 10 }}>
-        <tbody>
-          <tr style={{ color: C.dim }}><td>RULE</td><td>DESCRIPTION</td><td>VALUE</td><td>출처</td></tr>
-          {RULE_TABLE.map((r) => (
-            <tr key={r.code} style={{ background: r.layer === sel ? `${C.cyan}18` : undefined, opacity: r.layer === sel ? 1 : 0.55 }}>
-              <td>{r.code}</td><td style={{ fontFamily: C.sans }}>{r.desc}</td><td>{r.val}</td><td style={{ fontFamily: C.sans, color: C.dim }}>{r.src}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div style={{ marginTop: 12, fontSize: 12.5 }}>규칙 코드 읽기 — <b>층.유형.번호</b> (W = width, S = space, E = enclosure/extension)</div>
-      {RULE_CODE_Q.map((q, i) => (
-        <div key={q.code} style={{ marginTop: 6 }}>
-          <span style={{ fontFamily: C.mono, color: C.cyan }}>{q.code}</span>
-          <ChipPick opts={q.opts.map((_, k) => k)} picked={qa[i]} answer={q.ans} labelOf={(k) => q.opts[k]} onPick={(k) => setQa((p) => ({ ...p, [i]: k }))} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── 10강 · DRC 리포트 ── */
-const STATUS_COL = { ERROR: C.red, WARNING: C.amber, WAIVED: C.dim };
-function DrcReportLab() {
-  const [pick, setPick] = useState({});
-  const [q, setQ] = useState(null);
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">리포트의 <b>status</b>(ERROR / WARNING / WAIVED)와 layer·rule·measured 를 읽고 행마다 처리 방법을 고르세요. 교재: <b>error = must fix, warning = review, waived = approved exception</b>.</p>
-      <div style={{ overflowX: 'auto' }}>
-        <table className="fes-tbl" style={{ minWidth: 620 }}>
-          <tbody>
-            <tr style={{ color: C.dim }}><td>LAYER</td><td>RULE</td><td>MEASURED</td><td>REQUIRED</td><td>STATUS</td><td>처리</td></tr>
-            {DRC_REPORT_ROWS.map((r, i) => (
-              <tr key={i}>
-                <td>{r.layer}</td><td>{r.rule}</td><td>{r.meas}</td><td>{r.req}</td>
-                <td style={{ color: STATUS_COL[r.status], fontWeight: 700 }}>{r.status}</td>
-                <td style={{ fontFamily: C.sans }}>
-                  <ChipPick opts={REPORT_ACTIONS.map((a) => a.id)} picked={pick[i]} answer={r.ans}
-                    labelOf={(id) => REPORT_ACTIONS.find((a) => a.id === id).label} onPick={(id) => setPick((p) => ({ ...p, [i]: id }))} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <PickRow prompt={DRC_CLEAN_Q.prompt} options={DRC_CLEAN_Q.opts.map((o, i) => ({ id: i, label: o }))} picked={q} answer={DRC_CLEAN_Q.ans} onPick={setQ} />
-      {q != null && <Feedback ok={q === DRC_CLEAN_Q.ans}>{DRC_CLEAN_Q.why}</Feedback>}
-    </div>
-  );
-}
-
-/* ── 11강 · 비아 enclosure ── */
-function EnclosureLab() {
-  const [vis, setVis] = useState({ M1: true, VIA: true, M2: false });
-  const [sel, setSel] = useState('V-A');
-  const [ans, setAns] = useState({});
-  const S = 400; // px per μm
-  const via = 0.20;
-  const pos = { 'V-A': 60, 'V-B': 190, 'V-C': 320 };
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">
-        <b>M1 / VIA / M2</b> 를 켜고 끄며 각 비아를 누르세요. 비아는 아래 금속(M1)이 <b>네 방향 모두 {ENC_MIN} μm 이상</b> 감싸야 합니다(교재).
-        비아마다 OK / VIOLATION 을 판정하세요.
-      </p>
-      <div className="fes-btnrow" style={{ marginBottom: 8 }}>
-        {['M1', 'VIA', 'M2'].map((k) => (
-          <label key={k} className="fes-chip" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-            <input type="checkbox" checked={vis[k]} onChange={(e) => setVis((v) => ({ ...v, [k]: e.target.checked }))} />{k} {vis[k] ? 'visible' : 'hidden'}
-          </label>
-        ))}
-      </div>
-      <svg viewBox="0 0 440 200" style={{ width: '100%', height: 'auto', display: 'block', background: '#04070d', borderRadius: 8 }}>
-        {ENC_VIAS.map((v) => {
-          const cx = pos[v.id]; const cy = 100;
-          const vx = cx - (via * S) / 2; const vy = cy - (via * S) / 2;
-          const mx = vx - v.sides.L * S; const my = vy - v.sides.T * S;
-          const mw = (via + v.sides.L + v.sides.R) * S; const mh = (via + v.sides.T + v.sides.B) * S;
-          return (
-            <g key={v.id} onClick={() => setSel(v.id)} style={{ cursor: 'pointer' }}>
-              {vis.M1 && <rect x={mx} y={my} width={mw} height={mh} fill="#3b82f6" opacity="0.75" />}
-              {vis.M2 && <rect x={cx - 55} y={cy - 22} width="110" height="44" fill="#c084fc" opacity="0.45" />}
-              {vis.VIA && <rect x={vx} y={vy} width={via * S} height={via * S} fill="none" stroke="#fbbf24" strokeWidth="2.5" />}
-              <text x={cx} y="190" fill={sel === v.id ? C.neon : C.text} fontSize="11" fontFamily={C.mono} textAnchor="middle">{v.id}{ans[v.id] ? (ans[v.id] === (encJudge(v).ok ? 'OK' : 'VIOLATION') ? ' ✔' : ' ✘') : ''}</text>
-            </g>
-          );
-        })}
-      </svg>
-      {(() => {
-        const v = ENC_VIAS.find((x) => x.id === sel);
-        const j = encJudge(v);
-        return (
-          <div className="fes-dev-status" style={{ marginTop: 10 }}>
-            <div className="fes-dev-sub">{v.id} — ENCLOSURE BY M1 (rule ≥ {ENC_MIN} μm)</div>
-            {vis.M1 && vis.VIA ? (
-              <div style={{ fontFamily: C.mono, fontSize: 12.5 }}>
-                {Object.entries(v.sides).map(([k, x]) => <span key={k} style={{ marginRight: 14, color: x < ENC_MIN ? C.red : C.text }}>{k} {x.toFixed(2)} μm</span>)}
-              </div>
-            ) : <div style={{ fontSize: 12, color: C.amber }}>M1 과 VIA 를 둘 다 켜야 enclosure 를 잴 수 있습니다.</div>}
-            <ChipPick opts={['OK', 'VIOLATION']} picked={ans[v.id]} answer={j.ok ? 'OK' : 'VIOLATION'} onPick={(x) => setAns((p) => ({ ...p, [v.id]: x }))} />
-            {ans[v.id] && <Feedback ok={ans[v.id] === (j.ok ? 'OK' : 'VIOLATION')}>{j.ok ? '네 방향 모두 0.05 μm 이상 — Enclosure OK.' : `Enclosure violation — ${j.bad.join(', ')}${j.bad.some((b) => b.includes('-')) ? ' (음수 = 비아가 금속 밖으로 삐져나옴: misalignment)' : ''}.`}</Feedback>}
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
-
-/* ── 11강 · Check Rules ── */
-function CheckRulesLab() {
-  const [g, setG] = useState(crInit);
-  const [report, setReport] = useState(null);
-  const [focus, setFocus] = useState(null);
-  const [hist, setHist] = useState([]);
-  const X = (nm) => 20 + (nm - 800) * 0.24;   // 0.80~2.70 μm → 20~476 px
-  const Y = (nm) => 190 - (nm - 100) * 0.12;
-  const run = () => { setReport(crCheck(g)); setFocus(null); };
-  const fix = (id) => { setG((cur) => crApply(cur, id)); setReport(null); setFocus(null); setHist((h) => [...h, CR_FIXES.find((f) => f.id === id).label]); };
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">
-        <b>Check Rules</b> 를 누르고 리포트 항목(좌표 포함)을 눌러 위치를 확인하세요. 아래 조치 중 알맞은 것을 골라 적용하고 다시 검사해 <b>No violations</b> 가 뜰 때까지 고치세요.
-        (교재: M1 width ≥ 0.25 μm, spacing ≥ 0.30 μm, grid 0.005) — 틀린 조치도 실제로 도형을 바꿉니다.
-      </p>
-      <svg viewBox="0 0 480 200" style={{ width: '100%', height: 'auto', display: 'block', background: '#04070d', borderRadius: 8 }}>
-        {Array.from({ length: 20 }).map((_, i) => <line key={i} x1={X(800 + i * 100)} x2={X(800 + i * 100)} y1="10" y2="190" stroke="#101b2e" />)}
-        {['A', 'B', 'C'].map((k) => (
-          <g key={k}>
-            <rect x={X(g[k].x)} y={Y(1400)} width={g[k].w * 0.24} height={Y(200) - Y(1400)} fill="#3b82f6" opacity="0.85" />
-            <text x={X(g[k].x) + (g[k].w * 0.24) / 2} y={Y(1400) - 6} fill={C.text} fontSize="11" fontFamily={C.mono} textAnchor="middle">{k}</text>
-          </g>
-        ))}
-        {focus && <circle cx={X(focus.at[0])} cy={Y(focus.at[1])} r="12" fill="none" stroke={C.red} strokeWidth="2.5" />}
-        <text x="470" y="196" fill={C.dim} fontSize="9" fontFamily={C.mono} textAnchor="end">
-          {focus ? `X: ${(focus.at[0] / 1000).toFixed(3)}  Y: ${(focus.at[1] / 1000).toFixed(3)}  ` : ''}Grid: 0.005  Layer: M1
-        </text>
-      </svg>
-      <div className="fes-btnrow" style={{ marginTop: 8 }}>
-        <button className="fes-btn" onClick={run}>▶ Check Rules</button>
-        <button className="fes-btn ghost" onClick={() => { setG(crInit()); setReport(null); setFocus(null); setHist([]); }}>Reset layout</button>
-      </div>
-      <div className="fes-drc-out">
-        <div className="fes-scr-title">RULE CHECK REPORT</div>
-        {report == null && <div className="fes-dim">Layout changed — run Check Rules.</div>}
-        {report && report.length === 0 && <div className="fes-ok">✓ No violations. The layer can be released.</div>}
-        {report && report.map((v) => (
-          <button key={v.id} className="fes-viol" onClick={() => setFocus(v)} style={{ display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer', background: 'transparent', color: 'inherit', borderColor: focus && focus.id === v.id ? C.red : undefined }}>
-            <div className="fes-viol-head">✕ {v.kind}</div>
-            <div className="fes-viol-body">{v.msg} @ ({(v.at[0] / 1000).toFixed(3)}, {(v.at[1] / 1000).toFixed(3)})</div>
-          </button>
-        ))}
-      </div>
-      <div style={{ fontSize: 12.5, marginTop: 10 }}>조치 (적용 후 다시 Check Rules)</div>
-      <div className="fes-btnrow" style={{ marginTop: 5 }}>
-        {CR_FIXES.map((f) => <button key={f.id} className="fes-btn" onClick={() => fix(f.id)}>{f.label}</button>)}
-      </div>
-      {hist.length > 0 && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>적용한 조치: {hist.join(' → ')}</div>}
-    </div>
-  );
-}
-
-/* ── 12강 · 층 이름 ↔ 색 ── */
-function LayerColorLab() {
-  const [vis, setVis] = useState(() => Object.fromEntries(LC_LAYERS.map((l) => [l.id, true])));
-  const [ans, setAns] = useState({});
-  const [legend, setLegend] = useState(false);
-  const col = Object.fromEntries(LC_LAYERS.map((l) => [l.id, l.color]));
-  const unnamed = ['L1', 'L2', 'L3', 'L4'];
-  const done = LC_LAYERS.every((l) => ans[l.id]);
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">범례가 가려져 있습니다. 아래 스위치(<b>L1~L4</b>)로 층을 하나씩 켜고 끄며, 리포트에 나오는 층 이름(<b>POLY, METAL1, METAL2, VIA1</b>)이 화면에서 어떤 색인지 맞혀 보세요.
-        (색 배정은 이 화면의 설정 — 툴·회사마다 다르다)</p>
-      <div className="fes-btnrow" style={{ marginBottom: 8 }}>
-        {LC_LAYERS.map((l, i) => (
-          <label key={l.id} className="fes-chip" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-            <input type="checkbox" checked={vis[l.id]} onChange={(e) => setVis((v) => ({ ...v, [l.id]: e.target.checked }))} />
-            {legend ? l.id : unnamed[i]}
-          </label>
-        ))}
-      </div>
-      <svg viewBox="0 0 440 180" style={{ width: '100%', height: 'auto', display: 'block', background: '#04070d', borderRadius: 8 }}>
-        {vis.POLY && <rect x="190" y="10" width="22" height="160" fill={col.POLY} opacity="0.8" />}
-        {vis.METAL1 && <><rect x="40" y="40" width="360" height="30" fill={col.METAL1} opacity="0.75" /><rect x="40" y="120" width="160" height="30" fill={col.METAL1} opacity="0.75" /></>}
-        {vis.METAL2 && <rect x="300" y="20" width="36" height="150" fill={col.METAL2} opacity="0.6" />}
-        {vis.VIA1 && <rect x="309" y="46" width="18" height="18" fill={col.VIA1} />}
-      </svg>
-      {LC_LAYERS.map((l) => (
-        <div key={l.id} style={{ marginTop: 8 }}>
-          <span style={{ fontFamily: C.mono, fontSize: 12.5 }}>리포트의 <b>{l.id}</b> 는 어떤 색?</span>
-          <ChipPick opts={LC_LAYERS.map((x) => x.swatch)} picked={ans[l.id]} answer={l.swatch} onPick={(sw) => setAns((p) => ({ ...p, [l.id]: sw }))}
-            labelOf={(sw) => <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}><span style={{ width: 12, height: 12, borderRadius: 2, background: LC_LAYERS.find((x) => x.swatch === sw).color }} />{sw}</span>} />
-        </div>
-      ))}
-      <div className="fes-btnrow" style={{ marginTop: 10, alignItems: 'center' }}>
-        <button className="fes-btn ghost" onClick={() => setLegend((x) => !x)}>{legend ? '범례 숨기기' : '범례 보기'}</button>
-        {done && <span style={{ fontSize: 12.5, color: C.dim }}>정답 {LC_LAYERS.filter((l) => ans[l.id] === l.swatch).length} / {LC_LAYERS.length}</span>}
-      </div>
-    </div>
-  );
-}
-
-/* ── 12강 · error / warning 개수 ── */
-function DrcCountLab() {
-  const [p, setP] = useState(cntInit);
-  const [pred, setPred] = useState({ e: null, w: null });
-  const [res, setRes] = useState(null);
-  const change = (k, v) => { setP((x) => ({ ...x, [k]: v })); setRes(null); setPred({ e: null, w: null }); };
-  const run = () => setRes(cntCheck(p));
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">
-        값을 바꾼 뒤 <b>ERROR 와 WARNING 이 몇 개 나올지 먼저 예측</b>하고 Run DRC 를 누르세요. 리포트는 심각도 순(ERROR 먼저)으로 정렬되고 SUMMARY 줄에 개수가 나옵니다.
-        (교재: METAL1 min spacing 0.14 · min width 0.10 — 권장 간격 0.16 미달은 WARNING, 권장값은 이 실습의 예시)
-      </p>
-      <div className="fes-sliders">
-        <SliderRow label="METAL1 spacing" value={p.s1} set={(v) => change('s1', v)} min={0.08} max={0.24} req={CNT_RULE.m1Space} />
-        <SliderRow label="METAL1 width" value={p.w1} set={(v) => change('w1', v)} min={0.06} max={0.20} req={CNT_RULE.m1Width} />
-        <SliderRow label="METAL2 spacing" value={p.s2} set={(v) => change('s2', v)} min={0.08} max={0.24} req={CNT_RULE.m2Space} />
-      </div>
-      {/* 예측은 실행 전까지 바꿀 수 있고 색을 칠하지 않는다 — 정답은 Run DRC 뒤에만 드러난다 */}
-      {[['e', 'ERROR', [0, 1, 2, 3]], ['w', 'WARNING', [0, 1, 2]]].map(([k, label, opts]) => (
-        <div key={k} style={{ marginTop: 6 }}>
-          <div style={{ fontSize: 12.5 }}>예측 — {label} 개수</div>
-          <div className="fes-btnrow" style={{ marginTop: 5 }}>
-            {opts.map((n) => (
-              <button key={n} className={`fes-chip ${pred[k] === n ? 'on' : ''}`} disabled={res != null}
-                onClick={() => setPred((x) => ({ ...x, [k]: n }))}>{n}</button>
-            ))}
-          </div>
-        </div>
-      ))}
-      <div className="fes-btnrow" style={{ marginTop: 8 }}>
-        <button className="fes-btn" disabled={pred.e == null || pred.w == null} onClick={run}>▶ Run DRC</button>
-      </div>
-      {res && (
-        <div className="fes-drc-out">
-          <div className="fes-scr-title">DRC RESULTS — Loaded rule deck: N28_M1.drc</div>
-          {res.rows.length === 0 && <div className="fes-ok">No results.</div>}
-          {res.rows.map((r, i) => (
-            <div key={i} className="fes-logrow"><span className={`fes-tag ${r.sev === 'ERROR' ? 'fes-tag-alarm' : 'fes-tag-cmd'}`} style={r.sev === 'WARNING' ? { background: `${C.amber}22`, color: C.amber } : undefined}>{r.sev}</span><span style={{ fontFamily: C.mono, fontSize: 12 }}>{r.text}</span></div>
-          ))}
-          <div style={{ fontFamily: C.mono, fontSize: 12.5, marginTop: 8, color: C.text }}>SUMMARY — Errors: {res.errors}  Warnings: {res.warnings}</div>
-          <Feedback ok={pred.e === res.errors && pred.w === res.warnings}>
-            예측 ERROR {pred.e} / WARNING {pred.w} — 실제 ERROR {res.errors} / WARNING {res.warnings}. error = must fix, warning = review.
-          </Feedback>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── 13강 · 넷리스트 비교 ── */
-function NetlistLab() {
-  const [pair, setPair] = useState({});
-  const [verdict, setVerdict] = useState(null);
-  const [which, setWhich] = useState(null);
-  const allPaired = LVS_SCH.every((d) => pair[d.id]);
-  const allRight = LVS_SCH.every((d) => pair[d.id] === LVS_PAIR[d.id]);
-  const row = (d) => `${d.id}  ${d.type.toUpperCase()}  D=${d.d}  G=${d.g}  S=${d.s}`;
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">
-        왼쪽 schematic 소자마다 오른쪽 layout 소자를 짝지으세요 — 이름이 아니라 <b>종류(PMOS/NMOS)와 drain·source net</b> 으로 찾습니다.
-        짝을 지으면 단자별 net 이 비교됩니다. 모두 짝지은 뒤 <b>LVS PASSED / FAILED</b> 를 판정하세요.
-      </p>
-      <div className="fes-lvs">
-        <div className="fes-lvs-col"><div className="fes-lvs-title">SCHEMATIC NETLIST (NAND2)</div>
-          <div className="fes-log" style={{ maxHeight: 'none' }}>{LVS_SCH.map((d) => <div key={d.id} style={{ fontFamily: C.mono, fontSize: 12 }}>{row(d)}</div>)}</div></div>
-        <div className="fes-lvs-vs">↔</div>
-        <div className="fes-lvs-col"><div className="fes-lvs-title">LAYOUT NETLIST (extracted)</div>
-          <div className="fes-log" style={{ maxHeight: 'none' }}>{LVS_LAY.map((d) => <div key={d.id} style={{ fontFamily: C.mono, fontSize: 12 }}>{row(d)}</div>)}</div></div>
-      </div>
-      <div style={{ display: 'grid', gap: 6, marginTop: 10 }}>
-        {LVS_SCH.map((d) => {
-          const cmp = pair[d.id] ? lvsCompare(d.id, pair[d.id]) : null;
-          return (
-            <div key={d.id} className="fes-dev-status" style={{ padding: '8px 12px' }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <b style={{ fontFamily: C.mono }}>{d.id}</b> ↔
-                <select value={pair[d.id] || ''} onChange={(e) => { setPair((p) => ({ ...p, [d.id]: e.target.value })); setVerdict(null); setWhich(null); }}
-                  style={{ background: C.panel2, color: C.text, border: `1px solid ${C.line2}`, borderRadius: 6, padding: '4px 6px' }}>
-                  <option value="" disabled>layout device</option>
-                  {LVS_LAY.map((x) => <option key={x.id} value={x.id}>{x.id}</option>)}
-                </select>
-                {cmp && !cmp.typeOk && <span style={{ color: C.red, fontSize: 12 }}>type mismatch — {d.type.toUpperCase()} 와 짝이 아님</span>}
-                {cmp && cmp.typeOk && cmp.terms.map((t) => <span key={t.t} style={{ fontFamily: C.mono, fontSize: 12, color: t.ok ? C.emerald : C.red }}>{t.t}: {t.sch}{t.ok ? '' : ` ≠ ${t.lay}`}</span>)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {allPaired && !allRight && <div style={{ marginTop: 8, fontSize: 12.5, color: C.amber }}>짝이 맞지 않는 소자가 있습니다 — drain·source net 이 같은 소자를 찾아 보세요 (gate 는 틀려 있을 수 있음).</div>}
-      {allRight && (
-        <>
-          <div style={{ marginTop: 10, fontSize: 12.5 }}>판정은?</div>
-          <ChipPick opts={['LVS PASSED', 'LVS FAILED']} picked={verdict} answer="LVS FAILED" onPick={setVerdict} />
-          {verdict && (
-            <>
-              <PickRow prompt={LVS_WHICH_Q.prompt} options={LVS_WHICH_Q.opts.map((o, i) => ({ id: i, label: o }))} picked={which} answer={LVS_WHICH_Q.ans} onPick={setWhich} />
-              {which != null && <Feedback ok={which === LVS_WHICH_Q.ans}>MN1 ↔ M3 의 gate 가 A 가 아니라 B 에 붙어 있다 → Net mismatch (terminal connected to wrong net) → LVS FAILED.</Feedback>}
-            </>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ── 13강 · LVS 오류 수정 ── */
-function LvsFixLab() {
-  const [type, setType] = useState({});
-  const [fixPick, setFixPick] = useState({});
-  const [out, setOut] = useState(null);
-  const fixed = Object.fromEntries(LVS_ERRORS.map((e) => [e.id, fixPick[e.id] === e.fix]));
-  return (
-    <div>
-      <p className="fes-wk-quiz-intro">오류마다 ① <b>종류</b>(missing device / short / open …)를 고르고 ② 수정 방법을 고른 뒤 <b>Re-run LVS</b>. 리포트가 <b>LVS clean</b> 이 될 때까지 반복하세요. (교재: short·open 이 남은 채로 tape-out 금지)</p>
-      <div style={{ display: 'grid', gap: 8 }}>
-        {LVS_ERRORS.map((e, i) => (
-          <div key={e.id} className="fes-viol">
-            <div className="fes-viol-head">Error {i + 1}</div>
-            <div className="fes-viol-body" style={{ fontFamily: C.mono }}>{e.msg}</div>
-            <ChipPick opts={LVS_TYPES} picked={type[e.id]} answer={e.type} onPick={(v) => setType((p) => ({ ...p, [e.id]: v }))} />
-            <div className="fes-btnrow" style={{ marginTop: 6 }}>
-              {e.fixes.map((f, k) => (
-                <button key={k} className={`fes-chip ${fixPick[e.id] === k ? 'on' : ''}`} onClick={() => { setFixPick((p) => ({ ...p, [e.id]: k })); setOut(null); }}>{f}</button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="fes-btnrow" style={{ marginTop: 10 }}>
-        <button className="fes-btn" onClick={() => setOut(lvsRerun(fixed))}>▶ Re-run LVS</button>
-        <button className="fes-btn ghost" onClick={() => { setType({}); setFixPick({}); setOut(null); }}>Reset</button>
-      </div>
-      {out && (
-        <div className="fes-drc-out">
-          <div className="fes-scr-title">LVS REPORT</div>
-          {out.lines.map((l, i) => <div key={i} className={`fes-logrow ${out.pass ? '' : 'err'}`}><span className={`fes-tag ${out.pass ? 'fes-tag-info' : 'fes-tag-alarm'}`}>{out.pass ? 'LVS' : i === 0 ? 'FAIL' : 'SUM'}</span><span>{l}</span></div>)}
-          {!out.pass && out.left.map((e) => <div key={e.id} className="fes-logrow err"><span className="fes-tag fes-tag-alarm">ERR</span><span>{e.msg}</span></div>)}
-        </div>
-      )}
     </div>
   );
 }
@@ -4176,31 +3343,6 @@ const COMM_C4 = [
     q: { en: 'What will you do first?', ko: '먼저 뭘 할 거예요?' },
     a: { en: "I'll check the pressure and re-tune the matching network.", ko: '압력을 확인하고 매칭을 다시 맞추겠습니다.' } },
 ];
-const COMM_C5 = [
-  { sit: 'DRC 결과를 공유합니다.',
-    q: { en: 'Did the layout pass DRC?', ko: '레이아웃이 DRC를 통과했어요?' },
-    a: { en: 'No, there is a spacing violation on METAL1.', ko: '아뇨, METAL1에 간격 위반이 있습니다.' } },
-  { sit: '수정 방법을 묻습니다.',
-    q: { en: 'How will you fix it?', ko: '어떻게 고칠 건가요?' },
-    a: { en: "I'll increase the spacing to meet the minimum.", ko: '최소 간격을 만족하도록 간격을 넓히겠습니다.' } },
-];
-const COMM_C6 = [
-  { sit: 'LVS 결과를 공유합니다.',
-    q: { en: 'Does the layout match the schematic?', ko: '레이아웃이 회로도와 일치해요?' },
-    a: { en: 'No, the NMOS device is missing in the layout.', ko: '아뇨, 레이아웃에 NMOS 소자가 빠졌습니다.' } },
-  { sit: '조치를 요청합니다.',
-    q: { en: 'Please add it and re-run LVS.', ko: '추가하고 LVS를 다시 돌려요.' },
-    a: { en: 'Okay, I will place the device and re-run LVS.', ko: '네, 소자를 배치하고 LVS를 다시 돌리겠습니다.' } },
-];
-const COMM_C7 = [
-  { sit: '종합 결과를 보고합니다.',
-    q: { en: 'Can you summarize the problem?', ko: '문제를 요약해 줄래요?' },
-    a: { en: 'The line width was too narrow due to unstable pressure and RF.', ko: '압력·RF 불안정으로 선폭이 너무 좁았습니다.' } },
-  { sit: '조치 후 결과를 묻습니다.',
-    q: { en: 'And the result after the fix?', ko: '조치 후 결과는요?' },
-    a: { en: 'The width returned to target, and DRC is clean now.', ko: '선폭이 목표로 돌아왔고, 이제 DRC는 깨끗합니다.' } },
-];
-
 // ===== PM 점검표 (7주) =====
 const PM_TASKS = [
   { en: 'Inspect the O-ring seal', ko: 'O-링 씰 점검' },
@@ -4291,12 +3433,8 @@ const SIM_REGISTRY = {
   vendor: (sl) => (sl.mode === 'readback' ? <ReadbackLab /> : sl.mode === 'email' ? <VendorEmailLab /> : <SeverityLab />),
   chamberArt: () => <ArtImage which="chamber" cap="Plasma etch chamber — cross-section (도해). 각 부품의 영어 이름은 번호 라벨 참고." />,
   alarm: (sl) => (sl.mode === 'ackReset' ? <AckResetLab /> : <AlarmLab />),
-  drc: (sl) => (sl.mode === 'triage' ? <DrcTriageLab />
-    : sl.mode === 'readDrc' ? <ReadDrcLab />
-      : sl.mode === 'checkRules' ? <CheckRulesLab />
-        : sl.mode === 'counts' ? <DrcCountLab /> : <><ArtImage which="drc" cap="Design Rule Check — 레이아웃 상면도(top view). 통과(PASS)와 위반(VIOLATION) 예시. 아래에서 직접 판정 연습." /><DrcLab /></>),
-  lvs: (sl) => (sl.mode === 'netlist' ? <NetlistLab /> : sl.mode === 'lvsFix' ? <LvsFixLab /> : <><ArtImage which="lvs" cap="Layout Versus Schematic — 회로도(reference)와 레이아웃(extracted) 넷리스트 비교. 아래에서 직접 판정 연습." /><LvsLab /></>),
-  report: (sl) => (sl.mode === 'pcar' ? <PcarReportLab /> : sl.mode === 'handover' ? <HandoverTriageLab /> : sl.mode === 'drcReport' ? <DrcReportLab /> : <ReportLab />),
+  // 14강 종합 보고 — P/C/A/R 분류 · 인계 항목 분류 (옛 설계 실습 drc · lvs · layer 는 2026-11-10 2부 개편 뒤 삭제)
+  report: (sl) => (sl.mode === 'handover' ? <HandoverTriageLab /> : <PcarReportLab />),
   partDiagram: (sl) => (sl.mode === 'tool' ? <ToolLayoutLab /> : sl.mode === 'gasLog' ? <GasLineLab /> : <PartDiagram parts={W2_PARTS} />),
   devicePanel: (sl) => (sl.mode === 'procedure' ? <ProcedurePanel />
     : sl.mode === 'spPv' ? <SpPvPanel />
@@ -4314,11 +3452,6 @@ const SIM_REGISTRY = {
       {sl.mode === 'ignite' && <IgnitionLab />}
     </>
   )),
-  layer: (sl) => (sl.mode === 'stack' ? <StackLab />
-    : sl.mode === 'masks' ? <MaskLab />
-      : sl.mode === 'enclosure' ? <EnclosureLab />
-        : sl.mode === 'layerColor' ? <LayerColorLab />
-          : <ArtImage which="layer" cap="MOSFET device cross-section — 공정 레이어(도해). 각 레이어의 영어 이름은 번호 라벨 참고." />),
   pm: (sl) => (sl.mode === 'pmWork' ? <PmWorkOrder /> : <PMChecklist />),
 };
 // ===== 현장 자료 삽화 (장비에 붙은 스티커·화면·계기·로그를 직접 보여준다) =====
@@ -4486,78 +3619,12 @@ function ManualSpecimen({ s }) {
     </div>
   );
 }
-// ===== 모사 EDA 툴 GUI (설계 챕터: 종이 매뉴얼 대신 실제 설계 프로그램 화면을 읽는다) =====
-function edaCanvas(kind) {
-  let art = '';
-  if (kind === 'layout') {
-    art = `<rect x="60" y="60" width="150" height="34" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.5"/><text x="66" y="82" font-family="monospace" font-size="11" fill="#d6ffe9">METAL1</text>
-      <rect x="90" y="110" width="90" height="70" fill="#6a4d8f" stroke="#c9a9ef" stroke-width="1.5"/><text x="96" y="150" font-family="monospace" font-size="11" fill="#efe3ff">POLY</text>
-      <rect x="230" y="96" width="130" height="90" fill="#8f6a3d" stroke="#e6c79a" stroke-width="1.5"/><text x="236" y="146" font-family="monospace" font-size="11" fill="#ffedd0">ACTIVE</text>
-      <rect x="250" y="66" width="16" height="16" fill="#c9d4e2"/><rect x="290" y="66" width="16" height="16" fill="#c9d4e2"/><text x="250" y="60" font-family="monospace" font-size="9" fill="#9fb2c9">CONTACT</text>`;
-  } else if (kind === 'rules') {
-    art = `<rect x="70" y="90" width="120" height="40" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.5"/><rect x="250" y="90" width="120" height="40" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.5"/>
-      <line x1="190" y1="110" x2="250" y2="110" stroke="#f2b23a" stroke-width="1.5"/><line x1="190" y1="103" x2="190" y2="117" stroke="#f2b23a" stroke-width="1.5"/><line x1="250" y1="103" x2="250" y2="117" stroke="#f2b23a" stroke-width="1.5"/>
-      <text x="196" y="100" font-family="monospace" font-size="11" font-weight="700" fill="#f2b23a">0.16µm ✓</text><text x="120" y="150" font-family="monospace" font-size="10" fill="#9fb2c9">min spacing = 0.14µm</text>`;
-  } else if (kind === 'place') {
-    art = [40, 90, 140, 190, 240, 290, 340].map((x, i) => `<rect x="${x}" y="${60 + (i % 2) * 0}" width="38" height="30" fill="#33506e" stroke="#8fb4dd" stroke-width="1.2"/>`).join('') +
-      [40, 90, 140, 240, 290, 340].map((x) => `<rect x="${x}" y="120" width="38" height="30" fill="#33506e" stroke="#8fb4dd" stroke-width="1.2"/>`).join('') +
-      `<rect x="182" y="128" width="38" height="30" fill="#4a2f2f" stroke="#e05a4a" stroke-width="1.6"/><circle cx="201" cy="143" r="16" fill="none" stroke="#e05a4a" stroke-width="1.8"/><text x="150" y="182" font-family="monospace" font-size="10" fill="#e07a6a">off-grid cell</text>`;
-  } else if (kind === 'drc') {
-    art = `<rect x="80" y="80" width="70" height="44" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.4"/><rect x="176" y="120" width="70" height="44" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.4"/>
-      <line x1="150" y1="100" x2="176" y2="100" stroke="#e05a4a" stroke-width="1.4"/><text x="150" y="94" font-family="monospace" font-size="9" font-weight="700" fill="#e05a4a">0.02µm</text>
-      <circle cx="163" cy="112" r="13" fill="none" stroke="#e05a4a" stroke-width="2"/><path d="M156 105 l14 14 M170 105 l-14 14" stroke="#e05a4a" stroke-width="2"/>
-      <circle cx="300" cy="150" r="13" fill="none" stroke="#e05a4a" stroke-width="2"/><path d="M293 143 l14 14 M307 143 l-14 14" stroke="#e05a4a" stroke-width="2"/><text x="250" y="196" font-family="monospace" font-size="10" fill="#e07a6a">2 markers shown</text>`;
-  } else { // lvs
-    art = `<rect x="30" y="60" width="170" height="120" fill="none" stroke="#3b5069" stroke-width="1.2"/><text x="36" y="54" font-family="monospace" font-size="10" fill="#8fb4dd">SCHEMATIC</text>
-      <circle cx="80" cy="110" r="10" fill="none" stroke="#8fb4dd" stroke-width="1.5"/><circle cx="150" cy="110" r="10" fill="none" stroke="#8fb4dd" stroke-width="1.5"/><line x1="90" y1="110" x2="140" y2="110" stroke="#8fb4dd" stroke-width="1.5"/><line x1="80" y1="120" x2="80" y2="160" stroke="#8fb4dd" stroke-width="1.5"/>
-      <text x="210" y="128" font-family="monospace" font-size="30" font-weight="800" fill="#e05a4a">≠</text>
-      <rect x="250" y="60" width="170" height="120" fill="none" stroke="#3b5069" stroke-width="1.2"/><text x="256" y="54" font-family="monospace" font-size="10" fill="#7fe3b0">LAYOUT</text>
-      <rect x="280" y="96" width="30" height="20" fill="#2f7d5b" stroke="#e05a4a" stroke-width="1.6"/><rect x="350" y="130" width="30" height="20" fill="#2f7d5b" stroke="#7fe3b0" stroke-width="1.3"/><line x1="310" y1="106" x2="350" y2="140" stroke="#8fb4dd" stroke-width="1.3"/>`;
-  }
-  return `<svg viewBox="0 0 440 230" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">${art}</svg>`;
-}
-function EdaTool({ s }) {
-  return (
-    <div className="eda-slide">
-      <div className="fes-doc-tag">🖥️ 설계 프로그램 화면 (모사) — 실제 EDA 툴의 <b>영어 UI</b>를 읽어보세요</div>
-      <div className="eda">
-        <div className="eda-tb">
-          <span className="eda-dot" style={{ background: '#e05a4a' }} /><span className="eda-dot" style={{ background: '#e0a83a' }} /><span className="eda-dot" style={{ background: '#4ab86a' }} />
-          <span className="eda-app">{s.app || 'LayoutPro'}</span><span className="eda-doc">— {s.doc || 'chip_top'}</span>
-          <span className="eda-menus">{(s.menus || ['File', 'Edit', 'View', 'Tools', 'Verify', 'Window', 'Help']).map((m, i) => <span key={i}>{m}</span>)}</span>
-        </div>
-        <div className="eda-tools">{(s.tools || ['Select', 'Draw', 'Ruler', 'Zoom', 'Run']).map((t, i) => <span key={i} className={`eda-tool${s.run === t ? ' on' : ''}`}>{t}</span>)}</div>
-        <div className="eda-body">
-          <div className="eda-left">
-            <div className="eda-ph">{s.left?.title || 'Layers'}</div>
-            {(s.left?.items || []).map((it, i) => (
-              <div key={i} className="eda-row">
-                {it.color ? <span className="eda-sw" style={{ background: it.color }} /> : <span className="eda-sw off" />}
-                <span className={`eda-chk${it.on === false ? ' off' : ''}`}>{it.on === false ? '☐' : '☑'}</span>
-                <span className="eda-name">{it.name}</span>
-              </div>
-            ))}
-          </div>
-          <div className="eda-canvas" dangerouslySetInnerHTML={{ __html: edaCanvas(s.canvas || 'layout') }} />
-        </div>
-        <div className="eda-console">{(s.log || []).map((l, i) => <div key={i} className={`eda-log${/error|mismatch|not |fail|violation/i.test(l) ? ' err' : /done|clean|match|pass|ok/i.test(l) ? ' ok' : ''}`}>{l}</div>)}</div>
-        <div className="eda-status">{s.status || 'X: 12.40  Y: 8.10   Layer: METAL1   Zoom: 400%'}</div>
-      </div>
-      {s.gloss && s.gloss.length > 0 && (
-        <div className="fes-doc-help"><div className="fes-doc-help-h">🔑 화면 영어 읽기</div>
-          <div className="fes-doc-gloss">{s.gloss.map((g, i) => <span key={i}><b>{g[0]}</b> — {g[1]}</span>)}</div></div>
-      )}
-    </div>
-  );
-}
 function slideInner(slide) {
   switch (slide.type) {
     case 'scene':
       return <SceneCard s={slide} />;
     case 'mansample':
       return <ManualSpecimen s={slide} />;
-    case 'eda':
-      return <EdaTool s={slide} />;
     case 'story': {
       const hasManga = slide.art && MANGA[slide.art];
       return (
@@ -4889,7 +3956,6 @@ function FesStyles() {
 .fes-btn:disabled{opacity:.32;cursor:not-allowed}
 .fes-btn.danger{background:linear-gradient(180deg,#3a1720,#2a1018);border-color:${C.red}66;color:#ffd7d7}
 .fes-btn.danger:hover:not(:disabled){border-color:${C.red}}
-.fes-mask-grid{}@media(max-width:620px){.fes-mask-grid{grid-template-columns:1fr !important}}
 .fes-btn.locked{opacity:.42;border-style:dashed}
 .fes-btn.ghost{background:transparent;border-color:${C.line2};color:${C.dim}}
 
@@ -4919,31 +3985,10 @@ function FesStyles() {
 .fes-check-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .fes-score{font-family:${C.mono};font-weight:700;font-size:13px;padding:5px 12px;border-radius:8px}
 .fes-score.ok{background:${C.emerald}18;color:${C.emerald}}.fes-score.mid{background:${C.amber}18;color:${C.amber}}.fes-score.bad{background:${C.red}18;color:${C.red}}
-.fes-fix{font-size:12px;color:${C.emerald}}
 
-/* DRC / CAD */
-.fes-cad{border:1px solid ${C.line};border-radius:10px;overflow:hidden;background:#0a0f1a}
-.fes-cad-svg{width:100%;display:block}
-.fes-sliders{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:14px 0}
-.fes-slider{flex:1;min-width:190px}
-.fes-slider-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
-.fes-slider-req{font-size:10px;color:${C.dim};font-family:${C.mono};margin-top:2px}
-.fes-range{width:100%;accent-color:${C.cyan}}
-.fes-drc-out{background:#060c17;border:1px solid ${C.line};border-radius:10px;padding:14px}
-.fes-viol{background:${C.red}10;border:1px solid ${C.red}44;border-radius:8px;padding:10px 12px;margin-top:8px;font-family:${C.mono}}
-.fes-viol-head{color:${C.red};font-weight:700;font-size:12.5px;margin-bottom:4px}
-.fes-viol-body{color:#ffd7d7;font-size:12px}
 
-/* LVS */
-.fes-lvs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
-@media(max-width:560px){.fes-lvs{grid-template-columns:1fr}}
-.fes-lvs-col{background:#0a0f1a;border:1px solid ${C.line};border-radius:10px;padding:10px}
-.fes-lvs-title{font-family:${C.mono};font-size:10.5px;color:${C.cyan};letter-spacing:.6px;text-align:center;margin-bottom:6px}
-.fes-lvs-svg{width:100%;height:auto;display:block}
-.fes-lvs-vs{font-size:22px;color:${C.red};text-align:center;font-weight:700}
 
 /* report */
-.fes-scn{background:#0d1a30;border:1px solid ${C.line2};border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px}
 .fes-report{display:grid;gap:10px}
 .fes-report-field{display:flex;flex-direction:column;gap:5px}
 .fes-report-label{font-family:${C.mono};font-size:12px;color:${C.cyan};font-weight:700}
@@ -5113,34 +4158,6 @@ function FesStyles() {
 .fes-wk-manual b{color:#bfe9f5;font-weight:700}
 .fes-wk-quiz-intro{font-size:12.5px;color:${C.dim};margin:0 0 12px}
 .fes-wk-qn{font-family:${C.mono};color:${C.cyan};font-size:12px;margin-right:4px}
-/* ===== 모사 EDA 툴 GUI ===== */
-.eda{border:1px solid ${C.line2};border-radius:9px;overflow:hidden;background:#101a28;font-family:${C.mono};box-shadow:0 6px 20px rgba(0,0,0,.32)}
-.eda-tb{display:flex;align-items:center;gap:7px;background:#0c1521;padding:6px 11px;border-bottom:1px solid #22334c}
-.eda-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.eda-app{font-weight:800;color:#dbe8fb;font-size:12px;margin-left:4px}.eda-doc{color:#6f86a6;font-size:11.5px}
-.eda-menus{margin-left:16px;display:flex;gap:13px;color:#8ea4c4;font-size:11px}
-.eda-tools{display:flex;gap:6px;padding:5px 11px;background:#0f1a29;border-bottom:1px solid #1c2c44}
-.eda-tool{font-size:10.5px;color:#a9bcd8;border:1px solid #2a3d5f;border-radius:4px;padding:2px 9px;background:#13202f}
-.eda-tool.on{background:${C.cyan};color:#062230;border-color:${C.cyan};font-weight:700}
-.eda-slide{height:100%;display:flex;flex-direction:column}
-.eda-slide>:first-child{margin-top:auto}.eda-slide>:last-child{margin-bottom:auto}   /* .fes-th 와 같은 이유 */
-.eda-slide .fes-doc-tag{margin-bottom:6px}
-.eda-slide .fes-doc-help{margin-top:8px;padding:8px 13px}
-.eda-slide .fes-doc-help-h{margin-bottom:4px}
-.eda-slide .fes-doc-gloss{gap:4px 16px}
-.eda-slide .fes-doc-gloss span{font-size:12px}
-.eda-body{display:flex;height:clamp(160px,24vh,250px)}
-.eda-left{width:138px;flex:none;background:#0d1725;border-right:1px solid #1c2c44;padding:7px 8px}
-.eda-ph{font-size:9.5px;letter-spacing:1px;color:#7f96b6;margin-bottom:7px;text-transform:uppercase}
-.eda-row{display:flex;align-items:center;gap:5px;padding:2.5px 0;font-size:11px;color:#c2d2ea}
-.eda-sw{width:11px;height:11px;border-radius:2px;border:1px solid #33465f;flex:none}.eda-sw.off{background:transparent}
-.eda-chk{color:#6f86a6;font-size:11px}.eda-chk.off{color:#3d4d63}
-.eda-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.eda-canvas{flex:1;min-width:0;background:#0a1420;background-image:linear-gradient(#26364a55 1px,transparent 1px),linear-gradient(90deg,#26364a55 1px,transparent 1px);background-size:48px 48px;background-position:-1px -1px;display:flex;align-items:stretch;overflow:hidden}
-.eda-canvas svg{display:block;width:100%;height:100%}
-.eda-console{background:#0a121e;border-top:1px solid #1c2c44;padding:5px 11px;font-size:11px;line-height:1.5;color:#8ea4c4}
-.eda-log.err{color:#f28b7d}.eda-log.ok{color:#6fe0a0}
-.eda-status{background:#0c1521;border-top:1px solid #22334c;padding:4px 11px;font-size:10px;color:#6f86a6}
 /* ===== 매뉴얼 표본 (printed English document look) ===== */
 .fes-doc-tag{font-size:11.5px;color:${C.dim};margin:0 0 8px;font-weight:600}
 .fes-doc{background:#f4efe2;color:#1c1913;border:1px solid #cabf9f;border-radius:8px;padding:18px 20px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:'Georgia','Times New Roman',serif}

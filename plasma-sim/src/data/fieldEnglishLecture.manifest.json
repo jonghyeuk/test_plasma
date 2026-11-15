@@ -1545,6 +1545,3986 @@
      "n": 1
     }
    ]
+  },
+  {
+   "i": 16,
+   "sig": "quiz|확인 퀴즈 (3) — 경계와 조건",
+   "h": "8ce6a5ba2e",
+   "sec": 19.4,
+   "cues": [
+    {
+     "t": 6.838,
+     "k": "o",
+     "x": "not to exceed 20 W",
+     "n": 1
+    },
+    {
+     "t": 7.802,
+     "k": "o",
+     "x": "below 1.0E-5 Torr",
+     "n": 1
+    },
+    {
+     "t": 13.688,
+     "k": "u",
+     "x": "only if both wafers pass",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "glossary|핵심 용어 (4) — 변경 관리",
+   "h": "1fdff01f30",
+   "sec": 19.9,
+   "cues": [
+    {
+     "t": 1.811,
+     "k": "o",
+     "x": "revision",
+     "n": 1
+    },
+    {
+     "t": 6.873,
+     "k": "o",
+     "x": "qualification (qual)",
+     "n": 1
+    },
+    {
+     "t": 8.649,
+     "k": "u",
+     "x": "Two qual wafers are required before the new revision is released.",
+     "n": 1
+    },
+    {
+     "t": 12.492,
+     "k": "o",
+     "x": "release",
+     "n": 1
+    },
+    {
+     "t": 14.164,
+     "k": "o",
+     "x": "roll back",
+     "n": 2
+    },
+    {
+     "t": 16.347,
+     "k": "h",
+     "x": "hold",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "mansample|매뉴얼 표본 — 변경 적용 절차",
+   "h": "f2fa928f91",
+   "sec": 23.4,
+   "cues": [
+    {
+     "t": 6.118,
+     "k": "u",
+     "x": "Confirm that the ECN status is APPROVED before editing the recipe.",
+     "n": 1
+    },
+    {
+     "t": 10.275,
+     "k": "h",
+     "x": "Do not overwrite the current revision.",
+     "n": 1
+    },
+    {
+     "t": 17.903,
+     "k": "u",
+     "x": "only if both qual wafers are within the specification.",
+     "n": 1
+    },
+    {
+     "t": 23.057,
+     "k": "o",
+     "x": "Production recipes shall not be edited unless an ECN has been approved.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|확인 퀴즈 (4) — 절차 읽기",
+   "h": "a204e47e6e",
+   "sec": 18.3,
+   "cues": [
+    {
+     "t": 2.67,
+     "k": "u",
+     "x": "Do not overwrite the current revision.",
+     "n": 1
+    },
+    {
+     "t": 7.523,
+     "k": "o",
+     "x": "PENDING",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "manual|RECIPE CHANGE CONTROL POLICY (교재 예시)",
+   "h": "a3ccd86739",
+   "sec": 37.9,
+   "cues": [
+    {
+     "t": 6.827,
+     "k": "o",
+     "x": "unless an ECN has been approved",
+     "n": 1
+    },
+    {
+     "t": 10.333,
+     "k": "o",
+     "x": "only if at least two qual wafers pass",
+     "n": 1
+    },
+    {
+     "t": 18.181,
+     "k": "u",
+     "x": "If any qual wafer fails",
+     "n": 1
+    },
+    {
+     "t": 23.29,
+     "k": "h",
+     "x": "need not be re-qualified, provided that",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "manual|ENDPOINT AND OVER-ETCH SETTINGS",
+   "h": "f52e6e35d7",
+   "sec": 25.6,
+   "cues": [
+    {
+     "t": 3.855,
+     "k": "u",
+     "x": "If no endpoint is detected within 60 s, the step aborts.",
+     "n": 1
+    },
+    {
+     "t": 10.844,
+     "k": "h",
+     "x": "not of the maximum time",
+     "n": 1
+    },
+    {
+     "t": 18.089,
+     "k": "o",
+     "x": "earlier than 30 s",
+     "n": 1
+    },
+    {
+     "t": 21.397,
+     "k": "u",
+     "x": "In case of an endpoint timeout",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "497a038cb7",
+   "sec": 17.6,
+   "cues": [
+    {
+     "t": 7.047,
+     "k": "o",
+     "x": "경계어",
+     "n": 1
+    },
+    {
+     "t": 10.937,
+     "k": "h",
+     "x": "경계값에 딱 걸린 값이 섞여 있습니다.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "sim|",
+   "h": "ec07e8d0a5",
+   "sec": 17.7,
+   "cues": [
+    {
+     "t": 6.536,
+     "k": "u",
+     "x": "허용 범위",
+     "n": 1
+    },
+    {
+     "t": 13.003,
+     "k": "h",
+     "x": "실제 ME 시간의 30%",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "sim|",
+   "h": "80eb9a2bc1",
+   "sec": 15.9,
+   "cues": [
+    {
+     "t": 6.351,
+     "k": "u",
+     "x": "지금 고칠 수 없음 · 보류(시험 더 필요) · 적용(release) · 되돌림(roll back)",
+     "n": 1
+    },
+    {
+     "t": 9.636,
+     "k": "o",
+     "x": "근거가 되는 규정 번호",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 25,
+   "sig": "comm|",
+   "h": "7a48726984",
+   "sec": 33.7,
+   "cues": [
+    {
+     "t": 4.946,
+     "k": "u",
+     "x": "Can you just bump the main etch pressure to 12 mTorr tonight?",
+     "n": 1
+    },
+    {
+     "t": 16.475,
+     "k": "o",
+     "x": "How did the qual wafers look?",
+     "n": 1
+    },
+    {
+     "t": 24.636,
+     "k": "h",
+     "x": "Why did the run abort at step 3?",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "sig": "wrap|정리 — 조건을 나누고, 경계를 읽어라",
+   "h": "ad1787ae46",
+   "sec": 32.1,
+   "cues": [
+    {
+     "t": 3.762,
+     "k": "u",
+     "x": "ECR → ECN(approved) → qual → release",
+     "n": 1
+    },
+    {
+     "t": 9.207,
+     "k": "o",
+     "x": "실제 ME 시간",
+     "n": 1
+    },
+    {
+     "t": 12.121,
+     "k": "u",
+     "x": "not to exceed / no more than",
+     "n": 1
+    },
+    {
+     "t": 18.622,
+     "k": "h",
+     "x": "unless = if not",
+     "n": 1
+    },
+    {
+     "t": 22.291,
+     "k": "u",
+     "x": "연결어 찾기 → 조건과 결과 나누기 → 지금 사실이 조건을 만족하는지",
+     "n": 1
+    },
+    {
+     "t": 28.305,
+     "k": "o",
+     "x": "Split the condition, read the boundary.",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w11": [
+  {
+   "i": 0,
+   "sig": "story|순환 근무 첫날, 처음 보는 화면",
+   "h": "e681aabc19",
+   "sec": 54.5,
+   "cues": [
+    {
+     "t": 13.351,
+     "k": "h",
+     "x": "PAD CONDITIONER SWEEP RATE LOW",
+     "n": 1
+    },
+    {
+     "t": 25.438,
+     "k": "o",
+     "x": "맨 오른쪽",
+     "n": 1
+    },
+    {
+     "t": 27.795,
+     "k": "u",
+     "x": "rate 가 주인공이야",
+     "n": 1
+    },
+    {
+     "t": 40.205,
+     "k": "o",
+     "x": "SP / PV",
+     "n": 1
+    },
+    {
+     "t": 50.735,
+     "k": "u",
+     "x": "증착 · 노광 · CMP · 이온주입",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "31523a9b7b",
+   "sec": 29.4,
+   "cues": [
+    {
+     "t": 3.332,
+     "k": "u",
+     "x": "증착(CVD · ALD · PVD)",
+     "n": 1
+    },
+    {
+     "t": 12.748,
+     "k": "o",
+     "x": "명사 덩어리 pad conditioner sweep rate",
+     "n": 1
+    },
+    {
+     "t": 21.606,
+     "k": "h",
+     "x": "\"무엇의 무엇인가\"",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|처음 보는 장비 앞에서 — 뼈대는 같다",
+   "h": "254e85557a",
+   "sec": 44,
+   "cues": [
+    {
+     "t": 6.838,
+     "k": "u",
+     "x": "무엇이 들어오나",
+     "n": 1
+    },
+    {
+     "t": 22.941,
+     "k": "o",
+     "x": "SP / PV",
+     "n": 1
+    },
+    {
+     "t": 32.856,
+     "k": "h",
+     "x": "성적표",
+     "n": 1
+    },
+    {
+     "t": 38.057,
+     "k": "u",
+     "x": "장비마다 다른 명사와 단위",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|명사 덩어리는 오른쪽부터 — compound noun",
+   "h": "7f45d4bd2e",
+   "sec": 44.6,
+   "cues": [
+    {
+     "t": 7.105,
+     "k": "h",
+     "x": "맨 오른쪽 명사가 머리(head)",
+     "n": 1
+    },
+    {
+     "t": 18.146,
+     "k": "o",
+     "x": "챔버 벽 온도의 설정값",
+     "n": 1
+    },
+    {
+     "t": 26.39,
+     "k": "u",
+     "x": "the setpoint of the temperature of the chamber wall",
+     "n": 2
+    },
+    {
+     "t": 34.18,
+     "k": "o",
+     "x": "pad conditioner(패드 컨디셔너)",
+     "n": 1
+    },
+    {
+     "t": 42.516,
+     "k": "h",
+     "x": "슬러리 유량 알람의 한계값",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|증착 장비 — CVD · ALD · PVD",
+   "h": "48322364f0",
+   "sec": 37.7,
+   "cues": [
+    {
+     "t": 7.581,
+     "k": "o",
+     "x": "precursor(전구체)",
+     "n": 1
+    },
+    {
+     "t": 12.783,
+     "k": "u",
+     "x": "한 사이클(cycle)",
+     "n": 1
+    },
+    {
+     "t": 20.05,
+     "k": "o",
+     "x": "금속 덩어리(target)",
+     "n": 1
+    },
+    {
+     "t": 28.7,
+     "k": "h",
+     "x": "1 Å = 0.1 nm",
+     "n": 1
+    },
+    {
+     "t": 36.641,
+     "k": "u",
+     "x": "uniformity(균일도, %)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|노광 장비 — 트랙(track)과 스캐너(scanner)",
+   "h": "c4c02161a7",
+   "sec": 35.2,
+   "cues": [
+    {
+     "t": 8.475,
+     "k": "u",
+     "x": "spin coat",
+     "n": 1
+    },
+    {
+     "t": 12.666,
+     "k": "o",
+     "x": "회로 원판(reticle)",
+     "n": 1
+    },
+    {
+     "t": 17.311,
+     "k": "o",
+     "x": "mJ/cm²",
+     "n": 2
+    },
+    {
+     "t": 20.654,
+     "k": "u",
+     "x": "overlay(정렬 오차)",
+     "n": 1
+    },
+    {
+     "t": 32.915,
+     "k": "h",
+     "x": "단위가 어느 장비인지 알려 준다",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "read|CMP · 이온주입 — 누르는 힘과 이온의 에너지",
+   "h": "7d7e1ba46e",
+   "sec": 49.4,
+   "cues": [
+    {
+     "t": 7.442,
+     "k": "o",
+     "x": "down force",
+     "n": 1
+    },
+    {
+     "t": 14.385,
+     "k": "u",
+     "x": "sweep rate",
+     "n": 1
+    },
+    {
+     "t": 23.731,
+     "k": "o",
+     "x": "energy(keV)",
+     "n": 1
+    },
+    {
+     "t": 27.283,
+     "k": "o",
+     "x": "5.0E15 /cm²",
+     "n": 2
+    },
+    {
+     "t": 33.344,
+     "k": "h",
+     "x": "4.8E15 와 5.0E15",
+     "n": 1
+    },
+    {
+     "t": 39.752,
+     "k": "o",
+     "x": "7°",
+     "n": 2
+    },
+    {
+     "t": 46.776,
+     "k": "u",
+     "x": "1 mA = 1,000 µA",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "read|장비 설명서의 문장 — 수동태와 목적 표현",
+   "h": "89c62ca647",
+   "sec": 38.3,
+   "cues": [
+    {
+     "t": 11.204,
+     "k": "o",
+     "x": "is held by",
+     "n": 1
+    },
+    {
+     "t": 20.527,
+     "k": "o",
+     "x": "is used to",
+     "n": 1
+    },
+    {
+     "t": 23.766,
+     "k": "o",
+     "x": "in order to",
+     "n": 1
+    },
+    {
+     "t": 25.02,
+     "k": "o",
+     "x": "so that",
+     "n": 1
+    },
+    {
+     "t": 31.939,
+     "k": "h",
+     "x": "by 뒤(누가)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "acr|약어 · 단위",
+   "h": "3d0c7e2ea6",
+   "sec": 15,
+   "cues": [
+    {
+     "t": 3.564,
+     "k": "o",
+     "x": "CMP",
+     "n": 1
+    },
+    {
+     "t": 7.279,
+     "k": "h",
+     "x": "1 Å = 0.1 nm",
+     "n": 1
+    },
+    {
+     "t": 9.671,
+     "k": "o",
+     "x": "E15",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "glossary|핵심 용어 (1) — 명사 덩어리 읽기",
+   "h": "7b749cde83",
+   "sec": 26.5,
+   "cues": [
+    {
+     "t": 6.223,
+     "k": "o",
+     "x": "setpoint",
+     "n": 1
+    },
+    {
+     "t": 8.754,
+     "k": "u",
+     "x": "챔버 벽 온도의 설정값",
+     "n": 1
+    },
+    {
+     "t": 15.685,
+     "k": "u",
+     "x": "슬러리 유량 알람의 한계값",
+     "n": 1
+    },
+    {
+     "t": 20.503,
+     "k": "h",
+     "x": "웨이퍼 가장자리 제외 구역",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "quiz|확인 퀴즈 (1) — 명사 덩어리",
+   "h": "02520a5ecc",
+   "sec": 13.3,
+   "cues": [
+    {
+     "t": 5.201,
+     "k": "o",
+     "x": "SETPOINT",
+     "n": 1
+    },
+    {
+     "t": 6.908,
+     "k": "o",
+     "x": "LIMIT",
+     "n": 1
+    },
+    {
+     "t": 8.371,
+     "k": "o",
+     "x": "zone",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "glossary|핵심 용어 (2) — 증착",
+   "h": "d78587c3e4",
+   "sec": 19.3,
+   "cues": [
+    {
+     "t": 1.672,
+     "k": "o",
+     "x": "precursor",
+     "n": 1
+    },
+    {
+     "t": 9.845,
+     "k": "o",
+     "x": "pulse / purge",
+     "n": 1
+    },
+    {
+     "t": 13.618,
+     "k": "o",
+     "x": "target",
+     "n": 1
+    },
+    {
+     "t": 16.556,
+     "k": "h",
+     "x": "film thickness",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "mansample|매뉴얼 표본 — 장비 계열별 화면 값",
+   "h": "e124f282dc",
+   "sec": 28.6,
+   "cues": [
+    {
+     "t": 9.648,
+     "k": "o",
+     "x": "mJ/cm²",
+     "n": 1
+    },
+    {
+     "t": 13.247,
+     "k": "o",
+     "x": "5.0E15",
+     "n": 1
+    },
+    {
+     "t": 20.839,
+     "k": "u",
+     "x": "faster = thinner",
+     "n": 1
+    },
+    {
+     "t": 27.097,
+     "k": "h",
+     "x": "Check the unit first.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|확인 퀴즈 (2) — 장비와 단위",
+   "h": "b0947aef9d",
+   "sec": 14.6,
+   "cues": [
+    {
+     "t": 2.345,
+     "k": "o",
+     "x": "DOSE 5.0E15 /cm²",
+     "n": 1
+    },
+    {
+     "t": 5.77,
+     "k": "u",
+     "x": "SPIN SPEED",
+     "n": 1
+    },
+    {
+     "t": 11.97,
+     "k": "o",
+     "x": "1,000 Å",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|핵심 용어 (3) — 노광 · CMP",
+   "h": "cfc1162cee",
+   "sec": 20.6,
+   "cues": [
+    {
+     "t": 2.856,
+     "k": "o",
+     "x": "reticle",
+     "n": 1
+    },
+    {
+     "t": 4.737,
+     "k": "o",
+     "x": "overlay",
+     "n": 1
+    },
+    {
+     "t": 8.185,
+     "k": "u",
+     "x": "Overlay shall be no more than 3.0 nm in both X and Y.",
+     "n": 1
+    },
+    {
+     "t": 15.824,
+     "k": "o",
+     "x": "down force",
+     "n": 1
+    },
+    {
+     "t": 17.821,
+     "k": "h",
+     "x": "removal rate",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "mansample|매뉴얼 표본 — CMP 장비 개요",
+   "h": "b3399a530b",
+   "sec": 30.7,
+   "cues": [
+    {
+     "t": 4.667,
+     "k": "u",
+     "x": "is held face down by the carrier",
+     "n": 1
+    },
+    {
+     "t": 14.861,
+     "k": "o",
+     "x": "is used to restore the pad surface",
+     "n": 1
+    },
+    {
+     "t": 21.583,
+     "k": "h",
+     "x": "A low sweep rate causes pad glazing and a lower removal rate.",
+     "n": 1
+    },
+    {
+     "t": 28.734,
+     "k": "u",
+     "x": "is stopped by the endpoint system",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "sig": "quiz|확인 퀴즈 (3) — 수동태와 목적",
+   "h": "1f5cfcde8b",
+   "sec": 16.8,
+   "cues": [
+    {
+     "t": 7.21,
+     "k": "o",
+     "x": "by the carrier",
+     "n": 1
+    },
+    {
+     "t": 9.381,
+     "k": "o",
+     "x": "is used to",
+     "n": 1
+    },
+    {
+     "t": 12.33,
+     "k": "o",
+     "x": "by the endpoint system",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "glossary|핵심 용어 (4) — 이온주입",
+   "h": "9008f87868",
+   "sec": 20.7,
+   "cues": [
+    {
+     "t": 1.718,
+     "k": "o",
+     "x": "energy",
+     "n": 1
+    },
+    {
+     "t": 6.548,
+     "k": "o",
+     "x": "beam current",
+     "n": 1
+    },
+    {
+     "t": 10.414,
+     "k": "u",
+     "x": "5.0E15",
+     "n": 1
+    },
+    {
+     "t": 13.433,
+     "k": "h",
+     "x": "in order to reduce channeling",
+     "n": 1
+    },
+    {
+     "t": 19.377,
+     "k": "o",
+     "x": "Faraday cup",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "mansample|매뉴얼 표본 — 이온주입 빔 준비",
+   "h": "23af4ad061",
+   "sec": 33.3,
+   "cues": [
+    {
+     "t": 3.971,
+     "k": "o",
+     "x": "at least 2.0 mA",
+     "n": 1
+    },
+    {
+     "t": 8.557,
+     "k": "u",
+     "x": "in mA or µA",
+     "n": 1
+    },
+    {
+     "t": 17.589,
+     "k": "u",
+     "x": "so that every wafer receives the same dose",
+     "n": 1
+    },
+    {
+     "t": 22.175,
+     "k": "h",
+     "x": "A dose error larger than ±2% shall be treated as a lot hold.",
+     "n": 1
+    },
+    {
+     "t": 30.592,
+     "k": "o",
+     "x": "unless the tool is locked out",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|확인 퀴즈 (4) — 지수 표기와 단위",
+   "h": "f99cf7aed2",
+   "sec": 14.7,
+   "cues": [
+    {
+     "t": 2.264,
+     "k": "o",
+     "x": "4.8E15",
+     "n": 1
+    },
+    {
+     "t": 7.686,
+     "k": "o",
+     "x": "1800 µA",
+     "n": 1
+    },
+    {
+     "t": 13.119,
+     "k": "u",
+     "x": "so that",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "manual|TOOL OVERVIEW SENTENCES — FOUR FAMILIES",
+   "h": "e6cb5b8d57",
+   "sec": 21.3,
+   "cues": [
+    {
+     "t": 3.727,
+     "k": "u",
+     "x": "is vaporized and carried into the chamber by nitrogen",
+     "n": 1
+    },
+    {
+     "t": 9.81,
+     "k": "o",
+     "x": "so that the film thickness is uniform",
+     "n": 1
+    },
+    {
+     "t": 12.121,
+     "k": "o",
+     "x": "is used to keep the removal rate stable",
+     "n": 1
+    },
+    {
+     "t": 15.314,
+     "k": "o",
+     "x": "in order to reduce channeling",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "manual|SPEC SHEET EXCERPT — ONE LINE PER TOOL (교재 예시)",
+   "h": "acb0eb4d95",
+   "sec": 22,
+   "cues": [
+    {
+     "t": 5.561,
+     "k": "u",
+     "x": "within ±3% of the target (1000 Å)",
+     "n": 1
+    },
+    {
+     "t": 9.172,
+     "k": "u",
+     "x": "no more than 3.0 nm in X and Y",
+     "n": 1
+    },
+    {
+     "t": 12.318,
+     "k": "u",
+     "x": "between 2000 and 3000 Å/min",
+     "n": 1
+    },
+    {
+     "t": 16.823,
+     "k": "h",
+     "x": "4.9E15 ~ 5.1E15",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "7ab71f0bb1",
+   "sec": 13,
+   "cues": [
+    {
+     "t": 5.143,
+     "k": "o",
+     "x": "맨 오른쪽 명사(머리)",
+     "n": 1
+    },
+    {
+     "t": 8.162,
+     "k": "u",
+     "x": "of 로 풀어 쓴 영어",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "sim|",
+   "h": "66311fea25",
+   "sec": 16.5,
+   "cues": [
+    {
+     "t": 6.165,
+     "k": "o",
+     "x": "단어와 단위",
+     "n": 1
+    },
+    {
+     "t": 9.567,
+     "k": "h",
+     "x": "같은 DOSE 라도 단위가 다르면 다른 장비입니다.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "sim|",
+   "h": "5bd5ea5945",
+   "sec": 17.3,
+   "cues": [
+    {
+     "t": 8.382,
+     "k": "h",
+     "x": "같은 단위로 바꾼 뒤",
+     "n": 1
+    },
+    {
+     "t": 15.499,
+     "k": "o",
+     "x": "지수 표기(E15)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 25,
+   "sig": "comm|",
+   "h": "dc35e72121",
+   "sec": 29.9,
+   "cues": [
+    {
+     "t": 6.943,
+     "k": "u",
+     "x": "pad conditioner sweep rate low",
+     "n": 1
+    },
+    {
+     "t": 13.828,
+     "k": "o",
+     "x": "What is the removal rate on the last monitor wafer?",
+     "n": 1
+    },
+    {
+     "t": 19.853,
+     "k": "h",
+     "x": "Is the dose on target for this lot?",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "sig": "wrap|정리 — 단어는 바뀌어도 읽는 법은 같다",
+   "h": "c06ddc8ed1",
+   "sec": 29.5,
+   "cues": [
+    {
+     "t": 2.426,
+     "k": "o",
+     "x": "뼈대",
+     "n": 1
+    },
+    {
+     "t": 10.739,
+     "k": "u",
+     "x": "명사 덩어리는 오른쪽부터",
+     "n": 1
+    },
+    {
+     "t": 15.685,
+     "k": "u",
+     "x": "수동태(is held by)",
+     "n": 1
+    },
+    {
+     "t": 20.909,
+     "k": "h",
+     "x": "단위를 맞추고",
+     "n": 1
+    },
+    {
+     "t": 25.449,
+     "k": "o",
+     "x": "Read right to left, check the unit.",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w12": [
+  {
+   "i": 0,
+   "sig": "story|\"확정이야, 추정이야?\"",
+   "h": "5261901f56",
+   "sec": 43.3,
+   "cues": [
+    {
+     "t": 7.57,
+     "k": "h",
+     "x": "BASE PRESSURE HIGH — 4.2E-5 Torr (limit 1.0E-5)",
+     "n": 1
+    },
+    {
+     "t": 14.594,
+     "k": "u",
+     "x": "Possible cause: Vacuum leak at the lid O-ring.",
+     "n": 1
+    },
+    {
+     "t": 25.414,
+     "k": "o",
+     "x": "Is the O-ring leak confirmed, or only suspected?",
+     "n": 1
+    },
+    {
+     "t": 34.598,
+     "k": "u",
+     "x": "A leak at the lid O-ring is suspected. A helium leak check is in progress.",
+     "n": 1
+    },
+    {
+     "t": 41.111,
+     "k": "h",
+     "x": "추정을 확정처럼 쓰는 것",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "37cdfb38ec",
+   "sec": 25.9,
+   "cues": [
+    {
+     "t": 8.533,
+     "k": "u",
+     "x": "알람의 원인 후보가 넷이다.",
+     "n": 1
+    },
+    {
+     "t": 16.997,
+     "k": "o",
+     "x": "확신 confirmed · likely · suspected · ruled out",
+     "n": 1
+    },
+    {
+     "t": 23.186,
+     "k": "h",
+     "x": "확신의 정도를 정확히 적기",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|트러블슈팅 표의 구조 — 증상에서 조치까지",
+   "h": "1d3d60c42d",
+   "sec": 29.6,
+   "cues": [
+    {
+     "t": 5.317,
+     "k": "o",
+     "x": "Symptom(증상)",
+     "n": 1
+    },
+    {
+     "t": 11.099,
+     "k": "o",
+     "x": "Possible Cause(가능한 원인)",
+     "n": 1
+    },
+    {
+     "t": 12.934,
+     "k": "u",
+     "x": "possible 이라는 말 그대로",
+     "n": 1
+    },
+    {
+     "t": 17.066,
+     "k": "o",
+     "x": "Check(확인 방법)",
+     "n": 1
+    },
+    {
+     "t": 24.741,
+     "k": "h",
+     "x": "parts swapping",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|원인 좁히기 — 확인해서 지운다",
+   "h": "3ea084cc65",
+   "sec": 34.1,
+   "cues": [
+    {
+     "t": 8.197,
+     "k": "o",
+     "x": "is ruled out",
+     "n": 1
+    },
+    {
+     "t": 14.733,
+     "k": "o",
+     "x": "was found",
+     "n": 1
+    },
+    {
+     "t": 23.579,
+     "k": "u",
+     "x": "is in progress",
+     "n": 1
+    },
+    {
+     "t": 32.31,
+     "k": "h",
+     "x": "escalate(상부 · 장비사에 올림)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|확신의 정도 — confirmed · likely · suspected · ruled out",
+   "h": "c4efcf72d0",
+   "sec": 47.1,
+   "cues": [
+    {
+     "t": 3.204,
+     "k": "o",
+     "x": "확정(confirmed)",
+     "n": 1
+    },
+    {
+     "t": 9.648,
+     "k": "o",
+     "x": "가능성 높음(likely)",
+     "n": 1
+    },
+    {
+     "t": 20.062,
+     "k": "o",
+     "x": "가능성 있음(possible)",
+     "n": 1
+    },
+    {
+     "t": 26.134,
+     "k": "o",
+     "x": "배제(ruled out)",
+     "n": 1
+    },
+    {
+     "t": 33.542,
+     "k": "u",
+     "x": "원인 보고의 may 는",
+     "n": 1
+    },
+    {
+     "t": 45.442,
+     "k": "h",
+     "x": "증거만큼만",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|원인과 결과의 방향 — caused by ↔ results in",
+   "h": "abb224a7ee",
+   "sec": 34.5,
+   "cues": [
+    {
+     "t": 5.12,
+     "k": "u",
+     "x": "caused by · due to · because of · results from",
+     "n": 1
+    },
+    {
+     "t": 11.029,
+     "k": "u",
+     "x": "results in · leads to",
+     "n": 1
+    },
+    {
+     "t": 19.527,
+     "k": "h",
+     "x": "results in 과 results from",
+     "n": 1
+    },
+    {
+     "t": 25.007,
+     "k": "o",
+     "x": "contribute to",
+     "n": 1
+    },
+    {
+     "t": 30.046,
+     "k": "o",
+     "x": "원인 쪽에 밑줄",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "read|근본 원인과 세 가지 조치 — 5 Why · 8D",
+   "h": "aa4a531e3c",
+   "sec": 32.6,
+   "cues": [
+    {
+     "t": 5.166,
+     "k": "o",
+     "x": "direct cause(직접 원인)",
+     "n": 1
+    },
+    {
+     "t": 8.127,
+     "k": "o",
+     "x": "root cause(근본 원인)",
+     "n": 1
+    },
+    {
+     "t": 14.709,
+     "k": "u",
+     "x": "5 Why",
+     "n": 1
+    },
+    {
+     "t": 18.529,
+     "k": "o",
+     "x": "containment action(임시 조치)",
+     "n": 1
+    },
+    {
+     "t": 22.79,
+     "k": "o",
+     "x": "corrective action(시정 조치)",
+     "n": 1
+    },
+    {
+     "t": 27.155,
+     "k": "h",
+     "x": "preventive action(재발 방지)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "read|SPC 관리도 읽기 — OOC 는 \"규격 밖\"이 아니다",
+   "h": "7cf448e7d5",
+   "sec": 40.4,
+   "cues": [
+    {
+     "t": 8.499,
+     "k": "o",
+     "x": "UCL / LCL(upper / lower control limit)",
+     "n": 1
+    },
+    {
+     "t": 14.466,
+     "k": "o",
+     "x": "spec limit(규격 한계)",
+     "n": 1
+    },
+    {
+     "t": 23.162,
+     "k": "h",
+     "x": "평소와 달라졌다",
+     "n": 1
+    },
+    {
+     "t": 28.131,
+     "k": "u",
+     "x": "OOS(out of spec)",
+     "n": 1
+    },
+    {
+     "t": 34.214,
+     "k": "u",
+     "x": "중심선 한쪽에 8점 연속(run)",
+     "n": 1
+    },
+    {
+     "t": 40.031,
+     "k": "o",
+     "x": "OOC: Rule 2 — 8 points above CL. Tool inhibited.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "acr|약어",
+   "h": "2f45d9d03d",
+   "sec": 13.8,
+   "cues": [
+    {
+     "t": 2.972,
+     "k": "o",
+     "x": "8D",
+     "n": 1
+    },
+    {
+     "t": 5.7,
+     "k": "o",
+     "x": "OOC",
+     "n": 1
+    },
+    {
+     "t": 7.558,
+     "k": "o",
+     "x": "OOS",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "glossary|핵심 용어 (1) — 확신의 정도",
+   "h": "1b29b74971",
+   "sec": 17.6,
+   "cues": [
+    {
+     "t": 2.763,
+     "k": "o",
+     "x": "confirmed",
+     "n": 1
+    },
+    {
+     "t": 3.39,
+     "k": "o",
+     "x": "was found",
+     "n": 1
+    },
+    {
+     "t": 5.457,
+     "k": "o",
+     "x": "most likely",
+     "n": 1
+    },
+    {
+     "t": 7.872,
+     "k": "o",
+     "x": "is suspected",
+     "n": 1
+    },
+    {
+     "t": 11.633,
+     "k": "u",
+     "x": "Turbo pump degradation has been ruled out.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "quiz|확인 퀴즈 (1) — 확신의 정도",
+   "h": "9fb17bed94",
+   "sec": 15.6,
+   "cues": [
+    {
+     "t": 5.759,
+     "k": "o",
+     "x": "most likely",
+     "n": 1
+    },
+    {
+     "t": 9.718,
+     "k": "o",
+     "x": "ruled out",
+     "n": 1
+    },
+    {
+     "t": 12.446,
+     "k": "h",
+     "x": "may",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "glossary|핵심 용어 (2) — 원인과 결과",
+   "h": "5093565703",
+   "sec": 23.2,
+   "cues": [
+    {
+     "t": 5.341,
+     "k": "o",
+     "x": "caused by",
+     "n": 1
+    },
+    {
+     "t": 7.21,
+     "k": "o",
+     "x": "results in",
+     "n": 1
+    },
+    {
+     "t": 10.228,
+     "k": "o",
+     "x": "results from",
+     "n": 1
+    },
+    {
+     "t": 15.093,
+     "k": "u",
+     "x": "Pad glazing results from a low conditioner sweep rate.",
+     "n": 1
+    },
+    {
+     "t": 20.329,
+     "k": "h",
+     "x": "contribute to",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "mansample|매뉴얼 표본 — 트러블슈팅 표",
+   "h": "52ac3d1542",
+   "sec": 31.8,
+   "cues": [
+    {
+     "t": 10.054,
+     "k": "u",
+     "x": "Compare with the second gauge.",
+     "n": 1
+    },
+    {
+     "t": 17.473,
+     "k": "u",
+     "x": "Clean within 12 h and rate of rise decreasing?",
+     "n": 1
+    },
+    {
+     "t": 22.709,
+     "k": "o",
+     "x": "Perform a helium leak check at the lid.",
+     "n": 1
+    },
+    {
+     "t": 28.398,
+     "k": "h",
+     "x": "Do not replace any part until its cause is confirmed.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|확인 퀴즈 (2) — 표로 좁히기",
+   "h": "7c661699d5",
+   "sec": 13.7,
+   "cues": [
+    {
+     "t": 2.345,
+     "k": "u",
+     "x": "두 번째 게이지도 같은 값",
+     "n": 1
+    },
+    {
+     "t": 6.513,
+     "k": "o",
+     "x": "3일 전",
+     "n": 1
+    },
+    {
+     "t": 13.386,
+     "k": "h",
+     "x": "Do not replace any part until its cause is confirmed.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|핵심 용어 (3) — 원인 분석과 조치",
+   "h": "0729ef06c2",
+   "sec": 16.9,
+   "cues": [
+    {
+     "t": 1.916,
+     "k": "o",
+     "x": "root cause",
+     "n": 1
+    },
+    {
+     "t": 7.21,
+     "k": "o",
+     "x": "containment action",
+     "n": 1
+    },
+    {
+     "t": 9.114,
+     "k": "o",
+     "x": "corrective action",
+     "n": 1
+    },
+    {
+     "t": 10.704,
+     "k": "o",
+     "x": "preventive action",
+     "n": 1
+    },
+    {
+     "t": 13.096,
+     "k": "h",
+     "x": "escalate",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "mansample|매뉴얼 표본 — 원인 분석 요약 메일",
+   "h": "4c32b58127",
+   "sec": 30.3,
+   "cues": [
+    {
+     "t": 6.397,
+     "k": "o",
+     "x": "ruled out",
+     "n": 1
+    },
+    {
+     "t": 7.674,
+     "k": "o",
+     "x": "was found",
+     "n": 1
+    },
+    {
+     "t": 13.375,
+     "k": "o",
+     "x": "most likely",
+     "n": 1
+    },
+    {
+     "t": 16.928,
+     "k": "u",
+     "x": "Containment:",
+     "n": 1
+    },
+    {
+     "t": 25.658,
+     "k": "h",
+     "x": "The root cause is not yet confirmed.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "sig": "quiz|확인 퀴즈 (3) — 보고서 읽기",
+   "h": "e520329373",
+   "sec": 14.3,
+   "cues": [
+    {
+     "t": 2.543,
+     "k": "o",
+     "x": "'확정'",
+     "n": 1
+    },
+    {
+     "t": 8.197,
+     "k": "u",
+     "x": "on hold",
+     "n": 1
+    },
+    {
+     "t": 14.013,
+     "k": "h",
+     "x": "The root cause is not yet confirmed.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "glossary|핵심 용어 (4) — 공정 감시(SPC · FDC)",
+   "h": "1c8ffff06f",
+   "sec": 20.6,
+   "cues": [
+    {
+     "t": 1.614,
+     "k": "o",
+     "x": "control limit",
+     "n": 1
+    },
+    {
+     "t": 3.68,
+     "k": "o",
+     "x": "spec limit",
+     "n": 1
+    },
+    {
+     "t": 9.741,
+     "k": "h",
+     "x": "An OOC point does not always mean the wafer is bad.",
+     "n": 1
+    },
+    {
+     "t": 14.779,
+     "k": "o",
+     "x": "run",
+     "n": 1
+    },
+    {
+     "t": 16.347,
+     "k": "o",
+     "x": "trend",
+     "n": 1
+    },
+    {
+     "t": 18.959,
+     "k": "u",
+     "x": "inhibit",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "mansample|매뉴얼 표본 — OOC 대응 절차",
+   "h": "15472f5c43",
+   "sec": 23.3,
+   "cues": [
+    {
+     "t": 4.249,
+     "k": "u",
+     "x": "Rule 1 (beyond a control limit), Rule 2 (run of 8), or Rule 3 (trend of 6)",
+     "n": 1
+    },
+    {
+     "t": 9.52,
+     "k": "o",
+     "x": "An OOC point may still be within the spec limit.",
+     "n": 1
+    },
+    {
+     "t": 17.125,
+     "k": "h",
+     "x": "OOC and OOS are different. Do not scrap wafers for OOC alone.",
+     "n": 1
+    },
+    {
+     "t": 20.701,
+     "k": "u",
+     "x": "Do not clear an OOC alarm without recording the cause.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|확인 퀴즈 (4) — OOC 와 OOS",
+   "h": "e6676187fc",
+   "sec": 12.4,
+   "cues": [
+    {
+     "t": 2.984,
+     "k": "o",
+     "x": "107 nm/min",
+     "n": 1
+    },
+    {
+     "t": 7.314,
+     "k": "u",
+     "x": "Do not scrap wafers for OOC alone.",
+     "n": 1
+    },
+    {
+     "t": 10.194,
+     "k": "h",
+     "x": "8점 연속",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "manual|TROUBLESHOOTING REPORT — WRITE ONLY WHAT YOU KNOW",
+   "h": "b7491599a5",
+   "sec": 24.7,
+   "cues": [
+    {
+     "t": 3.971,
+     "k": "o",
+     "x": "is suspected",
+     "n": 1
+    },
+    {
+     "t": 4.899,
+     "k": "u",
+     "x": "in progress",
+     "n": 1
+    },
+    {
+     "t": 7.593,
+     "k": "o",
+     "x": "was found",
+     "n": 1
+    },
+    {
+     "t": 9.555,
+     "k": "h",
+     "x": "and the leak check passed",
+     "n": 1
+    },
+    {
+     "t": 12.249,
+     "k": "u",
+     "x": "most likely caused by",
+     "n": 1
+    },
+    {
+     "t": 19.11,
+     "k": "o",
+     "x": "has been ruled out",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "manual|SPC RULES FOR THIS COURSE (교재 예시)",
+   "h": "e27960c292",
+   "sec": 23.4,
+   "cues": [
+    {
+     "t": 2.252,
+     "k": "u",
+     "x": "One point beyond the upper or lower control limit.",
+     "n": 1
+    },
+    {
+     "t": 6.258,
+     "k": "u",
+     "x": "Eight points in a row on one side of the center line.",
+     "n": 1
+    },
+    {
+     "t": 10.089,
+     "k": "u",
+     "x": "Six points in a row steadily increasing or decreasing.",
+     "n": 1
+    },
+    {
+     "t": 19.4,
+     "k": "h",
+     "x": "An OOC point is a signal to investigate, not proof of a bad wafer.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "61591520c0",
+   "sec": 12.1,
+   "cues": [
+    {
+     "t": 4.737,
+     "k": "u",
+     "x": "확정(confirmed) · 가능성 높음(likely) · 가능성 있음(possible) · 배제(ruled out)",
+     "n": 1
+    },
+    {
+     "t": 7.814,
+     "k": "h",
+     "x": "확신 표현",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "sim|",
+   "h": "50b2464d9d",
+   "sec": 14.4,
+   "cues": [
+    {
+     "t": 4.284,
+     "k": "o",
+     "x": "배제 · 확정 · 미확인",
+     "n": 1
+    },
+    {
+     "t": 11.389,
+     "k": "h",
+     "x": "\"확인이 더 필요하다\"",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "sim|",
+   "h": "25fdce22b5",
+   "sec": 10.9,
+   "cues": [
+    {
+     "t": 2.81,
+     "k": "u",
+     "x": "이상 없음 · Rule 1(한계 밖) · Rule 2(8점 쏠림) · Rule 3(6점 추세)",
+     "n": 1
+    },
+    {
+     "t": 6.757,
+     "k": "h",
+     "x": "규격 안인지",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 25,
+   "sig": "comm|",
+   "h": "14367bcf3c",
+   "sec": 23.7,
+   "cues": [
+    {
+     "t": 4.598,
+     "k": "o",
+     "x": "Is the O-ring leak confirmed, or only suspected?",
+     "n": 1
+    },
+    {
+     "t": 12.074,
+     "k": "u",
+     "x": "What was the cause, and what did you do?",
+     "n": 1
+    },
+    {
+     "t": 18.425,
+     "k": "h",
+     "x": "Are the wafers bad?",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "sig": "wrap|정리 — 증거만큼만 쓴다",
+   "h": "b4ebd8a475",
+   "sec": 25.3,
+   "cues": [
+    {
+     "t": 3.03,
+     "k": "u",
+     "x": "Symptom → Possible Cause → Check → Corrective Action",
+     "n": 1
+    },
+    {
+     "t": 10.426,
+     "k": "o",
+     "x": "허용이 아니라 가능성",
+     "n": 1
+    },
+    {
+     "t": 13.166,
+     "k": "u",
+     "x": "results in · leads to 는 앞이 원인",
+     "n": 1
+    },
+    {
+     "t": 17.182,
+     "k": "h",
+     "x": "OOC 는 평소와 달라졌다는 신호",
+     "n": 1
+    },
+    {
+     "t": 22.813,
+     "k": "o",
+     "x": "Write only what you know.",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w13": [
+  {
+   "i": 0,
+   "sig": "story|\"Did you say fifteen or fifty?\"",
+   "h": "2c0625fb86",
+   "sec": 35.8,
+   "cues": [
+    {
+     "t": 12.841,
+     "k": "u",
+     "x": "Set the reflected power limit to fifteen watts, then restart the match.",
+     "n": 1
+    },
+    {
+     "t": 15.755,
+     "k": "h",
+     "x": "fifteen 이었나, fifty 였나?",
+     "n": 1
+    },
+    {
+     "t": 20.968,
+     "k": "o",
+     "x": "Sorry, did you say fifteen or fifty?",
+     "n": 1
+    },
+    {
+     "t": 23.951,
+     "k": "u",
+     "x": "Let me read that back: reflected power limit, one-five watts, then restart the match.",
+     "n": 1
+    },
+    {
+     "t": 26.541,
+     "k": "o",
+     "x": "Kilo X-ray, four zero seven one, Bravo?",
+     "n": 1
+    },
+    {
+     "t": 33.82,
+     "k": "h",
+     "x": "틀리지 않게 확인하는 기술",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "d0004be1e3",
+   "sec": 26.8,
+   "cues": [
+    {
+     "t": 11.773,
+     "k": "h",
+     "x": "숫자 하나, 글자 하나가 틀리면",
+     "n": 1
+    },
+    {
+     "t": 19.482,
+     "k": "o",
+     "x": "되읽기 Let me read that back.",
+     "n": 1
+    },
+    {
+     "t": 23.186,
+     "k": "u",
+     "x": "한 번에 알아듣게 쓰고",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|벤더와 일하는 세 가지 길 — 티켓 · 통화 · 메일",
+   "h": "9f1d280d40",
+   "sec": 35.5,
+   "cues": [
+    {
+     "t": 2.914,
+     "k": "o",
+     "x": "Ticket / Service Request(SR)",
+     "n": 1
+    },
+    {
+     "t": 6.687,
+     "k": "u",
+     "x": "SR-20618",
+     "n": 2
+    },
+    {
+     "t": 13.746,
+     "k": "h",
+     "x": "되묻고 되읽는 것",
+     "n": 1
+    },
+    {
+     "t": 24.241,
+     "k": "u",
+     "x": "Could you send an FSE on site?",
+     "n": 1
+    },
+    {
+     "t": 32.403,
+     "k": "o",
+     "x": "suspected",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|티켓 제목 한 줄 — 장비 · 증상 · 시각 · 영향",
+   "h": "8c3b50e288",
+   "sec": 37.7,
+   "cues": [
+    {
+     "t": 7.523,
+     "k": "h",
+     "x": "Tool ID | Symptom | Since when | Impact",
+     "n": 1
+    },
+    {
+     "t": 11.807,
+     "k": "o",
+     "x": "URGENT!!! HELP",
+     "n": 1
+    },
+    {
+     "t": 20.527,
+     "k": "o",
+     "x": "Severity(긴급도)",
+     "n": 1
+    },
+    {
+     "t": 26.936,
+     "k": "u",
+     "x": "사실로 정한다",
+     "n": 1
+    },
+    {
+     "t": 36.119,
+     "k": "h",
+     "x": "사실만큼만",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|통화의 영어 — 되묻기와 되읽기",
+   "h": "5ef4a4f8bd",
+   "sec": 29.3,
+   "cues": [
+    {
+     "t": 2.879,
+     "k": "o",
+     "x": "Sorry, could you repeat that?",
+     "n": 1
+    },
+    {
+     "t": 9.729,
+     "k": "o",
+     "x": "Did you say fifteen or fifty?",
+     "n": 1
+    },
+    {
+     "t": 14.257,
+     "k": "u",
+     "x": "Just to confirm",
+     "n": 1
+    },
+    {
+     "t": 20.004,
+     "k": "h",
+     "x": "Let me read that back:",
+     "n": 1
+    },
+    {
+     "t": 26.18,
+     "k": "u",
+     "x": "I will call you back by 04:00",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|숫자와 글자 읽어 주기 — one-five · Bravo · point",
+   "h": "0b70901b3b",
+   "sec": 35.3,
+   "cues": [
+    {
+     "t": 3.379,
+     "k": "o",
+     "x": "fifteen(15) 과 fifty(50)",
+     "n": 1
+    },
+    {
+     "t": 7.21,
+     "k": "h",
+     "x": "one-five",
+     "n": 2
+    },
+    {
+     "t": 10.867,
+     "k": "o",
+     "x": "0 은 zero",
+     "n": 1
+    },
+    {
+     "t": 17.821,
+     "k": "u",
+     "x": "E minus",
+     "n": 2
+    },
+    {
+     "t": 26.54,
+     "k": "h",
+     "x": "Bravo · Delta · Papa · Victor · Echo · Golf",
+     "n": 1
+    },
+    {
+     "t": 35.004,
+     "k": "u",
+     "x": "Kilo X-ray, four zero seven one, Bravo",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "read|부품 요청과 반송 — P/N · lead time · RMA",
+   "h": "773697c344",
+   "sec": 31.9,
+   "cues": [
+    {
+     "t": 4.644,
+     "k": "u",
+     "x": "P/N KX-4071-B, Qty 1, for ET-05",
+     "n": 1
+    },
+    {
+     "t": 13.723,
+     "k": "o",
+     "x": "lead time(납기)",
+     "n": 1
+    },
+    {
+     "t": 17.16,
+     "k": "h",
+     "x": "Is there a local stock or a loaner?",
+     "n": 1
+    },
+    {
+     "t": 21.525,
+     "k": "o",
+     "x": "RMA(Return Material Authorization)",
+     "n": 1
+    },
+    {
+     "t": 28.41,
+     "k": "u",
+     "x": "FA(Failure Analysis) request",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "read|정중하게 재촉하기 — 요청의 사다리와 에스컬레이션",
+   "h": "4c521c19af",
+   "sec": 30.6,
+   "cues": [
+    {
+     "t": 5.817,
+     "k": "u",
+     "x": "check the status of SR-20618?",
+     "n": 1
+    },
+    {
+     "t": 9.601,
+     "k": "o",
+     "x": "We need the part by Nov 10 because the tool is down.",
+     "n": 1
+    },
+    {
+     "t": 15.603,
+     "k": "h",
+     "x": "Could we escalate this to Level 2 support?",
+     "n": 1
+    },
+    {
+     "t": 23.138,
+     "k": "o",
+     "x": "ASAP!!!",
+     "n": 1
+    },
+    {
+     "t": 28.735,
+     "k": "u",
+     "x": "영향(멈춘 시간 · 대기 lot 수 · 기한)을 숫자로",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "acr|약어",
+   "h": "2da17215e6",
+   "sec": 18.6,
+   "cues": [
+    {
+     "t": 2.972,
+     "k": "o",
+     "x": "SR",
+     "n": 1
+    },
+    {
+     "t": 5.12,
+     "k": "o",
+     "x": "RMA",
+     "n": 1
+    },
+    {
+     "t": 8.208,
+     "k": "o",
+     "x": "KST",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "glossary|핵심 용어 (1) — 통화에서 확인하기",
+   "h": "d1cc70c87f",
+   "sec": 15.5,
+   "cues": [
+    {
+     "t": 4.342,
+     "k": "o",
+     "x": "Could you repeat that?",
+     "n": 1
+    },
+    {
+     "t": 5.84,
+     "k": "o",
+     "x": "Did you say … or …?",
+     "n": 1
+    },
+    {
+     "t": 8.255,
+     "k": "o",
+     "x": "Let me read that back",
+     "n": 1
+    },
+    {
+     "t": 10.321,
+     "k": "u",
+     "x": "That's correct / Negative",
+     "n": 1
+    },
+    {
+     "t": 13.247,
+     "k": "h",
+     "x": "call you back",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "quiz|확인 퀴즈 (1) — 통화에서 확인하기",
+   "h": "065acb62e0",
+   "sec": 14.5,
+   "cues": [
+    {
+     "t": 2.241,
+     "k": "u",
+     "x": "'Set the limit to fif…'",
+     "n": 1
+    },
+    {
+     "t": 12.132,
+     "k": "o",
+     "x": "Negative, one-five.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "glossary|핵심 용어 (2) — 숫자와 글자 읽기",
+   "h": "4d4f6ec569",
+   "sec": 15.2,
+   "cues": [
+    {
+     "t": 2.159,
+     "k": "o",
+     "x": "one-five",
+     "n": 1
+    },
+    {
+     "t": 4.586,
+     "k": "o",
+     "x": "zero",
+     "n": 1
+    },
+    {
+     "t": 6.687,
+     "k": "o",
+     "x": "E minus",
+     "n": 2
+    },
+    {
+     "t": 9.938,
+     "k": "h",
+     "x": "Bravo / Delta",
+     "n": 1
+    },
+    {
+     "t": 11.122,
+     "k": "h",
+     "x": "Mike / November",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "mansample|매뉴얼 표본 — 헷갈리는 글자와 음성 기호",
+   "h": "8b638cffac",
+   "sec": 22.8,
+   "cues": [
+    {
+     "t": 6.002,
+     "k": "o",
+     "x": "Bravo · Delta · Papa · Victor",
+     "n": 1
+    },
+    {
+     "t": 8.394,
+     "k": "o",
+     "x": "Mike · November",
+     "n": 1
+    },
+    {
+     "t": 10.031,
+     "k": "o",
+     "x": "Foxtrot · Sierra",
+     "n": 1
+    },
+    {
+     "t": 20.782,
+     "k": "h",
+     "x": "Then ask the other person to read them back.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|확인 퀴즈 (2) — 번호 불러 주기",
+   "h": "c3bc108465",
+   "sec": 10.6,
+   "cues": [
+    {
+     "t": 2.624,
+     "k": "o",
+     "x": "KX-4071-B",
+     "n": 1
+    },
+    {
+     "t": 5.399,
+     "k": "o",
+     "x": "SR-20618",
+     "n": 1
+    },
+    {
+     "t": 7.477,
+     "k": "h",
+     "x": "E minus",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|핵심 용어 (3) — 티켓과 메일",
+   "h": "13c9d55a68",
+   "sec": 17.6,
+   "cues": [
+    {
+     "t": 1.405,
+     "k": "o",
+     "x": "severity",
+     "n": 1
+    },
+    {
+     "t": 3.297,
+     "k": "o",
+     "x": "workaround",
+     "n": 1
+    },
+    {
+     "t": 9.973,
+     "k": "o",
+     "x": "impact",
+     "n": 1
+    },
+    {
+     "t": 13.34,
+     "k": "u",
+     "x": "We need … by …",
+     "n": 1
+    },
+    {
+     "t": 16.614,
+     "k": "h",
+     "x": "escalate",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "mansample|매뉴얼 표본 — 서비스 요청 메일",
+   "h": "4814d972c7",
+   "sec": 24.6,
+   "cues": [
+    {
+     "t": 3.111,
+     "k": "h",
+     "x": "SR-20618 | ET-05 | Base pressure high since 23:05 | Tool down (S1)",
+     "n": 1
+    },
+    {
+     "t": 9.741,
+     "k": "u",
+     "x": "What happened:",
+     "n": 1
+    },
+    {
+     "t": 13.27,
+     "k": "o",
+     "x": "ruled out",
+     "n": 1
+    },
+    {
+     "t": 13.77,
+     "k": "o",
+     "x": "suspected",
+     "n": 1
+    },
+    {
+     "t": 16.103,
+     "k": "u",
+     "x": "Could you send an FSE",
+     "n": 1
+    },
+    {
+     "t": 20.898,
+     "k": "o",
+     "x": "by 06:00 KST",
+     "n": 1
+    },
+    {
+     "t": 23.255,
+     "k": "u",
+     "x": "Attached:",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "sig": "quiz|확인 퀴즈 (3) — 메일 읽기",
+   "h": "69a55c5ddf",
+   "sec": 12.5,
+   "cues": [
+    {
+     "t": 2.043,
+     "k": "u",
+     "x": "들어 있지 않은 것은?",
+     "n": 1
+    },
+    {
+     "t": 4.029,
+     "k": "o",
+     "x": "suspected",
+     "n": 1
+    },
+    {
+     "t": 7.93,
+     "k": "h",
+     "x": "S1 인 근거",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "glossary|핵심 용어 (4) — 부품과 반송",
+   "h": "de4e9a502a",
+   "sec": 17.4,
+   "cues": [
+    {
+     "t": 2.577,
+     "k": "o",
+     "x": "part number (P/N)",
+     "n": 1
+    },
+    {
+     "t": 6.56,
+     "k": "o",
+     "x": "lead time",
+     "n": 1
+    },
+    {
+     "t": 8.998,
+     "k": "o",
+     "x": "loaner",
+     "n": 1
+    },
+    {
+     "t": 12.434,
+     "k": "h",
+     "x": "RMA number",
+     "n": 1
+    },
+    {
+     "t": 15.29,
+     "k": "u",
+     "x": "under warranty",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "mansample|매뉴얼 표본 — 부품 반송(RMA) 절차",
+   "h": "0c090b7f42",
+   "sec": 26.4,
+   "cues": [
+    {
+     "t": 3.773,
+     "k": "u",
+     "x": "Request an RMA number through the support portal before shipping.",
+     "n": 1
+    },
+    {
+     "t": 7.314,
+     "k": "h",
+     "x": "Parts returned without an RMA number will be refused.",
+     "n": 1
+    },
+    {
+     "t": 13.584,
+     "k": "o",
+     "x": "Contaminated parts shall not be shipped without it.",
+     "n": 1
+    },
+    {
+     "t": 19.458,
+     "k": "u",
+     "x": "write the RMA number on the outside of the box",
+     "n": 1
+    },
+    {
+     "t": 23.347,
+     "k": "o",
+     "x": "Return the failed part within 30 days, or you may be charged for the replacement.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|확인 퀴즈 (4) — 반송 절차",
+   "h": "43ef22ff1f",
+   "sec": 8.4,
+   "cues": [
+    {
+     "t": 2.183,
+     "k": "o",
+     "x": "RMA 번호를 받기 전에",
+     "n": 1
+    },
+    {
+     "t": 4.574,
+     "k": "u",
+     "x": "공정 가스에 노출된",
+     "n": 1
+    },
+    {
+     "t": 6.676,
+     "k": "h",
+     "x": "within 30 days",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "manual|REMOTE SUPPORT CALL — A SAFE SCRIPT",
+   "h": "5439966965",
+   "sec": 19.9,
+   "cues": [
+    {
+     "t": 3.483,
+     "k": "u",
+     "x": "I am calling about SR-20618, ET-05.",
+     "n": 1
+    },
+    {
+     "t": 7.477,
+     "k": "o",
+     "x": "Sorry, did you say fifteen or fifty?",
+     "n": 1
+    },
+    {
+     "t": 9.845,
+     "k": "h",
+     "x": "Let me read that back: reflected power limit, one-five watts, then restart the match.",
+     "n": 1
+    },
+    {
+     "t": 17.566,
+     "k": "u",
+     "x": "I will call you back by 04:00 KST.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "manual|TICKET SEVERITY — HOW TO CHOOSE (교재 예시)",
+   "h": "b5a8791553",
+   "sec": 18.7,
+   "cues": [
+    {
+     "t": 3.483,
+     "k": "u",
+     "x": "S1: The tool is down, and there is no workaround.",
+     "n": 1
+    },
+    {
+     "t": 5.422,
+     "k": "u",
+     "x": "S2: The tool is down but a workaround exists, or wafers are at risk.",
+     "n": 1
+    },
+    {
+     "t": 10.368,
+     "k": "u",
+     "x": "S3: The tool is running, and there is no risk to wafers.",
+     "n": 1
+    },
+    {
+     "t": 12.829,
+     "k": "u",
+     "x": "S4: A question or a request for documents.",
+     "n": 1
+    },
+    {
+     "t": 16.591,
+     "k": "h",
+     "x": "실제 정의는 장비사와의 계약(SLA)을 따른다",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "fe32ae41d7",
+   "sec": 13.2,
+   "cues": [
+    {
+     "t": 5.677,
+     "k": "o",
+     "x": "S1 · S2 · S3 · S4",
+     "n": 1
+    },
+    {
+     "t": 8.406,
+     "k": "h",
+     "x": "세 가지 사실",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "sim|",
+   "h": "b3073e90b9",
+   "sec": 13.4,
+   "cues": [
+    {
+     "t": 5.445,
+     "k": "o",
+     "x": "되읽기(read back)",
+     "n": 1
+    },
+    {
+     "t": 9.787,
+     "k": "h",
+     "x": "한 자리씩",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "sim|",
+   "h": "c22f89cc3a",
+   "sec": 10.9,
+   "cues": [
+    {
+     "t": 2.844,
+     "k": "u",
+     "x": "제목 · 인사 · 사실 · 확인한 것 · 요청 · 영향과 기한 · 맺음",
+     "n": 1
+    },
+    {
+     "t": 5.352,
+     "k": "h",
+     "x": "지원팀이 한 번에 알아듣는",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 25,
+   "sig": "comm|",
+   "h": "405ea11419",
+   "sec": 23.8,
+   "cues": [
+    {
+     "t": 4.888,
+     "k": "u",
+     "x": "Set the reflected power limit to fifteen watts, then restart the match.",
+     "n": 1
+    },
+    {
+     "t": 9.195,
+     "k": "o",
+     "x": "The replacement part is K X four zero seven one B.",
+     "n": 1
+    },
+    {
+     "t": 16.196,
+     "k": "h",
+     "x": "We are still analyzing the logs. We will get back to you.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "sig": "wrap|정리 — 한 번에 알아듣게, 틀리지 않게",
+   "h": "a20394c02c",
+   "sec": 19.9,
+   "cues": [
+    {
+     "t": 2.415,
+     "k": "u",
+     "x": "Tool ID | Symptom | Since when | Impact",
+     "n": 1
+    },
+    {
+     "t": 8.568,
+     "k": "o",
+     "x": "Let me read that back.",
+     "n": 1
+    },
+    {
+     "t": 10.077,
+     "k": "o",
+     "x": "one-five",
+     "n": 1
+    },
+    {
+     "t": 14.176,
+     "k": "h",
+     "x": "영향을 숫자로",
+     "n": 1
+    },
+    {
+     "t": 17.067,
+     "k": "o",
+     "x": "Say it once, read it back.",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w14": [
+  {
+   "i": 0,
+   "sig": "story|야간 근무 인계, 영어 리포트 한 장",
+   "h": "7c2f2689f2",
+   "sec": 36.2,
+   "cues": [
+    {
+     "t": 14.384,
+     "k": "o",
+     "x": "Problem:",
+     "n": 1
+    },
+    {
+     "t": 15.093,
+     "k": "o",
+     "x": "Cause:",
+     "n": 1
+    },
+    {
+     "t": 15.789,
+     "k": "o",
+     "x": "Action:",
+     "n": 1
+    },
+    {
+     "t": 16.509,
+     "k": "o",
+     "x": "Result:",
+     "n": 1
+    },
+    {
+     "t": 20.027,
+     "k": "h",
+     "x": "problem–cause–action–result",
+     "n": 1
+    },
+    {
+     "t": 27.736,
+     "k": "u",
+     "x": "안전 경보, 레시피 변경, 트러블슈팅의 확신 표현, 벤더 티켓",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "550d81c3e2",
+   "sec": 20.3,
+   "cues": [
+    {
+     "t": 8.858,
+     "k": "o",
+     "x": "PASSDOWN LOG",
+     "n": 1
+    },
+    {
+     "t": 12.167,
+     "k": "o",
+     "x": "SIGN OFF",
+     "n": 1
+    },
+    {
+     "t": 16.765,
+     "k": "h",
+     "x": "장비 이상 → 원인 확인 → 벤더 요청 → 인계",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "read|현장 보고의 뼈대: Problem–Cause–Action–Result",
+   "h": "bd79e10509",
+   "sec": 30.7,
+   "cues": [
+    {
+     "t": 3.529,
+     "k": "o",
+     "x": "Problem (문제)",
+     "n": 1
+    },
+    {
+     "t": 8.603,
+     "k": "o",
+     "x": "Cause (원인)",
+     "n": 1
+    },
+    {
+     "t": 16.01,
+     "k": "u",
+     "x": "원인이 '확정(confirmed)'인지 '추정(suspected)'인지 단어로 구분해야 한다",
+     "n": 1
+    },
+    {
+     "t": 19.401,
+     "k": "o",
+     "x": "Action (조치)",
+     "n": 1
+    },
+    {
+     "t": 24.811,
+     "k": "o",
+     "x": "Result (결과)",
+     "n": 1
+    },
+    {
+     "t": 28.329,
+     "k": "h",
+     "x": "구두 보고에서 가장 먼저 말해야 할 정보",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "read|상태·심각도를 나타내는 영어 신호어",
+   "h": "69f9adcb49",
+   "sec": 25.2,
+   "cues": [
+    {
+     "t": 4.005,
+     "k": "o",
+     "x": "UP",
+     "n": 1
+    },
+    {
+     "t": 4.458,
+     "k": "o",
+     "x": "DOWN",
+     "n": 1
+    },
+    {
+     "t": 5.016,
+     "k": "o",
+     "x": "IDLE",
+     "n": 1
+    },
+    {
+     "t": 11.134,
+     "k": "u",
+     "x": "Critical > Major > Minor",
+     "n": 1
+    },
+    {
+     "t": 16.405,
+     "k": "h",
+     "x": "temporary fix / workaround",
+     "n": 1
+    },
+    {
+     "t": 19.842,
+     "k": "o",
+     "x": "pending",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "read|장비·공정·벤더를 아우르는 종합 보고",
+   "h": "4d67727d61",
+   "sec": 36,
+   "cues": [
+    {
+     "t": 7.465,
+     "k": "o",
+     "x": "안전·변경·지원 측(safety/change/vendor)",
+     "n": 1
+    },
+    {
+     "t": 20.457,
+     "k": "h",
+     "x": "12강의 확신 표현을 그대로 쓴다",
+     "n": 1
+    },
+    {
+     "t": 31.313,
+     "k": "o",
+     "x": "impact",
+     "n": 1
+    },
+    {
+     "t": 31.986,
+     "k": "o",
+     "x": "follow-up owner",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "read|교대 인수인계 로그 — 짧게 끊어 쓴 과거형",
+   "h": "40c6d4feac",
+   "sec": 26.1,
+   "cues": [
+    {
+     "t": 9.636,
+     "k": "u",
+     "x": "Found leak on Chamber B, replaced O-ring, tool back up.",
+     "n": 1
+    },
+    {
+     "t": 14.675,
+     "k": "u",
+     "x": "Etcher 3 still down, waiting on the part, escalated to the vendor.",
+     "n": 1
+    },
+    {
+     "t": 22.221,
+     "k": "h",
+     "x": "무엇을 발견 → 무엇을 조치 → 지금 상태",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "acr|약어",
+   "h": "d7bd98eaeb",
+   "sec": 16.4,
+   "cues": [
+    {
+     "t": 4.098,
+     "k": "o",
+     "x": "ECN",
+     "n": 1
+    },
+    {
+     "t": 7.152,
+     "k": "o",
+     "x": "SR",
+     "n": 1
+    },
+    {
+     "t": 12.504,
+     "k": "o",
+     "x": "ETA",
+     "n": 1
+    },
+    {
+     "t": 14.106,
+     "k": "o",
+     "x": "NTF",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "glossary|보고 동사·상태 어휘 (1)",
+   "h": "7326d9eb66",
+   "sec": 18.3,
+   "cues": [
+    {
+     "t": 2.694,
+     "k": "o",
+     "x": "abort",
+     "n": 1
+    },
+    {
+     "t": 4.214,
+     "k": "o",
+     "x": "isolate",
+     "n": 1
+    },
+    {
+     "t": 9.149,
+     "k": "o",
+     "x": "escalate",
+     "n": 1
+    },
+    {
+     "t": 12.399,
+     "k": "h",
+     "x": "quarantine",
+     "n": 1
+    },
+    {
+     "t": 16.753,
+     "k": "o",
+     "x": "recover",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "sig": "mansample|매뉴얼 표본 — 인수인계 로그 작성",
+   "h": "cfe46680c4",
+   "sec": 13.6,
+   "cues": [
+    {
+     "t": 4.122,
+     "k": "u",
+     "x": "State the tool status (UP / DOWN)",
+     "n": 1
+    },
+    {
+     "t": 6.85,
+     "k": "u",
+     "x": "List parts on order with an",
+     "n": 1
+    },
+    {
+     "t": 11.714,
+     "k": "h",
+     "x": "Sign off and hand over to the next shift.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "sig": "quiz|읽고 판단하기 (1)",
+   "h": "e772307bcd",
+   "sec": 7.9,
+   "cues": [
+    {
+     "t": 1.451,
+     "k": "o",
+     "x": "pending PM",
+     "n": 1
+    },
+    {
+     "t": 3.216,
+     "k": "o",
+     "x": "Root cause traced to",
+     "n": 1
+    },
+    {
+     "t": 5.898,
+     "k": "h",
+     "x": "temporary workaround",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "sig": "glossary|보고 동사·상태 어휘 (2)",
+   "h": "5b8cac6b98",
+   "sec": 18,
+   "cues": [
+    {
+     "t": 2.276,
+     "k": "o",
+     "x": "spike",
+     "n": 1
+    },
+    {
+     "t": 4.725,
+     "k": "o",
+     "x": "drift",
+     "n": 1
+    },
+    {
+     "t": 13.944,
+     "k": "o",
+     "x": "trigger",
+     "n": 1
+    },
+    {
+     "t": 16.846,
+     "k": "h",
+     "x": "yield loss",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "sig": "quiz|읽고 판단하기 (2)",
+   "h": "6d5b8ec049",
+   "sec": 10.9,
+   "cues": [
+    {
+     "t": 1.474,
+     "k": "o",
+     "x": "drifted out of spec over three lots",
+     "n": 1
+    },
+    {
+     "t": 5.016,
+     "k": "o",
+     "x": "triggered the safety interlock",
+     "n": 1
+    },
+    {
+     "t": 8.162,
+     "k": "h",
+     "x": "가장 먼저 전할 핵심",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "sig": "glossary|보고서 구조·화면 어휘 (3)",
+   "h": "0f5b141906",
+   "sec": 15.6,
+   "cues": [
+    {
+     "t": 4.214,
+     "k": "u",
+     "x": "Waiting on parts, ETA tomorrow",
+     "n": 1
+    },
+    {
+     "t": 7.43,
+     "k": "o",
+     "x": "impact",
+     "n": 1
+    },
+    {
+     "t": 11.703,
+     "k": "o",
+     "x": "follow-up",
+     "n": 1
+    },
+    {
+     "t": 14.083,
+     "k": "h",
+     "x": "on hold",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "sig": "quiz|읽고 판단하기 (3)",
+   "h": "33c64bbd86",
+   "sec": 5.9,
+   "cues": [
+    {
+     "t": 1.474,
+     "k": "o",
+     "x": "Impact: two lots affected",
+     "n": 1
+    },
+    {
+     "t": 3.111,
+     "k": "o",
+     "x": "Acknowledge alarm before resuming",
+     "n": 1
+    },
+    {
+     "t": 4.354,
+     "k": "u",
+     "x": "complete PM by 12:00",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "sig": "glossary|2부를 묶는 보고 어휘 (4) — 확신 · 잠금 · 변경 · 벤더",
+   "h": "16efbd9634",
+   "sec": 28.2,
+   "cues": [
+    {
+     "t": 6.687,
+     "k": "o",
+     "x": "suspected / confirmed",
+     "n": 1
+    },
+    {
+     "t": 10.588,
+     "k": "o",
+     "x": "ruled out",
+     "n": 1
+    },
+    {
+     "t": 12.968,
+     "k": "o",
+     "x": "locked out",
+     "n": 1
+    },
+    {
+     "t": 17.38,
+     "k": "u",
+     "x": "do not remove the tag",
+     "n": 1
+    },
+    {
+     "t": 19.168,
+     "k": "o",
+     "x": "ECN pending",
+     "n": 1
+    },
+    {
+     "t": 22.535,
+     "k": "o",
+     "x": "OOC, in spec",
+     "n": 1
+    },
+    {
+     "t": 25.844,
+     "k": "h",
+     "x": "SR open",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "sig": "quiz|읽고 판단하기 (4)",
+   "h": "c73106e8a2",
+   "sec": 13.1,
+   "cues": [
+    {
+     "t": 2.624,
+     "k": "o",
+     "x": "is suspected",
+     "n": 1
+    },
+    {
+     "t": 6.42,
+     "k": "o",
+     "x": "locked out by J. Lee",
+     "n": 1
+    },
+    {
+     "t": 11.25,
+     "k": "h",
+     "x": "all points are within spec",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "sig": "manual|SHIFT HANDOVER REPORT — READING GUIDE",
+   "h": "096fb886fd",
+   "sec": 22.4,
+   "cues": [
+    {
+     "t": 2.554,
+     "k": "o",
+     "x": "PROBLEM:",
+     "n": 1
+    },
+    {
+     "t": 5.155,
+     "k": "o",
+     "x": "CAUSE:",
+     "n": 1
+    },
+    {
+     "t": 7.221,
+     "k": "h",
+     "x": "Confirmed by valve position log.",
+     "n": 1
+    },
+    {
+     "t": 11.935,
+     "k": "o",
+     "x": "ACTION:",
+     "n": 1
+    },
+    {
+     "t": 16.579,
+     "k": "o",
+     "x": "RESULT:",
+     "n": 1
+    },
+    {
+     "t": 17.392,
+     "k": "u",
+     "x": "Chamber A placed DOWN, pending PM.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "sig": "manual|WORK INSTRUCTION — WHEN YOU RECEIVE A DOWN REPORT",
+   "h": "2ef5465e14",
+   "sec": 22.1,
+   "cues": [
+    {
+     "t": 5.166,
+     "k": "o",
+     "x": "must not be run",
+     "n": 1
+    },
+    {
+     "t": 7.024,
+     "k": "u",
+     "x": "even if the alarm has cleared on the HMI",
+     "n": 1
+    },
+    {
+     "t": 12.806,
+     "k": "h",
+     "x": "temporary workaround applied",
+     "n": 1
+    },
+    {
+     "t": 18.75,
+     "k": "u",
+     "x": "without written engineering approval",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "sig": "manual|NIGHT SHIFT PASSDOWN LOG (raw)",
+   "h": "c81d14b2b1",
+   "sec": 18.1,
+   "cues": [
+    {
+     "t": 5.445,
+     "k": "u",
+     "x": "Unscheduled down at 02:10.",
+     "n": 1
+    },
+    {
+     "t": 6.641,
+     "k": "o",
+     "x": "NTF after re-tune.",
+     "n": 1
+    },
+    {
+     "t": 8.487,
+     "k": "u",
+     "x": "Tool back up 03:05.",
+     "n": 1
+    },
+    {
+     "t": 10.252,
+     "k": "o",
+     "x": "Placed down pending PM.",
+     "n": 1
+    },
+    {
+     "t": 14.211,
+     "k": "h",
+     "x": "Escalated to vendor.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 19,
+   "sig": "quiz|인수인계 로그 읽기 — 판단",
+   "h": "6926f6ea93",
+   "sec": 9.1,
+   "cues": [
+    {
+     "t": 2.159,
+     "k": "o",
+     "x": "still down, waiting on the part",
+     "n": 1
+    },
+    {
+     "t": 4.632,
+     "k": "o",
+     "x": "NTF after re-tune",
+     "n": 1
+    },
+    {
+     "t": 5.921,
+     "k": "o",
+     "x": "Placed down pending PM",
+     "n": 1
+    },
+    {
+     "t": 7.558,
+     "k": "h",
+     "x": "3조각 순서",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "sig": "sim|",
+   "h": "ebf36461e6",
+   "sec": 8.5,
+   "cues": [
+    {
+     "t": 3.994,
+     "k": "o",
+     "x": "상태 배너(UP/DOWN/IDLE)",
+     "n": 1
+    },
+    {
+     "t": 6.885,
+     "k": "h",
+     "x": "'가동 가능한지'",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 21,
+   "sig": "sim|",
+   "h": "7670b34cc1",
+   "sec": 19.6,
+   "cues": [
+    {
+     "t": 4.888,
+     "k": "o",
+     "x": "Critical",
+     "n": 1
+    },
+    {
+     "t": 5.793,
+     "k": "o",
+     "x": "Minor",
+     "n": 1
+    },
+    {
+     "t": 8.139,
+     "k": "u",
+     "x": "안전 위험 · 생산 정지 · 규격 이탈 웨이퍼",
+     "n": 1
+    },
+    {
+     "t": 18.042,
+     "k": "h",
+     "x": "Problem",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "sig": "sim|",
+   "h": "0883bb0355",
+   "sec": 11.3,
+   "cues": [
+    {
+     "t": 3.576,
+     "k": "o",
+     "x": "Problem / Cause / Action / Result",
+     "n": 1
+    },
+    {
+     "t": 5.886,
+     "k": "h",
+     "x": "한 문장으로 요약",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 23,
+   "sig": "comm|",
+   "h": "2d7799cb6a",
+   "sec": 19.1,
+   "cues": [
+    {
+     "t": 3.82,
+     "k": "u",
+     "x": "Can you give me a quick summary",
+     "n": 1
+    },
+    {
+     "t": 12.19,
+     "k": "o",
+     "x": "Is the root cause confirmed, or is it still just suspected?",
+     "n": 1
+    },
+    {
+     "t": 15.279,
+     "k": "h",
+     "x": "what's the ETA to bring the tool back up?",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "sig": "wrap|마무리: 읽고, 분류하고, 한 문장으로",
+   "h": "3b4a6742b1",
+   "sec": 22.2,
+   "cues": [
+    {
+     "t": 2.218,
+     "k": "u",
+     "x": "Problem – Cause – Action – Result",
+     "n": 1
+    },
+    {
+     "t": 5.387,
+     "k": "o",
+     "x": "'문제가 남아 있다'",
+     "n": 1
+    },
+    {
+     "t": 7.883,
+     "k": "h",
+     "x": "Result(현재 상태)",
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "w15": [
+  {
+   "i": 0,
+   "sig": "story|종합 점검 안내",
+   "h": "64ddd4e7cd",
+   "sec": 18.3,
+   "cues": [
+    {
+     "t": 14.942,
+     "k": "h",
+     "x": "판단을 바꾸는 말",
+     "n": 1
+    },
+    {
+     "t": 18.03,
+     "k": "o",
+     "x": "조동사 · 경계어 · 명사 덩어리 · 확신 표현 · 되읽기",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "sig": "scene|오늘의 현장 · 상황 설정",
+   "h": "84b9bfc23e",
+   "sec": 7.6,
+   "cues": [
+    {
+     "t": 6.223,
+     "k": "u",
+     "x": "장비 화면 · 규정 · 레시피 표 · 트러블슈팅 문서 · 벤더 티켓 · 인계 보고서",
+     "n": 1
+    },
+    {
+     "t": 7.268,
+     "k": "h",
+     "x": "배운 현장 영어를 실제 흐름에서 통합 적용하기",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "sig": "mansample|매뉴얼 표본 — 영어 현장 보고서",
+   "h": "9cc1ae7d83",
+   "sec": 19.5,
+   "cues": [
+    {
+     "t": 9.59,
+     "k": "o",
+     "x": "State how certain the cause is (confirmed, suspected, or ruled out).",
+     "n": 1
+    },
+    {
+     "t": 14.245,
+     "k": "u",
+     "x": "any vendor ticket (SR)",
+     "n": 1
+    },
+    {
+     "t": 19.156,
+     "k": "h",
+     "x": "Read, judge, and report: the whole loop in English.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "sig": "quiz|① 장비 · 운전 · 알람 종합",
+   "h": "0c8ba4d4a3",
+   "sec": 9.8,
+   "cues": [
+    {
+     "t": 3.634,
+     "k": "o",
+     "x": "Ignite the plasma.",
+     "n": 1
+    },
+    {
+     "t": 5.457,
+     "k": "o",
+     "x": "reflected power",
+     "n": 1
+    },
+    {
+     "t": 7.163,
+     "k": "o",
+     "x": "Replace the pump oil.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "sig": "quiz|② 안전 · 레시피",
+   "h": "f79d0e4f47",
+   "sec": 14.4,
+   "cues": [
+    {
+     "t": 6.142,
+     "k": "o",
+     "x": "need not",
+     "n": 1
+    },
+    {
+     "t": 9.718,
+     "k": "o",
+     "x": "below 20 W",
+     "n": 1
+    },
+    {
+     "t": 11.587,
+     "k": "o",
+     "x": "unless",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "sig": "quiz|③ 장비 계열 · 트러블슈팅",
+   "h": "d41dc043e9",
+   "sec": 11.8,
+   "cues": [
+    {
+     "t": 4.969,
+     "k": "o",
+     "x": "LIMIT",
+     "n": 1
+    },
+    {
+     "t": 6.885,
+     "k": "o",
+     "x": "most likely",
+     "n": 1
+    },
+    {
+     "t": 8.626,
+     "k": "h",
+     "x": "UCL(106)",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "sig": "quiz|④ 벤더 소통 · 보고",
+   "h": "46aa9e9fa8",
+   "sec": 11.3,
+   "cues": [
+    {
+     "t": 3.553,
+     "k": "o",
+     "x": "fifteen watts",
+     "n": 1
+    },
+    {
+     "t": 6.235,
+     "k": "u",
+     "x": "장비가 멈췄고 같은 레시피를 돌릴 다른 장비가 없다",
+     "n": 1
+    },
+    {
+     "t": 9.009,
+     "k": "h",
+     "x": "가장 먼저 말할 것",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "sig": "wrap|수료 — 이 과정을 마치며",
+   "h": "c43c0fdbda",
+   "sec": 26.1,
+   "cues": [
+    {
+     "t": 6.583,
+     "k": "o",
+     "x": "읽고 판단",
+     "n": 1
+    },
+    {
+     "t": 9.276,
+     "k": "u",
+     "x": "조동사",
+     "n": 1
+    },
+    {
+     "t": 15.476,
+     "k": "u",
+     "x": "확신 표현",
+     "n": 1
+    },
+    {
+     "t": 17.206,
+     "k": "u",
+     "x": "되읽기",
+     "n": 1
+    },
+    {
+     "t": 20.12,
+     "k": "h",
+     "x": "Problem – Cause – Action – Result",
+     "n": 1
+    }
+   ]
   }
  ]
 }

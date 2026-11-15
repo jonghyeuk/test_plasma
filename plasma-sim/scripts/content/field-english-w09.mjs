@@ -11,7 +11,7 @@
      - LOTO 6단계: OSHA 29 CFR 1910.147(d) — preparation · shutdown · isolation · device application · stored energy · verification
      - 조동사: ISO/IEC Directives Part 2 — shall(요구) · should(권고) · may(허용) · can(가능성)
      - 경보 단계(1차 = TLV 50%, 2차 = TLV 100%)는 이 교재 실습의 설정이다 — 사업장마다 다르다. */
-export default {
+const CHAPTER = {
   id: 'w9',
   title: '안전 작업 — LOTO · 가스 · 작업 허가',
   slides: [
@@ -366,3 +366,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;

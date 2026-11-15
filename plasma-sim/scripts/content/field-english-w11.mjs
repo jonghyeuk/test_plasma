@@ -7,7 +7,7 @@
    수치: 각 장비 화면의 값과 규격은 이 교재의 예시(전형적인 크기)다 — 화면에 '교재 예시'라고 밝힌다.
          근거로 쓰는 일반 사실: 1 Å = 0.1 nm · 이온주입 dose 단위 ions/cm² · 채널링을 피하려 7° 기울임이 흔하다 ·
          노광 dose 단위 mJ/cm² · CMP down force 단위 psi. 엔진(fieldEnglishLabs.js 11강 절)과 같은 숫자를 쓰고 테스트가 대조한다. */
-export default {
+const CHAPTER = {
   id: 'w11',
   title: '다른 장비 계열 읽기 — 증착 · 노광 · CMP · 이온주입',
   slides: [
@@ -350,3 +350,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;

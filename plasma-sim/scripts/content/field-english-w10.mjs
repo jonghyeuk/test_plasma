@@ -6,7 +6,7 @@
    이 파일이 10강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w10
    수치: 레시피 표(ETCH-POLY-01)·허용 범위·변경 관리 규정은 이 교재의 가상 예시다(화면에 '교재 예시'라고 밝힌다).
          실제 값은 장비·공정·사업장 규정이 정한다. 엔진(fieldEnglishLabs.js 10강 절)과 같은 숫자를 쓰고, 테스트가 대조한다. */
-export default {
+const CHAPTER = {
   id: 'w10',
   title: '레시피 · 변경 관리',
   slides: [
@@ -348,3 +348,5 @@ export default {
     },
   ],
 };
+
+export default CHAPTER;

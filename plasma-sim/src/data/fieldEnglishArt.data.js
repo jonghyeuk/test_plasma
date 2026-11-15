@@ -16,7 +16,4 @@ const DIR = '/art/field-english';
 
 export const ART = {
   chamber: `${DIR}/chamber.png`,
-  layer:   `${DIR}/layer.png`,
-  drc:     `${DIR}/drc.png`,
-  lvs:     `${DIR}/lvs.png`,
 };

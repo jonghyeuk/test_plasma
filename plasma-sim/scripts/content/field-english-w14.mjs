@@ -2,7 +2,7 @@
    1부(장비) 보고 틀(Problem–Cause–Action–Result · 인수인계 로그)은 그대로 두고, 설계(DRC) 부분을 2부 내용으로 바꿨다:
    종합 보고 읽기 한 장 · 약어 DRC → SR · 용어 묶음 (4)와 퀴즈 (4) · DRC 분류 실습 → 인계 항목 분류(report:handover).
    이 파일이 14강의 원본이다. 고친 뒤:  node scripts/content/apply-chapter.mjs w14 */
-export default {
+const CHAPTER = {
  "id": "w14",
  "title": "종합 현장 보고",
  "slides": [
@@ -690,3 +690,5 @@ export default {
   }
  ]
 };
+
+export default CHAPTER;
